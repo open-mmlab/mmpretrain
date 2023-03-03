@@ -12,7 +12,7 @@ from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample, MultiTaskDataSample
 
 
-class TestPackClsInputs(unittest.TestCase):
+class TestPackInputs(unittest.TestCase):
 
     def test_transform(self):
         img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
@@ -25,9 +25,10 @@ class TestPackClsInputs(unittest.TestCase):
             'flip': False,
             'img': mmcv.imread(img_path),
             'gt_label': 2,
+            'custom_key': torch.tensor([1, 2, 3])
         }
 
-        cfg = dict(type='PackClsInputs')
+        cfg = dict(type='PackInputs', algorithm_keys=['custom_key'])
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
@@ -36,6 +37,7 @@ class TestPackClsInputs(unittest.TestCase):
         self.assertIsInstance(results['data_samples'], DataSample)
         self.assertIn('flip', results['data_samples'].metainfo_keys())
         self.assertIsInstance(results['data_samples'].gt_label, torch.Tensor)
+        self.assertIsInstance(results['data_samples'].custom_key, torch.Tensor)
 
         # Test grayscale image
         data['img'] = data['img'].mean(-1)
@@ -44,6 +46,21 @@ class TestPackClsInputs(unittest.TestCase):
         self.assertIsInstance(results['inputs'], torch.Tensor)
         self.assertEqual(results['inputs'].shape, (1, 300, 400))
 
+        # Test video input
+        data['img'] = np.random.randint(
+            0, 256, (10, 3, 1, 224, 224), dtype=np.uint8)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('inputs', results)
+        self.assertIsInstance(results['inputs'], torch.Tensor)
+        self.assertEqual(results['inputs'].shape, (10, 3, 1, 224, 224))
+
+        # Test Pillow input
+        data['img'] = Image.open(img_path)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('inputs', results)
+        self.assertIsInstance(results['inputs'], torch.Tensor)
+        self.assertEqual(results['inputs'].shape, (3, 300, 400))
+
         # Test without `img` and `gt_label`
         del data['img']
         del data['gt_label']
@@ -51,10 +68,11 @@ class TestPackClsInputs(unittest.TestCase):
         self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
-        cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
+        cfg = dict(type='PackInputs', meta_keys=['flip', 'img_shape'])
         transform = TRANSFORMS.build(cfg)
         self.assertEqual(
-            repr(transform), "PackClsInputs(meta_keys=['flip', 'img_shape'])")
+            repr(transform), "PackInputs(input_key='img', algorithm_keys=(), "
+            "meta_keys=['flip', 'img_shape'])")
 
 
 class TestTranspose(unittest.TestCase):
@@ -145,7 +163,7 @@ class TestPackMultiTaskInputs(unittest.TestCase):
             },
         }
 
-        cfg = dict(type='PackMultiTaskInputs', )
+        cfg = dict(type='PackMultiTaskInputs', multi_task_fields=['gt_label'])
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
@@ -170,9 +188,13 @@ class TestPackMultiTaskInputs(unittest.TestCase):
         self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
-        cfg = dict(type='PackMultiTaskInputs', meta_keys=['img_shape'])
+        cfg = dict(
+            type='PackMultiTaskInputs',
+            multi_task_fields=['gt_label'],
+            task_handlers=dict(task1=dict(type='PackInputs')),
+        )
         transform = TRANSFORMS.build(cfg)
-        rep = 'PackMultiTaskInputs(task_handlers={},'
-        rep += ' multi_task_fields=(\'gt_label\',),'
-        rep += ' meta_keys=[\'img_shape\'])'
-        self.assertEqual(repr(transform), rep)
+        self.assertEqual(
+            repr(transform),
+            "PackMultiTaskInputs(multi_task_fields=['gt_label'], "
+            "input_key='img', task_handlers={'task1': PackInputs})")

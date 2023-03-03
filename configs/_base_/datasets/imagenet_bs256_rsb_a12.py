@@ -29,7 +29,7 @@ train_pipeline = [
         magnitude_std=0.5,
         hparams=dict(
             pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
@@ -41,7 +41,7 @@ test_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

@@ -11,7 +11,7 @@ test_pipeline = [
     # resizing to (256, 256) here, different from resizing shorter edge to 256
     dict(type='Resize', scale=(256, 256), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline))

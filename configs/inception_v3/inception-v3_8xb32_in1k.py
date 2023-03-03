@@ -9,14 +9,14 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=299),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=342, edge='short'),
     dict(type='CenterCrop', crop_size=299),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

@@ -18,7 +18,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=288, edge='short'),
     dict(type='CenterCrop', crop_size=256),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(batch_size=128)

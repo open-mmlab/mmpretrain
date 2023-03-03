@@ -32,7 +32,7 @@ for example:
         dict(type='LoadImageFromFile'),
         dict(type='RandomResizedCrop', scale=224),
         dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-        dict(type='PackClsInputs'),
+        dict(type='PackInputs'),
     ]
 
     train_dataloader = dict(
@@ -50,6 +50,21 @@ Every item of a pipeline list is one of the following data transforms class. And
    :local:
    :backlinks: top
 
+Loading and Formatting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: data_transform.rst
+
+   LoadImageFromFile
+   PackInputs
+   ToNumpy
+   ToPIL
+   Transpose
+   Collect
+
 Processing and Augmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -59,13 +74,19 @@ Processing and Augmentation
    :template: data_transform.rst
 
    Albumentations
+   CenterCrop
    ColorJitter
    EfficientNetCenterCrop
    EfficientNetRandomCrop
    Lighting
+   Normalize
    RandomCrop
    RandomErasing
+   RandomFlip
+   RandomGrayscale
+   RandomResize
    RandomResizedCrop
+   Resize
    ResizeEdge
 
 Composed Augmentation
@@ -81,27 +102,8 @@ augmentation transforms, such as ``AutoAugment`` and ``RandAugment``.
    AutoAugment
    RandAugment
 
-To specify the augmentation combination (The ``policies`` argument), you can use string to specify
-from some preset policies.
-
-.. list-table::
-   :widths: 20 20 60
-   :header-rows: 1
-
-   * - Preset policy
-     - Use for
-     - Description
-   * - "imagenet"
-     - :class:`AutoAugment`
-     - Policy for ImageNet, come from `DeepVoltaire/AutoAugment`_
-   * - "timm_increasing"
-     - :class:`RandAugment`
-     - The ``_RAND_INCREASING_TRANSFORMS`` policy from `timm`_
-
-.. _DeepVoltaire/AutoAugment: https://github.com/DeepVoltaire/AutoAugment
-.. _timm: https://github.com/rwightman/pytorch-image-models
-
-And you can also configure a group of policies manually by selecting from the below table.
+The above transforms is composed from a group of policies from the below random
+transforms:
 
 .. autosummary::
    :toctree: generated
@@ -114,6 +116,7 @@ And you can also configure a group of policies manually by selecting from the be
    Contrast
    Cutout
    Equalize
+   GaussianBlur
    Invert
    Posterize
    Rotate
@@ -124,45 +127,20 @@ And you can also configure a group of policies manually by selecting from the be
    Translate
    BaseAugTransform
 
-Formatting
-^^^^^^^^^^
+MMCV transforms
+^^^^^^^^^^^^^^^
+
+We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external+mmcv:doc:`api/transforms`.
+
+Transform Wrapper
+^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
    :template: data_transform.rst
 
-   Collect
-   PackClsInputs
-   ToNumpy
-   ToPIL
-   Transpose
-
-
-MMCV transforms
-^^^^^^^^^^^^^^^
-
-We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external+mmcv:doc:`api/transforms`.
-
-.. list-table::
-   :widths: 50 50
-
-   * - :external:class:`~mmcv.transforms.LoadImageFromFile`
-     - Load an image from file.
-   * - :external:class:`~mmcv.transforms.Resize`
-     - Resize images & bbox & seg & keypoints.
-   * - :external:class:`~mmcv.transforms.RandomResize`
-     - Random resize images & bbox & keypoints.
-   * - :external:class:`~mmcv.transforms.RandomFlip`
-     - Flip the image & bbox & keypoints & segmentation map.
-   * - :external:class:`~mmcv.transforms.RandomGrayscale`
-     - Randomly convert image to grayscale with a probability.
-   * - :external:class:`~mmcv.transforms.CenterCrop`
-     - Crop the center of the image, segmentation masks, bounding boxes and key points. If the crop area exceeds the original image and ``auto_pad`` is True, the original image will be padded before cropping.
-   * - :external:class:`~mmcv.transforms.Normalize`
-     - Normalize the image.
-   * - :external:class:`~mmcv.transforms.Compose`
-     - Compose multiple transforms sequentially.
+   MultiView
 
 .. module:: mmpretrain.models.utils.data_preprocessor
 

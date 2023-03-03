@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import math
 import random
 from unittest import TestCase
 from unittest.mock import ANY, call, patch
@@ -562,9 +563,9 @@ class TestColorJitter(TestCase):
         with patch('numpy.random', np.random.RandomState(0)):
             mmcv_module = 'mmpretrain.datasets.transforms.processing.mmcv'
             call_list = [
-                call.adjust_color(ANY, alpha=ANY),
-                call.adjust_hue(ANY, ANY),
-                call.adjust_brightness(ANY, ANY)
+                call.adjust_color(ANY, alpha=ANY, backend='pillow'),
+                call.adjust_hue(ANY, ANY, backend='pillow'),
+                call.adjust_brightness(ANY, ANY, backend='pillow'),
             ]
             with patch(mmcv_module, autospec=True) as mock:
                 transform(results)
@@ -800,3 +801,55 @@ class TestAlbumentations(TestCase):
         self.assertEqual(
             repr(transform), "Albumentations(transforms=[{'type': "
             "'ChannelShuffle', 'p': 1}])")
+
+
+class TestSimMIMMaskGenerator(TestCase):
+    DEFAULT_ARGS = dict(
+        type='SimMIMMaskGenerator',
+        input_size=192,
+        mask_patch_size=32,
+        model_patch_size=4,
+        mask_ratio=0.6)
+
+    def test_transform(self):
+        img = np.random.randint(0, 256, (3, 192, 192), np.uint8)
+        results = {'img': img}
+        module = TRANSFORMS.build(self.DEFAULT_ARGS)
+
+        results = module(results)
+
+        self.assertTupleEqual(results['img'].shape, (3, 192, 192))
+        self.assertTupleEqual(results['mask'].shape, (48, 48))
+
+    def test_repr(self):
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), 'SimMIMMaskGenerator(input_size=192, '
+            'mask_patch_size=32, model_patch_size=4, mask_ratio=0.6)')
+
+
+class TestBEiTMaskGenerator(TestCase):
+    DEFAULT_ARGS = dict(
+        type='BEiTMaskGenerator',
+        input_size=(14, 14),
+        num_masking_patches=75,
+        max_num_patches=None,
+        min_num_patches=16)
+
+    def test_transform(self):
+        module = TRANSFORMS.build(self.DEFAULT_ARGS)
+
+        results = module({})
+
+        self.assertTupleEqual(results['mask'].shape, (14, 14))
+
+    def test_repr(self):
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+
+        log_aspect_ratio = (math.log(0.3), math.log(1 / 0.3))
+        self.assertEqual(
+            repr(transform), 'BEiTMaskGenerator(height=14, width=14, '
+            'num_patches=196, num_masking_patches=75, min_num_patches=16, '
+            f'max_num_patches=75, log_aspect_ratio={log_aspect_ratio})')

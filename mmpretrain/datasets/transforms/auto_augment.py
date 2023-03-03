@@ -10,6 +10,7 @@ import numpy as np
 from mmcv.transforms import BaseTransform, Compose, RandomChoice
 from mmcv.transforms.utils import cache_randomness
 from mmengine.utils import is_list_of, is_seq_of
+from PIL import Image, ImageFilter
 
 from mmpretrain.registry import TRANSFORMS
 
@@ -53,6 +54,13 @@ class AutoAugment(RandomChoice):
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
+
+    .. admonition:: Available preset policies
+
+        - ``"imagenet"``: Policy for ImageNet, come from
+          `DeepVoltaire/AutoAugment`_
+
+    .. _DeepVoltaire/AutoAugment: https://github.com/DeepVoltaire/AutoAugment
     """
 
     def __init__(self,
@@ -118,6 +126,13 @@ class RandAugment(BaseTransform):
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
+
+    .. admonition:: Available preset policies
+
+        - ``"timm_increasing"``: The ``_RAND_INCREASING_TRANSFORMS`` policy
+          from `timm`_
+
+    .. _timm: https://github.com/rwightman/pytorch-image-models
 
     Examples:
 
@@ -1115,6 +1130,53 @@ class Cutout(BaseAugTransform):
         repr_str = self.__class__.__name__
         repr_str += f'(shape={self.shape}, '
         repr_str += f'pad_val={self.pad_val}, '
+        repr_str += f'prob={self.prob}{self.extra_repr()})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class GaussianBlur(BaseAugTransform):
+    """Gaussian blur images.
+
+    Args:
+        radius (int, float, optional): The blur radius. If None, generate from
+            ``magnitude_range``, see :class:`BaseAugTransform`.
+            Defaults to None.
+        prob (float): The probability for posterizing therefore should be in
+            range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
+    """
+
+    def __init__(self,
+                 radius: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (radius is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `radius` and `magnitude_range`.'
+
+        self.radius = radius
+
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
+            return results
+
+        if self.radius is not None:
+            radius = self.radius
+        else:
+            radius = self.random_magnitude()
+
+        img = results['img']
+        pil_img = Image.fromarray(img)
+        pil_img.filter(ImageFilter.GaussianBlur(radius=radius))
+        results['img'] = np.array(pil_img, dtype=img.dtype)
+
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(radius={self.radius}, '
         repr_str += f'prob={self.prob}{self.extra_repr()})'
         return repr_str
 

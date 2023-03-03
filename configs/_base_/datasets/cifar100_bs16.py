@@ -11,11 +11,11 @@ data_preprocessor = dict(
 train_pipeline = [
     dict(type='RandomCrop', crop_size=32, padding=4),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(

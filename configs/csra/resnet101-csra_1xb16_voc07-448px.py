@@ -38,14 +38,14 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=448, crop_ratio_range=(0.7, 1.0)),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=448),
     dict(
-        type='PackClsInputs',
+        type='PackInputs',
         # `gt_label_difficult` is needed for VOC evaluation
         meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
                    'scale_factor', 'flip', 'flip_direction',

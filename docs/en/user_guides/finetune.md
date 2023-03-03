@@ -117,11 +117,11 @@ train_pipeline = [
     dict(type='RandomCrop', crop_size=32, padding=4),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='Resize', scale=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 test_pipeline = [
     dict(type='Resize', scale=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 # dataloader settings
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
@@ -177,11 +177,11 @@ train_pipeline = [
     dict(type='RandomCrop', crop_size=32, padding=4),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='Resize', scale=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 test_pipeline = [
     dict(type='Resize', scale=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 # dataloader settings
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

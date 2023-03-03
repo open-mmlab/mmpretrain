@@ -25,7 +25,7 @@ train_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
@@ -37,7 +37,7 @@ test_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

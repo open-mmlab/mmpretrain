@@ -26,7 +26,7 @@ base_train_pipeline = [
         magnitude_level=7,
         magnitude_std=0.5,
         hparams=dict(pad_val=[round(x) for x in bgr_mean])),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 
 # modify start epoch RandomResizedCrop.scale to 160

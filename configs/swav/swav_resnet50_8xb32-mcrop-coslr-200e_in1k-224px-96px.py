@@ -16,7 +16,9 @@ num_crops = [2, 6]
 color_distort_strength = 1.0
 view_pipeline1 = [
     dict(
-        type='RandomResizedCrop', size=224, scale=(0.14, 1.),
+        type='RandomResizedCrop',
+        scale=224,
+        crop_ratio_range=(0.14, 1.),
         backend='pillow'),
     dict(
         type='RandomApply',
@@ -34,14 +36,18 @@ view_pipeline1 = [
         prob=0.2,
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
-    dict(type='RandomGaussianBlur', sigma_min=0.1, sigma_max=2.0, prob=0.5),
+    dict(
+        type='GaussianBlur',
+        magnitude_range=(0.1, 2.0),
+        magnitude_std='inf',
+        prob=0.5),
     dict(type='RandomFlip', prob=0.5),
 ]
 view_pipeline2 = [
     dict(
         type='RandomResizedCrop',
-        size=96,
-        scale=(0.05, 0.14),
+        scale=96,
+        crop_ratio_range=(0.05, 0.14),
         backend='pillow'),
     dict(
         type='RandomApply',
@@ -59,7 +65,11 @@ view_pipeline2 = [
         prob=0.2,
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
-    dict(type='RandomGaussianBlur', sigma_min=0.1, sigma_max=2.0, prob=0.5),
+    dict(
+        type='GaussianBlur',
+        magnitude_range=(0.1, 2.0),
+        magnitude_std='inf',
+        prob=0.5),
     dict(type='RandomFlip', prob=0.5),
 ]
 train_pipeline = [
@@ -68,7 +78,7 @@ train_pipeline = [
         type='MultiView',
         num_views=num_crops,
         transforms=[view_pipeline1, view_pipeline2]),
-    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 batch_size = 32

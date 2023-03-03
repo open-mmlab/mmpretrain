@@ -31,7 +31,7 @@ train_pipeline = [
         eigvec=EIGVEC,
         alphastd=25.5,  # because the value range of images is [0,255]
         to_rgb=False),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(batch_size=128, dataset=dict(pipeline=train_pipeline))

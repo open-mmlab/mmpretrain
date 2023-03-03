@@ -11,7 +11,7 @@ test_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=256),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline))

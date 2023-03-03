@@ -10,7 +10,7 @@ data_preprocessor = dict(
 view_pipeline1 = [
     dict(
         type='RandomResizedCrop',
-        size=224,
+        scale=224,
         interpolation='bicubic',
         backend='pillow'),
     dict(type='RandomFlip', prob=0.5),
@@ -30,13 +30,17 @@ view_pipeline1 = [
         prob=0.2,
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
-    dict(type='RandomGaussianBlur', sigma_min=0.1, sigma_max=2.0, prob=1.),
+    dict(
+        type='GaussianBlur',
+        magnitude_range=(0.1, 2.0),
+        magnitude_std='inf',
+        prob=1.),
     dict(type='RandomSolarize', prob=0.),
 ]
 view_pipeline2 = [
     dict(
         type='RandomResizedCrop',
-        size=224,
+        scale=224,
         interpolation='bicubic',
         backend='pillow'),
     dict(type='RandomFlip', prob=0.5),
@@ -56,7 +60,11 @@ view_pipeline2 = [
         prob=0.2,
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
-    dict(type='RandomGaussianBlur', sigma_min=0.1, sigma_max=2.0, prob=0.1),
+    dict(
+        type='GaussianBlur',
+        magnitude_range=(0.1, 2.0),
+        magnitude_std='inf',
+        prob=0.1),
     dict(type='RandomSolarize', prob=0.2)
 ]
 train_pipeline = [
@@ -65,7 +73,7 @@ train_pipeline = [
         type='MultiView',
         num_views=[1, 1],
         transforms=[view_pipeline1, view_pipeline2]),
-    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

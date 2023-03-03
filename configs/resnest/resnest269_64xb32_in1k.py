@@ -31,13 +31,13 @@ train_pipeline = [
         eigvec=EIGVEC,
         alphastd=0.1,
         to_rgb=False),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='EfficientNetCenterCrop', crop_size=416, backend='pillow'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

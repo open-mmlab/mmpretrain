@@ -30,13 +30,13 @@ train_pipeline = [
         max_area_ratio=0.3333333333333333,
         fill_color=[103.53, 116.28, 123.675],
         fill_std=[57.375, 57.12, 58.395]),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(batch_size=256, dataset=dict(pipeline=train_pipeline))

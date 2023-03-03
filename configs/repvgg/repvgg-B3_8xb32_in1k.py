@@ -38,14 +38,14 @@ train_pipeline = [
         magnitude_level=7,
         magnitude_std=0.5,
         hparams=dict(pad_val=[round(x) for x in bgr_mean])),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

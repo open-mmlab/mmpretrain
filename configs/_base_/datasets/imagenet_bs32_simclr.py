@@ -8,7 +8,7 @@ data_preprocessor = dict(
     to_rgb=True)
 
 view_pipeline = [
-    dict(type='RandomResizedCrop', size=224, backend='pillow'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='RandomApply',
@@ -26,13 +26,17 @@ view_pipeline = [
         prob=0.2,
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
-    dict(type='RandomGaussianBlur', sigma_min=0.1, sigma_max=2.0, prob=0.5),
+    dict(
+        type='GaussianBlur',
+        magnitude_range=(0.1, 2.0),
+        magnitude_std='inf',
+        prob=0.5),
 ]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='MultiView', num_views=2, transforms=[view_pipeline]),
-    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

@@ -21,7 +21,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 ```
 
@@ -115,14 +115,14 @@ to accelerate. To configure image normalization and mixup/cutmix, please use the
 The formatting is to collect training data from the data information dict and convert these data to
 model-friendly format.
 
-In most cases, you can simply use [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs), and it will
+In most cases, you can simply use [`PackInputs`](mmpretrain.datasets.transforms.PackInputs), and it will
 convert the image in NumPy array format to PyTorch tensor, and pack the ground truth categories information and
 other meta information as a [`DataSample`](mmpretrain.structures.DataSample).
 
 ```python
 train_pipeline = [
     ...
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 ```
 

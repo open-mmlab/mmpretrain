@@ -834,17 +834,20 @@ class ColorJitter(BaseTransform):
             hue_factor is chosen uniformly from ``[-hue, hue]`` (0 <= hue
             <= 0.5) or the given ``[min, max]`` (-0.5 <= min <= max <= 0.5).
             Defaults to 0.
+        backend (str): The backend to operate the image. Defaults to 'pillow'
     """
 
     def __init__(self,
                  brightness: Union[float, Sequence[float]] = 0.,
                  contrast: Union[float, Sequence[float]] = 0.,
                  saturation: Union[float, Sequence[float]] = 0.,
-                 hue: Union[float, Sequence[float]] = 0.):
+                 hue: Union[float, Sequence[float]] = 0.,
+                 backend='pillow'):
         self.brightness = self._set_range(brightness, 'brightness')
         self.contrast = self._set_range(contrast, 'contrast')
         self.saturation = self._set_range(saturation, 'saturation')
         self.hue = self._set_range(hue, 'hue', center=0, bound=(-0.5, 0.5))
+        self.backend = backend
 
     def _set_range(self, value, name, center=1, bound=(0, float('inf'))):
         """Set the range of magnitudes."""
@@ -906,13 +909,15 @@ class ColorJitter(BaseTransform):
 
         for index in trans_inds:
             if index == 0 and brightness is not None:
-                img = mmcv.adjust_brightness(img, brightness)
+                img = mmcv.adjust_brightness(
+                    img, brightness, backend=self.backend)
             elif index == 1 and contrast is not None:
-                img = mmcv.adjust_contrast(img, contrast)
+                img = mmcv.adjust_contrast(img, contrast, backend=self.backend)
             elif index == 2 and saturation is not None:
-                img = mmcv.adjust_color(img, alpha=saturation)
+                img = mmcv.adjust_color(
+                    img, alpha=saturation, backend=self.backend)
             elif index == 3 and hue is not None:
-                img = mmcv.adjust_hue(img, hue)
+                img = mmcv.adjust_hue(img, hue, backend=self.backend)
 
         results['img'] = img
         return results
@@ -1191,4 +1196,340 @@ class Albumentations(BaseTransform):
         """
         repr_str = self.__class__.__name__
         repr_str += f'(transforms={repr(self.transforms)})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class SimMIMMaskGenerator(BaseTransform):
+    """Generate random block mask for each Image.
+
+    **Added Keys**:
+
+    - mask
+
+    This module is used in SimMIM to generate masks.
+
+    Args:
+        input_size (int): Size of input image. Defaults to 192.
+        mask_patch_size (int): Size of each block mask. Defaults to 32.
+        model_patch_size (int): Patch size of each token. Defaults to 4.
+        mask_ratio (float): The mask ratio of image. Defaults to 0.6.
+    """
+
+    def __init__(self,
+                 input_size: int = 192,
+                 mask_patch_size: int = 32,
+                 model_patch_size: int = 4,
+                 mask_ratio: float = 0.6):
+        self.input_size = input_size
+        self.mask_patch_size = mask_patch_size
+        self.model_patch_size = model_patch_size
+        self.mask_ratio = mask_ratio
+
+        assert self.input_size % self.mask_patch_size == 0
+        assert self.mask_patch_size % self.model_patch_size == 0
+
+        self.rand_size = self.input_size // self.mask_patch_size
+        self.scale = self.mask_patch_size // self.model_patch_size
+
+        self.token_count = self.rand_size**2
+        self.mask_count = int(np.ceil(self.token_count * self.mask_ratio))
+
+    def transform(self, results: dict) -> dict:
+        """Method to generate random block mask for each Image in SimMIM.
+
+        Args:
+            results (dict): Result dict from previous pipeline.
+
+        Returns:
+            dict: Result dict with added key ``mask``.
+        """
+        mask_idx = np.random.permutation(self.token_count)[:self.mask_count]
+        mask = np.zeros(self.token_count, dtype=int)
+        mask[mask_idx] = 1
+
+        mask = mask.reshape((self.rand_size, self.rand_size))
+        mask = mask.repeat(self.scale, axis=0).repeat(self.scale, axis=1)
+
+        results.update({'mask': mask})
+
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(input_size={self.input_size}, '
+        repr_str += f'mask_patch_size={self.mask_patch_size}, '
+        repr_str += f'model_patch_size={self.model_patch_size}, '
+        repr_str += f'mask_ratio={self.mask_ratio})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class BEiTMaskGenerator(BaseTransform):
+    """Generate mask for image.
+
+    **Added Keys**:
+
+    - mask
+
+    This module is borrowed from
+    https://github.com/microsoft/unilm/tree/master/beit
+
+    Args:
+        input_size (int): The size of input image.
+        num_masking_patches (int): The number of patches to be masked.
+        min_num_patches (int): The minimum number of patches to be masked
+            in the process of generating mask. Defaults to 4.
+        max_num_patches (int, optional): The maximum number of patches to be
+            masked in the process of generating mask. Defaults to None.
+        min_aspect (float): The minimum aspect ratio of mask blocks. Defaults
+            to 0.3.
+        min_aspect (float, optional): The minimum aspect ratio of mask blocks.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 input_size: int,
+                 num_masking_patches: int,
+                 min_num_patches: int = 4,
+                 max_num_patches: Optional[int] = None,
+                 min_aspect: float = 0.3,
+                 max_aspect: Optional[float] = None) -> None:
+        if not isinstance(input_size, tuple):
+            input_size = (input_size, ) * 2
+        self.height, self.width = input_size
+
+        self.num_patches = self.height * self.width
+
+        self.num_masking_patches = num_masking_patches
+        self.min_num_patches = min_num_patches
+        self.max_num_patches = num_masking_patches if max_num_patches is None \
+            else max_num_patches
+
+        max_aspect = max_aspect or 1 / min_aspect
+        self.log_aspect_ratio = (math.log(min_aspect), math.log(max_aspect))
+
+    def _mask(self, mask: np.ndarray, max_mask_patches: int) -> int:
+        """Generate mask recursively.
+
+        Args:
+            mask (np.ndarray): The mask to be generated.
+            max_mask_patches (int): The maximum number of patches to be masked.
+
+        Returns:
+            int: The number of patches masked.
+        """
+        delta = 0
+        for _ in range(10):
+            target_area = np.random.uniform(self.min_num_patches,
+                                            max_mask_patches)
+            aspect_ratio = math.exp(np.random.uniform(*self.log_aspect_ratio))
+            h = int(round(math.sqrt(target_area * aspect_ratio)))
+            w = int(round(math.sqrt(target_area / aspect_ratio)))
+            if w < self.width and h < self.height:
+                top = np.random.randint(0, self.height - h)
+                left = np.random.randint(0, self.width - w)
+
+                num_masked = mask[top:top + h, left:left + w].sum()
+                # Overlap
+                if 0 < h * w - num_masked <= max_mask_patches:
+                    for i in range(top, top + h):
+                        for j in range(left, left + w):
+                            if mask[i, j] == 0:
+                                mask[i, j] = 1
+                                delta += 1
+                if delta > 0:
+                    break
+        return delta
+
+    def transform(self, results: dict) -> dict:
+        """Method to generate random block mask for each Image in BEiT.
+
+        Args:
+            results (dict): Result dict from previous pipeline.
+
+        Returns:
+            dict: Result dict with added key ``mask``.
+        """
+        mask = np.zeros(shape=(self.height, self.width), dtype=int)
+
+        mask_count = 0
+        while mask_count != self.num_masking_patches:
+            max_mask_patches = self.num_masking_patches - mask_count
+            max_mask_patches = min(max_mask_patches, self.max_num_patches)
+
+            delta = self._mask(mask, max_mask_patches)
+            mask_count += delta
+        results.update({'mask': mask})
+
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(height={self.height}, '
+        repr_str += f'width={self.width}, '
+        repr_str += f'num_patches={self.num_patches}, '
+        repr_str += f'num_masking_patches={self.num_masking_patches}, '
+        repr_str += f'min_num_patches={self.min_num_patches}, '
+        repr_str += f'max_num_patches={self.max_num_patches}, '
+        repr_str += f'log_aspect_ratio={self.log_aspect_ratio})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class RandomResizedCropAndInterpolationWithTwoPic(BaseTransform):
+    """Crop the given PIL Image to random size and aspect ratio with random
+    interpolation.
+
+    **Required Keys**:
+
+    - img
+
+    **Modified Keys**:
+
+    - img
+
+    **Added Keys**:
+
+    - target_img
+
+    This module is borrowed from
+    https://github.com/microsoft/unilm/tree/master/beit.
+
+    A crop of random size (default: of 0.08 to 1.0) of the original size and a
+    random aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio
+    is made. This crop is finally resized to given size. This is popularly used
+    to train the Inception networks. This module first crops the image and
+    resizes the crop to two different sizes.
+
+    Args:
+        size (Union[tuple, int]): Expected output size of each edge of the
+            first image.
+        second_size (Union[tuple, int], optional): Expected output size of each
+            edge of the second image.
+        scale (tuple[float, float]): Range of size of the origin size cropped.
+            Defaults to (0.08, 1.0).
+        ratio (tuple[float, float]): Range of aspect ratio of the origin aspect
+            ratio cropped. Defaults to (3./4., 4./3.).
+        interpolation (str): The interpolation for the first image. Defaults
+            to ``bilinear``.
+        second_interpolation (str): The interpolation for the second image.
+            Defaults to ``lanczos``.
+    """
+
+    def __init__(self,
+                 size: Union[tuple, int],
+                 second_size=None,
+                 scale=(0.08, 1.0),
+                 ratio=(3. / 4., 4. / 3.),
+                 interpolation='bilinear',
+                 second_interpolation='lanczos') -> None:
+        if isinstance(size, tuple):
+            self.size = size
+        else:
+            self.size = (size, size)
+        if second_size is not None:
+            if isinstance(second_size, tuple):
+                self.second_size = second_size
+            else:
+                self.second_size = (second_size, second_size)
+        else:
+            self.second_size = None
+        if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
+            ('range should be of kind (min, max)')
+
+        if interpolation == 'random':
+            self.interpolation = ('bilinear', 'bicubic')
+        else:
+            self.interpolation = interpolation
+        self.second_interpolation = second_interpolation
+        self.scale = scale
+        self.ratio = ratio
+
+    @staticmethod
+    def get_params(img: np.ndarray, scale: tuple,
+                   ratio: tuple) -> Sequence[int]:
+        """Get parameters for ``crop`` for a random sized crop.
+
+        Args:
+            img (np.ndarray): Image to be cropped.
+            scale (tuple): range of size of the origin size cropped
+            ratio (tuple): range of aspect ratio of the origin aspect
+                ratio cropped
+
+        Returns:
+            tuple: params (i, j, h, w) to be passed to ``crop`` for a random
+                sized crop.
+        """
+        img_h, img_w = img.shape[:2]
+        area = img_h * img_w
+
+        for _ in range(10):
+            target_area = np.random.uniform(*scale) * area
+            log_ratio = (math.log(ratio[0]), math.log(ratio[1]))
+            aspect_ratio = math.exp(np.random.uniform(*log_ratio))
+
+            w = int(round(math.sqrt(target_area * aspect_ratio)))
+            h = int(round(math.sqrt(target_area / aspect_ratio)))
+
+            if w <= img_w and h <= img_h:
+                i = np.random.randint(0, img_h - h)
+                j = np.random.randint(0, img_w - w)
+                return i, j, h, w
+
+        # Fallback to central crop
+        in_ratio = img_w / img_h
+        if in_ratio < min(ratio):
+            w = img_w
+            h = int(round(w / min(ratio)))
+        elif in_ratio > max(ratio):
+            h = img_h
+            w = int(round(h * max(ratio)))
+        else:  # whole image
+            w = img_w
+            h = img_h
+        i = (img_h - h) // 2
+        j = (img_w - w) // 2
+        return i, j, h, w
+
+    def transform(self, results: dict) -> dict:
+        """Crop the given image and resize it to two different sizes.
+
+        This module crops the given image randomly and resize the crop to two
+        different sizes. This is popularly used in BEiT-style masked image
+        modeling, where an off-the-shelf model is used to provide the target.
+
+        Args:
+            results (dict): Results from previous pipeline.
+
+        Returns:
+            dict: Results after applying this transformation.
+        """
+        img = results['img']
+        i, j, h, w = self.get_params(img, self.scale, self.ratio)
+        if isinstance(self.interpolation, (tuple, list)):
+            interpolation = np.random.choice(self.interpolation)
+        else:
+            interpolation = self.interpolation
+        if self.second_size is None:
+            img = img[i:i + h, j:j + w]
+            img = mmcv.imresize(img, self.size, interpolation=interpolation)
+            results.update({'img': img})
+        else:
+            img = img[i:i + h, j:j + w]
+            img_sample = mmcv.imresize(
+                img, self.size, interpolation=interpolation)
+            img_target = mmcv.imresize(
+                img, self.second_size, interpolation=self.second_interpolation)
+            results.update({'img': [img_sample, img_target]})
+        return results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(size={self.size}, '
+        repr_str += f'second_size={self.second_size}, '
+        repr_str += f'interpolation={self.interpolation}, '
+        repr_str += f'second_interpolation={self.second_interpolation}, '
+        repr_str += f'scale={self.scale}, '
+        repr_str += f'ratio={self.ratio})'
         return repr_str
