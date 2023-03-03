@@ -2,6 +2,27 @@
 
 [model page](../../configs/clip/README.md)
 
+## Usage
+
+### Installation
+
+CLIP requires to install open_clip.
+
+```
+pip install open_clip_torch
+```
+
+### Convert weigts
+
+You can check all pretrained models in [official repo](https://github.com/mlfoundations/open_clip/blob/main/src/open_clip/pretrained.py).
+
+```
+python3 tools/model_converters/openclip_to_mmcls.py ${MODEL_NAME} ${PRETRAINED} ${OUT}
+
+# Example
+python3 tools/model_converters/openclip_to_mmcls.py ViT-L-14-336 openai ViT-L-14-336px.pth
+```
+
 ## Results and models
 
 ### Pre-trained Models
