@@ -41,6 +41,7 @@ class Conv2d(nn.Module):
                         dtype=torch.float32,
                         device=device,
                         requires_grad=requires_grad)
+        self.kw = kw
         self.w, self.b = nn.Parameter(w), nn.Parameter(b)
         self.use_float16 = use_float16
 
@@ -119,6 +120,7 @@ class DALLEEncoder(BaseModule):
                  requires_grad: bool = False,
                  init_cfg: Union[dict, List[dict], None] = None):
         super().__init__(init_cfg=init_cfg)
+        self.input_channels = input_channels
 
         blk_range = range(n_blk_per_group)
         n_layers = group_count * n_blk_per_group
