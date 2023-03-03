@@ -140,7 +140,9 @@ class MAEViT(VisionTransformer):
         return x_masked, mask, ids_restore
 
     def forward(
-        self, x: torch.Tensor, mask: Optional[bool]
+        self,
+        x: torch.Tensor,
+        mask: Optional[bool] = True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate features for masked images.
 
@@ -155,8 +157,8 @@ class MAEViT(VisionTransformer):
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
-            mask (bool, optional): To indicate whether the forward containing
-                ``mask`` or not.
+            mask (bool, optional): To indicate whether the forward function
+                generating ``mask`` or not.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: Hidden features,
