@@ -416,7 +416,7 @@ class ConvMlp(BaseModule):
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
 
-    Compare with the ConvMLP in EfficientFormer, the module add
+    Compare with the ConvMLP in EfficientFormerV1, the module add
     a mid convolution layer.
     """
 
@@ -535,45 +535,6 @@ class EfficientFormerBlock(BaseModule):
         return x
 
 
-def eformer_block(dim, index, layers, mlp_ratio=4.,
-                  act_cfg=dict(type='GELU'), conv_cfg=dict(type='Conv2d'),
-                  norm_cfg=dict(type='BN'),
-                  drop_rate=.0, drop_path_rate=0.,
-                  use_layer_scale=True, vit_num=1, resolution=7, e_ratios=None):
-    blocks = []
-    for block_idx in range(layers[index]):
-        block_dpr = drop_path_rate * (
-                block_idx + sum(layers[:index])) / (sum(layers) - 1)
-        mlp_ratio = e_ratios[str(index)][block_idx]
-        if index >= 2 and block_idx > layers[index] - 1 - vit_num:
-            if index == 2:
-                stride = 2
-            else:
-                stride = None
-            blocks.append(EfficientFormerBlock(
-                dim, mlp_ratio=mlp_ratio,
-                ues_attn=True,
-                act_cfg=act_cfg, norm_cfg=norm_cfg,
-                drop=drop_rate, drop_path=block_dpr,
-                use_layer_scale=use_layer_scale,
-                conv_cfg=conv_cfg,
-                resolution=resolution,
-                stride=stride,
-            ))
-        else:
-            blocks.append(EfficientFormerBlock(
-                dim, mlp_ratio=mlp_ratio,
-                ues_attn=False,
-                act_cfg=act_cfg,
-                norm_cfg=norm_cfg,
-                drop=drop_rate, drop_path=block_dpr,
-                use_layer_scale=use_layer_scale,
-                conv_cfg=conv_cfg,
-            ))
-    blocks = nn.Sequential(*blocks)
-    return blocks
-
-
 @MODELS.register_module()
 class EfficientFormerV2(BaseBackbone):
 
@@ -671,7 +632,6 @@ class EfficientFormerV2(BaseBackbone):
         self.layers = arch['layers']  # [2, 2, 6, 4]
         self.embed_dims = arch['embed_dims']  # [32, 48, 96, 176]
         self.vit_num = arch['vit_num']
-        # self.downsamples = arch['downsamples']
         self.expansion_ratios = arch['expansion_ratios']
         self.drop_path_rate = drop_path_rate
 
@@ -689,11 +649,11 @@ class EfficientFormerV2(BaseBackbone):
 
         self.network = nn.ModuleList()
 
-        for i, num_layer in range(len(self.layers)):
+        for i, num_layer in enumerate(self.layers):
             blocks = []
             for idx in range(num_layer):
                 block_dpr = self.drop_path_rate * (idx + sum(self.layers[:i])) / (sum(self.layers) - 1)
-                if i >= 2 and idx > self.layers[i] - 1 - self.vit_num:
+                if i >= 2 and idx > num_layer - 1 - self.vit_num:
                     use_attn = True
                     # stride represent whether to use stride_conv in attn layer in Block
                     stride = 2 if i == 2 else None
@@ -723,11 +683,13 @@ class EfficientFormerV2(BaseBackbone):
                         kernel_size=down_patch_size,
                         stride=down_stride,
                         padding=down_pad,
-                        in_chans=self.embed_dims[i], embed_dim=self.embed_dims[i + 1],
+                        in_chans=self.embed_dims[i],
+                        embed_dim=self.embed_dims[i + 1],
                         resolution=math.ceil(resolution / (2 ** (i + 2))),
                         asub=asub,
                         conv_cfg=conv_cfg,
-                        act_cfg=act_cfg, norm_cfg=norm_cfg,))
+                        norm_cfg=norm_cfg,
+                        act_cfg=act_cfg))
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
