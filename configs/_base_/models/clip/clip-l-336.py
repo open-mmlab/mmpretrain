@@ -10,12 +10,17 @@ model = dict(
         avg_token=True,
         output_cls_token=False,
         pre_norm=True,
+        final_norm=False,
     ),
-    neck=None,
+    neck=dict(
+        type='CLIPProjection',
+        in_channels=1024,
+        out_channels=768,
+    ),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=1024,
+        in_channels=768,
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
     ))

@@ -24,10 +24,8 @@ def convert_openclip(ckpt):
         k = k.replace('transformer.', '')
         new_v = v
         if k.startswith('proj'):
-            new_k = 'head.fc.weight'
-            new_ckpt[new_k] = new_v.transpose(0, 1)
-            new_ckpt['head.fc.bias'] = torch.zeros(
-                new_v.transpose(0, 1).shape[0])
+            new_k = 'neck.proj'
+            new_ckpt[new_k] = new_v
             continue
         elif k.startswith('conv1'):
             new_k = k.replace('conv1', 'patch_embed.projection')
@@ -56,7 +54,7 @@ def convert_openclip(ckpt):
             new_v = v[None, ...]
             new_k = k.replace('positional_embedding', 'pos_embed')
         elif k.startswith('ln_post'):
-            new_k = k.replace('ln_post', 'ln1')
+            new_k = k.replace('ln_post', 'ln2')
         else:
             new_k = k
 
@@ -82,7 +80,6 @@ def main():
 
     weight = convert_openclip(state_dict)
     mmengine.mkdir_or_exist(osp.dirname(args.dst))
-    print(weight['backbone.pos_embed'].shape)
     torch.save(dict(state_dict=weight), args.dst)
 
     print('Done!!')
