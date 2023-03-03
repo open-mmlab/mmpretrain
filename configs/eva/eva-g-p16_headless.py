@@ -1,7 +1,7 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='BEiT',
+        type='BEiTViT',
         arch='eva-g',
         img_size=224,
         patch_size=16,
