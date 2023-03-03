@@ -18,57 +18,6 @@ from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple
 from .base_backbone import BaseBackbone
 
-# from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-# from timm.models.layers import DropPath, trunc_normal_
-# from timm.models.registry import register_model
-# from timm.models.layers.helpers import to_2tuple
-
-EfficientFormer_width = {
-    'L': [40, 80, 192, 384],  # 26m 83.3% 6attn
-    'S2': [32, 64, 144, 288],  # 12m 81.6% 4attn dp0.02
-    'S1': [32, 48, 120, 224],  # 6.1m 79.0
-    'S0': [32, 48, 96, 176],  # 75.0 75.7
-}
-
-EfficientFormer_depth = {
-    'L': [5, 5, 15, 10],  # 26m 83.3%
-    'S2': [4, 4, 12, 8],  # 12m
-    'S1': [3, 3, 9, 6],  # 79.0
-    'S0': [2, 2, 6, 4],  # 75.7
-}
-
-# 26m
-expansion_ratios_L = {
-    '0': [4, 4, 4, 4, 4],
-    '1': [4, 4, 4, 4, 4],
-    '2': [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
-    '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
-}
-
-# 12m
-expansion_ratios_S2 = {
-    '0': [4, 4, 4, 4],
-    '1': [4, 4, 4, 4],
-    '2': [4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
-    '3': [4, 4, 3, 3, 3, 3, 4, 4],
-}
-
-# 6.1m
-expansion_ratios_S1 = {
-    '0': [4, 4, 4],
-    '1': [4, 4, 4],
-    '2': [4, 4, 3, 3, 3, 3, 4, 4, 4],
-    '3': [4, 4, 3, 3, 4, 4],
-}
-
-# 3.5m
-expansion_ratios_S0 = {
-    '0': [4, 4],
-    '1': [4, 4],
-    '2': [4, 3, 3, 3, 4, 4],
-    '3': [4, 3, 3, 4],
-}
-
 
 class Attention4D(BaseModule):
     def __init__(self,
@@ -466,6 +415,9 @@ class ConvMlp(BaseModule):
     """
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
+
+    Compare with the ConvMLP in EfficientFormer, the module add
+    a mid convolution layer.
     """
 
     def __init__(self,
@@ -623,96 +575,192 @@ def eformer_block(dim, index, layers, mlp_ratio=4.,
 
 
 @MODELS.register_module()
-class EfficientFormerV2(nn.Module):
-    def __init__(self, layers, embed_dims=None,
-                 mlp_ratios=4, downsamples=None,
-                 pool_size=3,
-                 norm_cfg=dict(type='BN'), act_cfg=dict(type='GELU'),
-                 num_classes=1000,
-                 down_patch_size=3, down_stride=2, down_pad=1,
-                 drop_rate=0., drop_path_rate=0.,
-                 use_layer_scale=True, layer_scale_init_value=1e-5,
-                 fork_feat=False,
-                 init_cfg=None,
-                 pretrained=None,
-                 vit_num=0,
-                 distillation=True,
+class EfficientFormerV2(BaseBackbone):
+
+    # --layers: [x,x,x,x], numbers of layers for the four stages
+    # --embed_dims: [x,x,x,x], embedding dims for the four stages
+    # --downsamples: [x,x,x,x], has downsample or not in the four stages
+    # --vit_num: (int), the num of vit blocks in the last stage
+    # --expansion_ratios: [[],[],[],[]], the expansion ratio for each layer
+    arch_settings = {
+        's0': {
+            'layers': [2, 2, 6, 4],
+            'embed_dims': [32, 48, 96, 176],
+            'downsamples': [True, True, True, True],
+            'vit_num': 2,
+            'expansion_ratios': {
+                '0': [4, 4],
+                '1': [4, 4],
+                '2': [4, 3, 3, 3, 4, 4],
+                '3': [4, 3, 3, 4],
+            }
+        },
+        's1': {
+            'layers': [3, 3, 9, 6],
+            'embed_dims': [32, 48, 120, 224],
+            'downsamples': [True, True, True, True],
+            'vit_num': 2,
+            'expansion_ratios': {
+                '0': [4, 4, 4],
+                '1': [4, 4, 4],
+                '2': [4, 4, 3, 3, 3, 3, 4, 4, 4],
+                '3': [4, 4, 3, 3, 4, 4],
+            }
+        },
+        's2': {
+            'layers': [4, 4, 12, 8],
+            'embed_dims': [32, 64, 144, 288],
+            'downsamples': [True, True, True, True],
+            'vit_num': 4,
+            'expansion_ratios': {
+                '0': [4, 4, 4, 4],
+                '1': [4, 4, 4, 4],
+                '2': [4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+                '3': [4, 4, 3, 3, 3, 3, 4, 4],
+            }
+        },
+        'l': {
+            'layers': [5, 5, 15, 10],
+            'embed_dims': [40, 80, 192, 384],
+            'downsamples': [True, True, True, True],
+            'vit_num': 6,
+            'expansion_ratios': {
+                '0': [4, 4, 4, 4, 4],
+                '1': [4, 4, 4, 4, 4],
+                '2': [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+                '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
+            }
+        },
+    }
+
+    def __init__(self,
+                 arch='s0',
+                 down_patch_size=3,
+                 down_stride=2,
+                 down_pad=1,
+                 drop_rate=0.,
+                 drop_path_rate=0.,
+                 use_layer_scale=True,
                  resolution=224,
-                 e_ratios=expansion_ratios_L,
-                 **kwargs):
-        super().__init__()
+                 out_indices=(-1,),
+                 frozen_stages=-1,
+                 conv_cfg=dict(type='Conv2d'),
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='GELU'),
+                 init_cfg=[
+                     dict(
+                         type='TruncNormal',
+                         layer='Conv2d',
+                         std=.02,
+                         bias=0.),
+                     dict(type='Constant', layer=['LayerScale'], val=1e-5)
+                 ]):
+        super(EfficientFormerV2, self).__init__(init_cfg=init_cfg)
 
-        if not fork_feat:
-            self.num_classes = num_classes
-        self.fork_feat = fork_feat
+        if isinstance(arch, str):
+            assert arch in self.arch_settings, \
+                f'Unavailable arch, please choose from ' \
+                f'({set(self.arch_settings)}) or pass a dict.'
+            arch = self.arch_settings[arch]
+        elif isinstance(arch, dict):
+            default_keys = set(self.arch_settings['l1'].keys())
+            assert set(arch.keys()) == default_keys, \
+                f'The arch dict must have {default_keys}, ' \
+                f'but got {list(arch.keys())}.'
 
-        self._make_stem(3, embed_dims[0], norm_cfg=norm_cfg, act_cfg=act_cfg)
+        self.layers = arch['layers']  # [2, 2, 6, 4]
+        self.embed_dims = arch['embed_dims']  # [32, 48, 96, 176]
+        self.vit_num = arch['vit_num']
+        # self.downsamples = arch['downsamples']
+        self.expansion_ratios = arch['expansion_ratios']
+        self.drop_path_rate = drop_path_rate
 
-        network = []
-        for i in range(len(layers)):
-            stage = eformer_block(embed_dims[i], i, layers,
-                                  pool_size=pool_size, mlp_ratio=mlp_ratios,
-                                  act_layer=act_cfg, norm_layer=norm_cfg,
-                                  drop_rate=drop_rate,
-                                  drop_path_rate=drop_path_rate,
-                                  use_layer_scale=use_layer_scale,
-                                  layer_scale_init_value=layer_scale_init_value,
-                                  resolution=math.ceil(resolution / (2 ** (i + 2))),
-                                  vit_num=vit_num,
-                                  e_ratios=e_ratios)
-            network.append(stage)
-            if i >= len(layers) - 1:
-                break
-            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
-                # downsampling between two stages
-                if i >= 2:
-                    asub = True
+        assert isinstance(self.layers, list) and \
+               isinstance(self.embed_dims, list) and \
+               isinstance(self.vit_num, int) and \
+               isinstance(self.expansion_ratios, list)
+        assert len(self.layers) == self.embed_dims == self.expansion_ratios
+
+        self._make_stem(in_channels=3,
+                        stem_channels=self.embed_dims[0],
+                        conv_cfg=conv_cfg,
+                        norm_cfg=norm_cfg,
+                        act_cfg=act_cfg)
+
+        self.network = nn.ModuleList()
+
+        for i, num_layer in range(len(self.layers)):
+            blocks = []
+            for idx in range(num_layer):
+                block_dpr = self.drop_path_rate * (idx + sum(self.layers[:i])) / (sum(self.layers) - 1)
+                if i >= 2 and idx > self.layers[i] - 1 - self.vit_num:
+                    use_attn = True
+                    # stride represent whether to use stride_conv in attn layer in Block
+                    stride = 2 if i == 2 else None
                 else:
-                    asub = False
-                network.append(
+                    use_attn = False
+                    stride = None
+                blocks.append(EfficientFormerBlock(
+                    self.embed_dims[i],
+                    mlp_ratio=self.expansion_ratios[str(i)][idx],
+                    ues_attn=use_attn,
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg,
+                    drop=drop_rate,
+                    drop_path=block_dpr,
+                    use_layer_scale=use_layer_scale,
+                    conv_cfg=conv_cfg,
+                    resolution=resolution,
+                    stride=stride))
+            self.network.append(Sequential(*blocks))
+
+            if i >= len(self.layers) - 1:
+                break
+            if self.embed_dims[i] != self.embed_dims[i + 1]:
+                asub = True if i >= 2 else False
+                self.network.append(
                     Embedding(
-                        kernel_size=down_patch_size, stride=down_stride,
+                        kernel_size=down_patch_size,
+                        stride=down_stride,
                         padding=down_pad,
-                        in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
+                        in_chans=self.embed_dims[i], embed_dim=self.embed_dims[i + 1],
                         resolution=math.ceil(resolution / (2 ** (i + 2))),
                         asub=asub,
-                        act_cfg=act_cfg, norm_cfg=norm_cfg,
-                    )
-                )
+                        conv_cfg=conv_cfg,
+                        act_cfg=act_cfg, norm_cfg=norm_cfg,))
 
-        self.network = nn.ModuleList(network)
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = 7 + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
 
-        if self.fork_feat:
-            # add a norm layer for each output
-            self.out_indices = [0, 2, 4, 6]
-            for i_emb, i_layer in enumerate(self.out_indices):
-                if i_emb == 0 and os.environ.get('FORK_LAST3', None):
-                    layer = nn.Identity()
-                else:
-                    layer = norm_layer(embed_dims[i_emb])
-                layer_name = f'norm{i_layer}'
-                self.add_module(layer_name, layer)
-        else:
-            # Classifier head
-            self.norm = norm_layer(embed_dims[-1])
-            self.head = nn.Linear(
-                embed_dims[-1], num_classes) if num_classes > 0 \
-                else nn.Identity()
-            self.dist = distillation
-            if self.dist:
-                self.dist_head = nn.Linear(
-                    embed_dims[-1], num_classes) if num_classes > 0 \
-                    else nn.Identity()
+        if len(self.out_indices) > 1:
+            assert set(self.out_indices).issubset(set([0, 2, 4, 6])), \
+                f'If use EfficientFormerV2 for Detection and Segmentation, ' \
+                f'the output layer needs to be a subset of set(0,2,4,6), ' \
+                f'but get {self.out_indices} '
 
-        self.apply(self.cls_init_weights)
+        for i_layer in self.out_indices:
+            layer = build_norm_layer(dict(type='LN'), self.embed_dims[i_layer // 2])[1]
+            layer_name = f'norm{i_layer}'
+            self.add_module(layer_name, layer)
 
-        self.init_cfg = copy.deepcopy(init_cfg)
-        # load pre-trained model
-        if self.fork_feat and (
-                self.init_cfg is not None or pretrained is not None):
-            self.init_weights()
+        self.frozen_stages = frozen_stages
+        self._freeze_stages()
 
-    def _make_stem(self, in_channels, stem_channels, norm_cfg=dict(type='BN'), act_cfg=dict(type='GELU')):
+
+    def _make_stem(self,
+                   in_channels,
+                   stem_channels,
+                   conv_cfg=dict(type='Conv2d'),
+                   norm_cfg=dict(type='BN'),
+                   act_cfg=dict(type='GELU')):
         """make 2-ConvBNGELU stem layer."""
         self.patch_embed = Sequential(
             ConvModule(
@@ -722,7 +770,7 @@ class EfficientFormerV2(nn.Module):
                 stride=2,
                 padding=1,
                 bias=True,
-                conv_cfg=dict(type='Conv2d'),
+                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg),
             ConvModule(
@@ -732,78 +780,44 @@ class EfficientFormerV2(nn.Module):
                 stride=2,
                 padding=1,
                 bias=True,
-                conv_cfg=dict(type='Conv2d'),
+                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg))
 
+    def _freeze_stages(self):
+        if self.frozen_stages > 0:
+            self.patch_embed.eval()
+            for param in self.patch_embed.parameters():
+                param.requires_grad = False
 
-    # init for classification
-    def cls_init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
+        for i in range(self.frozen_stages):
+            # Include both block and downsample layer.
+            module = self.network[i]
+            module.eval()
+            for param in module.parameters():
+                param.requires_grad = False
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                norm_layer.eval()
+                for param in norm_layer.parameters():
+                    param.requires_grad = False
 
-    # init for mmdetection or mmsegmentation by loading
-    # imagenet pre-trained weights
-    def init_weights(self, pretrained=None):
-        logger = get_root_logger()
-        if self.init_cfg is None and pretrained is None:
-            logger.warn(f'No pre-trained weights for '
-                        f'{self.__class__.__name__}, '
-                        f'training start from scratch')
-            pass
-        else:
-            assert 'checkpoint' in self.init_cfg, f'Only support ' \
-                                                  f'specify `Pretrained` in ' \
-                                                  f'`init_cfg` in ' \
-                                                  f'{self.__class__.__name__} '
-            if self.init_cfg is not None:
-                ckpt_path = self.init_cfg['checkpoint']
-            elif pretrained is not None:
-                ckpt_path = pretrained
 
-            ckpt = _load_checkpoint(
-                ckpt_path, logger=logger, map_location='cpu')
-            if 'state_dict' in ckpt:
-                _state_dict = ckpt['state_dict']
-            elif 'model' in ckpt:
-                _state_dict = ckpt['model']
-            else:
-                _state_dict = ckpt
+    def _format_output(self,x,idx):
+        norm_layer = getattr(self, f'norm{idx}')
+        return norm_layer(x)
 
-            state_dict = _state_dict
-            missing_keys, unexpected_keys = \
-                self.load_state_dict(state_dict, False)
-
-    def forward_tokens(self, x):
-        outs = []
-        for idx, block in enumerate(self.network):
-            x = block(x)
-            if self.fork_feat and idx in self.out_indices:
-                norm_layer = getattr(self, f'norm{idx}')
-                x_out = norm_layer(x)
-                outs.append(x_out)
-        if self.fork_feat:
-            return outs
-        return x
 
     def forward(self, x):
+        outs = []
         x = self.patch_embed(x)
-        x = self.forward_tokens(x)
-        if self.fork_feat:
-            # otuput features of four stages for dense prediction
-            return x
-        # print(x.size())
-        x = self.norm(x)
-        if self.dist:
-            cls_out = self.head(x.flatten(2).mean(-1)), self.dist_head(x.flatten(2).mean(-1))
-            if not self.training:
-                cls_out = (cls_out[0] + cls_out[1]) / 2
-        else:
-            cls_out = self.head(x.flatten(2).mean(-1))
-        # for image classification
-        return cls_out
+        for idx, block in enumerate(self.network):
+            x = block(x)
+            if idx in self.out_indices:
+                outs.append(self._format_output(x,idx))
+
+        return tuple(outs)
+
 
 
 def _cfg(url='', **kwargs):
