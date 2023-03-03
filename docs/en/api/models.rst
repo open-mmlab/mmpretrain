@@ -49,40 +49,37 @@ Classifiers
 
 .. module:: mmpretrain.models.selfsup
 
-SelfSup
-------------------
+Self-supervised Algorithms
+--------------------------
 
 .. _selfsup_algorithms:
-
-Self-Supervised Learning
-^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
    BaseSelfSupervisor
+   BEiT
+   BYOL
+   BarlowTwins
+   CAE
+   DenseCL
+   EVA
+   MAE
+   MILAN
+   MaskFeat
+   MixMIM
    MoCo
    MoCoV3
-   BYOL
    SimCLR
-   SimSiam
-   BEiT
-   CAE
-   MAE
-   MaskFeat
-   MILAN
-   MixMIM
    SimMIM
-   EVA
-   DenseCL
-   BarlowTwins
+   SimSiam
    SwAV
 
 .. _selfsup_backbones:
 
-SelfSup Backbones
-^^^^^^^^^^^^^^^^^
+Some of above algorithms modified the backbone module to adapt the extra inputs
+like ``mask``, and here is the a list of these **modified backbone** modules.
 
 .. autosummary::
    :toctree: generated
@@ -91,16 +88,16 @@ SelfSup Backbones
    BEiTPretrainViT
    CAEPretrainViT
    MAEViT
-   MaskFeatViT
    MILANViT
+   MaskFeatViT
    MixMIMPretrainTransformer
    MoCoV3ViT
    SimMIMSwinTransformer
 
 .. _target_generators:
 
-Target Generators
-^^^^^^^^^^^^^^^^^
+Some self-supervise algorithms need an external **target generator** to
+generate the optimization target. Here is a list of target generators.
 
 .. autosummary::
    :toctree: generated
@@ -188,15 +185,15 @@ Necks
    :toctree: generated
    :nosignatures:
 
-   GlobalAveragePooling
-   GeneralizedMeanPooling
-   HRFuseScales
-   LinearNeck
    BEiTV2Neck
    CAENeck
-   DenseCLNeck
-   MAEPretrainDecoder
    ClsBatchNormNeck
+   DenseCLNeck
+   GeneralizedMeanPooling
+   GlobalAveragePooling
+   HRFuseScales
+   LinearNeck
+   MAEPretrainDecoder
    MILANPretrainDecoder
    MixMIMPretrainDecoder
    MoCoV2Neck
@@ -213,32 +210,32 @@ Heads
    :toctree: generated
    :nosignatures:
 
-   ClsHead
-   LinearClsHead
-   StackedLinearClsHead
-   VisionTransformerClsHead
-   EfficientFormerClsHead
-   DeiTClsHead
-   ConformerHead
    ArcFaceClsHead
-   MultiLabelClsHead
-   MultiLabelLinearClsHead
-   CSRAClsHead
-   MultiTaskHead
-   LeViTClsHead
-   VigClsHead
    BEiTV1Head
    BEiTV2Head
    CAEHead
+   CSRAClsHead
+   ClsHead
+   ConformerHead
    ContrastiveHead
+   DeiTClsHead
+   EfficientFormerClsHead
    LatentCrossCorrelationHead
    LatentPredictHead
+   LeViTClsHead
+   LinearClsHead
    MAEPretrainHead
-   MixMIMPretrainHead
-   SwAVHead
-   MoCoV3Head
    MIMHead
+   MixMIMPretrainHead
+   MoCoV3Head
+   MultiLabelClsHead
+   MultiLabelLinearClsHead
+   MultiTaskHead
    SimMIMHead
+   StackedLinearClsHead
+   SwAVHead
+   VigClsHead
+   VisionTransformerClsHead
 
 .. module:: mmpretrain.models.losses
 
@@ -249,15 +246,15 @@ Losses
    :toctree: generated
    :nosignatures:
 
-   CrossEntropyLoss
-   LabelSmoothLoss
-   FocalLoss
    AsymmetricLoss
-   SeesawLoss
    CAELoss
    CosineSimilarityLoss
    CrossCorrelationLoss
+   CrossEntropyLoss
+   FocalLoss
+   LabelSmoothLoss
    PixelReconstructionLoss
+   SeesawLoss
    SwAVLoss
 
 .. module:: mmpretrain.models.utils
@@ -276,17 +273,17 @@ Common Components
    :toctree: generated
    :nosignatures:
 
-   InvertedResidual
-   SELayer
-   WindowMSA
-   WindowMSAV2
-   ShiftWindowMSA
-   MultiheadAttention
    ConditionalPositionEncoding
+   HybridEmbed
+   InvertedResidual
+   LayerScale
+   MultiheadAttention
    PatchEmbed
    PatchMerging
-   HybridEmbed
-   LayerScale
+   SELayer
+   ShiftWindowMSA
+   WindowMSA
+   WindowMSAV2
 
 .. _helpers:
 
@@ -298,8 +295,8 @@ Helper Functions
    :nosignatures:
 
    channel_shuffle
+   is_tracing
    make_divisible
    resize_pos_embed
    resize_relative_position_bias_table
    to_ntuple
-   is_tracing
