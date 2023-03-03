@@ -1315,7 +1315,7 @@ class TestGaussianBlur(TestCase):
                 'prob': 1.,
             }
             TRANSFORMS.build(cfg)(construct_toy_data())
-            self.assertTrue(0.1 < mock.call_args.kwargs['radius'] < 2)
+            self.assertTrue(0.1 < mock.call_args[1]['radius'] < 2)
 
     def test_repr(self):
         cfg = {**self.DEFAULT_ARGS, 'radius': 0.1}
