@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -7,6 +7,8 @@ from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.models import SwinTransformer
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -113,42 +115,80 @@ class SimMIMSwinTransformer(SwinTransformer):
             nn.init.constant_(m.weight, 1.0)
 
     def forward(self, x: torch.Tensor,
-                mask: torch.Tensor) -> Sequence[torch.Tensor]:
+                mask: Optional[torch.Tensor]) -> Sequence[torch.Tensor]:
         """Generate features for masked images.
 
-        This function generates mask images and get the hidden features for
-        them.
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        not ``None``, the forward function will be executed as masked image
+        modeling pre-training; if the ``mask`` is ``None``, the forward
+        function will call ``super().forward()``, which extract features from
+        images without mask.
 
         Args:
             x (torch.Tensor): Input images.
-            mask (torch.Tensor): Masks used to construct masked images.
+            mask (torch.Tensor, optional): Masks for images.
 
         Returns:
             tuple: A tuple containing features from multi-stages.
         """
-        x, hw_shape = self.patch_embed(x)
+        if mask is None:
+            return super().forward(x)
 
-        assert mask is not None
-        B, L, _ = x.shape
+        else:
+            x, hw_shape = self.patch_embed(x)
+            B, L, _ = x.shape
 
-        mask_token = self.mask_token.expand(B, L, -1)
-        w = mask.flatten(1).unsqueeze(-1).type_as(mask_token)
-        x = x * (1. - w) + mask_token * w
+            mask_token = self.mask_token.expand(B, L, -1)
+            w = mask.flatten(1).unsqueeze(-1).type_as(mask_token)
+            x = x * (1. - w) + mask_token * w
 
-        if self.use_abs_pos_embed:
-            x = x + self.absolute_pos_embed
+            if self.use_abs_pos_embed:
+                x = x + self.absolute_pos_embed
 
-        x = self.drop_after_pos(x)
+            x = self.drop_after_pos(x)
 
-        outs = []
-        for i, stage in enumerate(self.stages):
-            x, hw_shape = stage(x, hw_shape)
-            if i in self.out_indices:
-                norm_layer = getattr(self, f'norm{i}')
-                out = norm_layer(x)
-                out = out.view(-1, *hw_shape,
-                               stage.out_channels).permute(0, 3, 1,
-                                                           2).contiguous()
-                outs.append(out)
+            outs = []
+            for i, stage in enumerate(self.stages):
+                x, hw_shape = stage(x, hw_shape)
+                if i in self.out_indices:
+                    norm_layer = getattr(self, f'norm{i}')
+                    out = norm_layer(x)
+                    out = out.view(-1, *hw_shape,
+                                   stage.out_channels).permute(0, 3, 1,
+                                                               2).contiguous()
+                    outs.append(out)
 
-        return tuple(outs)
+            return tuple(outs)
+
+
+@MODELS.register_module()
+class SimMIM(BaseSelfSupervisor):
+    """SimMIM.
+
+    Implementation of `SimMIM: A Simple Framework for Masked Image Modeling
+    <https://arxiv.org/abs/2111.09886>`_.
+    """
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
+    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        mask = torch.stack([data_sample.mask for data_sample in data_samples])
+
+        img_latent = self.backbone(inputs, mask)
+        img_rec = self.neck(img_latent[0])
+        loss = self.head.loss(img_rec, inputs, mask)
+        losses = dict(loss=loss)
+
+        return losses

@@ -49,6 +49,11 @@ CUB
 
 .. autoclass:: CUB
 
+Places205
+---------
+
+.. autoclass:: Places205
+
 Retrieval
 ---------
 

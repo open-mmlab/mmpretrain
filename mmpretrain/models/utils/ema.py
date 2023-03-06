@@ -12,25 +12,36 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class CosineEMA(ExponentialMovingAverage):
-    """CosineEMA is implemented for updating momentum parameter, used in BYOL,
+    r"""CosineEMA is implemented for updating momentum parameter, used in BYOL,
     MoCoV3, etc.
 
-    The momentum parameter is updated with cosine annealing, including momentum
-    adjustment following:
+    All parameters are updated by the formula as below:
 
     .. math::
-        m = m_1 - (m_1 - m_0) * (cos(pi * k / K) + 1) / 2
+
+        X'_{t+1} = (1 - m) * X'_t + m * X_t
+
+    Where :math:`m` the the momentum parameter. And it's updated with cosine
+    annealing, including momentum adjustment following:
+
+    .. math::
+        m = m_{end} + (m_{end} - m_{start}) * (\cos\frac{k\pi}{K} + 1) / 2
 
     where :math:`k` is the current step, :math:`K` is the total steps.
 
+    .. note::
+        This :attr:`momentum` argument is different from one used in optimizer
+        classes and the conventional notion of momentum. Mathematically,
+        :math:`X'_{t}` is the moving average and :math:`X_t` is the new
+        observed value. The value of momentum is usually a small number,
+        allowing observed values to slowly update the ema parameters. See also
+        :external:py:class:`torch.nn.BatchNorm2d`.
+
     Args:
         model (nn.Module): The model to be averaged.
-        momentum (float): The momentum used for updating ema parameter.
-            Ema's parameter are updated with the formula:
-            `averaged_param = momentum * averaged_param + (1-momentum) *
-            source_param`. Defaults to 0.996.
+        momentum (float): The start momentum value. Defaults to 0.004.
         end_momentum (float): The end momentum value for cosine annealing.
-            Defaults to 1.
+            Defaults to 0.
         interval (int): Interval between two updates. Defaults to 1.
         device (torch.device, optional): If provided, the averaged model will
             be stored on the :attr:`device`. Defaults to None.
@@ -41,8 +52,8 @@ class CosineEMA(ExponentialMovingAverage):
 
     def __init__(self,
                  model: nn.Module,
-                 momentum: float = 0.996,
-                 end_momentum: float = 1.,
+                 momentum: float = 0.004,
+                 end_momentum: float = 0.,
                  interval: int = 1,
                  device: Optional[torch.device] = None,
                  update_buffers: bool = False) -> None:
@@ -64,11 +75,13 @@ class CosineEMA(ExponentialMovingAverage):
             source_param (Tensor): The source parameters.
             steps (int): The number of times the parameters have been
                 updated.
+
         Returns:
             Tensor: The averaged parameters.
         """
         message_hub = MessageHub.get_current_instance()
         max_iters = message_hub.get_info('max_iters')
-        momentum = self.end_momentum - (self.end_momentum - self.momentum) * (
-            cos(pi * steps / float(max_iters)) + 1) / 2
-        averaged_param.mul_(momentum).add_(source_param, alpha=(1 - momentum))
+        cosine_annealing = (cos(pi * steps / float(max_iters)) + 1) / 2
+        momentum = self.end_momentum - (self.end_momentum -
+                                        self.momentum) * cosine_annealing
+        averaged_param.mul_(1 - momentum).add_(source_param, alpha=momentum)

@@ -7,7 +7,7 @@ from .mae_head import MAEPretrainHead
 
 @MODELS.register_module()
 class MixMIMPretrainHead(MAEPretrainHead):
-    """MixMIM pretrain head.
+    """Head for MixMIM Pre-training.
 
     Args:
         loss (dict): Config of loss.
@@ -24,7 +24,7 @@ class MixMIMPretrainHead(MAEPretrainHead):
 
     def loss(self, x_rec: torch.Tensor, target: torch.Tensor,
              mask: torch.Tensor) -> torch.Tensor:
-        """Forward function of MixMIM head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): The reconstructed image.

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from einops import rearrange
@@ -8,9 +8,11 @@ from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 from torch import nn
 
-from mmpretrain.models import BEiTViT
+from mmpretrain.models.backbones import BEiTViT
 from mmpretrain.models.utils import NormEMAVectorQuantizer, resize_pos_embed
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -233,48 +235,118 @@ class BEiTPretrainViT(BEiTViT):
             rescale(layer.ffn.layers[1].weight.data, layer_id + 1)
 
     def forward(self, x: torch.Tensor,
-                mask: torch.Tensor) -> Tuple[torch.Tensor]:
+                mask: Optional[torch.Tensor]) -> Tuple[torch.Tensor]:
         """The BEiT style forward function.
+
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        not ``None``, the forward function will be executed as masked image
+        modeling pre-training; if the ``mask`` is ``None``, the forward
+        function will call ``super().forward()``, which extract features from
+        images without mask.
 
         Args:
             x (torch.Tensor): Input images, which is of shape (B x C x H x W).
-            mask (torch.Tensor): Mask for input, which is of shape
+            mask (torch.Tensor, optional): Mask for input, which is of shape
                 (B x patch_resolution[0] x patch_resolution[1]).
 
         Returns:
             Tuple[torch.Tensor]: Hidden features.
         """
-        x, patch_resolution = self.patch_embed(x)
+        if mask is None:
+            return super().forward(x)
 
-        # replace the masked visual tokens by mask_token
-        B, L, _ = x.shape
-        mask_token = self.mask_token.expand(B, L, -1)
-        w = mask.flatten(1).unsqueeze(-1).type_as(mask_token)
-        x = x * (1. - w) + mask_token * w
+        else:
+            x, patch_resolution = self.patch_embed(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
-        if self.pos_embed is not None:
-            x = x + resize_pos_embed(
-                self.pos_embed,
-                self.patch_resolution,
-                patch_resolution,
-                mode=self.interpolate_mode,
-                num_extra_tokens=self.num_extra_tokens)
-        x = self.drop_after_pos(x)
+            # replace the masked visual tokens by mask_token
+            B, L, _ = x.shape
+            mask_token = self.mask_token.expand(B, L, -1)
+            w = mask.flatten(1).unsqueeze(-1).type_as(mask_token)
+            x = x * (1. - w) + mask_token * w
 
-        self.shared_rel_pos_bias = self.rel_pos_bias().to(
-            mask.device) if self.rel_pos_bias is not None else None
+            # stole cls_tokens impl from Phil Wang, thanks
+            cls_tokens = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_tokens, x), dim=1)
+            if self.pos_embed is not None:
+                x = x + resize_pos_embed(
+                    self.pos_embed,
+                    self.patch_resolution,
+                    patch_resolution,
+                    mode=self.interpolate_mode,
+                    num_extra_tokens=self.num_extra_tokens)
+            x = self.drop_after_pos(x)
 
-        outs = []
-        for i, layer in enumerate(self.layers):
-            x = layer(x, rel_pos_bias=self.shared_rel_pos_bias)
+            self.shared_rel_pos_bias = self.rel_pos_bias().to(
+                mask.device) if self.rel_pos_bias is not None else None
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+            outs = []
+            for i, layer in enumerate(self.layers):
+                x = layer(x, rel_pos_bias=self.shared_rel_pos_bias)
 
-            if i in self.out_indices:
-                outs.append(x)
+                if i == len(self.layers) - 1 and self.final_norm:
+                    x = self.norm1(x)
 
-        return tuple(outs)
+                if i in self.out_indices:
+                    outs.append(x)
+
+            return tuple(outs)
+
+
+@MODELS.register_module()
+class BEiT(BaseSelfSupervisor):
+    """BEiT v1/v2.
+
+    Implementation of `BEiT: BERT Pre-Training of Image Transformers
+    <https://arxiv.org/abs/2106.08254>`_ and `BEiT v2: Masked Image Modeling
+    with Vector-Quantized Visual Tokenizers
+    <https://arxiv.org/abs/2208.06366>`_.
+    """
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
+    def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        mask = torch.stack([data_sample.mask for data_sample in data_samples])
+
+        img_latent = self.backbone(inputs[0], mask)
+
+        # inputs[1] is the target image
+        with torch.no_grad():
+            target = self.target_generator(inputs[1])
+            target = target.detach()
+
+        if self.with_neck:
+            # BEiT v2
+            feats, feats_cls_pt = self.neck(
+                img_latent, rel_pos_bias=self.backbone.shared_rel_pos_bias)
+            loss = self.head.loss(feats, feats_cls_pt, target, mask)
+        else:
+            # BEiT v1
+            loss = self.head.loss(img_latent[0], target, mask)
+
+        if isinstance(loss, torch.Tensor):
+            losses = dict(loss=loss)
+            return losses
+        elif isinstance(loss, Tuple):
+            # the loss_1 and loss_2 are general reconstruction loss (patch
+            # feature vectors from last layer of backbone) and early state
+            # reconstruction loss (patch feature vectors from intermediate
+            # layer of backbone)
+            loss_1, loss_2 = loss[0], loss[1]
+            losses = dict()
+            # the key with prefix 'loss', like loss_1 and loss_2, will be used
+            # as the final criterion
+            losses['loss_1'] = loss_1
+            losses['loss_2'] = loss_2
+            return losses

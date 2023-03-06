@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class MAEPretrainHead(BaseHead):
-    """Pre-training head for MAE.
+class MAEPretrainHead(BaseModule):
+    """Head for MAE Pre-training.
 
     Args:
         loss (dict): Config of loss.
@@ -26,13 +26,15 @@ class MAEPretrainHead(BaseHead):
         self.loss_module = MODELS.build(loss)
 
     def patchify(self, imgs: torch.Tensor) -> torch.Tensor:
-        """Split images into non-overlapped patches.
+        r"""Split images into non-overlapped patches.
 
         Args:
-            imgs (torch.Tensor): A batch of images, of shape B x H x W x C.
+            imgs (torch.Tensor): A batch of images. The shape should
+                be :math:`(B, 3, H, W)`.
 
         Returns:
-            torch.Tensor: Patchified images. The shape is B x L x D.
+            torch.Tensor: Patchified images. The shape is
+            :math:`(B, L, \text{patch_size}^2 \times 3)`.
         """
         p = self.patch_size
         assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
@@ -44,12 +46,14 @@ class MAEPretrainHead(BaseHead):
         return x
 
     def unpatchify(self, x: torch.Tensor) -> torch.Tensor:
-        """Combine non-overlapped patches into images.
+        r"""Combine non-overlapped patches into images.
 
         Args:
-            x (torch.Tensor): The shape is (N, L, patch_size**2 *3)
+            x (torch.Tensor): The shape is
+                :math:`(B, L, \text{patch_size}^2 \times 3)`.
+
         Returns:
-            imgs (torch.Tensor): The shape is (N, 3, H, W)
+            torch.Tensor: The shape is :math:`(B, 3, H, W)`.
         """
         p = self.patch_size
         h = w = int(x.shape[1]**.5)
@@ -83,7 +87,7 @@ class MAEPretrainHead(BaseHead):
 
     def loss(self, pred: torch.Tensor, target: torch.Tensor,
              mask: torch.Tensor) -> torch.Tensor:
-        """Forward function of MAE head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): The reconstructed image.

@@ -9,6 +9,7 @@ mmpretrain.models
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
 - :mod:`~mmpretrain.models.classifiers`: The top-level module which defines the whole process of a classification model.
+- :mod:`~mmpretrain.models.selfsup`: The top-level module which defines the whole process of a self-supervised learning model.
 - :mod:`~mmpretrain.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :mod:`~mmpretrain.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
@@ -45,6 +46,67 @@ Classifiers
     ImageClassifier
     TimmClassifier
     HuggingFaceClassifier
+
+.. module:: mmpretrain.models.selfsup
+
+Self-supervised Algorithms
+--------------------------
+
+.. _selfsup_algorithms:
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   BaseSelfSupervisor
+   BEiT
+   BYOL
+   BarlowTwins
+   CAE
+   DenseCL
+   EVA
+   MAE
+   MILAN
+   MaskFeat
+   MixMIM
+   MoCo
+   MoCoV3
+   SimCLR
+   SimMIM
+   SimSiam
+   SwAV
+
+.. _selfsup_backbones:
+
+Some of above algorithms modified the backbone module to adapt the extra inputs
+like ``mask``, and here is the a list of these **modified backbone** modules.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   BEiTPretrainViT
+   CAEPretrainViT
+   MAEViT
+   MILANViT
+   MaskFeatViT
+   MixMIMPretrainTransformer
+   MoCoV3ViT
+   SimMIMSwinTransformer
+
+.. _target_generators:
+
+Some self-supervise algorithms need an external **target generator** to
+generate the optimization target. Here is a list of target generators.
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   VQKD
+   DALLEEncoder
+   HOGGenerator
+   CLIPGenerator
 
 .. module:: mmpretrain.models.backbones
 
@@ -123,9 +185,21 @@ Necks
    :toctree: generated
    :nosignatures:
 
-   GlobalAveragePooling
+   BEiTV2Neck
+   CAENeck
+   ClsBatchNormNeck
+   DenseCLNeck
    GeneralizedMeanPooling
+   GlobalAveragePooling
    HRFuseScales
+   LinearNeck
+   MAEPretrainDecoder
+   MILANPretrainDecoder
+   MixMIMPretrainDecoder
+   MoCoV2Neck
+   NonLinearNeck
+   SimMIMLinearDecoder
+   SwAVNeck
 
 .. module:: mmpretrain.models.heads
 
@@ -136,17 +210,32 @@ Heads
    :toctree: generated
    :nosignatures:
 
-   ClsHead
-   LinearClsHead
-   StackedLinearClsHead
-   VisionTransformerClsHead
-   EfficientFormerClsHead
-   DeiTClsHead
-   ConformerHead
    ArcFaceClsHead
+   BEiTV1Head
+   BEiTV2Head
+   CAEHead
+   CSRAClsHead
+   ClsHead
+   ConformerHead
+   ContrastiveHead
+   DeiTClsHead
+   EfficientFormerClsHead
+   LatentCrossCorrelationHead
+   LatentPredictHead
+   LeViTClsHead
+   LinearClsHead
+   MAEPretrainHead
+   MIMHead
+   MixMIMPretrainHead
+   MoCoV3Head
    MultiLabelClsHead
    MultiLabelLinearClsHead
-   CSRAClsHead
+   MultiTaskHead
+   SimMIMHead
+   StackedLinearClsHead
+   SwAVHead
+   VigClsHead
+   VisionTransformerClsHead
 
 .. module:: mmpretrain.models.losses
 
@@ -157,11 +246,16 @@ Losses
    :toctree: generated
    :nosignatures:
 
-   CrossEntropyLoss
-   LabelSmoothLoss
-   FocalLoss
    AsymmetricLoss
+   CAELoss
+   CosineSimilarityLoss
+   CrossCorrelationLoss
+   CrossEntropyLoss
+   FocalLoss
+   LabelSmoothLoss
+   PixelReconstructionLoss
    SeesawLoss
+   SwAVLoss
 
 .. module:: mmpretrain.models.utils
 
@@ -179,17 +273,18 @@ Common Components
    :toctree: generated
    :nosignatures:
 
-   InvertedResidual
-   SELayer
-   WindowMSA
-   WindowMSAV2
-   ShiftWindowMSA
-   MultiheadAttention
    ConditionalPositionEncoding
+   CosineEMA
+   HybridEmbed
+   InvertedResidual
+   LayerScale
+   MultiheadAttention
    PatchEmbed
    PatchMerging
-   HybridEmbed
-   LayerScale
+   SELayer
+   ShiftWindowMSA
+   WindowMSA
+   WindowMSAV2
 
 .. _helpers:
 
@@ -201,8 +296,8 @@ Helper Functions
    :nosignatures:
 
    channel_shuffle
+   is_tracing
    make_divisible
    resize_pos_embed
    resize_relative_position_bias_table
    to_ntuple
-   is_tracing

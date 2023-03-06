@@ -405,9 +405,7 @@ class MixMIMTransformer(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {
-                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
-            }
+            essential_keys = {'embed_dims', 'depths', 'num_heads'}
             assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch

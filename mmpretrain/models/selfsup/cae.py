@@ -4,46 +4,46 @@
 import math
 from collections import OrderedDict
 from functools import partial
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
-import attr
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model import BaseModule, ModuleList
+from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 
-from mmpretrain.models import VisionTransformer
-from mmpretrain.models.backbones.beit import BEiTTransformerEncoderLayer
+from mmpretrain.models.backbones import BEiTViT
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
+from .base import BaseSelfSupervisor
 
 
-@attr.s(eq=False)
 class Conv2d(nn.Module):
-    n_in: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    n_out: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    kw: int = attr.ib(validator=lambda i, a, x: x >= 1 and x % 2 == 1)
+    """Rewrite Conv2d module according to DALL-E code."""
 
-    use_float16: bool = attr.ib(default=True)
-    device: torch.device = attr.ib(default=torch.device('cpu'))
-    requires_grad: bool = attr.ib(default=False)
-
-    def __attrs_post_init__(self) -> None:
+    def __init__(self,
+                 n_in: int,
+                 n_out: int,
+                 kw: int,
+                 use_float16: bool = True,
+                 device: torch.device = torch.device('cpu'),
+                 requires_grad: bool = False) -> None:
         super().__init__()
 
-        w = torch.empty((self.n_out, self.n_in, self.kw, self.kw),
+        w = torch.empty((n_out, n_in, kw, kw),
                         dtype=torch.float32,
-                        device=self.device,
-                        requires_grad=self.requires_grad)
-        w.normal_(std=1 / math.sqrt(self.n_in * self.kw**2))
+                        device=device,
+                        requires_grad=requires_grad)
+        w.normal_(std=1 / math.sqrt(n_in * kw**2))
 
-        b = torch.zeros((self.n_out, ),
+        b = torch.zeros((n_out, ),
                         dtype=torch.float32,
-                        device=self.device,
-                        requires_grad=self.requires_grad)
+                        device=device,
+                        requires_grad=requires_grad)
+        self.kw = kw
         self.w, self.b = nn.Parameter(w), nn.Parameter(b)
+        self.use_float16 = use_float16
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.use_float16 and 'cuda' in self.w.device.type:
@@ -60,76 +60,84 @@ class Conv2d(nn.Module):
         return F.conv2d(x, w, b, padding=(self.kw - 1) // 2)
 
 
-@attr.s(eq=False, repr=False)
 class EncoderBlock(nn.Module):
-    n_in: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    n_out: int = attr.ib(validator=lambda i, a, x: x >= 1 and x % 4 == 0)
-    n_layers: int = attr.ib(validator=lambda i, a, x: x >= 1)
+    """Rewrite EncoderBlock module according to DALL-E code."""
 
-    device: torch.device = attr.ib(default=None)
-    requires_grad: bool = attr.ib(default=False)
-
-    def __attrs_post_init__(self) -> None:
+    def __init__(self,
+                 n_in: int,
+                 n_out: int,
+                 n_layers: int,
+                 device: torch.device = None,
+                 requires_grad: bool = False) -> None:
         super().__init__()
-        self.n_hid = self.n_out // 4
-        self.post_gain = 1 / (self.n_layers**2)
+        self.n_hid = n_out // 4
+        self.post_gain = 1 / (n_layers**2)
 
-        make_conv = partial(
-            Conv2d, device=self.device, requires_grad=self.requires_grad)
-        self.id_path = make_conv(
-            self.n_in, self.n_out,
-            1) if self.n_in != self.n_out else nn.Identity()
+        make_conv = partial(Conv2d, device=device, requires_grad=requires_grad)
+        self.id_path = make_conv(n_in, n_out,
+                                 1) if n_in != n_out else nn.Identity()
         self.res_path = nn.Sequential(
             OrderedDict([
                 ('relu_1', nn.ReLU()),
-                ('conv_1', make_conv(self.n_in, self.n_hid, 3)),
+                ('conv_1', make_conv(n_in, self.n_hid, 3)),
                 ('relu_2', nn.ReLU()),
                 ('conv_2', make_conv(self.n_hid, self.n_hid, 3)),
                 ('relu_3', nn.ReLU()),
                 ('conv_3', make_conv(self.n_hid, self.n_hid, 3)),
                 ('relu_4', nn.ReLU()),
-                ('conv_4', make_conv(self.n_hid, self.n_out, 1)),
+                ('conv_4', make_conv(self.n_hid, n_out, 1)),
             ]))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.id_path(x) + self.post_gain * self.res_path(x)
 
 
-@attr.s(eq=False, repr=False)
 @MODELS.register_module(name='DALL-E')
-class Encoder(BaseModule):
-    group_count: int = 4
-    n_hid: int = attr.ib(default=256, validator=lambda i, a, x: x >= 64)
-    n_blk_per_group: int = attr.ib(default=2, validator=lambda i, a, x: x >= 1)
-    input_channels: int = attr.ib(default=3, validator=lambda i, a, x: x >= 1)
-    vocab_size: int = attr.ib(default=8192, validator=lambda i, a, x: x >= 512)
+class DALLEEncoder(BaseModule):
+    """DALL-E Encoder for feature extraction.
 
-    device: torch.device = attr.ib(default=torch.device('cpu'))
-    requires_grad: bool = attr.ib(default=False)
-    use_mixed_precision: bool = attr.ib(default=True)
-    init_cfg: Optional[Union[dict, List[dict]]] = attr.ib(default=None)
+    Args:
+        group_count (int): Number of groups in DALL-E encoder. Defaults to 4.
+        n_hid (int): Dimension of hidden layers. Defaults to 256.
+        n_blk_per_group (int): Number of blocks per group. Defaults to 2.
+        input_channels: (int): The channels of input images. Defaults to 3.
+        vocab_size (int): Vocabulary size, indicating the number of classes.
+            Defaults to 8192.
+        device (torch.device): Device of parameters. Defaults to
+            ``torch.device('cpu')``.
+        requires_grad (bool): Require gradient or not. Defaults to False.
+        init_cfg (Union[List[dict], dict], optional): Config dict for weight
+            initialization. Defaults to None.
+    """
 
-    def __attrs_post_init__(self) -> None:
-        super().__init__(init_cfg=self.init_cfg)
+    def __init__(self,
+                 group_count: int = 4,
+                 n_hid: int = 256,
+                 n_blk_per_group: int = 2,
+                 input_channels: int = 3,
+                 vocab_size: int = 8192,
+                 device: torch.device = torch.device('cpu'),
+                 requires_grad: bool = False,
+                 init_cfg: Union[dict, List[dict], None] = None):
+        super().__init__(init_cfg=init_cfg)
+        self.input_channels = input_channels
 
-        blk_range = range(self.n_blk_per_group)
-        n_layers = self.group_count * self.n_blk_per_group
-        make_conv = partial(
-            Conv2d, device=self.device, requires_grad=self.requires_grad)
+        blk_range = range(n_blk_per_group)
+        n_layers = group_count * n_blk_per_group
+        make_conv = partial(Conv2d, device=device, requires_grad=requires_grad)
         make_blk = partial(
             EncoderBlock,
             n_layers=n_layers,
-            device=self.device,
-            requires_grad=self.requires_grad)
+            device=device,
+            requires_grad=requires_grad)
 
         self.blocks = nn.Sequential(
             OrderedDict([
-                ('input', make_conv(self.input_channels, 1 * self.n_hid, 7)),
+                ('input', make_conv(input_channels, 1 * n_hid, 7)),
                 ('group_1',
                  nn.Sequential(
                      OrderedDict([
-                         *[(f'block_{i + 1}',
-                            make_blk(1 * self.n_hid, 1 * self.n_hid))
+                         *[(f'block_{i + 1}', make_blk(1 * n_hid, 1 * n_hid))
                            for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
@@ -137,27 +145,24 @@ class Encoder(BaseModule):
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                1 * self.n_hid if i == 0 else 2 * self.n_hid,
-                                2 * self.n_hid)) for i in blk_range],
+                            make_blk(1 * n_hid if i == 0 else 2 * n_hid,
+                                     2 * n_hid)) for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
                 ('group_3',
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                2 * self.n_hid if i == 0 else 4 * self.n_hid,
-                                4 * self.n_hid)) for i in blk_range],
+                            make_blk(2 * n_hid if i == 0 else 4 * n_hid,
+                                     4 * n_hid)) for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
                 ('group_4',
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                4 * self.n_hid if i == 0 else 8 * self.n_hid,
-                                8 * self.n_hid)) for i in blk_range],
+                            make_blk(4 * n_hid if i == 0 else 8 * n_hid,
+                                     8 * n_hid)) for i in blk_range],
                      ]))),
                 ('output',
                  nn.Sequential(
@@ -165,14 +170,19 @@ class Encoder(BaseModule):
                          ('relu', nn.ReLU()),
                          ('conv',
                           make_conv(
-                              8 * self.n_hid,
-                              self.vocab_size,
-                              1,
-                              use_float16=False)),
+                              8 * n_hid, vocab_size, 1, use_float16=False)),
                      ]))),
             ]))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward function of DALL-E encoder.
+
+        Args:
+            x (torch.Tensor): The input images with shape (B, C, H, W).
+
+        Returns:
+            torch.Tensor: The output with shape (B, vocab_size, h, w).
+        """
         x = x.float()
         if len(x.shape) != 4:
             raise ValueError(f'input shape {x.shape} is not 4d')
@@ -186,11 +196,9 @@ class Encoder(BaseModule):
 
 
 @MODELS.register_module()
-class CAEViT(VisionTransformer):
-    """Vision Transformer for CAE pre-training.
-
-    Rewritten version of: `An Image is Worth 16x16 Words: Transformers
-    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_
+class CAEPretrainViT(BEiTViT):
+    """Vision Transformer for CAE pre-training and the implementation is based
+    on BEiTViT.
 
     Args:
         arch (str | dict): Vision Transformer architecture. Default: 'b'
@@ -222,61 +230,60 @@ class CAEViT(VisionTransformer):
             Defaults to None.
     """
 
-    def __init__(self,
-                 arch: str = 'b',
-                 img_size: int = 224,
-                 patch_size: int = 16,
-                 out_indices: int = -1,
-                 drop_rate: float = 0,
-                 drop_path_rate: float = 0,
-                 bias: bool = 'qv_bias',
-                 norm_cfg: dict = dict(type='LN', eps=1e-6),
-                 final_norm: bool = True,
-                 output_cls_token: bool = True,
-                 interpolate_mode: str = 'bicubic',
-                 layer_scale_init_value: float = None,
-                 patch_cfg: dict = dict(),
-                 layer_cfgs: dict = dict(),
-                 init_cfg: dict = None) -> None:
+    def __init__(
+        self,
+        arch: str = 'b',
+        img_size: int = 224,
+        patch_size: int = 16,
+        in_channels: int = 3,
+        out_indices: int = -1,
+        drop_rate: float = 0,
+        drop_path_rate: float = 0,
+        bias: bool = 'qv_bias',
+        norm_cfg: dict = dict(type='LN', eps=1e-6),
+        final_norm: bool = True,
+        with_cls_token: bool = True,
+        avg_token: bool = False,
+        frozen_stages: int = -1,
+        output_cls_token: bool = True,
+        use_abs_pos_emb: bool = True,
+        use_rel_pos_bias: bool = False,
+        use_shared_rel_pos_bias: bool = False,
+        layer_scale_init_value: float = None,
+        interpolate_mode: str = 'bicubic',
+        patch_cfg: dict = dict(),
+        layer_cfgs: dict = dict(),
+        init_cfg: dict = [
+            dict(type='Constant', val=1, layer=['LayerNorm']),
+            dict(type='TruncNormal', std=0.02, layer=['Conv2d']),
+            dict(type='Xavier', distribution='uniform', layer=['Linear'])
+        ]
+    ) -> None:
         super().__init__(
             arch=arch,
             img_size=img_size,
             patch_size=patch_size,
+            in_channels=in_channels,
             out_indices=out_indices,
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
+            bias=bias,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
+            with_cls_token=with_cls_token,
+            avg_token=avg_token,
+            frozen_stages=frozen_stages,
             output_cls_token=output_cls_token,
+            use_abs_pos_emb=use_abs_pos_emb,
+            use_rel_pos_bias=use_rel_pos_bias,
+            use_shared_rel_pos_bias=use_shared_rel_pos_bias,
+            layer_scale_init_value=layer_scale_init_value,
             interpolate_mode=interpolate_mode,
             patch_cfg=patch_cfg,
             layer_cfgs=layer_cfgs,
             init_cfg=init_cfg)
         self.pos_embed.requires_grad = False
         self.num_patches = self.patch_resolution[0] * self.patch_resolution[1]
-        dpr = np.linspace(0, drop_path_rate, self.num_layers)
-
-        # Replace original TransformerEncoderLayer with
-        # BEiTTransformerEncoderLayer
-        self.layers = ModuleList()
-        if isinstance(layer_cfgs, dict):
-            layer_cfgs = [layer_cfgs] * self.num_layers
-        for i in range(self.num_layers):
-            _layer_cfg = dict(
-                embed_dims=self.embed_dims,
-                num_heads=self.arch_settings['num_heads'],
-                feedforward_channels=self.
-                arch_settings['feedforward_channels'],
-                layer_scale_init_value=layer_scale_init_value,
-                window_size=None,
-                # setting `use_rel_pos_bias` to False ignores the `window_size`
-                use_rel_pos_bias=False,
-                drop_rate=drop_rate,
-                drop_path_rate=dpr[i],
-                bias=bias,
-                norm_cfg=norm_cfg)
-            _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
     def init_weights(self) -> None:
         """Initialize position embedding, patch embedding and cls token."""
@@ -291,58 +298,169 @@ class CAEViT(VisionTransformer):
             self.pos_embed.data.copy_(pos_embed.float())
 
             trunc_normal_(self.cls_token, std=.02)
-            self.apply(self._init_weights)
 
-    def _init_weights(self, m) -> None:
-        """Initialize the weights."""
-        if isinstance(m, nn.Linear):
-            nn.init.xavier_uniform_(m.weight)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-        elif isinstance(m, nn.Conv2d):
-            trunc_normal_(m.weight, std=0.02)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-
-    def forward(self, img: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor,
+                mask: Optional[torch.Tensor]) -> torch.Tensor:
         """Generate features for masked images.
 
         This function generates mask images and get the hidden features for
         visible patches.
 
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        not ``None``, the forward function will be executed as masked image
+        modeling pre-training; if the ``mask`` is ``None``, the forward
+        function will call ``super().forward()``, which extract features from
+        images without mask.
+
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
-            mask (torch.Tensor): Mask for input, which is of shape B x L.
+            mask (torch.Tensor, optional): Mask for input, which is of shape
+                B x L.
 
         Returns:
             torch.Tensor: hidden features.
         """
-        x, _ = self.patch_embed(img)
-        batch_size, _, dim = x.size()
+        if mask is None:
+            return super().forward(x)
 
-        cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+        else:
+            x, _ = self.patch_embed(x)
+            batch_size, _, dim = x.size()
 
-        # NOTE: unmasked embeddings
-        x_unmasked = x[~mask].reshape(batch_size, -1, dim)
-        x_unmasked = torch.cat((cls_tokens, x_unmasked), dim=1)
+            cls_tokens = self.cls_token.expand(batch_size, -1, -1)
 
-        pos_embed = self.pos_embed.expand(batch_size, self.num_patches + 1,
-                                          dim)
-        pos_embed_unmasked = pos_embed[:,
-                                       1:][~mask].reshape(batch_size, -1, dim)
-        pos_embed_unmasked = torch.cat((pos_embed[:, :1], pos_embed_unmasked),
-                                       dim=1)
-        x_unmasked = x_unmasked + pos_embed_unmasked
+            # NOTE: unmasked embeddings
+            x_unmasked = x[~mask].reshape(batch_size, -1, dim)
+            x_unmasked = torch.cat((cls_tokens, x_unmasked), dim=1)
 
-        x_unmasked = self.drop_after_pos(x_unmasked)
+            pos_embed = self.pos_embed.expand(batch_size, self.num_patches + 1,
+                                              dim)
+            pos_embed_unmasked = pos_embed[:, 1:][~mask].reshape(
+                batch_size, -1, dim)
+            pos_embed_unmasked = torch.cat(
+                (pos_embed[:, :1], pos_embed_unmasked), dim=1)
+            x_unmasked = x_unmasked + pos_embed_unmasked
 
-        for i, layer in enumerate(self.layers):
-            x_unmasked = layer(x=x_unmasked, rel_pos_bias=None)
+            x_unmasked = self.drop_after_pos(x_unmasked)
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x_unmasked = self.norm1(x_unmasked)
+            for i, layer in enumerate(self.layers):
+                x_unmasked = layer(x=x_unmasked, rel_pos_bias=None)
 
-        return x_unmasked
+                if i == len(self.layers) - 1 and self.final_norm:
+                    x_unmasked = self.norm1(x_unmasked)
+
+            return x_unmasked
+
+
+@MODELS.register_module()
+class CAE(BaseSelfSupervisor):
+    """CAE.
+
+    Implementation of `Context Autoencoder for Self-Supervised Representation
+    Learning <https://arxiv.org/abs/2202.03026>`_.
+
+    Args:
+        backbone (dict): Config dict for module of backbone.
+        neck (dict): Config dict for module of neck.
+        head (dict): Config dict for module of head functions.
+        target_generator: (dict, optional): The target_generator module to
+            generate targets for self-supervised learning optimization, such as
+            HOG, extracted features from other modules(DALL-E, CLIP), etc.
+        base_momentum (float): The base momentum coefficient for the target
+            network. Defaults to 0.0.
+        data_preprocessor (dict, optional): The config for preprocessing
+            input data. If None or no specified type, it will use
+            "SelfSupDataPreprocessor" as type.
+            See :class:`SelfSupDataPreprocessor` for more details.
+            Defaults to None.
+        init_cfg (Union[List[dict], dict], optional): Config dict for weight
+            initialization. Defaults to None.
+    """
+
+    def __init__(self,
+                 backbone: dict,
+                 neck: dict,
+                 head: dict,
+                 target_generator: Optional[dict] = None,
+                 base_momentum: float = 0.0,
+                 data_preprocessor: Optional[dict] = None,
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            target_generator=target_generator,
+            data_preprocessor=data_preprocessor,
+            init_cfg=init_cfg)
+
+        self.momentum = base_momentum
+        self.teacher = MODELS.build(backbone)
+
+    def init_weights(self) -> None:
+        """Initialize weights."""
+        super().init_weights()
+
+        # init the weights of teacher with those of backbone
+        for param_backbone, param_teacher in zip(self.backbone.parameters(),
+                                                 self.teacher.parameters()):
+            param_teacher.detach()
+            param_teacher.data.copy_(param_backbone.data)
+            param_teacher.requires_grad = False
+
+    def momentum_update(self) -> None:
+        """Momentum update of the teacher network."""
+        for param_bacbone, param_teacher in zip(self.backbone.parameters(),
+                                                self.teacher.parameters()):
+            param_teacher.data = param_teacher.data * self.momentum + \
+                param_bacbone.data * (1. - self.momentum)
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
+    def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        mask = torch.stack([data_sample.mask for data_sample in data_samples])
+        mask = mask.flatten(1).to(torch.bool)
+
+        unmasked = self.backbone(inputs[0], mask)
+
+        # get the latent prediction for the masked patches
+        with torch.no_grad():
+            # inputs[0] is the prediction image
+            latent_target = self.teacher(inputs[0], ~mask)
+            latent_target = latent_target[:, 1:, :]
+            self.momentum_update()
+
+        pos_embed = self.backbone.pos_embed.expand(inputs[0].shape[0], -1, -1)
+        pos_embed_masked = pos_embed[:,
+                                     1:][mask].reshape(inputs[0].shape[0], -1,
+                                                       pos_embed.shape[-1])
+        pos_embed_unmasked = pos_embed[:, 1:][~mask].reshape(
+            inputs[0].shape[0], -1, pos_embed.shape[-1])
+
+        # input the unmasked tokens and masked tokens to the decoder
+        logits, latent_pred = self.neck(unmasked[:, 1:], pos_embed_masked,
+                                        pos_embed_unmasked)
+
+        logits = logits.view(-1, logits.shape[-1])
+        # inputs[1] is the target image
+        logits_target = self.target_generator(inputs[1])
+        loss_main, loss_align = self.head.loss(logits, logits_target,
+                                               latent_pred, latent_target,
+                                               mask)
+        losses = dict()
+
+        losses['loss'] = loss_main + loss_align
+        losses['main'] = loss_main
+        losses['align'] = loss_align
+        return losses

@@ -4,15 +4,15 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.model import BaseModule
 
 from mmpretrain.evaluation.metrics import Accuracy
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class ClsHead(BaseHead):
+class ClsHead(BaseModule):
     """Classification head.
 
     Args:

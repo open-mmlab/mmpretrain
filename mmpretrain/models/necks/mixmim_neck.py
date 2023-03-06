@@ -86,7 +86,7 @@ class MixMIMPretrainDecoder(MAEPretrainDecoder):
 
         Returns:
             torch.Tensor: The reconstructed features, which is of shape
-                (N, L, C).
+            (N, L, C).
         """
 
         x = self.decoder_embed(x)

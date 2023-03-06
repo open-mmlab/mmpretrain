@@ -3,7 +3,6 @@ _base_ = '../_base_/default_runtime.py'
 # dataset settings
 dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
-file_client_args = dict(backend='disk')
 data_preprocessor = dict(
     type='TwoNormDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
@@ -13,7 +12,7 @@ data_preprocessor = dict(
     to_rgb=True)
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='RandomResizedCropAndInterpolationWithTwoPic',
@@ -48,11 +47,11 @@ train_dataloader = dict(
 model = dict(
     type='CAE',
     backbone=dict(
-        type='CAEViT',
+        type='CAEPretrainViT',
         arch='b',
         patch_size=16,
-        init_values=0.1,
-        qkv_bias=False),
+        layer_scale_init_value=0.1,
+        bias='qv_bias'),
     neck=dict(
         type='CAENeck',
         embed_dims=768,
@@ -60,7 +59,7 @@ model = dict(
         regressor_depth=4,
         decoder_depth=4,
         mlp_ratio=4,
-        init_values=0.1,
+        layer_scale_init_value=0.1,
     ),
     head=dict(type='CAEHead', loss=dict(type='CAELoss', lambd=2)),
     target_generator=dict(
@@ -70,11 +69,6 @@ model = dict(
             checkpoint=  # noqa: E251
             'https://download.openmmlab.com/mmselfsup/1.x/target_generator_ckpt/dalle_encoder.pth',  # noqa: E501
         )),
-    data_preprocessor=dict(
-        type='mmselfsup.CAEDataPreprocessor',
-        mean=[124, 117, 104],
-        std=[59, 58, 58],
-        to_rgb=True),
     base_momentum=0.0)
 
 # optimizer wrapper

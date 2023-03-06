@@ -33,6 +33,9 @@ Hooks
    PrepareProtoBeforeValLoopHook
    SetAdaptiveMarginsHook
    EMAHook
+   SimSiamHook
+   DenseCLHook
+   SwAVHook
 
 .. module:: mmpretrain.engine.optimizers
 

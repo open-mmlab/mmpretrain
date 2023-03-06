@@ -12,11 +12,14 @@ from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
 from .mae_head import MAEPretrainHead
 from .margin_head import ArcFaceClsHead
+from .mim_head import MIMHead
 from .mixmim_head import MixMIMPretrainHead
+from .mocov3_head import MoCoV3Head
 from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
 from .multi_task_head import MultiTaskHead
+from .simmim_head import SimMIMHead
 from .stacked_head import StackedLinearClsHead
 from .swav_head import SwAVHead
 from .vig_head import VigClsHead
@@ -46,4 +49,7 @@ __all__ = [
     'MAEPretrainHead',
     'MixMIMPretrainHead',
     'SwAVHead',
+    'MoCoV3Head',
+    'MIMHead',
+    'SimMIMHead',
 ]

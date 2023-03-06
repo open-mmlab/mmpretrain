@@ -54,7 +54,7 @@ model = dict(
         out_channels=108,
         init_cfg=dict(type='TruncNormal', layer='Linear', std=0.02, bias=0)),
     head=dict(
-        type='MaskFeatPretrainHead',
+        type='MIMHead',
         loss=dict(type='PixelReconstructionLoss', criterion='L2')),
     target_generator=dict(
         type='HOGGenerator', nbins=9, pool=8, gaussian_window=16))

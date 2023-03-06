@@ -104,7 +104,7 @@ class PackInputs(BaseTransform):
     @staticmethod
     def format_input(input_):
         if isinstance(input_, list):
-            return [PackInputs._format_input(item) for item in input_]
+            return [PackInputs.format_input(item) for item in input_]
         elif isinstance(input_, np.ndarray):
             if input_.ndim == 2:  # For grayscale image.
                 input_ = np.expand_dims(input_, -1)

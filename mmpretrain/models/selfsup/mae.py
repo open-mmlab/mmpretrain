@@ -1,11 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 
 from mmpretrain.models import VisionTransformer
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -107,11 +109,12 @@ class MAEViT(VisionTransformer):
                 Defaults to 0.75.
 
         Returns:
-            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-                masked image, mask and the ids to restore original image.
-                  - x_masked (torch.Tensor): masked image.
-                  - mask (torch.Tensor): mask used to mask image.
-                  - ids_restore (torch.Tensor): ids to restore original image.
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: masked image, mask
+            and the ids to restore original image.
+
+            - ``x_masked`` (torch.Tensor): masked image.
+            - ``mask`` (torch.Tensor): mask used to mask image.
+            - ``ids_restore`` (torch.Tensor): ids to restore original image.
         """
         N, L, D = x.shape  # batch, length, dim
         len_keep = int(L * (1 - mask_ratio))
@@ -137,42 +140,87 @@ class MAEViT(VisionTransformer):
         return x_masked, mask, ids_restore
 
     def forward(
-            self, x: torch.Tensor
+        self,
+        x: torch.Tensor,
+        mask: Optional[bool] = True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate features for masked images.
 
-        This function generates mask and masks some patches randomly and get
-        the hidden features for visible patches.
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        ``True``, the function will generate mask to masking some patches
+        randomly and get the hidden features for visible patches, which means
+        the function will be executed as masked imagemodeling pre-training;
+        if the ``mask`` is ``None`` or ``False``, the forward function will
+        call ``super().forward()``, which extract features from images without
+        mask.
+
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
+            mask (bool, optional): To indicate whether the forward function
+                generating ``mask`` or not.
 
         Returns:
-            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+            Tuple[torch.Tensor, torch.Tensor, torch.Tensor]: Hidden features,
+            mask and the ids to restore original image.
 
-            Hidden features, mask and the ids to restore original image.
-
-                - x (torch.Tensor): hidden features, which is of shape
-                  B x (L * mask_ratio) x C.
-                - mask (torch.Tensor): mask used to mask image.
-                - ids_restore (torch.Tensor): ids to restore original image.
+            - ``x`` (torch.Tensor): hidden features, which is of shape
+              B x (L * mask_ratio) x C.
+            - ``mask`` (torch.Tensor): mask used to mask image.
+            - ``ids_restore`` (torch.Tensor): ids to restore original image.
         """
-        B = x.shape[0]
-        x = self.patch_embed(x)[0]
-        # add pos embed w/o cls token
-        x = x + self.pos_embed[:, 1:, :]
+        if mask is None or False:
+            return super().forward(x)
 
-        # masking: length -> length * mask_ratio
-        x, mask, ids_restore = self.random_masking(x, self.mask_ratio)
+        else:
+            B = x.shape[0]
+            x = self.patch_embed(x)[0]
+            # add pos embed w/o cls token
+            x = x + self.pos_embed[:, 1:, :]
 
-        # append cls token
-        cls_token = self.cls_token + self.pos_embed[:, :1, :]
-        cls_tokens = cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+            # masking: length -> length * mask_ratio
+            x, mask, ids_restore = self.random_masking(x, self.mask_ratio)
 
-        for _, layer in enumerate(self.layers):
-            x = layer(x)
-        # Use final norm
-        x = self.norm1(x)
+            # append cls token
+            cls_token = self.cls_token + self.pos_embed[:, :1, :]
+            cls_tokens = cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_tokens, x), dim=1)
 
-        return (x, mask, ids_restore)
+            for _, layer in enumerate(self.layers):
+                x = layer(x)
+            # Use final norm
+            x = self.norm1(x)
+
+            return (x, mask, ids_restore)
+
+
+@MODELS.register_module()
+class MAE(BaseSelfSupervisor):
+    """MAE.
+
+    Implementation of `Masked Autoencoders Are Scalable Vision Learners
+    <https://arxiv.org/abs/2111.06377>`_.
+    """
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
+    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (torch.Tensor): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        # ids_restore: the same as that in original repo, which is used
+        # to recover the original order of tokens in decoder.
+        latent, mask, ids_restore = self.backbone(inputs)
+        pred = self.neck(latent, ids_restore)
+        loss = self.head.loss(pred, inputs, mask)
+        losses = dict(loss=loss)
+        return losses

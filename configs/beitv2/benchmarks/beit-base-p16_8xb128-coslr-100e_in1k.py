@@ -8,7 +8,7 @@ _base_ = [
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='BEiT',
+        type='BEiTViT',
         arch='base',
         img_size=224,
         patch_size=16,
@@ -32,9 +32,8 @@ model = dict(
         dict(type='CutMix', alpha=1.0)
     ]))
 
-file_client_args = dict(backend='disk')
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
         scale=224,
@@ -60,7 +59,7 @@ train_pipeline = [
     dict(type='PackInputs')
 ]
 test_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
         scale=256,
@@ -86,7 +85,7 @@ optim_wrapper = dict(
         model_type='vit',
         # 0.6 for 1600 epochs pretrained models and 0.65 for 300 epochs
         layer_decay_rate=0.65),
-    constructor='mmselfsup.LearningRateDecayOptimWrapperConstructor',
+    constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
         _delete_=True,
         custom_keys={

@@ -17,9 +17,8 @@ data_preprocessor = dict(
 bgr_mean = data_preprocessor['mean'][::-1]
 bgr_std = data_preprocessor['std'][::-1]
 
-file_client_args = dict(backend='disk')
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
         scale=224,
@@ -47,7 +46,7 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
         scale=256,
@@ -64,7 +63,7 @@ val_dataloader = dict(dataset=dict(pipeline=test_pipeline), batch_size=128)
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='BEiT',
+        type='BEiTViT',
         arch='base',
         img_size=224,
         patch_size=16,
@@ -99,7 +98,7 @@ optim_wrapper = dict(
         weight_decay=0.05,
         model_type='vit',  # layer-wise lr decay type
         layer_decay_rate=0.65),  # layer-wise lr decay factor
-    constructor='mmselfsup.LearningRateDecayOptimWrapperConstructor',
+    constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
         custom_keys={
             '.ln': dict(decay_mult=0.0),

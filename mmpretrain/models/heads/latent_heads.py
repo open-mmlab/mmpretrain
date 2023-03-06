@@ -4,13 +4,13 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from mmengine.dist import all_reduce, get_world_size
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class LatentPredictHead(BaseHead):
+class LatentPredictHead(BaseModule):
     """Head for latent feature prediction.
 
     This head builds a predictor, which can be any registered neck component.
@@ -29,11 +29,11 @@ class LatentPredictHead(BaseHead):
                  predictor: dict,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(init_cfg=init_cfg)
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
         self.predictor = MODELS.build(predictor)
 
-    def forward(self, input: torch.Tensor,
-                target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def loss(self, input: torch.Tensor,
+             target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward head.
 
         Args:
@@ -46,13 +46,13 @@ class LatentPredictHead(BaseHead):
         pred = self.predictor([input])[0]
         target = target.detach()
 
-        loss = self.loss(pred, target)
+        loss = self.loss_module(pred, target)
 
         return loss
 
 
 @MODELS.register_module()
-class LatentCrossCorrelationHead(BaseHead):
+class LatentCrossCorrelationHead(BaseModule):
     """Head for latent feature cross correlation.
 
     Part of the code is borrowed from `script
@@ -72,10 +72,9 @@ class LatentCrossCorrelationHead(BaseHead):
         super().__init__(init_cfg=init_cfg)
         self.world_size = get_world_size()
         self.bn = nn.BatchNorm1d(in_channels, affine=False)
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
 
-    def forward(self, input: torch.Tensor,
-                target: torch.Tensor) -> torch.Tensor:
+    def loss(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Forward head.
 
         Args:
@@ -91,5 +90,5 @@ class LatentCrossCorrelationHead(BaseHead):
 
         all_reduce(cross_correlation_matrix)
 
-        loss = self.loss(cross_correlation_matrix)
+        loss = self.loss_module(cross_correlation_matrix)
         return loss

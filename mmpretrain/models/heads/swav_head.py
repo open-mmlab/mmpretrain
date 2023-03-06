@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class SwAVHead(BaseHead):
-    """Head for SwAV.
+class SwAVHead(BaseModule):
+    """Head for SwAV Pre-training.
 
     Args:
         loss (dict): Config dict for module of loss functions.
@@ -18,7 +18,7 @@ class SwAVHead(BaseHead):
         self.loss_module = MODELS.build(loss)
 
     def loss(self, pred: torch.Tensor) -> torch.Tensor:
-        """Forward function of SwAV head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): NxC input features.

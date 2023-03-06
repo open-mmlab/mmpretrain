@@ -2,13 +2,13 @@
 from typing import List, Optional, Union
 
 import torch
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class ContrastiveHead(BaseHead):
+class ContrastiveHead(BaseModule):
     """Head for contrastive learning.
 
     The contrastive loss is implemented in this head and is used in SimCLR,

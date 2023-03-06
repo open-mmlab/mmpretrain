@@ -5,10 +5,9 @@ from mmengine.model import BaseModule
 from mmpretrain.registry import MODELS
 
 
-# TODO: delete and use NaiveMIMHead
 @MODELS.register_module()
 class SimMIMHead(BaseModule):
-    """Pretrain Head for SimMIM.
+    """Head for SimMIM Pre-training.
 
     Args:
         patch_size (int): Patch size of each token.
@@ -18,11 +17,11 @@ class SimMIMHead(BaseModule):
     def __init__(self, patch_size: int, loss: dict) -> None:
         super().__init__()
         self.patch_size = patch_size
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
 
-    def forward(self, pred: torch.Tensor, target: torch.Tensor,
-                mask: torch.Tensor) -> torch.Tensor:
-        """Forward function of MAE Loss.
+    def loss(self, pred: torch.Tensor, target: torch.Tensor,
+             mask: torch.Tensor) -> torch.Tensor:
+        """Generate loss.
 
         This method will expand mask to the size of the original image.
 
@@ -36,6 +35,6 @@ class SimMIMHead(BaseModule):
         """
         mask = mask.repeat_interleave(self.patch_size, 1).repeat_interleave(
             self.patch_size, 2).unsqueeze(1).contiguous()
-        loss = self.loss(pred, target, mask)
+        loss = self.loss_module(pred, target, mask)
 
         return loss

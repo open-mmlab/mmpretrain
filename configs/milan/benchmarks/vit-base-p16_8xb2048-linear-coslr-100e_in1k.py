@@ -20,7 +20,7 @@ model = dict(
         avg_token=False,
         final_norm=True,
         init_cfg=dict(type='Pretrained', checkpoint='')),
-    neck=dict(type='mmselfsup.ClsBatchNormNeck', input_features=768),
+    neck=dict(type='ClsBatchNormNeck', input_features=768),
     head=dict(
         type='VisionTransformerClsHead',
         num_classes=1000,

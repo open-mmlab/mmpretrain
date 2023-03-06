@@ -126,12 +126,24 @@ class TestSelfSupDataPreprocessor(TestCase):
     def test_forward(self):
         data_preprocessor = SelfSupDataPreprocessor(
             to_rgb=True, mean=[124, 117, 104], std=[59, 58, 58])
+
+        # test list inputs
         fake_data = {
             'inputs': [torch.randn((2, 3, 224, 224))],
             'data_samples': [DataSample(), DataSample()]
         }
         fake_output = data_preprocessor(fake_data)
         self.assertEqual(len(fake_output['inputs']), 1)
+        self.assertEqual(len(fake_output['data_samples']), 2)
+
+        # test torch.Tensor inputs
+        fake_data = {
+            'inputs': torch.randn((2, 3, 224, 224)),
+            'data_samples': [DataSample(), DataSample()]
+        }
+        fake_output = data_preprocessor(fake_data)
+        self.assertEqual(fake_output['inputs'].shape,
+                         torch.Size((2, 3, 224, 224)))
         self.assertEqual(len(fake_output['data_samples']), 2)
 
 
@@ -189,6 +201,8 @@ class TestVideoDataPreprocessor(TestCase):
             std=[57.375, 57.375, 57.375],
             to_rgb=True,
             format_shape='NCTHW')
+
+        # test list inputs
         fake_data = {
             'inputs': [torch.randn((2, 3, 4, 224, 224))],
             'data_sample': [DataSample(), DataSample()]
@@ -197,16 +211,38 @@ class TestVideoDataPreprocessor(TestCase):
         self.assertEqual(len(fake_output['inputs']), 1)
         self.assertEqual(len(fake_output['data_samples']), 2)
 
+        # test torch.Tensor inputs
+        fake_data = {
+            'inputs': torch.randn((2, 3, 4, 224, 224)),
+            'data_sample': [DataSample(), DataSample()]
+        }
+        fake_output = data_preprocessor(fake_data)
+        self.assertEqual(fake_output['inputs'].shape,
+                         torch.Size((2, 3, 4, 224, 224)))
+        self.assertEqual(len(fake_output['data_samples']), 2)
+
     def test_NCHW_format(self):
         data_preprocessor = VideoDataPreprocessor(
             mean=[114.75, 114.75, 114.75],
             std=[57.375, 57.375, 57.375],
             to_rgb=True,
             format_shape='NCHW')
+
+        # test list inputs
         fake_data = {
             'inputs': [torch.randn((2, 3, 224, 224))],
             'data_sample': [DataSample(), DataSample()]
         }
         fake_output = data_preprocessor(fake_data)
         self.assertEqual(len(fake_output['inputs']), 1)
+        self.assertEqual(len(fake_output['data_samples']), 2)
+
+        # test torch.Tensor inputs
+        fake_data = {
+            'inputs': torch.randn((2, 3, 224, 224)),
+            'data_sample': [DataSample(), DataSample()]
+        }
+        fake_output = data_preprocessor(fake_data)
+        self.assertEqual(fake_output['inputs'].shape,
+                         torch.Size((2, 3, 224, 224)))
         self.assertEqual(len(fake_output['data_samples']), 2)

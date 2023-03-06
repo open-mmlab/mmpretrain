@@ -11,13 +11,15 @@ import numpy as np
 import torch
 from mmengine import Config, DictAction, MMLogger
 from mmengine.dataset import Compose, default_collate
+from mmengine.device import get_device
 from mmengine.fileio import FileClient
+from mmengine.model.utils import revert_sync_batchnorm
 from mmengine.runner import Runner, load_checkpoint
 from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmpretrain.apis import init_model
+from mmpretrain.apis import get_model
 from mmpretrain.datasets import CIFAR10, CIFAR100, ImageNet
 from mmpretrain.utils import register_all_modules
 from mmpretrain.visualization import ClsVisualizer
@@ -96,11 +98,13 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         data = default_collate([data] * args.batch_size)
         resolution = tuple(data['inputs'].shape[-2:])
         model = Runner.from_cfg(cfg).model
+        model = revert_sync_batchnorm(model)
         model.eval()
         forward = model.val_step
     else:
         # For configs only for get model.
-        model = init_model(cfg)
+        model = get_model(cfg, device=get_device())
+        model = revert_sync_batchnorm(model)
         model.eval()
         data = torch.empty(1, 3, 224, 224).to(model.data_preprocessor.device)
         resolution = (224, 224)
