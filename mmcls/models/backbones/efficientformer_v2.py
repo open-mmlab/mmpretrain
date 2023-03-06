@@ -635,8 +635,7 @@ class EfficientFormerV2(BaseBackbone):
 
         assert isinstance(self.layers, list) and isinstance(
             self.embed_dims, list) and isinstance(
-            self.vit_num, int) and isinstance(
-            self.expansion_ratios, list)
+            self.vit_num, int)
         assert len(self.layers) == len(self.embed_dims)
 
         self._make_stem(in_channels=3,
