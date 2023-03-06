@@ -633,11 +633,11 @@ class EfficientFormerV2(BaseBackbone):
         self.expansion_ratios = arch['expansion_ratios']
         self.drop_path_rate = drop_path_rate
 
-        assert isinstance(self.layers, list) and \
-               isinstance(self.embed_dims, list) and \
-               isinstance(self.vit_num, int) and \
-               isinstance(self.expansion_ratios, list)
-        assert len(self.layers) == self.embed_dims == self.expansion_ratios
+        assert isinstance(self.layers, list) and isinstance(
+            self.embed_dims, list) and isinstance(
+            self.vit_num, int) and isinstance(
+            self.expansion_ratios, list)
+        assert len(self.layers) == len(self.embed_dims)
 
         self._make_stem(in_channels=3,
                         stem_channels=self.embed_dims[0],
