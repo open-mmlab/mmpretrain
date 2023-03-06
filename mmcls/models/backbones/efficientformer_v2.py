@@ -150,9 +150,9 @@ class Attention4D(BaseModule):
         v_local = self.v_local(v)
         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = ((q @ k) * self.scale + (self.attention_biases[:, self.attention_bias_idxs]
-                                        if self.training else self.ab)
-        )
+        attn = ((q @ k) * self.scale +
+                (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab))
         # attn = (q @ k) * self.scale
         attn = self.talking_head1(attn)
         attn = attn.softmax(dim=-1)
