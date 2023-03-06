@@ -2,18 +2,14 @@
 import itertools
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import math
 from typing import Optional, Sequence, Union
 
 from mmcv.cnn.bricks import ConvModule, DropPath, build_upsample_layer, build_conv_layer
 from mmengine.model import BaseModule, Sequential
-from mmengine.model.weight_init import trunc_normal_
-
-from ..utils import LayerScale
 
 from mmcls.registry import MODELS
-from ..utils import build_norm_layer, to_2tuple
+from ..utils import build_norm_layer, LayerScale
 from .base_backbone import BaseBackbone
 
 
