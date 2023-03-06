@@ -33,7 +33,7 @@ view_pipeline1 = [
         magnitude_range=(0.1, 2.0),
         magnitude_std='inf',
         prob=1.),
-    dict(type='RandomSolarize', prob=0.),
+    dict(type='Solarize', thr=128, prob=0.),
     dict(type='RandomFlip', prob=0.5),
 ]
 view_pipeline2 = [
@@ -63,7 +63,7 @@ view_pipeline2 = [
         magnitude_range=(0.1, 2.0),
         magnitude_std='inf',
         prob=0.1),
-    dict(type='RandomSolarize', prob=0.2),
+    dict(type='Solarize', thr=128, prob=0.2),
     dict(type='RandomFlip', prob=0.5),
 ]
 
