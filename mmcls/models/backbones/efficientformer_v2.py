@@ -718,7 +718,7 @@ class EfficientFormerV2(BaseBackbone):
                 f'but get {self.out_indices} '
 
         for i_layer in self.out_indices:
-            layer = build_norm_layer(norm_cfg, self.embed_dims[i_layer // 2])[1]
+            layer = build_norm_layer(norm_cfg, self.embed_dims[i_layer // 2])
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
 
