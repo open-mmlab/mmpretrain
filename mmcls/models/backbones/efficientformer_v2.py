@@ -332,10 +332,19 @@ class Attention4DDownsample(BaseModule):
 
 
 class Embedding(BaseModule):
-    def __init__(self, kernel_size=3, stride=2, padding=1,
-                 in_chans=3, embed_dim=768, norm_cfg=dict(type='BN'),
-                 light=False, asub=False, resolution=None, conv_cfg=dict(type='Conv2d'),
-                 act_cfg=dict(type='GELU'), init_cfg=None):
+    def __init__(self,
+                 kernel_size=3,
+                 stride=2,
+                 padding=1,
+                 in_chans=3,
+                 embed_dim=768,
+                 norm_cfg=dict(type='BN'),
+                 light=False,
+                 asub=False,
+                 resolution=None,
+                 conv_cfg=dict(type='Conv2d'),
+                 act_cfg=dict(type='GELU'),
+                 init_cfg=None):
         super(Embedding, self).__init__(init_cfg=init_cfg)
         self.light = light
         self.asub = asub
@@ -665,7 +674,7 @@ class EfficientFormerV2(BaseBackbone):
                     drop_path=block_dpr,
                     use_layer_scale=use_layer_scale,
                     conv_cfg=conv_cfg,
-                    resolution=resolution,
+                    resolution=math.ceil(resolution / (2 ** (i + 2))),
                     stride=stride))
             self.network.append(Sequential(*blocks))
 
@@ -691,6 +700,7 @@ class EfficientFormerV2(BaseBackbone):
         assert isinstance(out_indices, Sequence), \
             f'"out_indices" must by a sequence or int, ' \
             f'get {type(out_indices)} instead.'
+        out_indices = list(out_indices)
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = 7 + index
