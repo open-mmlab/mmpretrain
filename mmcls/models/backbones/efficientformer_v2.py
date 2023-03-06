@@ -1,7 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.x
 import itertools
-import os
-import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
