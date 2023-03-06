@@ -246,7 +246,7 @@ class Attention4DDownsample(BaseModule):
         self.N2 = self.resolution2 ** 2
 
         self.k = ConvModule(in_channels=dim,
-                            out_channels=out_dim,
+                            out_channels=self.num_heads * self.key_dim,
                             kernel_size=1,
                             bias=True,
                             conv_cfg=conv_cfg,
@@ -642,10 +642,16 @@ class EfficientFormerV2(BaseBackbone):
         self.expansion_ratios = arch['expansion_ratios']
         self.drop_path_rate = drop_path_rate
 
-        # assert isinstance(self.layers, list) and isinstance(
-        #     self.embed_dims, list) and isinstance(
-        #     self.vit_num, int)
-        # assert len(self.layers) == len(self.embed_dims)
+        assert isinstance(self.layers, list) and isinstance(
+            self.embed_dims, list) and isinstance(
+            self.vit_num, int), \
+            f'layers and embed_dims should be List, vit_nums should be Int. ' \
+            f'But got layer = {self.layers}, embed_dims = {self.embed_dims}, ' \
+            f'vit_num = {self.vit_num}.'
+        assert len(self.layers) == len(self.embed_dims), \
+            f'The length of layers should be equal to embed_dims, ' \
+            f'but got the length of layers = {len(self.layers)}, ' \
+            f'the length of embed_dims = {len(self.embed_dims)}.'
 
         self._make_stem(in_channels=3,
                         stem_channels=self.embed_dims[0],
@@ -716,7 +722,7 @@ class EfficientFormerV2(BaseBackbone):
                 f'but get {self.out_indices} '
 
         for i_layer in self.out_indices:
-            layer = build_norm_layer(dict(type='LN'), self.embed_dims[i_layer // 2])[1]
+            layer = build_norm_layer(norm_cfg, self.embed_dims[i_layer // 2])[1]
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
 
@@ -786,71 +792,3 @@ class EfficientFormerV2(BaseBackbone):
                 outs.append(self._format_output(x,idx))
 
         return tuple(outs)
-
-
-#
-# def _cfg(url='', **kwargs):
-#     return {
-#         'url': url,
-#         'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
-#         'crop_pct': .95, 'interpolation': 'bicubic',
-#         'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
-#         'classifier': 'head',
-#         **kwargs
-#     }
-#
-#
-# @register_model
-# def efficientformerv2_s0(pretrained=False, **kwargs):
-#     model = EfficientFormerV2(
-#         layers=EfficientFormer_depth['S0'],
-#         embed_dims=EfficientFormer_width['S0'],
-#         downsamples=[True, True, True, True, True],
-#         vit_num=2,
-#         drop_path_rate=0.0,
-#         e_ratios=expansion_ratios_S0,
-#         **kwargs)
-#     model.default_cfg = _cfg(crop_pct=0.9)
-#     return model
-#
-#
-# @register_model
-# def efficientformerv2_s1(pretrained=False, **kwargs):
-#     model = EfficientFormerV2(
-#         layers=EfficientFormer_depth['S1'],
-#         embed_dims=EfficientFormer_width['S1'],
-#         downsamples=[True, True, True, True],
-#         vit_num=2,
-#         drop_path_rate=0.0,
-#         e_ratios=expansion_ratios_S1,
-#         **kwargs)
-#     model.default_cfg = _cfg(crop_pct=0.9)
-#     return model
-#
-#
-# @register_model
-# def efficientformerv2_s2(pretrained=False, **kwargs):
-#     model = EfficientFormerV2(
-#         layers=EfficientFormer_depth['S2'],
-#         embed_dims=EfficientFormer_width['S2'],
-#         downsamples=[True, True, True, True],
-#         vit_num=4,
-#         drop_path_rate=0.02,
-#         e_ratios=expansion_ratios_S2,
-#         **kwargs)
-#     model.default_cfg = _cfg(crop_pct=0.9)
-#     return model
-#
-#
-# @register_model
-# def efficientformerv2_l(pretrained=False, **kwargs):
-#     model = EfficientFormerV2(
-#         layers=EfficientFormer_depth['L'],
-#         embed_dims=EfficientFormer_width['L'],
-#         downsamples=[True, True, True, True],
-#         vit_num=6,
-#         drop_path_rate=0.1,
-#         e_ratios=expansion_ratios_L,
-#         **kwargs)
-#     model.default_cfg = _cfg(crop_pct=0.9)
-#     return model

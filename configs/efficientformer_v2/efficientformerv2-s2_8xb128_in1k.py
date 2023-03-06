@@ -9,7 +9,7 @@ model = dict(
     backbone=dict(
         type='EfficientFormerV2',
         arch='s2',
-        drop_path_rate=0.,
+        drop_path_rate=0.02,
         init_cfg=[
             dict(
                 type='TruncNormal',
