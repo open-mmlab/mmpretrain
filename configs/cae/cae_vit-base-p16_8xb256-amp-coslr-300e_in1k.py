@@ -75,7 +75,8 @@ model = dict(
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     loss_scale='dynamic',
-    optimizer=dict(type='AdamW', lr=1.5e-3, betas=(0.9, 0.999)),
+    optimizer=dict(
+        type='AdamW', lr=1.5e-3, betas=(0.9, 0.999), weight_decay=0.05),
     clip_grad=dict(max_norm=3.0),
     paramwise_cfg=dict(
         bias_decay_mult=0.0, norm_decay_mult=0.0, flat_decay_mult=0.0))
