@@ -546,3 +546,40 @@ class SwinTransformer(BaseBackbone):
                     # The index buffer need to be re-generated.
                     index_buffer = ckpt_key.replace('bias_table', 'index')
                     del state_dict[index_buffer]
+
+    def get_layer_depth(self, param_name: str, prefix: str = ''):
+        """Get the layer-wise depth of a parameter.
+
+        Args:
+            param_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The layer-wise depth and the max depth.
+
+        Note:
+            The first depth is the stem module (``layer_depth=0``), and the
+            last depth is the subsequent module (``layer_depth=max_depth-1``)
+        """
+        max_depth = sum(self.depths) + 2
+
+        if not param_name.startswith(prefix):
+            # For subsequent module like head
+            return max_depth - 1, max_depth
+
+        param_name = param_name[len(prefix):]
+
+        if param_name.startswith('patch_embed'):
+            layer_depth = 0
+        elif param_name.startswith('stages'):
+            stage_id = int(param_name.split('.')[1])
+            block_id = param_name.split('.')[3]
+            if block_id in ('reduction', 'norm'):
+                layer_depth = sum(self.depths[:stage_id + 1])
+            else:
+                layer_depth = sum(self.depths[:stage_id]) + int(block_id) + 1
+        else:
+            layer_depth = max_depth - 1
+
+        return layer_depth, max_depth
