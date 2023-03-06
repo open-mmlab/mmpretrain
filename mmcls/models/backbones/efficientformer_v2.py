@@ -37,11 +37,7 @@ class Attention4D(BaseModule):
         self.scale = key_dim ** -0.5
         self.key_dim = key_dim
         self.nh_kd = key_dim * num_heads
-        self.N = self.resolution ** 2
-        self.N2 = self.N
-        self.d = int(attn_ratio * key_dim)
-        self.dh = int(attn_ratio * key_dim) * num_heads
-        self.attn_ratio = attn_ratio
+
 
         if stride is not None:
             self.resolution = math.ceil(resolution / stride)
@@ -60,6 +56,12 @@ class Attention4D(BaseModule):
             self.resolution = resolution
             self.stride_conv = None
             self.upsample = None
+
+        self.N = self.resolution ** 2
+        self.N2 = self.N
+        self.d = int(attn_ratio * key_dim)
+        self.dh = int(attn_ratio * key_dim) * num_heads
+        self.attn_ratio = attn_ratio
 
         self.q = ConvModule(in_channels=dim,
                             out_channels=self.num_heads * self.key_dim,
@@ -184,7 +186,7 @@ class LGQuery(BaseModule):
         self.pool = nn.AvgPool2d(kernel_size=1, stride=2)
 
         self.local = ConvModule(in_channels=in_dim,
-                                out_channels=out_dim,
+                                out_channels=in_dim,
                                 kernel_size=3,
                                 stride=2,
                                 padding=1,
@@ -500,7 +502,7 @@ class EfficientFormerBlock(BaseModule):
 
         super(EfficientFormerBlock, self).__init__(init_cfg=init_cfg)
         self.use_attn = ues_attn
-        if self.ues_attn:
+        if self.use_attn:
             self.token_mixer = Attention4D(dim=dim,
                                            resolution=resolution,
                                            stride=stride,
