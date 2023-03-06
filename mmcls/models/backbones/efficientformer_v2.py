@@ -529,7 +529,10 @@ class EfficientFormerBlock(BaseModule):
             else nn.Identity()
         self.use_layer_scale = use_layer_scale
         if use_layer_scale:
-            self.ls1 = LayerScale(dim, data_format='channels_first')
+            if self.use_attn:
+                self.ls1 = LayerScale(dim, data_format='channels_first')
+            else:
+                self.ls1 = nn.Identity()
             self.ls2 = LayerScale(dim, data_format='channels_first')
         else:
             self.ls1, self.ls2 = nn.Identity(), nn.Identity()
