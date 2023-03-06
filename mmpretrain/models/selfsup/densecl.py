@@ -50,7 +50,7 @@ class DenseCL(BaseSelfSupervisor):
                  head: dict,
                  queue_len: int = 65536,
                  feat_dim: int = 128,
-                 momentum: float = 0.999,
+                 momentum: float = 0.001,
                  loss_lambda: float = 0.5,
                  pretrained: Optional[str] = None,
                  data_preprocessor: Optional[dict] = None,
@@ -65,7 +65,7 @@ class DenseCL(BaseSelfSupervisor):
 
         # create momentum model
         self.encoder_k = ExponentialMovingAverage(
-            nn.Sequential(self.backbone, self.neck), 1 - momentum)
+            nn.Sequential(self.backbone, self.neck), momentum)
 
         self.queue_len = queue_len
         self.loss_lambda = loss_lambda

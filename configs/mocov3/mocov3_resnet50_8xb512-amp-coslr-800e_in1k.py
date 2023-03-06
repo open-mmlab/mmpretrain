@@ -7,7 +7,7 @@ _base_ = [
 temperature = 1.0
 model = dict(
     type='MoCoV3',
-    base_momentum=0.996,  # 0.99 for 100e and 300e, 0.996 for 800 and 1000e
+    base_momentum=0.004,  # 0.01 for 100e and 300e, 0.004 for 800 and 1000e
     backbone=dict(type='ResNet', depth=50, norm_cfg=dict(type='SyncBN')),
     neck=dict(
         type='NonLinearNeck',

@@ -82,7 +82,7 @@ train_dataloader = dict(batch_size=256, dataset=dict(pipeline=train_pipeline))
 temperature = 0.2
 model = dict(
     type='MoCoV3',
-    base_momentum=0.99,
+    base_momentum=0.01,
     backbone=dict(
         type='MoCoV3ViT',
         arch='mocov3-small',  # embed_dim = 384

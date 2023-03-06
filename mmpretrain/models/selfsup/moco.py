@@ -31,7 +31,7 @@ class MoCo(BaseSelfSupervisor):
         feat_dim (int): Dimension of compact feature vectors.
             Defaults to 128.
         momentum (float): Momentum coefficient for the momentum-updated
-            encoder. Defaults to 0.999.
+            encoder. Defaults to 0.001.
         pretrained (str, optional): The pretrained checkpoint path, support
             local path and remote path. Defaults to None.
         data_preprocessor (dict, optional): The config for preprocessing
@@ -49,7 +49,7 @@ class MoCo(BaseSelfSupervisor):
                  head: dict,
                  queue_len: int = 65536,
                  feat_dim: int = 128,
-                 momentum: float = 0.999,
+                 momentum: float = 0.001,
                  pretrained: Optional[str] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
@@ -63,7 +63,7 @@ class MoCo(BaseSelfSupervisor):
 
         # create momentum model
         self.encoder_k = ExponentialMovingAverage(
-            nn.Sequential(self.backbone, self.neck), 1 - momentum)
+            nn.Sequential(self.backbone, self.neck), momentum)
 
         # create the queue
         self.queue_len = queue_len

@@ -9,7 +9,7 @@ model = dict(
     type='MoCo',
     queue_len=65536,
     feat_dim=128,
-    momentum=0.999,
+    momentum=0.001,
     backbone=dict(type='ResNet', depth=50, norm_cfg=dict(type='BN')),
     neck=dict(
         type='MoCoV2Neck',

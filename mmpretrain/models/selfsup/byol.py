@@ -23,7 +23,7 @@ class BYOL(BaseSelfSupervisor):
             to compact feature vectors.
         head (dict): Config dict for module of head functions.
         base_momentum (float): The base momentum coefficient for the target
-            network. Defaults to 0.996.
+            network. Defaults to 0.004.
         pretrained (str, optional): The pretrained checkpoint path, support
             local path and remote path. Defaults to None.
         data_preprocessor (dict, optional): The config for preprocessing
@@ -39,7 +39,7 @@ class BYOL(BaseSelfSupervisor):
                  backbone: dict,
                  neck: dict,
                  head: dict,
-                 base_momentum: float = 0.996,
+                 base_momentum: float = 0.004,
                  pretrained: Optional[str] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[Union[List[dict], dict]] = None) -> None:

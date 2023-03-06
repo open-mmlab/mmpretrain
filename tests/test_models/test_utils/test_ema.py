@@ -25,7 +25,7 @@ class TestEMA(TestCase):
         momentum = 0.996
         end_momentum = 1.
 
-        ema_model = CosineEMA(model, momentum=momentum)
+        ema_model = CosineEMA(model, momentum=1 - momentum)
         averaged_params = [
             torch.zeros_like(param) for param in model.parameters()
         ]

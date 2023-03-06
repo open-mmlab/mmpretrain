@@ -274,6 +274,7 @@ Common Components
    :nosignatures:
 
    ConditionalPositionEncoding
+   CosineEMA
    HybridEmbed
    InvertedResidual
    LayerScale

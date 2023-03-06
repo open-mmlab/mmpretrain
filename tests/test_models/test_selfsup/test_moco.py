@@ -9,7 +9,7 @@ from mmpretrain.structures import DataSample
 
 queue_len = 32
 feat_dim = 2
-momentum = 0.999
+momentum = 0.001
 backbone = dict(type='ResNet', depth=18, norm_cfg=dict(type='BN'))
 neck = dict(
     type='MoCoV2Neck',
