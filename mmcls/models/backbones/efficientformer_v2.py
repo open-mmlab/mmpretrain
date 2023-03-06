@@ -196,7 +196,6 @@ class LGQuery(BaseModule):
         self.proj = ConvModule(in_channels=in_dim,
                                out_channels=out_dim,
                                kernel_size=1,
-                               padding=1,
                                bias=True,
                                conv_cfg=conv_cfg,
                                norm_cfg=norm_cfg,
@@ -310,7 +309,7 @@ class Attention4DDownsample(BaseModule):
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):  # x (B,N,H,W)
         B, C, H, W = x.shape
 
         q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, self.N2).permute(0, 1, 3, 2)
@@ -319,8 +318,12 @@ class Attention4DDownsample(BaseModule):
         v_local = self.v_local(v)
         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = ((q @ k) * self.scale + (self.attention_biases[:, self.attention_bias_idxs]
-                                        if self.training else self.ab))
+        attn = (
+                (q @ k) * self.scale
+                +
+                (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab)
+        )
 
         # attn = (q @ k) * self.scale
         attn = attn.softmax(dim=-1)
@@ -415,8 +418,7 @@ class Embedding(BaseModule):
             out_conv = self.conv(x)
             out = self.attn(x) + out_conv
         else:
-            x = self.proj(x)
-            out = self.norm(x)
+            out = self.proj(x)
         return out
 
 
