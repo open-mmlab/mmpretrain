@@ -556,17 +556,17 @@ class SwinTransformer(BaseBackbone):
                 Defaults to an empty string.
 
         Returns:
-            Tuple[int, int]: The layer-wise depth and the max depth.
+            Tuple[int, int]: The layer-wise depth and the num of layers.
 
         Note:
             The first depth is the stem module (``layer_depth=0``), and the
-            last depth is the subsequent module (``layer_depth=max_depth-1``)
+            last depth is the subsequent module (``layer_depth=num_layers-1``)
         """
-        max_depth = sum(self.depths) + 2
+        num_layers = sum(self.depths) + 2
 
         if not param_name.startswith(prefix):
             # For subsequent module like head
-            return max_depth - 1, max_depth
+            return num_layers - 1, num_layers
 
         param_name = param_name[len(prefix):]
 
@@ -580,6 +580,6 @@ class SwinTransformer(BaseBackbone):
             else:
                 layer_depth = sum(self.depths[:stage_id]) + int(block_id) + 1
         else:
-            layer_depth = max_depth - 1
+            layer_depth = num_layers - 1
 
-        return layer_depth, max_depth
+        return layer_depth, num_layers

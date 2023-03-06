@@ -471,17 +471,17 @@ class VisionTransformer(BaseBackbone):
                 Defaults to an empty string.
 
         Returns:
-            Tuple[int, int]: The layer-wise depth and the max depth.
+            Tuple[int, int]: The layer-wise depth and the num of layers.
 
         Note:
             The first depth is the stem module (``layer_depth=0``), and the
-            last depth is the subsequent module (``layer_depth=max_depth-1``)
+            last depth is the subsequent module (``layer_depth=num_layers-1``)
         """
-        max_depth = self.num_layers + 2
+        num_layers = self.num_layers + 2
 
         if not param_name.startswith(prefix):
             # For subsequent module like head
-            return max_depth - 1, max_depth
+            return num_layers - 1, num_layers
 
         param_name = param_name[len(prefix):]
 
@@ -493,6 +493,6 @@ class VisionTransformer(BaseBackbone):
             layer_id = int(param_name.split('.')[1])
             layer_depth = layer_id + 1
         else:
-            layer_depth = max_depth - 1
+            layer_depth = num_layers - 1
 
-        return layer_depth, max_depth
+        return layer_depth, num_layers
