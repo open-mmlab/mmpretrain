@@ -29,7 +29,7 @@ class SVHN(BaseDataset):
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """  # noqa: E501
 
-    url_prefix = 'http://ufldl.stanford.edu/housenumbers/'
+    url_prefix = 'http://ufldl.stanford.edu/housenumbers'
     # train images and labels
     train_list = [
         ['train_32x32.mat', 'e26dedcc434d2e4c54c9b2d4a06d8373'],
@@ -93,6 +93,7 @@ class SVHN(BaseDataset):
         mat = matlab.loadmat(join_path(root, file_list[0][0]))
         imgs = np.transpose(mat['X'], (3, 0, 1, 2))  # convert HWCN to NHWC
         gt_labels = np.squeeze(mat['y'])  # convert N1 to N
+        gt_labels[gt_labels == 10] = 0
 
         data_list = list()
         for img, gt_label in zip(imgs, gt_labels):
