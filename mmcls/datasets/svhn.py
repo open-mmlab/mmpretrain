@@ -93,7 +93,7 @@ class SVHN(BaseDataset):
         mat = matlab.loadmat(join_path(root, file_list[0][0]))
         imgs = np.transpose(mat['X'], (3, 0, 1, 2))  # convert HWCN to NHWC
         gt_labels = np.squeeze(mat['y'])  # convert N1 to N
-        gt_labels[gt_labels == 10] = 0
+        gt_labels[gt_labels == 10] = 0  # overwrite label 10 to 0
 
         data_list = list()
         for img, gt_label in zip(imgs, gt_labels):

@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from mmengine.logging import MMLogger
+from scipy.io import matlab
 
 from mmcls.registry import DATASETS, TRANSFORMS
 
@@ -1035,6 +1036,109 @@ class TestInShop(TestBaseDataset):
         dataset = dataset_class(**cfg)
 
         self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestSVHN(TestBaseDataset):
+    DATASET_TYPE = 'SVHN'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        data_prefix = tmpdir.name
+        cls.DEFAULT_ARGS = dict(
+            data_prefix=data_prefix, pipeline=[], test_mode=False)
+
+        dataset_class = DATASETS.get(cls.DATASET_TYPE)
+
+        train_file = osp.join(data_prefix, dataset_class.train_list[0][0])
+        test_file = osp.join(data_prefix, dataset_class.test_list[0][0])
+        cls.fake_img = np.ones((1, 3, 32, 32), dtype=np.uint8)
+        cls.fake_label = np.zeros((1, ), dtype=np.uint8)
+
+        for file in [train_file, test_file]:
+            data = {
+                'X': np.ones((32, 32, 3, 1), dtype=np.uint8),
+                'y': np.ones((1, 1), dtype=np.uint8) * 10
+            }
+            matlab.savemat(file, data)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 1)
+        self.assertEqual(dataset.CLASSES, dataset_class.METAINFO['classes'])
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img'], self.fake_img)
+        np.testing.assert_equal(data_info['gt_label'], self.fake_label)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 1)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img'], self.fake_img)
+        np.testing.assert_equal(data_info['gt_label'], self.fake_label)
+
+        # Test automatically download
+        with patch('mmcls.datasets.svhn.download_url') as mock:
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            dataset = dataset_class(**cfg)
+            dataset.train_list = [['invalid_train_file', None]]
+            dataset.test_list = [['invalid_test_file', None]]
+            with self.assertRaisesRegex(AssertionError, 'Download failed'):
+                dataset.full_init()
+            calls = [
+                call(
+                    osp.join(dataset.url_prefix, dataset.train_list[0][0]),
+                    dataset.data_prefix['root'],
+                    filename=dataset.train_list[0][0],
+                    md5=None),
+                call(
+                    osp.join(dataset.url_prefix, dataset.test_list[0][0]),
+                    dataset.data_prefix['root'],
+                    filename=dataset.test_list[0][0],
+                    md5=None)
+            ]
+            mock.assert_has_calls(calls)
+
+        with self.assertRaisesRegex(RuntimeError, '`download=True`'):
+            cfg = {
+                **self.DEFAULT_ARGS, 'lazy_init': True,
+                'test_mode': True,
+                'download': False
+            }
+            dataset = dataset_class(**cfg)
+            dataset._check_exists = MagicMock(return_value=False)
+            dataset.full_init()
+
+        # Test different backend
+        cfg = {
+            **self.DEFAULT_ARGS, 'lazy_init': True,
+            'data_prefix': 'http://openmmlab/svhn'
+        }
+        dataset = dataset_class(**cfg)
+        dataset._check_exists = MagicMock(return_value=False)
+        with self.assertRaisesRegex(RuntimeError, 'http://openmmlab/svhn'):
+            dataset.full_init()
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f"Prefix of data: \t{dataset.data_prefix['root']}",
+                      repr(dataset))
 
     @classmethod
     def tearDownClass(cls):
