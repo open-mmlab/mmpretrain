@@ -9,8 +9,10 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Convert ImageNet subset lists provided by SimCLR.')
-    parser.add_argument('input', help='Input list file.')
-    parser.add_argument('output', help='Output list file.')
+    parser.add_argument(
+        'input', help='Input list file, downloaded from SimCLR github repo.')
+    parser.add_argument(
+        'output', help='Output list file with the required format.')
     args = parser.parse_args()
     return args
 
@@ -18,7 +20,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # create dict
+    # create dict with full imagenet annotation file
     with open('data/imagenet/meta/train.txt', 'r') as f:
         lines = f.readlines()
     keys = [line.split('/')[0] for line in lines]
