@@ -431,7 +431,7 @@ default_hooks = dict(
 )
 
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[dict(type='LocalVisBackend'), dict(type='TensorboardVisBackend')],
 )
 ```
@@ -472,7 +472,7 @@ See the {external+mmengine:doc}`MMEngine tutorial <advanced_tutorials/visualizat
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         # Uncomment the below line to save the log and visualization results to TensorBoard.

@@ -82,7 +82,6 @@ class FeatureExtractor(BaseInferencer):
 
     @torch.no_grad()
     def forward(self, inputs: Union[dict, tuple], **kwargs):
-        """Feed the inputs to the model."""
         inputs = self.model.data_preprocessor(inputs, False)['inputs']
         outputs = self.model.extract_feat(inputs, **kwargs)
 

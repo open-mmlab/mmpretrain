@@ -169,7 +169,7 @@ scalars. By default, the recorded information will be saved at the `vis_data` fo
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
     ]
@@ -181,7 +181,7 @@ For example, to save them to TensorBoard, simply set them as below:
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         dict(type='TensorboardVisBackend'),
@@ -193,7 +193,7 @@ Or save them to WandB as below:
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         dict(type='WandbVisBackend'),

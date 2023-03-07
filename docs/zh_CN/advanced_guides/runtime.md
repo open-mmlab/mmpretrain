@@ -162,7 +162,7 @@ Visualizer用于记录训练和测试过程中的各种信息，包括日志、�
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
     ]
@@ -174,7 +174,7 @@ visualizer = dict(
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         dict(type='TensorboardVisBackend'),
@@ -186,7 +186,7 @@ visualizer = dict(
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         dict(type='WandbVisBackend'),

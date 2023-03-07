@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .cls_visualizer import ClsVisualizer
+from .visualizer import UniversalVisualizer
 
-__all__ = ['ClsVisualizer']
+__all__ = ['UniversalVisualizer']

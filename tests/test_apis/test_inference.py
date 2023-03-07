@@ -10,7 +10,7 @@ from mmpretrain.apis import (ImageClassificationInferencer, ModelHub,
                              get_model, inference_model)
 from mmpretrain.models import MobileNetV3
 from mmpretrain.structures import DataSample
-from mmpretrain.visualization import ClsVisualizer
+from mmpretrain.visualization import UniversalVisualizer
 
 MODEL = 'mobilenet-v3-small-050_3rdparty_in1k'
 WEIGHT = 'https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-050_3rdparty_in1k_20221114-e0b86be1.pth'  # noqa: E501
@@ -69,22 +69,25 @@ class TestImageClassificationInferencer(TestCase):
 
         with TemporaryDirectory() as tmpdir:
             inferencer(img, show_dir=tmpdir)
-            self.assertIsInstance(inferencer.visualizer, ClsVisualizer)
+            self.assertIsInstance(inferencer.visualizer, UniversalVisualizer)
             self.assertTrue(osp.exists(osp.join(tmpdir, '0.png')))
 
             inferencer.visualizer = MagicMock(wraps=inferencer.visualizer)
             inferencer(
                 img_path, rescale_factor=2., draw_score=False, show_dir=tmpdir)
             self.assertTrue(osp.exists(osp.join(tmpdir, 'color.png')))
-            inferencer.visualizer.add_datasample.assert_called_once_with(
-                'color',
+            inferencer.visualizer.visualize_cls.assert_called_once_with(
                 ANY,
                 ANY,
+                classes=inferencer.classes,
+                resize=None,
                 show=False,
+                wait_time=0,
                 rescale_factor=2.,
                 draw_gt=False,
                 draw_pred=True,
                 draw_score=False,
+                name='color',
                 out_file=osp.join(tmpdir, 'color.png'))
 
 

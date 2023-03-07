@@ -13,7 +13,7 @@ from mmengine.utils import ProgressBar
 from mmengine.visualization import Visualizer
 
 from mmpretrain.datasets.builder import build_dataset
-from mmpretrain.visualization import ClsVisualizer
+from mmpretrain.visualization import UniversalVisualizer
 from mmpretrain.visualization.cls_visualizer import _get_adaptive_scale
 
 
@@ -181,7 +181,7 @@ def main():
 
     # init visualizer
     cfg.visualizer.pop('type')
-    visualizer = ClsVisualizer(**cfg.visualizer)
+    visualizer = UniversalVisualizer(**cfg.visualizer)
     visualizer.dataset_meta = dataset.metainfo
 
     # init visualization image number
@@ -220,7 +220,7 @@ def main():
         out_file = osp.join(args.output_dir,
                             filename) if args.output_dir is not None else None
 
-        visualizer.add_datasample(
+        visualizer.visualize_cls(
             filename,
             image if args.channel_order == 'RGB' else image[..., ::-1],
             data_sample,
