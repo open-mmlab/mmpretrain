@@ -161,3 +161,19 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
             dict[str, Tensor]: A dictionary of loss components.
         """
         raise NotImplementedError
+
+    def get_layer_depth(self, param_name: str):
+        """Get the layer-wise depth of a parameter.
+
+        Args:
+            param_name (str): The name of the parameter.
+
+        Returns:
+            Tuple[int, int]: The layer-wise depth and the max depth.
+        """
+        if hasattr(self.backbone, 'get_layer_depth'):
+            return self.backbone.get_layer_depth(param_name, 'backbone.')
+        else:
+            raise NotImplementedError(
+                f"The babckone {type(self.backbone)} doesn't "
+                'support `get_layer_depth` by now.')

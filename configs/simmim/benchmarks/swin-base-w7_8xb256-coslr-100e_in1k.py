@@ -57,11 +57,11 @@ model = dict(
 # optimizer settings
 optim_wrapper = dict(
     type='AmpOptimWrapper',
-    optimizer=dict(
-        type='AdamW', lr=5e-3, model_type='swin', layer_decay_rate=0.9),
+    optimizer=dict(type='AdamW', lr=5e-3),
     clip_grad=dict(max_norm=5.0),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
+        layer_decay_rate=0.9,
         custom_keys={
             '.norm': dict(decay_mult=0.0),
             '.bias': dict(decay_mult=0.0),

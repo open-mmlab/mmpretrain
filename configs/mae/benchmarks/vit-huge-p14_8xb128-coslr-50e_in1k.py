@@ -77,15 +77,10 @@ model = dict(
 # learning rate and layer decay rate are set to 0.004 and 0.75 respectively
 optim_wrapper = dict(
     optimizer=dict(
-        type='AdamW',
-        lr=4e-3,
-        weight_decay=0.05,
-        eps=1e-8,
-        betas=(0.9, 0.999),
-        model_type='vit',  # layer-wise lr decay type
-        layer_decay_rate=0.75),  # layer-wise lr decay factor
+        type='AdamW', lr=4e-3, weight_decay=0.05, betas=(0.9, 0.999)),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
+        layer_decay_rate=0.75,
         custom_keys={
             '.ln': dict(decay_mult=0.0),
             '.bias': dict(decay_mult=0.0),

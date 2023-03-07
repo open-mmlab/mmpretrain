@@ -489,3 +489,45 @@ class MixMIMTransformer(BaseBackbone):
         x = torch.flatten(x, 1)
 
         return (x, )
+
+    def get_layer_depth(self, param_name: str, prefix: str = ''):
+        """Get the layer-wise depth of a parameter.
+
+        Args:
+            param_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The layer-wise depth and the num of layers.
+
+        Note:
+            The first depth is the stem module (``layer_depth=0``), and the
+            last depth is the subsequent module (``layer_depth=num_layers-1``)
+        """
+        num_layers = sum(self.depths) + 2
+
+        if not param_name.startswith(prefix):
+            # For subsequent module like neck and head
+            if param_name.startswith('neck'):
+                return num_layers - 2, num_layers
+            else:
+                return num_layers - 1, num_layers
+
+        param_name = param_name[len(prefix):]
+
+        stem_layers = ('patch_embed', 'absolute_pos_embed', 'pos_embed')
+        if any(stem in param_name for stem in stem_layers):
+            layer_depth = 0
+        elif param_name.startswith('layers'):
+            layer_id = int(param_name.split('.')[1])
+            block_id = param_name.split('.')[3]
+
+            if block_id in ('downsample', 'reduction', 'norm'):
+                layer_depth = sum(self.depths[:layer_id + 1])
+            else:
+                layer_depth = sum(self.depths[:layer_id]) + int(block_id) + 1
+        else:
+            layer_depth = num_layers - 2
+
+        return layer_depth, num_layers
