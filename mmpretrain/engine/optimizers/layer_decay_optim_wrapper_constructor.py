@@ -15,10 +15,49 @@ from mmpretrain.registry import OPTIM_WRAPPER_CONSTRUCTORS
 class LearningRateDecayOptimWrapperConstructor(DefaultOptimWrapperConstructor):
     """Different learning rates are set for different layers of backbone.
 
-    Note: Currently, this optimizer constructor is built for ViT and Swin.
+    By default, each parameter share the same optimizer settings, and we
+    provide an argument ``paramwise_cfg`` to specify parameter-wise settings.
+    It is a dict and may contain the following fields:
 
-    In addition to applying layer-wise learning rate decay schedule, the
-    paramwise_cfg only supports weight decay customization.
+    - ``layer_decay_rate`` (float): The learning rate of a parameter will
+      multiply it by multiple times according to the layer depth of the
+      parameter. Usually, it's less than 1, so that the earlier layers will
+      have a lower learning rate. Defaults to 1.
+    - ``bias_decay_mult`` (float): It will be multiplied to the weight
+      decay for all bias parameters (except for those in normalization layers).
+    - ``norm_decay_mult`` (float): It will be multiplied to the weight
+      decay for all weight and bias parameters of normalization layers.
+    - ``flat_decay_mult`` (float): It will be multiplied to the weight
+      decay for all one-dimensional parameters
+    - ``custom_keys`` (dict): Specified parameters-wise settings by keys. If
+      one of the keys in ``custom_keys`` is a substring of the name of one
+      parameter, then the setting of the parameter will be specified by
+      ``custom_keys[key]`` and other setting like ``bias_decay_mult`` will be
+      ignored. It should be a dict and may contain fields ``decay_mult``.
+      (The ``lr_mult`` is disabled in this constructor).
+
+    Example:
+
+    In the config file, you can use this constructor as below:
+
+    .. code:: python
+
+        optim_wrapper = dict(
+            optimizer=dict(
+                type='AdamW',
+                lr=4e-3,
+                weight_decay=0.05,
+                eps=1e-8,
+                betas=(0.9, 0.999)),
+            constructor='LearningRateDecayOptimWrapperConstructor',
+            paramwise_cfg=dict(
+                layer_decay_rate=0.75,  # layer-wise lr decay factor
+                norm_decay_mult=0.,
+                flat_decay_mult=0.,
+                custom_keys={
+                    '.cls_token': dict(decay_mult=0.0),
+                    '.pos_embed': dict(decay_mult=0.0)
+                }))
     """
 
     def add_params(self,

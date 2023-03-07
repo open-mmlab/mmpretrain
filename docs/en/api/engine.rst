@@ -47,3 +47,5 @@ Optimizers
    :nosignatures:
 
    Lamb
+   LARS
+   LearningRateDecayOptimWrapperConstructor
