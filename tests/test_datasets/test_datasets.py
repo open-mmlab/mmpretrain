@@ -1059,8 +1059,9 @@ class TestSVHN(TestBaseDataset):
 
         train_file = osp.join(data_prefix, dataset_class.train_list[0][0])
         test_file = osp.join(data_prefix, dataset_class.test_list[0][0])
-        cls.fake_img = np.ones((1, 3, 32, 32), dtype=np.uint8)
+        cls.fake_img = np.ones((32, 32, 3), dtype=np.uint8)
         cls.fake_label = np.zeros((1, ), dtype=np.uint8)
+        cls.fake_classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
         for file in [train_file, test_file]:
             data = {

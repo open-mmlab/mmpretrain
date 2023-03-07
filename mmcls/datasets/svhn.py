@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import List, Optional
 from urllib.parse import urljoin
 
 import mmengine.dist as dist
@@ -29,7 +29,7 @@ class SVHN(BaseDataset):
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """  # noqa: E501
 
-    url_prefix = 'http://ufldl.stanford.edu/housenumbers'
+    url_prefix = 'http://ufldl.stanford.edu/housenumbers/'
     # train images and labels
     train_list = [
         ['train_32x32.mat', 'e26dedcc434d2e4c54c9b2d4a06d8373'],
@@ -92,7 +92,7 @@ class SVHN(BaseDataset):
         # load data from mat file
         mat = matlab.loadmat(join_path(root, file_list[0][0]))
         imgs = np.transpose(mat['X'], (3, 0, 1, 2))  # convert HWCN to NHWC
-        gt_labels = np.squeeze(mat['y'])  # convert N1 to N
+        gt_labels = mat['y']
         gt_labels[gt_labels == 10] = 0  # overwrite label 10 to 0
 
         data_list = list()
@@ -119,3 +119,8 @@ class SVHN(BaseDataset):
         for filename, md5 in (self.train_list + self.test_list):
             url = urljoin(self.url_prefix, filename)
             download_url(url, root, filename=filename, md5=md5)
+
+    def extra_repr(self) -> List[str]:
+        """The extra repr information of the dataset."""
+        body = [f"Prefix of data: \t{self.data_prefix['root']}"]
+        return body
