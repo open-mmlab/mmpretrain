@@ -21,13 +21,19 @@ model = dict(
 
 dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
-extract_pipeline = [
+data_preprocessor = dict(
+    num_classes=1000,
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    to_rgb=True,
+)
+test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=256, edge='short'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
-extract_dataloader = dict(
+test_dataloader = dict(
     batch_size=8,
     num_workers=4,
     dataset=dict(
@@ -35,6 +41,6 @@ extract_dataloader = dict(
         data_root='data/imagenet',
         ann_file='meta/val.txt',
         data_prefix='val',
-        pipeline=extract_pipeline),
+        pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )

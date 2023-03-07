@@ -127,10 +127,10 @@ def main():
     mkdir_or_exist(osp.abspath(tsne_work_dir))
 
     # init the logger before other steps
-    log_file = osp.join(tsne_work_dir, 'extract.log')
+    log_file = osp.join(tsne_work_dir, 'tsne.log')
     logger = MMLogger.get_instance(
-        'mmselfsup',
-        logger_name='mmselfsup',
+        'mmpretrain',
+        logger_name='mmpretrain',
         log_file=log_file,
         log_level=cfg.log_level)
 
@@ -140,10 +140,10 @@ def main():
                 f'{model.backbone.out_indices}.')
 
     # build the dataset
-    extract_dataloader_cfg = cfg.get('extract_dataloader')
-    extract_dataset_cfg = extract_dataloader_cfg.pop('dataset')
-    if isinstance(extract_dataset_cfg, dict):
-        dataset = DATASETS.build(extract_dataset_cfg)
+    tsne_dataloader_cfg = cfg.get('test_dataloader')
+    tsne_dataset_cfg = tsne_dataloader_cfg.pop('dataset')
+    if isinstance(tsne_dataset_cfg, dict):
+        dataset = DATASETS.build(tsne_dataset_cfg)
         if hasattr(dataset, 'full_init'):
             dataset.full_init()
 
@@ -156,7 +156,7 @@ def main():
     logger.info(f'Apply t-SNE to visualize {len(subset_idx_list)} samples.')
 
     # build sampler
-    sampler_cfg = extract_dataloader_cfg.pop('sampler')
+    sampler_cfg = tsne_dataloader_cfg.pop('sampler')
     if isinstance(sampler_cfg, dict):
         sampler = DATA_SAMPLERS.build(
             sampler_cfg, default_args=dict(dataset=dataset, seed=args.seed))
@@ -166,7 +166,7 @@ def main():
     if args.seed is not None:
         init_fn = partial(
             worker_init_fn,
-            num_workers=extract_dataloader_cfg.get('num_workers'),
+            num_workers=tsne_dataloader_cfg.get('num_workers'),
             rank=get_rank(),
             seed=args.seed)
     else:
@@ -177,7 +177,7 @@ def main():
         sampler=sampler,
         collate_fn=default_collate,
         worker_init_fn=init_fn,
-        **extract_dataloader_cfg)
+        **tsne_dataloader_cfg)
 
     results = dict()
     features = []
@@ -218,10 +218,8 @@ def main():
             [batch[i].cpu().numpy() for batch in features], axis=0)
 
     # save features
-    mkdir_or_exist(f'{tsne_work_dir}features/')
-    logger.info(f'Save features to {tsne_work_dir}features/')
     for key, val in results.items():
-        output_file = f'{tsne_work_dir}features/{key}.npy'
+        output_file = f'{tsne_work_dir}{key}.npy'
         np.save(output_file, val)
 
     # build t-SNE model
@@ -235,7 +233,6 @@ def main():
         init=args.init)
 
     # run and get results
-    mkdir_or_exist(f'{tsne_work_dir}saved_pictures/')
     logger.info('Running t-SNE.')
     for key, val in results.items():
         result = tsne_model.fit_transform(val)
@@ -249,8 +246,8 @@ def main():
             s=15,
             c=labels,
             cmap='tab20')
-        plt.savefig(f'{tsne_work_dir}saved_pictures/{key}.png')
-    logger.info(f'Saved results to {tsne_work_dir}saved_pictures/')
+        plt.savefig(f'{tsne_work_dir}{key}.png')
+    logger.info(f'Save features and results to {tsne_work_dir}')
 
 
 if __name__ == '__main__':
