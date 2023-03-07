@@ -1,14 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-"""SimCLR provides list files for semi-supervised benchmarks:
-https://github.com/google-research/simclr/tree/master/imagenet_subsets/
-This script converts the list files into the required format in MMPretrain.
-"""
+"""SimCLR provides list files for semi-supervised benchmarks
+https://github.com/google-research/simclr/tree/master/imagenet_subsets/"""
 import argparse
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Convert ImageNet subset lists provided by SimCLR.')
+        description='Convert ImageNet subset lists provided by SimCLR into '
+        'the required format in MMPretrain.')
     parser.add_argument(
         'input', help='Input list file, downloaded from SimCLR github repo.')
     parser.add_argument(
