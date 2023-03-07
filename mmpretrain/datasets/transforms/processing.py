@@ -1472,7 +1472,7 @@ class RandomResizedCropAndInterpolationWithTwoPic(BaseTransform):
             w = int(round(math.sqrt(target_area * aspect_ratio)))
             h = int(round(math.sqrt(target_area / aspect_ratio)))
 
-            if w <= img_w and h <= img_h:
+            if w < img_w and h < img_h:
                 i = np.random.randint(0, img_h - h)
                 j = np.random.randint(0, img_w - w)
                 return i, j, h, w

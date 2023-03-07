@@ -22,7 +22,10 @@ model = dict(
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     optimizer=dict(
-        type='AdamW', lr=1e-4 * 2048 / 512, betas=(0.9, 0.999), eps=1e-8),
+        type='AdamW',
+        lr=1e-4 * 2048 / 512,
+        betas=(0.9, 0.999),
+        weight_decay=0.05),
     clip_grad=dict(max_norm=5.0),
     paramwise_cfg=dict(
         custom_keys={
