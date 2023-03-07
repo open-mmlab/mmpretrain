@@ -84,16 +84,11 @@ test_dataloader = val_dataloader
 # optimizer wrapper
 optim_wrapper = dict(
     optimizer=dict(
-        type='AdamW',
-        lr=4e-3,
-        weight_decay=0.05,
-        eps=1e-8,
-        betas=(0.9, 0.999),
-        model_type='vit',
-        layer_decay_rate=0.65),
+        type='AdamW', lr=4e-3, weight_decay=0.05, betas=(0.9, 0.999)),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
         _delete_=True,
+        layer_decay_rate=0.65,
         custom_keys={
             # the following configurations are designed for BEiT
             '.ln': dict(decay_mult=0.0),
