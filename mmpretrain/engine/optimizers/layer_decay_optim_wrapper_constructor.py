@@ -134,6 +134,7 @@ class LearningRateDecayOptimWrapperConstructor(DefaultOptimWrapperConstructor):
             layer_id, max_id = get_layer_depth(param_name)
             scale = decay_rate**(max_id - layer_id - 1)
             param_group['lr'] = self.base_lr * scale
+            param_group['lr_scale'] = scale
             param_group['layer_id'] = layer_id
             param_group['param_name'] = param_name
 
@@ -153,9 +154,13 @@ class LearningRateDecayOptimWrapperConstructor(DefaultOptimWrapperConstructor):
             for param in params:
                 layer_params[param['layer_id']].append(param)
             for layer_id, layer_params in layer_params.items():
-                msg = [f'layer {layer_id} params:']
+                lr_scale = layer_params[0]['lr_scale']
+                lr = layer_params[0]['lr']
+                msg = [
+                    f'layer {layer_id} params '
+                    f'(lr={lr:.3g}, lr_scale={lr_scale:.3g}):'
+                ]
                 for param in layer_params:
-                    msg.append(
-                        f'\t{param["param_name"]}: lr={param["lr"]:.3g}, '
-                        f'weight_decay={param["weight_decay"]:.3g}')
-                logger.info('\n'.join(msg))
+                    msg.append(f'\t{param["param_name"]}: '
+                               f'weight_decay={param["weight_decay"]:.3g}')
+                logger.debug('\n'.join(msg))
