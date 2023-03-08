@@ -73,7 +73,7 @@ This primitive config file includes a dict variable `model`, which mainly includ
   - For self-supervised leanrning, there are several `'SelfSupervisors'`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
   - For image retrieval tasks, it's usually `'ImageToImageRetriever'` You can find more details in the [API documentation](mmpretrain.models.retrievers).
 - `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
-  - For self-supervised leanrnnig, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
+  - For self-supervised leanrning, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
 - `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](mmpretrain.models.necks).
 - `head`: The settings of the task head. The head is the task-related component to do the final
   classification. All available heads can be found in the [API documentation](mmpretrain.models.heads).
