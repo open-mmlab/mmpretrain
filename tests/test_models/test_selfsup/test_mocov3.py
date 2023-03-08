@@ -29,7 +29,6 @@ class TestMoCoV3(TestCase):
         with_last_bn_affine=False,
         with_last_bias=False,
         with_avg_pool=False,
-        vit_backbone=True,
         norm_cfg=dict(type='BN1d'))
     head = dict(
         type='MoCoV3Head',
@@ -89,5 +88,4 @@ class TestMoCoV3(TestCase):
 
         # test extract
         fake_feats = alg(fake_inputs['inputs'][0], mode='tensor')
-        self.assertEqual(fake_feats[0][0].size(), torch.Size([2, 384, 14, 14]))
-        self.assertEqual(fake_feats[0][1].size(), torch.Size([2, 384]))
+        self.assertEqual(fake_feats[0].size(), torch.Size([2, 384]))

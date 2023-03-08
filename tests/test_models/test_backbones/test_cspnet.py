@@ -72,7 +72,6 @@ class TestCSPDarkNet(TestCase):
     def test_forward(self):
         imgs = torch.randn(3, 3, 224, 224)
 
-        # test without output_cls_token
         cfg = deepcopy(self.cfg)
         model = self.class_name(**cfg)
         outs = model(imgs)

@@ -3,7 +3,7 @@ from typing import Sequence
 
 import numpy as np
 import torch
-from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
+from mmcv.cnn import Linear, build_activation_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmengine.model import BaseModule, ModuleList, Sequential
@@ -11,7 +11,8 @@ from mmengine.utils import deprecated_api_warning
 from torch import nn
 
 from mmpretrain.registry import MODELS
-from ..utils import LayerScale, MultiheadAttention, resize_pos_embed, to_2tuple
+from ..utils import (LayerScale, MultiheadAttention, build_norm_layer,
+                     resize_pos_embed, to_2tuple)
 from .vision_transformer import VisionTransformer
 
 
@@ -149,9 +150,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
 
         self.embed_dims = embed_dims
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.attn = MultiheadAttention(
             embed_dims=embed_dims,
@@ -162,9 +161,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
             qkv_bias=qkv_bias,
             use_layer_scale=use_layer_scale)
 
-        self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=2)
-        self.add_module(self.norm2_name, norm2)
+        self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.ffn = DeiT3FFN(
             embed_dims=embed_dims,
@@ -175,14 +172,6 @@ class DeiT3TransformerEncoderLayer(BaseModule):
             act_cfg=act_cfg,
             use_layer_scale=use_layer_scale)
 
-    @property
-    def norm1(self):
-        return getattr(self, self.norm1_name)
-
-    @property
-    def norm2(self):
-        return getattr(self, self.norm2_name)
-
     def init_weights(self):
         super(DeiT3TransformerEncoderLayer, self).init_weights()
         for m in self.ffn.modules():
@@ -191,8 +180,8 @@ class DeiT3TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = x + self.attn(self.norm1(x))
-        x = self.ffn(self.norm2(x), identity=x)
+        x = x + self.attn(self.ln1(x))
+        x = self.ffn(self.ln1(x), identity=x)
         return x
 
 
@@ -237,10 +226,19 @@ class DeiT3(VisionTransformer):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"cls_token"``.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         use_layer_scale (bool): Whether to use layer_scale in  DeiT3.
             Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
@@ -288,9 +286,7 @@ class DeiT3(VisionTransformer):
                 'feedforward_channels': 5120
             }),
     }
-    # not using num_extra_tokens in deit3 because adding cls tokens after
-    # adding pos_embed
-    num_extra_tokens = 0
+    num_extra_tokens = 1  # class token
 
     def __init__(self,
                  arch='base',
@@ -303,8 +299,8 @@ class DeiT3(VisionTransformer):
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
+                 out_type='cls_token',
                  with_cls_token=True,
-                 output_cls_token=True,
                  use_layer_scale=True,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
@@ -343,13 +339,21 @@ class DeiT3(VisionTransformer):
         self.patch_resolution = self.patch_embed.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
+        # Set out type
+        if out_type not in self.OUT_TYPES:
+            raise ValueError(f'Unsupported `out_type` {out_type}, please '
+                             f'choose from {self.OUT_TYPES}')
+        self.out_type = out_type
+
         # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
-        self.output_cls_token = output_cls_token
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        if with_cls_token:
+            self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        elif out_type != 'cls_token':
+            self.cls_token = None
+            self.num_extra_tokens = 0
+        else:
+            raise ValueError(
+                'with_cls_token must be True when `out_type="cls_token"`.')
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
@@ -393,9 +397,7 @@ class DeiT3(VisionTransformer):
 
         self.final_norm = final_norm
         if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
-            self.add_module(self.norm1_name, norm1)
+            self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
     def forward(self, x):
         B = x.shape[0]
@@ -406,38 +408,47 @@ class DeiT3(VisionTransformer):
             self.patch_resolution,
             patch_resolution,
             mode=self.interpolate_mode,
-            num_extra_tokens=self.num_extra_tokens)
+            num_extra_tokens=0)
         x = self.drop_after_pos(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
-
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
+        if self.cls_token is not None:
+            # stole cls_tokens impl from Phil Wang, thanks
+            cls_tokens = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_tokens, x), dim=1)
 
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
 
             if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+                x = self.ln1(x)
 
             if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-                if self.output_cls_token:
-                    out = [patch_token, cls_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
+
+    def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
+        name = prefix + 'pos_embed'
+        if name not in state_dict.keys():
+            return
+
+        ckpt_pos_embed_shape = state_dict[name].shape
+        if self.pos_embed.shape != ckpt_pos_embed_shape:
+            from mmengine.logging import MMLogger
+            logger = MMLogger.get_current_instance()
+            logger.info(
+                f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
+                f'to {self.pos_embed.shape}.')
+
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1])))
+            pos_embed_shape = self.patch_embed.init_out_size
+
+            state_dict[name] = resize_pos_embed(
+                state_dict[name],
+                ckpt_pos_embed_shape,
+                pos_embed_shape,
+                self.interpolate_mode,
+                num_extra_tokens=0,  # The cls token adding is after pos_embed
+            )

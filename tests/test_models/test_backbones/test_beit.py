@@ -82,18 +82,16 @@ class TestBEiT(TestCase):
     def test_forward(self):
         imgs = torch.randn(1, 3, 224, 224)
 
-        # test with output_cls_token
         cfg = deepcopy(self.cfg)
-        cfg['output_cls_token'] = True
+        cfg['out_type'] = 'cls_token'
         model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
-        patch_token, cls_token = outs[-1]
-        self.assertEqual(patch_token.shape, (1, 768))
+        cls_token = outs[-1]
         self.assertEqual(cls_token.shape, (1, 768))
 
-        # test without output_cls_token
+        # test without output cls_token
         cfg = deepcopy(self.cfg)
         model = BEiTViT(**cfg)
         outs = model(imgs)
@@ -104,7 +102,7 @@ class TestBEiT(TestCase):
 
         # test without average
         cfg = deepcopy(self.cfg)
-        cfg['avg_token'] = False
+        cfg['out_type'] = 'featmap'
         model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)

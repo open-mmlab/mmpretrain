@@ -6,9 +6,7 @@ model = dict(
         arch='deit-small',
         img_size=224,
         patch_size=16,
-        output_cls_token=False,
-        avg_token=True,
-        with_cls_token=False,
+        out_type='avg_featmap',
     ),
     neck=None,
     head=dict(

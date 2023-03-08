@@ -35,9 +35,7 @@ class TestBEiT(TestCase):
 
         # test without mask
         fake_outputs = beit_backbone(fake_inputs, None)
-        assert len(fake_outputs[0]) == 2
-        assert fake_outputs[0][0].shape == torch.Size([2, 768, 14, 14])
-        assert fake_outputs[0][1].shape == torch.Size([2, 768])
+        assert fake_outputs[0].shape == torch.Size([2, 768])
 
     @pytest.mark.skipif(
         platform.system() == 'Windows', reason='Windows mem limit')
@@ -111,10 +109,9 @@ class TestBEiT(TestCase):
             drop_path_rate=0.,
             norm_cfg=dict(type='LN', eps=1e-6),
             final_norm=True,
+            out_type='featmap',
             with_cls_token=True,
-            avg_token=False,
             frozen_stages=-1,
-            output_cls_token=False,
             use_abs_pos_emb=True,
             use_rel_pos_bias=False,
             use_shared_rel_pos_bias=False,

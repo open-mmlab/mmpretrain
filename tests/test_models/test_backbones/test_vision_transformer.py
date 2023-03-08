@@ -126,13 +126,13 @@ class TestVisionTransformer(TestCase):
         # test with_cls_token=False
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
-        cfg['output_cls_token'] = True
-        with self.assertRaisesRegex(AssertionError, 'but got False'):
+        cfg['out_type'] = 'cls_token'
+        with self.assertRaisesRegex(ValueError, 'must be True'):
             VisionTransformer(**cfg)
 
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
-        cfg['output_cls_token'] = False
+        cfg['out_type'] = 'featmap'
         model = VisionTransformer(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
@@ -140,25 +140,14 @@ class TestVisionTransformer(TestCase):
         patch_token = outs[-1]
         self.assertEqual(patch_token.shape, (1, 768, 14, 14))
 
-        # test with output_cls_token
+        # test with output cls_token
         cfg = deepcopy(self.cfg)
         model = VisionTransformer(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
-        patch_token, cls_token = outs[-1]
-        self.assertEqual(patch_token.shape, (1, 768, 14, 14))
+        cls_token = outs[-1]
         self.assertEqual(cls_token.shape, (1, 768))
-
-        # test without output_cls_token
-        cfg = deepcopy(self.cfg)
-        cfg['output_cls_token'] = False
-        model = VisionTransformer(**cfg)
-        outs = model(imgs)
-        self.assertIsInstance(outs, tuple)
-        self.assertEqual(len(outs), 1)
-        patch_token = outs[-1]
-        self.assertEqual(patch_token.shape, (1, 768, 14, 14))
 
         # Test forward with multi out indices
         cfg = deepcopy(self.cfg)
@@ -168,22 +157,20 @@ class TestVisionTransformer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 3)
         for out in outs:
-            patch_token, cls_token = out
-            self.assertEqual(patch_token.shape, (1, 768, 14, 14))
-            self.assertEqual(cls_token.shape, (1, 768))
+            self.assertEqual(out.shape, (1, 768))
 
         # Test forward with dynamic input size
         imgs1 = torch.randn(1, 3, 224, 224)
         imgs2 = torch.randn(1, 3, 256, 256)
         imgs3 = torch.randn(1, 3, 256, 309)
         cfg = deepcopy(self.cfg)
+        cfg['out_type'] = 'featmap'
         model = VisionTransformer(**cfg)
         for imgs in [imgs1, imgs2, imgs3]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
-            patch_token, cls_token = outs[-1]
+            patch_token = outs[-1]
             expect_feat_shape = (math.ceil(imgs.shape[2] / 16),
                                  math.ceil(imgs.shape[3] / 16))
             self.assertEqual(patch_token.shape, (1, 768, *expect_feat_shape))
-            self.assertEqual(cls_token.shape, (1, 768))

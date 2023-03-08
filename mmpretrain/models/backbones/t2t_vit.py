@@ -5,13 +5,13 @@ from typing import Sequence
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
+from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
+                     to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -70,9 +70,7 @@ class T2TTransformerLayer(BaseModule):
         self.v_shortcut = True if input_dims is not None else False
         input_dims = input_dims or embed_dims
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, input_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        self.ln1 = build_norm_layer(norm_cfg, input_dims)
 
         self.attn = MultiheadAttention(
             input_dims=input_dims,
@@ -85,9 +83,7 @@ class T2TTransformerLayer(BaseModule):
             qk_scale=qk_scale or (input_dims // num_heads)**-0.5,
             v_shortcut=self.v_shortcut)
 
-        self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, embed_dims, postfix=2)
-        self.add_module(self.norm2_name, norm2)
+        self.ln2 = build_norm_layer(norm_cfg, embed_dims)
 
         self.ffn = FFN(
             embed_dims=embed_dims,
@@ -97,20 +93,12 @@ class T2TTransformerLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
 
-    @property
-    def norm1(self):
-        return getattr(self, self.norm1_name)
-
-    @property
-    def norm2(self):
-        return getattr(self, self.norm2_name)
-
     def forward(self, x):
         if self.v_shortcut:
-            x = self.attn(self.norm1(x))
+            x = self.attn(self.ln1(x))
         else:
-            x = x + self.attn(self.norm1(x))
-        x = self.ffn(self.norm2(x), identity=x)
+            x = x + self.attn(self.ln1(x))
+        x = self.ffn(self.ln2(x), identity=x)
         return x
 
 
@@ -265,10 +253,19 @@ class T2T_ViT(BaseBackbone):
             ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"cls_token"``.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         t2t_cfg (dict): Extra config of Tokens-to-Token module.
@@ -278,7 +275,7 @@ class T2T_ViT(BaseBackbone):
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
-    num_extra_tokens = 1  # cls_token
+    OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
 
     def __init__(self,
                  img_size=224,
@@ -290,13 +287,13 @@ class T2T_ViT(BaseBackbone):
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN'),
                  final_norm=True,
+                 out_type='cls_token',
                  with_cls_token=True,
-                 output_cls_token=True,
                  interpolate_mode='bicubic',
                  t2t_cfg=dict(),
                  layer_cfgs=dict(),
                  init_cfg=None):
-        super(T2T_ViT, self).__init__(init_cfg)
+        super().__init__(init_cfg)
 
         # Token-to-Token Module
         self.tokens_to_token = T2TModule(
@@ -307,13 +304,22 @@ class T2T_ViT(BaseBackbone):
         self.patch_resolution = self.tokens_to_token.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
+        # Set out type
+        if out_type not in self.OUT_TYPES:
+            raise ValueError(f'Unsupported `out_type` {out_type}, please '
+                             f'choose from {self.OUT_TYPES}')
+        self.out_type = out_type
+
         # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
-        self.output_cls_token = output_cls_token
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims))
+        if with_cls_token:
+            self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims))
+            self.num_extra_tokens = 1
+        elif out_type != 'cls_token':
+            self.cls_token = None
+            self.num_extra_tokens = 0
+        else:
+            raise ValueError(
+                'with_cls_token must be True when `out_type="cls_token"`.')
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
@@ -360,7 +366,7 @@ class T2T_ViT(BaseBackbone):
 
         self.final_norm = final_norm
         if final_norm:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+            self.norm = build_norm_layer(norm_cfg, embed_dims)
         else:
             self.norm = nn.Identity()
 
@@ -401,9 +407,10 @@ class T2T_ViT(BaseBackbone):
         B = x.shape[0]
         x, patch_resolution = self.tokens_to_token(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        if self.cls_token is not None:
+            # stole cls_tokens impl from Phil Wang, thanks
+            cls_token = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_token, x), dim=1)
 
         x = x + resize_pos_embed(
             self.pos_embed,
@@ -413,10 +420,6 @@ class T2T_ViT(BaseBackbone):
             num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
-
         outs = []
         for i, layer in enumerate(self.encoder):
             x = layer(x)
@@ -425,19 +428,20 @@ class T2T_ViT(BaseBackbone):
                 x = self.norm(x)
 
             if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-                if self.output_cls_token:
-                    out = [patch_token, cls_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
+
+    def _format_output(self, x, hw):
+        if self.out_type == 'raw':
+            return x
+        if self.out_type == 'cls_token':
+            return x[:, 0]
+
+        patch_token = x[:, self.num_extra_tokens:]
+        if self.out_type == 'featmap':
+            B = x.size(0)
+            # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
+            return patch_token.reshape(B, *hw, -1).permute(0, 3, 1, 2)
+        if self.out_type == 'avg_featmap':
+            return patch_token.mean(dim=1)

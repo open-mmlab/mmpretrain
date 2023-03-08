@@ -140,15 +140,21 @@ class BEiTPretrainViT(BEiTViT):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            It only works without input mask. Defaults to ``"avg_featmap"``.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not to use the mean patch token for
-            classification. If True, the model will only take the average
-            of all patch tokens. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         use_abs_pos_emb (bool): Whether or not use absolute position embedding.
             Defaults to False.
         use_rel_pos_bias (bool): Whether or not use relative position bias.
@@ -176,9 +182,8 @@ class BEiTPretrainViT(BEiTViT):
                  drop_path_rate: float = 0,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  final_norm: bool = True,
-                 avg_token: bool = False,
+                 out_type: str = 'avg_featmap',
                  frozen_stages: int = -1,
-                 output_cls_token: bool = True,
                  use_abs_pos_emb: bool = False,
                  use_rel_pos_bias: bool = False,
                  use_shared_rel_pos_bias: bool = True,
@@ -197,9 +202,9 @@ class BEiTPretrainViT(BEiTViT):
             drop_path_rate=drop_path_rate,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
-            avg_token=avg_token,
+            out_type=out_type,
+            with_cls_token=True,
             frozen_stages=frozen_stages,
-            output_cls_token=output_cls_token,
             use_abs_pos_emb=use_abs_pos_emb,
             use_shared_rel_pos_bias=use_shared_rel_pos_bias,
             use_rel_pos_bias=use_rel_pos_bias,

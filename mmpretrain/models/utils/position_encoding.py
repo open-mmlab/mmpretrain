@@ -8,6 +8,14 @@ import torch.nn as nn
 from mmengine.model import BaseModule
 from mmengine.utils import digit_version
 
+# After pytorch v1.10.0, use torch.meshgrid without indexing
+# will raise extra warning. For more details,
+# refers to https://github.com/pytorch/pytorch/issues/50276
+if digit_version(torch.__version__) >= digit_version('1.10.0'):
+    torch_meshgrid = partial(torch.meshgrid, indexing='ij')
+else:
+    torch_meshgrid = torch.meshgrid
+
 
 class ConditionalPositionEncoding(BaseModule):
     """The Conditional Position Encoding (CPE) module.
@@ -137,7 +145,7 @@ def build_2d_sincos_position_embedding(
     h, w = patches_resolution
     grid_w = torch.arange(w, dtype=torch.float32)
     grid_h = torch.arange(h, dtype=torch.float32)
-    grid_w, grid_h = torch.meshgrid(grid_w, grid_h)
+    grid_w, grid_h = torch_meshgrid(grid_w, grid_h)
     assert embed_dims % 4 == 0, \
         'Embed dimension must be divisible by 4.'
     pos_dim = embed_dims // 4

@@ -4,13 +4,13 @@ from typing import Sequence
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
+from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
+                     to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -53,9 +53,7 @@ class TransformerEncoderLayer(BaseModule):
 
         self.embed_dims = embed_dims
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.attn = MultiheadAttention(
             embed_dims=embed_dims,
@@ -65,9 +63,7 @@ class TransformerEncoderLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
 
-        self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=2)
-        self.add_module(self.norm2_name, norm2)
+        self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.ffn = FFN(
             embed_dims=embed_dims,
@@ -79,11 +75,11 @@ class TransformerEncoderLayer(BaseModule):
 
     @property
     def norm1(self):
-        return getattr(self, self.norm1_name)
+        return self.ln1
 
     @property
     def norm2(self):
-        return getattr(self, self.norm2_name)
+        return self.ln2
 
     def init_weights(self):
         super(TransformerEncoderLayer, self).init_weights()
@@ -93,8 +89,8 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = x + self.attn(self.norm1(x))
-        x = self.ffn(self.norm2(x), identity=x)
+        x = x + self.attn(self.ln1(x))
+        x = self.ffn(self.ln2(x), identity=x)
         return x
 
 
@@ -134,15 +130,21 @@ class VisionTransformer(BaseBackbone):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"cls_token"``.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not to use the mean patch token for
-            classification. If True, the model will only take the average
-            of all patch tokens. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -215,8 +217,8 @@ class VisionTransformer(BaseBackbone):
                 'feedforward_channels': 768 * 4
             }),
     }
-    # Some structures have multiple extra tokens, like DeiT.
-    num_extra_tokens = 1  # cls_token
+    num_extra_tokens = 1  # class token
+    OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
 
     def __init__(self,
                  arch='base',
@@ -229,10 +231,9 @@ class VisionTransformer(BaseBackbone):
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
+                 out_type='cls_token',
                  with_cls_token=True,
-                 avg_token=False,
                  frozen_stages=-1,
-                 output_cls_token=True,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -272,13 +273,21 @@ class VisionTransformer(BaseBackbone):
         self.patch_resolution = self.patch_embed.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
+        # Set out type
+        if out_type not in self.OUT_TYPES:
+            raise ValueError(f'Unsupported `out_type` {out_type}, please '
+                             f'choose from {self.OUT_TYPES}')
+        self.out_type = out_type
+
         # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
-        self.output_cls_token = output_cls_token
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        if with_cls_token:
+            self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        elif out_type != 'cls_token':
+            self.cls_token = None
+            self.num_extra_tokens = 0
+        else:
+            raise ValueError(
+                'with_cls_token must be True when `out_type="cls_token"`.')
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
@@ -322,34 +331,25 @@ class VisionTransformer(BaseBackbone):
 
         self.frozen_stages = frozen_stages
         if pre_norm:
-            _, norm_layer = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
+            self.pre_norm = build_norm_layer(norm_cfg, self.embed_dims)
         else:
-            norm_layer = nn.Identity()
-        self.add_module('pre_norm', norm_layer)
+            self.pre_norm = nn.Identity()
 
         self.final_norm = final_norm
         if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
-            self.add_module(self.norm1_name, norm1)
+            self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
-        self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
 
     @property
     def norm1(self):
-        return getattr(self, self.norm1_name)
+        return self.ln1
 
     @property
     def norm2(self):
-        return getattr(self, self.norm2_name)
+        return self.ln2
 
     def init_weights(self):
         super(VisionTransformer, self).init_weights()
@@ -407,17 +407,19 @@ class VisionTransformer(BaseBackbone):
                 param.requires_grad = False
         # freeze the last layer norm
         if self.frozen_stages == len(self.layers) and self.final_norm:
-            self.norm1.eval()
-            for param in self.norm1.parameters():
+            self.ln1.eval()
+            for param in self.ln1.parameters():
                 param.requires_grad = False
 
     def forward(self, x):
         B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        if self.cls_token is not None:
+            # stole cls_tokens impl from Phil Wang, thanks
+            cls_token = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_token, x), dim=1)
+
         x = x + resize_pos_embed(
             self.pos_embed,
             self.patch_resolution,
@@ -427,40 +429,32 @@ class VisionTransformer(BaseBackbone):
         x = self.drop_after_pos(x)
 
         x = self.pre_norm(x)
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
 
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
 
             if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+                x = self.ln1(x)
 
             if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-                if self.avg_token:
-                    patch_token = patch_token.permute(0, 2, 3, 1)
-                    patch_token = patch_token.reshape(
-                        B, patch_resolution[0] * patch_resolution[1],
-                        C).mean(dim=1)
-                    patch_token = self.norm2(patch_token)
-                if self.output_cls_token:
-                    out = [patch_token, cls_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
+
+    def _format_output(self, x, hw):
+        if self.out_type == 'raw':
+            return x
+        if self.out_type == 'cls_token':
+            return x[:, 0]
+
+        patch_token = x[:, self.num_extra_tokens:]
+        if self.out_type == 'featmap':
+            B = x.size(0)
+            # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
+            return patch_token.reshape(B, *hw, -1).permute(0, 3, 1, 2)
+        if self.out_type == 'avg_featmap':
+            return patch_token.mean(dim=1)
 
     def get_layer_depth(self, param_name: str, prefix: str = ''):
         """Get the layer-wise depth of a parameter.

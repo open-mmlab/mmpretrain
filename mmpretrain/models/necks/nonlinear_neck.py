@@ -32,8 +32,6 @@ class NonLinearNeck(BaseModule):
             Defaults to False.
         with_avg_pool (bool): Whether to apply the global average pooling
             after backbone. Defaults to True.
-        vit_backbone (bool): The key to indicate whether the upstream backbone
-            is ViT. Defaults to False.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Defaults to dict(type='SyncBN').
         init_cfg (dict or list[dict], optional): Initialization config dict.
@@ -50,7 +48,6 @@ class NonLinearNeck(BaseModule):
         with_last_bn_affine: bool = True,
         with_last_bias: bool = False,
         with_avg_pool: bool = True,
-        vit_backbone: bool = False,
         norm_cfg: dict = dict(type='SyncBN'),
         init_cfg: Optional[Union[dict, List[dict]]] = [
             dict(type='Constant', val=1, layer=['_BatchNorm', 'GroupNorm'])
@@ -58,7 +55,6 @@ class NonLinearNeck(BaseModule):
     ) -> None:
         super(NonLinearNeck, self).__init__(init_cfg)
         self.with_avg_pool = with_avg_pool
-        self.vit_backbone = vit_backbone
         if with_avg_pool:
             self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.relu = nn.ReLU(inplace=True)
@@ -104,8 +100,6 @@ class NonLinearNeck(BaseModule):
         """
         assert len(x) == 1
         x = x[0]
-        if self.vit_backbone:
-            x = x[-1]
         if self.with_avg_pool:
             x = self.avgpool(x)
         x = x.view(x.size(0), -1)

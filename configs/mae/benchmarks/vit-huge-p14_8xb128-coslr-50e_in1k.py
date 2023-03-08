@@ -56,8 +56,7 @@ model = dict(
         img_size=224,
         patch_size=14,
         drop_path_rate=0.3,  # set to 0.3
-        avg_token=True,
-        output_cls_token=False,
+        out_type='avg_featmap',
         final_norm=False,
         init_cfg=dict(type='Pretrained', checkpoint='')),
     neck=None,

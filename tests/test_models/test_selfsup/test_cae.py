@@ -25,9 +25,7 @@ def test_cae_vit():
 
     # test without mask
     fake_outputs = cae_backbone(fake_inputs, None)
-    assert len(fake_outputs[0]) == 2
-    assert fake_outputs[0][0].shape == torch.Size([1, 192, 14, 14])
-    assert fake_outputs[0][1].shape == torch.Size([1, 192])
+    assert fake_outputs[0].shape == torch.Size([1, 192])
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')

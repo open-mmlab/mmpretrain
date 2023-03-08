@@ -25,7 +25,7 @@ Models:
           Top 1 Accuracy: 79.87
           Top 5 Accuracy: 94.90
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-base_3rdparty_in1k_20221213-87a7b0a5.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-small_3rdparty_in1k_20221213-a3a34f5c.pth
     Config: configs/revvit/revvit-small_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/pyslowfast/rev/REV_VIT_S.pyth
@@ -41,7 +41,7 @@ Models:
           Top 1 Accuracy: 81.81
           Top 5 Accuracy: 95.56
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-small_3rdparty_in1k_20221213-a3a34f5c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-base_3rdparty_in1k_20221213-87a7b0a5.pth
     Config: configs/revvit/revvit-base_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/pyslowfast/rev/REV_VIT_B.pyth
