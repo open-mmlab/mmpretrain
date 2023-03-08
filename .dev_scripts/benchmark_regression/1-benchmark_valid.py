@@ -22,7 +22,7 @@ from rich.table import Table
 from mmpretrain.apis import get_model
 from mmpretrain.datasets import CIFAR10, CIFAR100, ImageNet
 from mmpretrain.utils import register_all_modules
-from mmpretrain.visualization import ClsVisualizer
+from mmpretrain.visualization import UniversalVisualizer
 
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]
@@ -166,7 +166,7 @@ def show_summary(summary_data, args):
     for model_name, summary in summary_data.items():
         row = [model_name]
         valid = summary['valid']
-        color = 'green' if valid == 'PASS' else 'red'
+        color = {'PASS': 'green', 'CUDA OOM': 'yellow'}.get(valid, 'red')
         row.append(f'[{color}]{valid}[/{color}]')
         if valid == 'PASS':
             row.append(str(summary['resolution']))
@@ -248,15 +248,19 @@ def main(args):
             result = inference(MMCLS_ROOT / config, checkpoint, tmpdir.name,
                                args, model_name)
             result['valid'] = 'PASS'
-        except Exception:
-            import traceback
-            logger.error(f'"{config}" :\n{traceback.format_exc()}')
-            result = {'valid': 'FAIL'}
+        except Exception as e:
+            if 'CUDA out of memory' in str(e):
+                logger.error(f'"{config}" :\nCUDA out of memory')
+                result = {'valid': 'CUDA OOM'}
+            else:
+                import traceback
+                logger.error(f'"{config}" :\n{traceback.format_exc()}')
+                result = {'valid': 'FAIL'}
 
         summary_data[model_name] = result
         # show the results
         if args.show:
-            vis = ClsVisualizer.get_instance('valid')
+            vis = UniversalVisualizer.get_instance('valid')
             vis.set_image(mmcv.imread(args.img))
             vis.draw_texts(
                 texts='\n'.join([f'{k}: {v}' for k, v in result.items()]),

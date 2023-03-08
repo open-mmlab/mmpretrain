@@ -8,34 +8,11 @@ import torch.nn.functional as F
 from mmengine.dataset import BaseDataset
 from mmengine.dist import master_only
 from mmengine.visualization import Visualizer
+from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.registry import VISUALIZERS
 from mmpretrain.structures import DataSample
-
-
-def _get_adaptive_scale(img_shape: Tuple[int, int],
-                        min_scale: float = 0.3,
-                        max_scale: float = 3.0) -> float:
-    """Get adaptive scale according to image shape.
-
-    The target scale depends on the the short edge length of the image. If the
-    short edge length equals 224, the output is 1.0. And output linear scales
-    according the short edge length.
-
-    You can also specify the minimum scale and the maximum scale to limit the
-    linear scale.
-
-    Args:
-        img_shape (Tuple[int, int]): The shape of the canvas image.
-        min_size (int): The minimum scale. Defaults to 0.3.
-        max_size (int): The maximum scale. Defaults to 3.0.
-
-    Returns:
-        int: The adaptive scale.
-    """
-    short_edge_length = min(img_shape)
-    scale = short_edge_length / 224.
-    return min(max(scale, min_scale), max_scale)
+from .utils import create_figure, get_adaptive_scale
 
 
 @VISUALIZERS.register_module()
@@ -56,9 +33,11 @@ class UniversalVisualizer(Visualizer):
             Defaults to empty dict.
     """
     DEFAULT_TEXT_CFG = {
-        'font_families': 'monospace',
-        'colors': 'white',
-        'bboxes': dict(facecolor='black', alpha=0.5, boxstyle='Round'),
+        'family': 'monospace',
+        'color': 'white',
+        'bbox': dict(facecolor='black', alpha=0.5, boxstyle='Round'),
+        'verticalalignment': 'top',
+        'horizontalalignment': 'left',
     }
 
     @master_only
@@ -163,14 +142,18 @@ class UniversalVisualizer(Visualizer):
             prefix = 'Prediction: '
             texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
 
-        img_scale = _get_adaptive_scale(image.shape[:2])
+        img_scale = get_adaptive_scale(image.shape[:2])
         text_cfg = {
-            'positions': np.array([(img_scale * 5, ) * 2]).astype(np.int32),
-            'font_sizes': int(img_scale * 7),
+            'size': int(img_scale * 7),
             **self.DEFAULT_TEXT_CFG,
-            **text_cfg
+            **text_cfg,
         }
-        self.draw_texts('\n'.join(texts), **text_cfg)
+        self.ax_save.text(
+            img_scale * 5,
+            img_scale * 5,
+            '\n'.join(texts),
+            **text_cfg,
+        )
         drawn_img = self.get_image()
 
         if show:
@@ -234,24 +217,22 @@ class UniversalVisualizer(Visualizer):
         Returns:
             np.ndarray: The visualization image.
         """
-        import matplotlib.pyplot as plt
-        from mmengine.visualization.utils import img_from_canvas
-
+        text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
         if resize is not None:
             image = mmcv.imrescale(image, (resize, resize))
 
         match_scores, indices = torch.topk(data_sample.pred_score, k=topk)
 
-        figure = plt.figure()
+        figure = create_figure(margin=True)
         gs = figure.add_gridspec(2, topk)
-        query_plot: plt.Subplot = figure.add_subplot(gs[0, :])
+        query_plot = figure.add_subplot(gs[0, :])
         query_plot.axis(False)
         query_plot.imshow(image)
 
         for k, (score, sample_idx) in enumerate(zip(match_scores, indices)):
             sample = prototype_dataset.get_data_info(sample_idx.item())
             value_image = mmcv.imread(sample['img_path'])[..., ::-1]
-            value_plot: plt.Subplot = figure.add_subplot(gs[1, k])
+            value_plot = figure.add_subplot(gs[1, k])
             value_plot.axis(False)
             value_plot.imshow(value_image)
             if draw_score:
@@ -259,13 +240,9 @@ class UniversalVisualizer(Visualizer):
                     5,
                     5,
                     f'{score:.2f}',
-                    family='monospace',
-                    color='white',
-                    bbox=dict(facecolor='black', alpha=0.5, boxstyle='Round'),
                     **text_cfg,
                 )
         drawn_img = img_from_canvas(figure.canvas)
-        plt.close(figure)
         self.set_image(drawn_img)
 
         if show:

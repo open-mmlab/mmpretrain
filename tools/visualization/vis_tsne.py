@@ -2,24 +2,27 @@
 import argparse
 import os.path as osp
 import time
-from functools import partial
-from typing import Optional
+from collections import defaultdict
 
 import matplotlib.pyplot as plt
-import mmengine
 import numpy as np
+import rich.progress as progress
 import torch
 import torch.nn.functional as F
 from mmengine.config import Config, DictAction
-from mmengine.dataset import default_collate, worker_init_fn
-from mmengine.dist import get_rank
+from mmengine.device import get_device
 from mmengine.logging import MMLogger
+from mmengine.runner import Runner
 from mmengine.utils import mkdir_or_exist
-from sklearn.manifold import TSNE
-from torch.utils.data import DataLoader
 
 from mmpretrain.apis import get_model
-from mmpretrain.registry import DATA_SAMPLERS, DATASETS
+from mmpretrain.registry import DATASETS
+
+try:
+    from sklearn.manifold import TSNE
+except ImportError as e:
+    raise ImportError('Please install `sklearn` to calculate '
+                      'TSNE by `pip install scikit-learn`') from e
 
 
 def parse_args():
@@ -30,19 +33,24 @@ def parse_args():
     parser.add_argument(
         '--vis-stage',
         choices=['backbone', 'neck', 'pre_logits'],
-        default='backbone',
-        help='the visualization stage of the model')
+        help='The visualization stage of the model')
+    parser.add_argument(
+        '--class-idx',
+        nargs='+',
+        type=int,
+        help='The categories used to calculate t-SNE.')
     parser.add_argument(
         '--max-num-class',
         type=int,
         default=20,
-        help='the maximum number of classes to apply t-SNE algorithms, now the'
-        'function supports maximum 20 classes')
-    parser.add_argument('--seed', type=int, default=0, help='random seed')
+        help='The first N categories to apply t-SNE algorithms. '
+        'Defaults to 20.')
     parser.add_argument(
-        '--deterministic',
-        action='store_true',
-        help='whether to set deterministic options for CUDNN backend.')
+        '--max-num-samples',
+        type=int,
+        default=100,
+        help='The maximum number of samples per category. '
+        'Higher number need longer time to calculate. Defaults to 100.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -53,8 +61,15 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
+    parser.add_argument('--device', help='Device used for inference')
     parser.add_argument(
-        '--device', default='cuda:0', help='Device used for inference')
+        '--legend',
+        action='store_true',
+        help='Show the legend of all categories.')
+    parser.add_argument(
+        '--show',
+        action='store_true',
+        help='Display the result in a graphical window.')
 
     # t-SNE settings
     parser.add_argument(
@@ -98,19 +113,12 @@ def parse_args():
     return args
 
 
-def post_process():
-    pass
-
-
 def main():
     args = parse_args()
 
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
-    # set cudnn_benchmark
-    if cfg.get('cudnn_benchmark', False):
-        torch.backends.cudnn.benchmark = True
     # work_dir is determined in this priority: CLI > segment in file > filename
     if args.work_dir is not None:
         # update configs according to CLI args if args.work_dir is not None
@@ -135,82 +143,67 @@ def main():
         log_level=cfg.log_level)
 
     # build the model from a config file and a checkpoint file
-    model = get_model(cfg, args.checkpoint, device=args.device)
-    logger.info(f'Model loaded and the output indices of backbone is '
-                f'{model.backbone.out_indices}.')
+    device = args.device or get_device()
+    model = get_model(cfg, args.checkpoint, device=device)
+    logger.info('Model loaded.')
 
     # build the dataset
-    tsne_dataloader_cfg = cfg.get('test_dataloader')
-    tsne_dataset_cfg = tsne_dataloader_cfg.pop('dataset')
-    if isinstance(tsne_dataset_cfg, dict):
-        dataset = DATASETS.build(tsne_dataset_cfg)
-        if hasattr(dataset, 'full_init'):
-            dataset.full_init()
+    dataloader_cfg = cfg.get('test_dataloader')
+    dataset = DATASETS.build(dataloader_cfg.pop('dataset'))
+    classes = dataset.metainfo.get('classes')
+
+    if args.class_idx is None:
+        num_classes = args.max_num_class if classes is None else len(classes)
+        args.class_idx = list(range(num_classes))[:args.max_num_class]
+
+    if classes is not None:
+        classes = [classes[idx] for idx in args.class_idx]
+    else:
+        classes = args.class_idx
 
     # compress dataset, select that the label is less then max_num_class
     subset_idx_list = []
+    counter = defaultdict(int)
     for i in range(len(dataset)):
-        if dataset.get_data_info(i)['gt_label'] < args.max_num_class:
+        gt_label = dataset.get_data_info(i)['gt_label']
+        if (gt_label in args.class_idx
+                and counter[gt_label] < args.max_num_samples):
             subset_idx_list.append(i)
+            counter[gt_label] += 1
     dataset.get_subset_(subset_idx_list)
     logger.info(f'Apply t-SNE to visualize {len(subset_idx_list)} samples.')
 
-    # build sampler
-    sampler_cfg = tsne_dataloader_cfg.pop('sampler')
-    if isinstance(sampler_cfg, dict):
-        sampler = DATA_SAMPLERS.build(
-            sampler_cfg, default_args=dict(dataset=dataset, seed=args.seed))
-
-    # build dataloader
-    init_fn: Optional[partial]
-    if args.seed is not None:
-        init_fn = partial(
-            worker_init_fn,
-            num_workers=tsne_dataloader_cfg.get('num_workers'),
-            rank=get_rank(),
-            seed=args.seed)
-    else:
-        init_fn = None
-
-    tsne_dataloader = DataLoader(
-        dataset=dataset,
-        sampler=sampler,
-        collate_fn=default_collate,
-        worker_init_fn=init_fn,
-        **tsne_dataloader_cfg)
+    dataloader_cfg.dataset = dataset
+    dataloader = Runner.build_dataloader(dataloader_cfg)
 
     results = dict()
     features = []
     labels = []
-    progress_bar = mmengine.ProgressBar(len(tsne_dataloader))
-    for _, data in enumerate(tsne_dataloader):
+    for data in progress.track(dataloader, description='Calculating...'):
         with torch.no_grad():
             # preprocess data
             data = model.data_preprocessor(data)
             batch_inputs, batch_data_samples = \
                 data['inputs'], data['data_samples']
+            batch_labels = torch.cat([i.gt_label for i in batch_data_samples])
 
             # extract backbone features
-            batch_features = model.extract_feat(
-                batch_inputs, stage=args.vis_stage)
+            extract_args = {}
+            if args.vis_stage:
+                extract_args['stage'] = args.vis_stage
+            batch_features = model.extract_feat(batch_inputs, **extract_args)
 
             # post process
-            if args.vis_stage == 'backbone':
-                if getattr(model.backbone, 'output_cls_token', False) is False:
-                    batch_features = [
-                        F.adaptive_avg_pool2d(inputs, 1).squeeze()
-                        for inputs in batch_features
-                    ]
-                else:
-                    # output_cls_token is True, here t-SNE uses cls_token
-                    batch_features = [feat[-1] for feat in batch_features]
-
-            batch_labels = torch.cat([i.gt_label for i in batch_data_samples])
+            if batch_features[0].ndim == 4:
+                # For (N, C, H, W) feature
+                batch_features = [
+                    F.adaptive_avg_pool2d(inputs, 1).squeeze()
+                    for inputs in batch_features
+                ]
 
         # save batch features
         features.append(batch_features)
         labels.extend(batch_labels.cpu().numpy())
-        progress_bar.update()
 
     for i in range(len(features[0])):
         key = 'feat_' + str(model.backbone.out_indices[i])
@@ -238,15 +231,20 @@ def main():
         result = tsne_model.fit_transform(val)
         res_min, res_max = result.min(0), result.max(0)
         res_norm = (result - res_min) / (res_max - res_min)
-        plt.figure(figsize=(10, 10))
-        plt.scatter(
+        _, ax = plt.subplots(figsize=(10, 10))
+        scatter = ax.scatter(
             res_norm[:, 0],
             res_norm[:, 1],
             alpha=1.0,
             s=15,
             c=labels,
             cmap='tab20')
+        if args.legend:
+            legend = ax.legend(scatter.legend_elements()[0], classes)
+            ax.add_artist(legend)
         plt.savefig(f'{tsne_work_dir}{key}.png')
+        if args.show:
+            plt.show()
     logger.info(f'Save features and results to {tsne_work_dir}')
 
 

@@ -5,7 +5,7 @@
 ## 工具简介
 
 ```bash
-python tools/visualizations/vis_scheduler.py \
+python tools/visualization/vis_scheduler.py \
     ${CONFIG_FILE} \
     [-p, --parameter ${PARAMETER_NAME}] \
     [-d, --dataset-size ${DATASET_SIZE}] \
@@ -38,7 +38,7 @@ python tools/visualizations/vis_scheduler.py \
 你可以使用如下命令来绘制配置文件 `configs/resnet/resnet50_b16x8_cifar100.py` 将会使用的变化率曲线：
 
 ```bash
-python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
+python tools/visualization/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
@@ -46,7 +46,7 @@ python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar
 当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
 
 ```bash
-python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
+python tools/visualization/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>

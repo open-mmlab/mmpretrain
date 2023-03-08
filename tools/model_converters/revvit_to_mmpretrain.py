@@ -69,12 +69,6 @@ def convert_revvit(ckpt):
         else:
             final_ckpt[k] = v
 
-        # add pos embed for cls token
-        if k == 'backbone.pos_embed':
-            v = torch.cat([torch.ones_like(v).mean(dim=1, keepdim=True), v],
-                          dim=1)
-            final_ckpt[k] = v
-
     return final_ckpt
 
 
