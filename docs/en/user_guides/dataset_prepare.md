@@ -24,7 +24,8 @@ If your dataset is not in the abvove list, you could reorganize the format of yo
 Place all samples in one folder as below:
 
 ```text
-Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names. As follows, class_x and class_y represent different categories.):
+Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names.
+As follows, class_x and class_y represent different categories.):
     data_prefix/
     ├── class_x
     │   ├── xxx.png

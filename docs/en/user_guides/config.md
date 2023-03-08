@@ -70,7 +70,7 @@ This primitive config file includes a dict variable `model`, which mainly includ
 
 - `type`: The type of model to build, we support several tasks.
   - For image classification tasks, it's usually `'ImageClassifier'` You can find more details in the [API documentation](mmpretrain.models.classifiers).
-  - For self-supervised leanrnnig, there are several `'SelfSupervisors'`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
+  - For self-supervised leanrning, there are several `'SelfSupervisors'`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
   - For image retrieval tasks, it's usually `'ImageToImageRetriever'` You can find more details in the [API documentation](mmpretrain.models.retrievers).
 - `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
   - For self-supervised leanrnnig, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
@@ -276,7 +276,7 @@ env_cfg = dict(
 # set visualizer
 vis_backends = [dict(type='LocalVisBackend')]  # use local HDD backend
 visualizer = dict(
-    type='ClsVisualizer', vis_backends=vis_backends, name='visualizer')
+    type='UniversalVisualizer', vis_backends=vis_backends, name='visualizer')
 
 # set log level
 log_level = 'INFO'

@@ -90,7 +90,6 @@ auto_scale_lr = dict(base_batch_size=4096)
 
 The dataset related config is defined in `'../_base_/datasets/imagenet_bs512_mae.py'` in `_base_`. We then copy the content of dataset config file into our created file `mae_vit-base-p16_8xb512-coslr-400e_${custom_dataset}.py`.
 
-- Then we remove the `'../_base_/datasets/imagenet_bs512_mae.py'` in `_base_`.
 - Set the `dataset_type = 'CustomDataset'`, and the path of the custom dataset ` data_root = /dataset/my_custom_dataset`.
 - Remove the `ann_file` in `train_dataloader`, and edit the `data_prefix` if needed.
 
@@ -100,38 +99,20 @@ And the edited config will be like this:
 # >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
     '../_base_/models/mae_vit-base-p16.py',
-    # '../_base_/datasets/imagenet_mae.py',
+    '../_base_/datasets/imagenet_mae.py',
     '../_base_/default_runtime.py',
 ]
 
 # custom dataset
 dataset_type = 'CustomDataset'
 data_root = 'data/custom_dataset/'
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=224,
-        crop_ratio_range=(0.2, 1.0),
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PackInputs')
-]
 
-# dataset 8 x 512
 train_dataloader = dict(
-    batch_size=512,
-    num_workers=8,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    collate_fn=dict(type='default_collate'),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
         # ann_file='meta/train.txt', # removed if you don't have the annotation file
-        data_prefix=dict(img_path='./'),
-        pipeline=train_pipeline))
+        data_prefix=dict(img_path='./'))
 # <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # optimizer wrapper
@@ -200,37 +181,20 @@ Follow the aforementioned idea, we also present an example of how to train MAE o
 # >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
     '../_base_/models/mae_vit-base-p16.py',
-    # '../_base_/datasets/imagenet_mae.py',
+    '../_base_/datasets/imagenet_mae.py',
     '../_base_/default_runtime.py',
 ]
 
 # custom dataset
 dataset_type = 'mmdet.CocoDataset'
 data_root = 'data/coco/'
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=224,
-        crop_ratio_range=(0.2, 1.0),
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PackInputs')
-]
 
 train_dataloader = dict(
-    batch_size=128,
-    num_workers=8,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    collate_fn=dict(type='default_collate'),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file='annotations/instances_train2017.json',
-        data_prefix=dict(img='train2017/'),
-        pipeline=train_pipeline))
+        data_prefix=dict(img='train2017/')))
 
 # <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -296,7 +260,7 @@ The template config is `configs/simclr/simclr_resnet50_8xb32-coslr-200e_in1k.py`
 ```python
 # >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
-    # '../_base_/datasets/imagenet_bs32_simclr.py',
+    '../_base_/datasets/imagenet_bs32_simclr.py',
     '../_base_/schedules/imagenet_lars_coslr_200e-200e_in1k.py',
     '../_base_/default_runtime.py',
 ]
@@ -304,55 +268,13 @@ _base_ = [
 # custom dataset
 dataset_type = 'CustomDataset'
 data_root = 'data/custom_dataset/'
-data_preprocessor = dict(
-    type='SelfSupDataPreprocessor',
-    mean=[123.675, 116.28, 103.53],
-    std=[58.395, 57.12, 57.375],
-    to_rgb=True)
-view_pipeline = [
-    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
-    dict(type='RandomFlip', prob=0.5),
-    dict(
-        type='RandomApply',
-        transforms=[
-            dict(
-                type='ColorJitter',
-                brightness=0.8,
-                contrast=0.8,
-                saturation=0.8,
-                hue=0.2)
-        ],
-        prob=0.8),
-    dict(
-        type='RandomGrayscale',
-        prob=0.2,
-        keep_channels=True,
-        channel_weights=(0.114, 0.587, 0.2989)),
-    dict(
-        type='GaussianBlur',
-        magnitude_range=(0.1, 2.0),
-        magnitude_std='inf',
-        prob=0.5),
-]
-
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='MultiView', num_views=2, transforms=[view_pipeline]),
-    dict(type='PackInputs')
-]
 
 train_dataloader = dict(
-    batch_size=32,
-    num_workers=4,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    collate_fn=dict(type='default_collate'),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
         # ann_file='meta/train.txt',
-        data_prefix=dict(img_path='./'),
-        pipeline=train_pipeline))
+        data_prefix=dict(img_path='./')))
 # <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # model settings
