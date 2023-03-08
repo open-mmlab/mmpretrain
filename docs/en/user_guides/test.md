@@ -7,7 +7,7 @@
     - [Multiple machines in the same network](#multiple-machines-in-the-same-network)
     - [Multiple machines managed with slurm](#multiple-machines-managed-with-slurm)
 
-For image classification task and image retrieval task, 
+For image classification task and image retrieval task, you could test your model after training.
 
 ## Test with your PC
 
