@@ -11,11 +11,13 @@ Welcome to MMPretrain's documentation!
    :maxdepth: 1
    :caption: User Guides
 
-   user_guides/inference.md
-   user_guides/dataset_prepare.md
-   user_guides/train_test.md
    user_guides/config.md
+   user_guides/dataset_prepare.md
+   user_guides/inference.md
+   user_guides/train.md
+   user_guides/test.md
    user_guides/finetune.md
+   user_guides/pretrain_custom_dataset.md
 
 .. toctree::
    :maxdepth: 1
