@@ -17,7 +17,7 @@ model = dict(
         img_size=224,
         patch_size=16,
         frozen_stages=12,
-        avg_token=False,
+        out_type='cls_token',
         final_norm=True,
         init_cfg=dict(type='Pretrained', checkpoint='')),
     neck=dict(type='ClsBatchNormNeck', input_features=768),

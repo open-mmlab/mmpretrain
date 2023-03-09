@@ -127,5 +127,5 @@ class TestRevVisionTransformer(TestCase):
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
-            avg_token = outs[-1]
-            self.assertEqual(avg_token.shape, (1, 768 * 2))
+            avg_featmap = outs[-1]
+            self.assertEqual(avg_featmap.shape, (1, 768 * 2))
