@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import sys
-from typing import Sequence
 
 import numpy as np
 import torch
-from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
@@ -14,7 +12,8 @@ from torch.autograd import Function as Function
 
 from mmpretrain.models.backbones.base_backbone import BaseBackbone
 from mmpretrain.registry import MODELS
-from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
+from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
+                     to_2tuple)
 
 
 class RevBackProp(Function):
@@ -152,9 +151,7 @@ class RevTransformerEncoderLayer(BaseModule):
         self.drop_path_cfg = dict(type='DropPath', drop_prob=drop_path_rate)
         self.embed_dims = embed_dims
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.attn = MultiheadAttention(
             embed_dims=embed_dims,
@@ -163,9 +160,7 @@ class RevTransformerEncoderLayer(BaseModule):
             proj_drop=drop_rate,
             qkv_bias=qkv_bias)
 
-        self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=2)
-        self.add_module(self.norm2_name, norm2)
+        self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.ffn = FFN(
             embed_dims=embed_dims,
@@ -177,14 +172,6 @@ class RevTransformerEncoderLayer(BaseModule):
 
         self.layer_id = layer_id
         self.seeds = {}
-
-    @property
-    def norm1(self):
-        return getattr(self, self.norm1_name)
-
-    @property
-    def norm2(self):
-        return getattr(self, self.norm2_name)
 
     def init_weights(self):
         super(RevTransformerEncoderLayer, self).init_weights()
@@ -215,13 +202,13 @@ class RevTransformerEncoderLayer(BaseModule):
         Implementation of Reversible TransformerEncoderLayer
 
         `
-        x = x + self.attn(self.norm1(x))
-        x = self.ffn(self.norm2(x), identity=x)
+        x = x + self.attn(self.ln1(x))
+        x = self.ffn(self.ln2(x), identity=x)
         `
         """
         self.seed_cuda('attn')
         # attention output
-        f_x2 = self.attn(self.norm1(x2))
+        f_x2 = self.attn(self.ln1(x2))
         # apply droppath on attention output
         self.seed_cuda('droppath')
         f_x2_dropped = build_dropout(self.drop_path_cfg)(f_x2)
@@ -233,7 +220,7 @@ class RevTransformerEncoderLayer(BaseModule):
 
         # ffn output
         self.seed_cuda('ffn')
-        g_y1 = self.ffn(self.norm2(y1))
+        g_y1 = self.ffn(self.ln2(y1))
         # apply droppath on ffn output
         torch.manual_seed(self.seeds['droppath'])
         g_y1_dropped = build_dropout(self.drop_path_cfg)(g_y1)
@@ -259,7 +246,7 @@ class RevTransformerEncoderLayer(BaseModule):
             y1.requires_grad = True
 
             torch.manual_seed(self.seeds['ffn'])
-            g_y1 = self.ffn(self.norm2(y1))
+            g_y1 = self.ffn(self.ln2(y1))
 
             torch.manual_seed(self.seeds['droppath'])
             g_y1 = build_dropout(self.drop_path_cfg)(g_y1)
@@ -280,7 +267,7 @@ class RevTransformerEncoderLayer(BaseModule):
             x2.requires_grad = True
 
             torch.manual_seed(self.seeds['attn'])
-            f_x2 = self.attn(self.norm1(x2))
+            f_x2 = self.attn(self.ln1(x2))
 
             torch.manual_seed(self.seeds['droppath'])
             f_x2 = build_dropout(self.drop_path_cfg)(f_x2)
@@ -337,7 +324,8 @@ class TwoStreamFusion(nn.Module):
 class RevVisionTransformer(BaseBackbone):
     """Reversible Vision Transformer.
 
-    A PyTorch implementation of : `Reversible Vision Transformers <https://openaccess.thecvf.com/content/CVPR2022/papers/Mangalam_Reversible_Vision_Transformers_CVPR_2022_paper.pdf>`_ # noqa: E501
+    A PyTorch implementation of : `Reversible Vision Transformers
+    <https://openaccess.thecvf.com/content/CVPR2022/html/Mangalam_Reversible_Vision_Transformers_CVPR_2022_paper.html>`_ # noqa: E501
 
     Args:
         arch (str | dict): Vision Transformer architecture. If use string,
@@ -357,8 +345,6 @@ class RevVisionTransformer(BaseBackbone):
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 16.
         in_channels (int): The num of input channels. Defaults to 3.
-        out_indices (Sequence | int): Output from which stages.
-            Defaults to -1, means the last stage.
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
@@ -368,15 +354,21 @@ class RevVisionTransformer(BaseBackbone):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"avg_featmap"``.
         with_cls_token (bool): Whether concatenating class token into image
-            tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not to use the mean patch token for
-            classification. If True, the model will only take the average
-            of all patch tokens. Defaults to False.
+            tokens as transformer input. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -443,24 +435,22 @@ class RevVisionTransformer(BaseBackbone):
                 'feedforward_channels': 768 * 4
             }),
     }
-    # Some structures have multiple extra tokens, like DeiT.
-    num_extra_tokens = 1  # cls_token
+    num_extra_tokens = 0  # The official RevViT doesn't have class token
+    OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
 
     def __init__(self,
                  arch='base',
                  img_size=224,
                  patch_size=16,
                  in_channels=3,
-                 out_indices=-1,
                  drop_rate=0.,
                  drop_path_rate=0.,
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
+                 out_type='avg_featmap',
                  with_cls_token=False,
-                 avg_token=True,
                  frozen_stages=-1,
-                 output_cls_token=False,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -501,15 +491,22 @@ class RevVisionTransformer(BaseBackbone):
         self.patch_resolution = self.patch_embed.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
-        # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
-        assert with_cls_token is False, 'with_cls_token=True is not supported'
+        # Set out type
+        if out_type not in self.OUT_TYPES:
+            raise ValueError(f'Unsupported `out_type` {out_type}, please '
+                             f'choose from {self.OUT_TYPES}')
+        self.out_type = out_type
 
-        self.output_cls_token = output_cls_token
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        # Set cls token
+        if with_cls_token:
+            self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+            self.num_extra_tokens = 1
+        elif out_type != 'cls_token':
+            self.cls_token = None
+            self.num_extra_tokens = 0
+        else:
+            raise ValueError(
+                'with_cls_token must be True when `out_type="cls_token"`.')
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
@@ -519,20 +516,6 @@ class RevVisionTransformer(BaseBackbone):
         self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
-
-        if isinstance(out_indices, int):
-            out_indices = [out_indices]
-        assert isinstance(out_indices, Sequence), \
-            f'"out_indices" must by a sequence or int, ' \
-            f'get {type(out_indices)} instead.'
-        for i, index in enumerate(out_indices):
-            if index < 0:
-                out_indices[i] = self.num_layers + index
-            assert 0 <= out_indices[i] <= self.num_layers, \
-                f'Invalid out_indices {index}'
-        self.out_indices = out_indices
-        assert out_indices == [-1] or out_indices == [self.num_layers - 1], \
-            f'only support output last layer current, but got {out_indices}'
 
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
@@ -560,19 +543,11 @@ class RevVisionTransformer(BaseBackbone):
         self.frozen_stages = frozen_stages
         self.final_norm = final_norm
         if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims * 2, postfix=1)
-            self.add_module(self.norm1_name, norm1)
-
-        self.avg_token = avg_token
+            self.ln1 = build_norm_layer(norm_cfg, self.embed_dims * 2)
 
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
-
-    @property
-    def norm1(self):
-        return getattr(self, self.norm1_name)
 
     def init_weights(self):
         super(RevVisionTransformer, self).init_weights()
@@ -618,7 +593,8 @@ class RevVisionTransformer(BaseBackbone):
         for param in self.patch_embed.parameters():
             param.requires_grad = False
         # freeze cls_token
-        # self.cls_token.requires_grad = False
+        if self.cls_token is not None:
+            self.cls_token.requires_grad = False
         # freeze layers
         for i in range(1, self.frozen_stages + 1):
             m = self.layers[i - 1]
@@ -627,17 +603,17 @@ class RevVisionTransformer(BaseBackbone):
                 param.requires_grad = False
         # freeze the last layer norm
         if self.frozen_stages == len(self.layers) and self.final_norm:
-            self.norm1.eval()
-            for param in self.norm1.parameters():
+            self.ln1.eval()
+            for param in self.ln1.parameters():
                 param.requires_grad = False
 
     def forward(self, x):
         B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        if self.cls_token is not None:
+            cls_token = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_token, x), dim=1)
 
         x = x + resize_pos_embed(
             self.pos_embed,
@@ -646,10 +622,6 @@ class RevVisionTransformer(BaseBackbone):
             mode=self.interpolate_mode,
             num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
-
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
 
         x = torch.cat([x, x], dim=-1)
 
@@ -664,33 +636,10 @@ class RevVisionTransformer(BaseBackbone):
         x = executing_fn(x, self.layers, [])
 
         if self.final_norm:
-            x = self.norm1(x)
+            x = self.ln1(x)
         x = self.fusion_layer(x)
 
-        if self.with_cls_token:
-            # RevViT does not allow cls_token
-            raise NotImplementedError
-        else:
-            # (B, H, W, C)
-            _, __, C = x.shape
-            patch_token = x.reshape(B, *patch_resolution, C)
-            # (B, C, H, W)
-            patch_token = patch_token.permute(0, 3, 1, 2)
-            cls_token = None
-
-        if self.avg_token:
-            # (B, H, W, C)
-            patch_token = patch_token.permute(0, 2, 3, 1)
-            # (B, L, C) -> (B, C)
-            patch_token = patch_token.reshape(
-                B, patch_resolution[0] * patch_resolution[1], C).mean(dim=1)
-
-        if self.output_cls_token:
-            out = [patch_token, cls_token]
-        else:
-            out = patch_token
-
-        return tuple([out])
+        return (self._format_output(x, patch_resolution), )
 
     @staticmethod
     def _forward_vanilla_bp(hidden_state, layers, buffer=[]):
@@ -706,3 +655,17 @@ class RevVisionTransformer(BaseBackbone):
             attn_out, ffn_out = layer(attn_out, ffn_out)
 
         return torch.cat([attn_out, ffn_out], dim=-1)
+
+    def _format_output(self, x, hw):
+        if self.out_type == 'raw':
+            return x
+        if self.out_type == 'cls_token':
+            return x[:, 0]
+
+        patch_token = x[:, self.num_extra_tokens:]
+        if self.out_type == 'featmap':
+            B = x.size(0)
+            # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
+            return patch_token.reshape(B, *hw, -1).permute(0, 3, 1, 2)
+        if self.out_type == 'avg_featmap':
+            return patch_token.mean(dim=1)

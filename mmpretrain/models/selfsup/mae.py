@@ -33,8 +33,17 @@ class MAEViT(VisionTransformer):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            `with_cls_token` must be True. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            It only works without input mask. Defaults to ``"avg_featmap"``.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -55,7 +64,7 @@ class MAEViT(VisionTransformer):
                  drop_path_rate: float = 0,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  final_norm: bool = True,
-                 output_cls_token: bool = True,
+                 out_type: str = 'avg_featmap',
                  interpolate_mode: str = 'bicubic',
                  patch_cfg: dict = dict(),
                  layer_cfgs: dict = dict(),
@@ -70,7 +79,8 @@ class MAEViT(VisionTransformer):
             drop_path_rate=drop_path_rate,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
-            output_cls_token=output_cls_token,
+            out_type=out_type,
+            with_cls_token=True,
             interpolate_mode=interpolate_mode,
             patch_cfg=patch_cfg,
             layer_cfgs=layer_cfgs,

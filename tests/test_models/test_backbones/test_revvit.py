@@ -49,16 +49,6 @@ class TestRevVisionTransformer(TestCase):
             self.assertEqual(layer.attn.num_heads, 16)
             self.assertEqual(layer.ffn.feedforward_channels, 1024)
 
-        # Test out_indices
-        # TODO: to be implemented, current only support last layer
-        cfg = deepcopy(self.cfg)
-        cfg['out_indices'] = {1: 1}
-        with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
-            RevVisionTransformer(**cfg)
-        cfg['out_indices'] = [13]
-        with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 13'):
-            RevVisionTransformer(**cfg)
-
         # Test model structure
         cfg = deepcopy(self.cfg)
         model = RevVisionTransformer(**cfg)
@@ -108,8 +98,8 @@ class TestRevVisionTransformer(TestCase):
         cfg['img_size'] = 384
         model = RevVisionTransformer(**cfg)
         load_checkpoint(model, checkpoint, strict=True)
-        resized_pos_embed = timm_resize_pos_embed(pretrain_pos_embed,
-                                                  model.pos_embed)
+        resized_pos_embed = timm_resize_pos_embed(
+            pretrain_pos_embed, model.pos_embed, num_tokens=0)
         self.assertTrue(torch.allclose(model.pos_embed, resized_pos_embed))
 
         os.remove(checkpoint)
@@ -119,7 +109,7 @@ class TestRevVisionTransformer(TestCase):
 
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
-        cfg['output_cls_token'] = False
+        cfg['out_type'] = 'avg_featmap'
         model = RevVisionTransformer(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
@@ -137,5 +127,5 @@ class TestRevVisionTransformer(TestCase):
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
-            avg_token = outs[-1]
-            self.assertEqual(avg_token.shape, (1, 768 * 2))
+            avg_featmap = outs[-1]
+            self.assertEqual(avg_featmap.shape, (1, 768 * 2))

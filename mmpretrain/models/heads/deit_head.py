@@ -47,7 +47,12 @@ class DeiTClsHead(VisionTransformerClsHead):
         the feature of a backbone stage. In ``DeiTClsHead``, we obtain the
         feature of the last stage and forward in hidden layer if exists.
         """
-        _, cls_token, dist_token = feats[-1]
+        feat = feats[-1]  # Obtain feature of the last scale.
+        # For backward-compatibility with the previous ViT output
+        if len(feat) == 3:
+            _, cls_token, dist_token = feat
+        else:
+            cls_token, dist_token = feat
         if self.hidden_dim is None:
             return cls_token, dist_token
         else:

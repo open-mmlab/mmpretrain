@@ -217,8 +217,17 @@ class CAEPretrainViT(BEiTViT):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            `with_cls_token` must be True. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            It only works without input mask. Defaults to ``"avg_featmap"``.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         layer_scale_init_value (float, optional): The init value of gamma in
@@ -242,10 +251,8 @@ class CAEPretrainViT(BEiTViT):
         bias: bool = 'qv_bias',
         norm_cfg: dict = dict(type='LN', eps=1e-6),
         final_norm: bool = True,
-        with_cls_token: bool = True,
-        avg_token: bool = False,
+        out_type: str = 'avg_featmap',
         frozen_stages: int = -1,
-        output_cls_token: bool = True,
         use_abs_pos_emb: bool = True,
         use_rel_pos_bias: bool = False,
         use_shared_rel_pos_bias: bool = False,
@@ -270,10 +277,9 @@ class CAEPretrainViT(BEiTViT):
             bias=bias,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
-            with_cls_token=with_cls_token,
-            avg_token=avg_token,
+            out_type=out_type,
+            with_cls_token=True,
             frozen_stages=frozen_stages,
-            output_cls_token=output_cls_token,
             use_abs_pos_emb=use_abs_pos_emb,
             use_rel_pos_bias=use_rel_pos_bias,
             use_shared_rel_pos_bias=use_shared_rel_pos_bias,

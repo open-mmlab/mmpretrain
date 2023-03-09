@@ -4,13 +4,12 @@ from typing import List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 
 from mmpretrain.registry import MODELS
-from ..utils import (BEiTAttention, resize_pos_embed,
+from ..utils import (BEiTAttention, build_norm_layer, resize_pos_embed,
                      resize_relative_position_bias_table, to_2tuple)
 from .vision_transformer import TransformerEncoderLayer, VisionTransformer
 
@@ -203,12 +202,12 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                 rel_pos_bias: torch.Tensor) -> torch.Tensor:
         if self.gamma_1 is None:
             x = x + self.drop_path(
-                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
-            x = x + self.drop_path(self.ffn(self.norm2(x)))
+                self.attn(self.ln1(x), rel_pos_bias=rel_pos_bias))
+            x = x + self.drop_path(self.ffn(self.ln2(x)))
         else:
             x = x + self.drop_path(self.gamma_1 * self.attn(
-                self.norm1(x), rel_pos_bias=rel_pos_bias))
-            x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
+                self.ln1(x), rel_pos_bias=rel_pos_bias))
+            x = x + self.drop_path(self.gamma_2 * self.ffn(self.ln2(x)))
         return x
 
 
@@ -251,15 +250,21 @@ class BEiTViT(VisionTransformer):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: The class token tensor with shape (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"avg_featmap"``.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not to use the mean patch token for
-            classification. If True, the model will only take the average
-            of all patch tokens. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
         use_abs_pos_emb (bool): Use position embedding like vanilla ViT.
             Defaults to False.
         use_rel_pos_bias (bool): Use relative position embedding in each
@@ -289,10 +294,9 @@ class BEiTViT(VisionTransformer):
                  bias='qv_bias',
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
+                 out_type='avg_featmap',
                  with_cls_token=True,
-                 avg_token=True,
                  frozen_stages=-1,
-                 output_cls_token=False,
                  use_abs_pos_emb=False,
                  use_rel_pos_bias=True,
                  use_shared_rel_pos_bias=False,
@@ -334,17 +338,25 @@ class BEiTViT(VisionTransformer):
         self.patch_resolution = self.patch_embed.init_out_size
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
-        # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
-        self.output_cls_token = output_cls_token
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        # Set out type
+        if out_type not in self.OUT_TYPES:
+            raise ValueError(f'Unsupported `out_type` {out_type}, please '
+                             f'choose from {self.OUT_TYPES}')
+        self.out_type = out_type
 
-        self.interpolate_mode = interpolate_mode
+        # Set cls token
+        if with_cls_token:
+            self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+            self.num_extra_tokens = 1
+        elif out_type != 'cls_token':
+            self.cls_token = None
+            self.num_extra_tokens = 0
+        else:
+            raise ValueError(
+                'with_cls_token must be True when `out_type="cls_token"`.')
 
         # Set position embedding
+        self.interpolate_mode = interpolate_mode
         if use_abs_pos_emb:
             self.pos_embed = nn.Parameter(
                 torch.zeros(1, num_patches + self.num_extra_tokens,
@@ -405,15 +417,10 @@ class BEiTViT(VisionTransformer):
         self.frozen_stages = frozen_stages
         self.final_norm = final_norm
         if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
-            self.add_module(self.norm1_name, norm1)
+            self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
 
-        self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
+        if out_type == 'avg_featmap':
+            self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
@@ -423,9 +430,10 @@ class BEiTViT(VisionTransformer):
         B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
-        # stole cls_tokens impl from Phil Wang, thanks
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
+        if self.cls_token is not None:
+            # stole cls_tokens impl from Phil Wang, thanks
+            cls_token = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_token, x), dim=1)
 
         if self.pos_embed is not None:
             x = x + resize_pos_embed(
@@ -439,41 +447,31 @@ class BEiTViT(VisionTransformer):
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
 
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
-
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x, rel_pos_bias)
 
             if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+                x = self.ln1(x)
 
             if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-
-                if self.avg_token:
-                    patch_token = patch_token.permute(0, 2, 3, 1)
-                    patch_token = patch_token.reshape(
-                        B, patch_resolution[0] * patch_resolution[1],
-                        C).mean(dim=1)
-                    patch_token = self.norm2(patch_token)
-                if self.output_cls_token:
-                    out = [patch_token, cls_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
+
+    def _format_output(self, x, hw):
+        if self.out_type == 'raw':
+            return x
+        if self.out_type == 'cls_token':
+            return x[:, 0]
+
+        patch_token = x[:, self.num_extra_tokens:]
+        if self.out_type == 'featmap':
+            B = x.size(0)
+            # (B, N, C) -> (B, H, W, C) -> (B, C, H, W)
+            return patch_token.reshape(B, *hw, -1).permute(0, 3, 1, 2)
+        if self.out_type == 'avg_featmap':
+            return self.ln2(patch_token.mean(dim=1))
 
     def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
                                               **kwargs):

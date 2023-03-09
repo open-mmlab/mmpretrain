@@ -196,7 +196,7 @@ class MixMIMBlock(TransformerEncoderLayer):
         B, L, C = x.shape
 
         shortcut = x
-        x = self.norm1(x)
+        x = self.ln1(x)
         x = x.view(B, H, W, C)
 
         # partition windows

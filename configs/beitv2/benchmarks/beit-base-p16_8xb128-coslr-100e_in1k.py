@@ -14,8 +14,7 @@ model = dict(
         patch_size=16,
         # 0.2 for 1600 epochs pretrained models and 0.1 for 300 epochs.
         drop_path_rate=0.1,
-        avg_token=True,
-        output_cls_token=False,
+        out_type='avg_featmap',
         use_abs_pos_emb=False,
         use_rel_pos_bias=True,
         use_shared_rel_pos_bias=False),

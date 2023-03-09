@@ -62,37 +62,19 @@ class TestDeiT(TestCase):
     def test_forward(self):
         imgs = torch.randn(1, 3, 224, 224)
 
-        # test with_cls_token=False
-        cfg = deepcopy(self.cfg)
-        cfg['with_cls_token'] = False
-        cfg['output_cls_token'] = True
-        with self.assertRaisesRegex(AssertionError, 'but got False'):
-            DistilledVisionTransformer(**cfg)
-
-        cfg = deepcopy(self.cfg)
-        cfg['with_cls_token'] = False
-        cfg['output_cls_token'] = False
-        model = DistilledVisionTransformer(**cfg)
-        outs = model(imgs)
-        self.assertIsInstance(outs, tuple)
-        self.assertEqual(len(outs), 1)
-        patch_token = outs[-1]
-        self.assertEqual(patch_token.shape, (1, 192, 14, 14))
-
-        # test with output_cls_token
+        # test with output cls_token
         cfg = deepcopy(self.cfg)
         model = DistilledVisionTransformer(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
-        patch_token, cls_token, dist_token = outs[-1]
-        self.assertEqual(patch_token.shape, (1, 192, 14, 14))
+        cls_token, dist_token = outs[-1]
         self.assertEqual(cls_token.shape, (1, 192))
         self.assertEqual(dist_token.shape, (1, 192))
 
-        # test without output_cls_token
+        # test without output cls_token
         cfg = deepcopy(self.cfg)
-        cfg['output_cls_token'] = False
+        cfg['out_type'] = 'featmap'
         model = DistilledVisionTransformer(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
@@ -108,8 +90,7 @@ class TestDeiT(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 3)
         for out in outs:
-            patch_token, cls_token, dist_token = out
-            self.assertEqual(patch_token.shape, (1, 192, 14, 14))
+            cls_token, dist_token = out
             self.assertEqual(cls_token.shape, (1, 192))
             self.assertEqual(dist_token.shape, (1, 192))
 
@@ -118,14 +99,13 @@ class TestDeiT(TestCase):
         imgs2 = torch.randn(1, 3, 256, 256)
         imgs3 = torch.randn(1, 3, 256, 309)
         cfg = deepcopy(self.cfg)
+        cfg['out_type'] = 'featmap'
         model = DistilledVisionTransformer(**cfg)
         for imgs in [imgs1, imgs2, imgs3]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
-            patch_token, cls_token, dist_token = outs[-1]
+            featmap = outs[-1]
             expect_feat_shape = (math.ceil(imgs.shape[2] / 16),
                                  math.ceil(imgs.shape[3] / 16))
-            self.assertEqual(patch_token.shape, (1, 192, *expect_feat_shape))
-            self.assertEqual(cls_token.shape, (1, 192))
-            self.assertEqual(dist_token.shape, (1, 192))
+            self.assertEqual(featmap.shape, (1, 192, *expect_feat_shape))

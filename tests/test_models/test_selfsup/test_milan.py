@@ -24,9 +24,7 @@ def test_milan_vit():
 
     # test without mask
     fake_outputs = milan_backbone(fake_inputs, None)
-    assert len(fake_outputs[0]) == 2
-    assert fake_outputs[0][0].shape == torch.Size([2, 768, 14, 14])
-    assert fake_outputs[0][1].shape == torch.Size([2, 768])
+    assert fake_outputs[0].shape == torch.Size([2, 768])
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')

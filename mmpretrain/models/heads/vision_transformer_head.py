@@ -80,7 +80,9 @@ class VisionTransformerClsHead(ClsHead):
         obtain the feature of the last stage and forward in hidden layer if
         exists.
         """
-        _, cls_token = feats[-1]
+        feat = feats[-1]  # Obtain feature of the last scale.
+        # For backward-compatibility with the previous ViT output
+        cls_token = feat[-1] if isinstance(feat, list) else feat
         if self.hidden_dim is None:
             return cls_token
         else:

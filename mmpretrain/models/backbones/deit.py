@@ -43,10 +43,18 @@ class DistilledVisionTransformer(VisionTransformer):
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
-        with_cls_token (bool): Whether concatenating class token into image
-            tokens as transformer input. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            ``with_cls_token`` must be True. Defaults to True.
+        out_type (str): The type of output features. Please choose from
+
+            - ``"cls_token"``: A tuple with the class token and the
+              distillation token. The shapes of both tensor are (B, C).
+            - ``"featmap"``: The feature map tensor from the patch tokens
+              with shape (B, C, H, W).
+            - ``"avg_featmap"``: The global averaged feature map tensor
+              with shape (B, C).
+            - ``"raw"``: The raw feature tensor includes patch tokens and
+              class tokens with shape (B, L, C).
+
+            Defaults to ``"cls_token"``.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -55,11 +63,15 @@ class DistilledVisionTransformer(VisionTransformer):
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
-    num_extra_tokens = 2  # cls_token, dist_token
+    num_extra_tokens = 2  # class token and distillation token
 
     def __init__(self, arch='deit-base', *args, **kwargs):
         super(DistilledVisionTransformer, self).__init__(
-            arch=arch, *args, **kwargs)
+            arch=arch,
+            with_cls_token=True,
+            *args,
+            **kwargs,
+        )
         self.dist_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
     def forward(self, x):
@@ -78,36 +90,23 @@ class DistilledVisionTransformer(VisionTransformer):
             num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 2:]
-
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
 
             if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+                x = self.ln1(x)
 
             if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 2:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                    dist_token = x[:, 1]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-                    dist_token = None
-                if self.output_cls_token:
-                    out = [patch_token, cls_token, dist_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
+
+    def _format_output(self, x, hw):
+        if self.out_type == 'cls_token':
+            return x[:, 0], x[:, 1]
+
+        return super()._format_output(x, hw)
 
     def init_weights(self):
         super(DistilledVisionTransformer, self).init_weights()
