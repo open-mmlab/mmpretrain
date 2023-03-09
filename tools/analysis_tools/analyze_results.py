@@ -10,7 +10,7 @@ from mmengine import DictAction
 
 from mmpretrain.datasets import build_dataset
 from mmpretrain.structures import ClsDataSample
-from mmpretrain.visualization import ClsVisualizer
+from mmpretrain.visualization import UniversalVisualizer
 
 
 def parse_args():
@@ -47,7 +47,7 @@ def parse_args():
 
 def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
     full_dir = osp.join(result_dir, folder_name)
-    vis = ClsVisualizer()
+    vis = UniversalVisualizer()
     vis.dataset_meta = {'classes': dataset.CLASSES}
 
     # save imgs
@@ -67,8 +67,8 @@ def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
             raise ValueError('Cannot load images from the dataset infos.')
         if rescale_factor is not None:
             img = mmcv.imrescale(img, rescale_factor)
-        vis.add_datasample(
-            name, img, data_sample, out_file=osp.join(full_dir, name + '.png'))
+        vis.visualize_cls(
+            img, data_sample, out_file=osp.join(full_dir, name + '.png'))
 
         for k, v in result.items():
             if isinstance(v, torch.Tensor):

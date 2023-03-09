@@ -3,18 +3,15 @@ import argparse
 import os.path as osp
 import sys
 
-import cv2
 import mmcv
-import numpy as np
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
 from mmengine.registry import init_default_scope
 from mmengine.utils import ProgressBar
-from mmengine.visualization import Visualizer
+from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.datasets.builder import build_dataset
-from mmpretrain.visualization import ClsVisualizer
-from mmpretrain.visualization.cls_visualizer import _get_adaptive_scale
+from mmpretrain.visualization import UniversalVisualizer, create_figure
 
 
 def parse_args():
@@ -90,49 +87,20 @@ def parse_args():
 
 def make_grid(imgs, names, rescale_factor=None):
     """Concat list of pictures into a single big picture, align height here."""
-    vis = Visualizer()
+    figure = create_figure()
+    gs = figure.add_gridspec(1, len(imgs))
 
     ori_shapes = [img.shape[:2] for img in imgs]
     if rescale_factor is not None:
         imgs = [mmcv.imrescale(img, rescale_factor) for img in imgs]
 
-    max_height = int(max(img.shape[0] for img in imgs) * 1.1)
-    min_width = min(img.shape[1] for img in imgs)
-    horizontal_gap = min_width // 10
-    img_scale = _get_adaptive_scale((max_height, min_width))
-
-    texts = []
-    text_positions = []
-    start_x = 0
     for i, img in enumerate(imgs):
-        pad_height = (max_height - img.shape[0]) // 2
-        pad_width = horizontal_gap // 2
-        # make border
-        imgs[i] = cv2.copyMakeBorder(
-            img,
-            pad_height,
-            max_height - img.shape[0] - pad_height + int(img_scale * 30 * 2),
-            pad_width,
-            pad_width,
-            cv2.BORDER_CONSTANT,
-            value=(255, 255, 255))
+        subplot = figure.add_subplot(gs[0, i])
+        subplot.axis(False)
+        subplot.imshow(img)
+        subplot.set_title(f'{names[i]}\n{ori_shapes[i]}')
 
-        texts.append(f'{names[i]}\n{ori_shapes[i]}')
-        text_positions.append(
-            [start_x + img.shape[1] // 2 + pad_width, max_height])
-        start_x += img.shape[1] + horizontal_gap
-
-    display_img = np.concatenate(imgs, axis=1)
-    vis.set_image(display_img)
-    img_scale = _get_adaptive_scale(display_img.shape[:2])
-    vis.draw_texts(
-        texts,
-        positions=np.array(text_positions),
-        font_sizes=img_scale * 7,
-        colors='black',
-        horizontal_alignments='center',
-        font_families='monospace')
-    return vis.get_image()
+    return img_from_canvas(figure.canvas)
 
 
 class InspectCompose(Compose):
@@ -148,7 +116,7 @@ class InspectCompose(Compose):
     def __call__(self, data):
         if 'img' in data:
             self.intermediate_imgs.append({
-                'name': 'original',
+                'name': 'Original',
                 'img': data['img'].copy()
             })
 
@@ -181,7 +149,7 @@ def main():
 
     # init visualizer
     cfg.visualizer.pop('type')
-    visualizer = ClsVisualizer(**cfg.visualizer)
+    visualizer = UniversalVisualizer(**cfg.visualizer)
     visualizer.dataset_meta = dataset.metainfo
 
     # init visualization image number
@@ -220,13 +188,13 @@ def main():
         out_file = osp.join(args.output_dir,
                             filename) if args.output_dir is not None else None
 
-        visualizer.add_datasample(
-            filename,
+        visualizer.visualize_cls(
             image if args.channel_order == 'RGB' else image[..., ::-1],
             data_sample,
             rescale_factor=rescale_factor,
             show=not args.not_show,
             wait_time=args.show_interval,
+            name=filename,
             out_file=out_file)
         progress_bar.update()
 

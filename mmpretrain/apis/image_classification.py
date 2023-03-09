@@ -57,7 +57,8 @@ class ImageClassificationInferencer(BaseInferencer):
     """  # noqa: E501
 
     visualize_kwargs: set = {
-        'rescale_factor', 'draw_score', 'show', 'show_dir'
+        'resize', 'rescale_factor', 'draw_score', 'show', 'show_dir',
+        'wait_time'
     }
 
     def __init__(
@@ -102,6 +103,8 @@ class ImageClassificationInferencer(BaseInferencer):
             return_datasamples (bool): Whether to return results as
                 :obj:`DataSample`. Defaults to False.
             batch_size (int): Batch size. Defaults to 1.
+            resize (int, optional): Resize the short edge of the image to the
+                specified length before visualization. Defaults to None.
             rescale_factor (float, optional): Rescale the image by the rescale
                 factor for visualization. This is helpful when the image is too
                 large or too small for visualization. Defaults to None.
@@ -109,6 +112,8 @@ class ImageClassificationInferencer(BaseInferencer):
                 of prediction categories. Defaults to True.
             show (bool): Whether to display the visualization result in a
                 window. Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
             show_dir (str, optional): If not None, save the visualization
                 results in the specified directory. Defaults to None.
 
@@ -148,6 +153,8 @@ class ImageClassificationInferencer(BaseInferencer):
                   ori_inputs: List[InputType],
                   preds: List[DataSample],
                   show: bool = False,
+                  wait_time: int = 0,
+                  resize: Optional[int] = None,
                   rescale_factor: Optional[float] = None,
                   draw_score=True,
                   show_dir=None):
@@ -155,10 +162,8 @@ class ImageClassificationInferencer(BaseInferencer):
             return None
 
         if self.visualizer is None:
-            from mmpretrain.visualization import ClsVisualizer
-            self.visualizer = ClsVisualizer()
-            if self.classes is not None:
-                self.visualizer._dataset_meta = dict(classes=self.classes)
+            from mmpretrain.visualization import UniversalVisualizer
+            self.visualizer = UniversalVisualizer()
 
         visualization = []
         for i, (input_, data_sample) in enumerate(zip(ori_inputs, preds)):
@@ -177,15 +182,18 @@ class ImageClassificationInferencer(BaseInferencer):
             else:
                 out_file = None
 
-            self.visualizer.add_datasample(
-                name,
+            self.visualizer.visualize_cls(
                 image,
                 data_sample,
+                classes=self.classes,
+                resize=resize,
                 show=show,
+                wait_time=wait_time,
                 rescale_factor=rescale_factor,
                 draw_gt=False,
                 draw_pred=True,
                 draw_score=draw_score,
+                name=name,
                 out_file=out_file)
             visualization.append(self.visualizer.get_image())
         if show:

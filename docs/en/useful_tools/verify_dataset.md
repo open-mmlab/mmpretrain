@@ -1,6 +1,6 @@
 # Verify Dataset
 
-In MMClassification, we also provide a tool `tools/misc/verify_dataset.py` to check whether there exists **broken pictures** in the given dataset.
+In MMPretrain, we also provide a tool `tools/misc/verify_dataset.py` to check whether there exists **broken pictures** in the given dataset.
 
 ## Introduce the tool
 

@@ -30,7 +30,7 @@ class VisualizationHook(Hook):
             in the testing process. If None, handle with the backends of the
             visualizer. Defaults to None.
         **kwargs: other keyword arguments of
-            :meth:`mmpretrain.visualization.ClsVisualizer.add_datasample`.
+            :meth:`mmpretrain.visualization.UniversalVisualizer.visualize_cls`.
     """
 
     def __init__(self,
@@ -88,11 +88,11 @@ class VisualizationHook(Hook):
                 draw_args['out_file'] = join_path(self.out_dir,
                                                   f'{sample_name}_{step}.png')
 
-            self._visualizer.add_datasample(
-                sample_name,
+            self._visualizer.visualize_cls(
                 image=image,
                 data_sample=data_sample,
                 step=step,
+                name=sample_name,
                 **self.draw_args,
             )
 

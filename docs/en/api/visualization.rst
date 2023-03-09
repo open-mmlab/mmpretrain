@@ -6,8 +6,9 @@
 mmpretrain.visualization
 ===================================
 
-This package includes visualizer components for classification tasks.
+This package includes visualizer and some helper functions for visualization.
 
-ClsVisualizer
+Visualizer
 -------------
-.. autoclass:: ClsVisualizer
+.. autoclass:: UniversalVisualizer
+    :members:

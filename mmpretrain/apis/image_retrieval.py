@@ -56,6 +56,9 @@ class ImageRetrievalInferencer(BaseInferencer):
            >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
     """  # noqa: E501
 
+    visualize_kwargs: set = {
+        'draw_score', 'resize', 'show_dir', 'show', 'wait_time'
+    }
     postprocess_kwargs: set = {'topk'}
 
     def __init__(
@@ -86,6 +89,10 @@ class ImageRetrievalInferencer(BaseInferencer):
 
         self.prototype_dataset = self._prepare_prototype(
             prototype, prototype_vecs, prepare_batch_size)
+
+        # An ugly hack to escape from the duplicated arguments check in the
+        # base class
+        self.visualize_kwargs.add('topk')
 
     def _prepare_prototype(self, prototype, prototype_vecs=None, batch_size=8):
         from mmengine.dataset import DefaultSampler
@@ -157,13 +164,14 @@ class ImageRetrievalInferencer(BaseInferencer):
             return_datasamples (bool): Whether to return results as
                 :obj:`DataSample`. Defaults to False.
             batch_size (int): Batch size. Defaults to 1.
-            rescale_factor (float, optional): Rescale the image by the rescale
-                factor for visualization. This is helpful when the image is too
-                large or too small for visualization. Defaults to None.
-            draw_score (bool): Whether to draw the prediction scores
-                of prediction categories. Defaults to True.
+            resize (int, optional): Resize the long edge of the image to the
+                specified length before visualization. Defaults to None.
+            draw_score (bool): Whether to draw the match scores.
+                Defaults to True.
             show (bool): Whether to display the visualization result in a
                 window. Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
             show_dir (str, optional): If not None, save the visualization
                 results in the specified directory. Defaults to None.
 
@@ -202,13 +210,51 @@ class ImageRetrievalInferencer(BaseInferencer):
     def visualize(self,
                   ori_inputs: List[InputType],
                   preds: List[DataSample],
+                  topk: int = 3,
+                  resize: Optional[int] = 224,
                   show: bool = False,
+                  wait_time: int = 0,
                   draw_score=True,
                   show_dir=None):
         if not show and show_dir is None:
             return None
 
-        raise NotImplementedError('Not implemented yet.')
+        if self.visualizer is None:
+            from mmpretrain.visualization import UniversalVisualizer
+            self.visualizer = UniversalVisualizer()
+
+        visualization = []
+        for i, (input_, data_sample) in enumerate(zip(ori_inputs, preds)):
+            image = imread(input_)
+            if isinstance(input_, str):
+                # The image loaded from path is BGR format.
+                image = image[..., ::-1]
+                name = Path(input_).stem
+            else:
+                name = str(i)
+
+            if show_dir is not None:
+                show_dir = Path(show_dir)
+                show_dir.mkdir(exist_ok=True)
+                out_file = str((show_dir / name).with_suffix('.png'))
+            else:
+                out_file = None
+
+            self.visualizer.visualize_image_retrieval(
+                image,
+                data_sample,
+                self.prototype_dataset,
+                topk=topk,
+                resize=resize,
+                draw_score=draw_score,
+                show=show,
+                wait_time=wait_time,
+                name=name,
+                out_file=out_file)
+            visualization.append(self.visualizer.get_image())
+        if show:
+            self.visualizer.close()
+        return visualization
 
     def postprocess(
         self,
@@ -248,3 +294,49 @@ class ImageRetrievalInferencer(BaseInferencer):
             List[str]: a list of model names.
         """
         return list_models(pattern=pattern, task='Image Retrieval')
+
+    def _dispatch_kwargs(self, **kwargs):
+        """Dispatch kwargs to preprocess(), forward(), visualize() and
+        postprocess() according to the actual demands.
+
+        Override this method to allow same argument for different methods.
+
+        Returns:
+            Tuple[Dict, Dict, Dict, Dict]: kwargs passed to preprocess,
+            forward, visualize and postprocess respectively.
+        """
+        method_kwargs = set.union(
+            self.preprocess_kwargs,
+            self.forward_kwargs,
+            self.visualize_kwargs,
+            self.postprocess_kwargs,
+        )
+
+        union_kwargs = method_kwargs | set(kwargs.keys())
+        if union_kwargs != method_kwargs:
+            unknown_kwargs = union_kwargs - method_kwargs
+            raise ValueError(
+                f'unknown argument {unknown_kwargs} for `preprocess`, '
+                '`forward`, `visualize` and `postprocess`')
+
+        preprocess_kwargs = {}
+        forward_kwargs = {}
+        visualize_kwargs = {}
+        postprocess_kwargs = {}
+
+        for key, value in kwargs.items():
+            if key in self.preprocess_kwargs:
+                preprocess_kwargs[key] = value
+            if key in self.forward_kwargs:
+                forward_kwargs[key] = value
+            if key in self.visualize_kwargs:
+                visualize_kwargs[key] = value
+            if key in self.postprocess_kwargs:
+                postprocess_kwargs[key] = value
+
+        return (
+            preprocess_kwargs,
+            forward_kwargs,
+            visualize_kwargs,
+            postprocess_kwargs,
+        )

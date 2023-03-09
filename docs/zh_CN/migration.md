@@ -419,7 +419,7 @@ default_hooks = dict(
 )
 
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[dict(type='LocalVisBackend'), dict(type='TensorboardVisBackend')],
 )
 ```
@@ -459,7 +459,7 @@ env_cfg = dict(
 
 ```python
 visualizer = dict(
-    type='ClsVisualizer',
+    type='UniversalVisualizer',
     vis_backends=[
         dict(type='LocalVisBackend'),
         # 将下行取消注释，即可将日志和可视化结果保存至 TesnorBoard
@@ -491,13 +491,13 @@ visualizer = dict(
 
 `mmpretrain.core` 包被重命名为 [`mmpretrain.engine`](mmpretrain.engine)
 
-|      子包       | 变动                                                                                                                  |
-| :-------------: | :-------------------------------------------------------------------------------------------------------------------- |
-|  `evaluation`   | 移除，使用 [`mmpretrain.evaluation`](mmpretrain.evaluation)                                                           |
-|     `hook`      | 移动至 [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                           |
-|  `optimizers`   | 移动至 [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                 |
-|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](mmengine.dist) 包                                                  |
-| `visualization` | 移除，其中可视化相关的功能被移动至 [`mmpretrain.visualization.ClsVisualizer`](mmpretrain.visualization.ClsVisualizer) |
+|      子包       | 变动                                                                                                                              |
+| :-------------: | :-------------------------------------------------------------------------------------------------------------------------------- |
+|  `evaluation`   | 移除，使用 [`mmpretrain.evaluation`](mmpretrain.evaluation)                                                                       |
+|     `hook`      | 移动至 [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                                       |
+|  `optimizers`   | 移动至 [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                             |
+|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](mmengine.dist) 包                                                              |
+| `visualization` | 移除，其中可视化相关的功能被移动至 [`mmpretrain.visualization.UniversalVisualizer`](mmpretrain.visualization.UniversalVisualizer) |
 
 `hooks` 包中的 `MMClsWandbHook` 尚未实现。
 

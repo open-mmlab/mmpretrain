@@ -3,7 +3,7 @@
 ## Introduce the dataset visualization tool
 
 ```bash
-python tools/visualizations/browse_dataset.py \
+python tools/visualization/browse_dataset.py \
     ${CONFIG_FILE} \
     [-o, --output-dir ${OUTPUT_DIR}] \
     [-p, --phase ${DATASET_PHASE}] \
@@ -42,7 +42,7 @@ python tools/visualizations/browse_dataset.py \
 In **'original'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
+python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
 ```
 
 - `--phase val`: Visual validation set, can be simplified to `-p val`;
@@ -59,7 +59,7 @@ python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16
 In **'transformed'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
+python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
@@ -69,7 +69,7 @@ python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_
 In **'concat'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -n 10 -m concat
+python ./tools/visualization/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -n 10 -m concat
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995078-3872feb2-d4e2-4727-a21b-7062d52f7d3e.JPEG" style=" width: auto; height: 40%; "></div>
@@ -77,7 +77,7 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 4. In **'pipeline'** mode：
 
 ```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -m pipeline
+python ./tools/visualization/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -m pipeline
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>

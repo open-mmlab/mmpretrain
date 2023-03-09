@@ -250,7 +250,7 @@ env_cfg = dict(
 # 设置可视化工具
 vis_backends = [dict(type='LocalVisBackend')] # 使用磁盘(HDD)后端
 visualizer = dict(
-    type='ClsVisualizer', vis_backends=vis_backends, name='visualizer')
+    type='UniversalVisualizer', vis_backends=vis_backends, name='visualizer')
 
 # 设置日志级别
 log_level = 'INFO'

@@ -1,8 +1,8 @@
 # TorchServe 部署
 
-为了使用 [`TorchServe`](https://pytorch.org/serve/) 部署一个 `MMClassification` 模型，需要进行以下几步：
+为了使用 [`TorchServe`](https://pytorch.org/serve/) 部署一个 `MMPretrain` 模型，需要进行以下几步：
 
-## 1. 转换 MMClassification 模型至 TorchServe
+## 1. 转换 MMPretrain 模型至 TorchServe
 
 ```shell
 python tools/torchserve/mmpretrain2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \

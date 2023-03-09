@@ -2,7 +2,7 @@
 
 ## 类别激活图可视化工具介绍
 
-MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+MMPretrain 提供 `tools/visualization/vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
 
 目前支持的方法有：
 
@@ -18,7 +18,7 @@ MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类�
 **命令行**：
 
 ```bash
-python tools/visualizations/vis_cam.py \
+python tools/visualization/vis_cam.py \
     ${IMG} \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
@@ -71,7 +71,7 @@ python tools/visualizations/vis_cam.py \
 1. 使用不同方法可视化 `ResNet50`，默认 `target-category` 为模型检测的结果，使用默认推导的 `target-layers`。
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG \
        configs/resnet/resnet50_8xb32_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
@@ -86,7 +86,7 @@ python tools/visualizations/vis_cam.py \
 2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog'，类别281为 'tabby, tabby cat'。
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
        --target-layers 'backbone.layer4.2' \
@@ -103,7 +103,7 @@ python tools/visualizations/vis_cam.py \
 3. 使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的可视化效果。
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/dog.jpg  \
        configs/mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
@@ -127,12 +127,12 @@ python tools/visualizations/vis_cam.py \
 
 除了特征被展平之外，一些类 ViT 的网络还会添加额外的 tokens。比如 ViT 和 T2T-ViT 中添加了分类 token，DeiT 中还添加了蒸馏 token。在这些网络中，分类计算在最后一个注意力模块之后就已经完成了，分类得分也只和这些额外的 tokens 有关，与特征图无关，也就是说，分类得分对这些特征图的导数为 0。因此，我们不能使用最后一个注意力模块的输出作为 CAM 绘制的目标层。
 
-另外，为了去除这些额外的 toekns 以获得特征图，我们需要知道这些额外 tokens 的数量。MMClassification 中几乎所有 Transformer-based 的网络都拥有 `num_extra_tokens` 属性。而如果你希望将此工具应用于新的，或者第三方的网络，而且该网络没有指定 `num_extra_tokens` 属性，那么可以使用 `--num-extra-tokens` 参数手动指定其数量。
+另外，为了去除这些额外的 toekns 以获得特征图，我们需要知道这些额外 tokens 的数量。MMPretrain 中几乎所有 Transformer-based 的网络都拥有 `num_extra_tokens` 属性。而如果你希望将此工具应用于新的，或者第三方的网络，而且该网络没有指定 `num_extra_tokens` 属性，那么可以使用 `--num-extra-tokens` 参数手动指定其数量。
 
 1. 对 `Swin Transformer` 使用默认 `target-layers` 进行 CAM 可视化：
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/swin_transformer/swin-tiny_16xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
@@ -142,7 +142,7 @@ python tools/visualizations/vis_cam.py \
 2. 对 `Vision Transformer(ViT)` 进行 CAM 可视化：
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
        https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
@@ -153,7 +153,7 @@ python tools/visualizations/vis_cam.py \
 3. 对 `T2T-ViT` 进行 CAM 可视化：
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \

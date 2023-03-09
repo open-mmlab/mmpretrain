@@ -33,6 +33,8 @@ Inference
    :template: callable.rst
 
    ImageClassificationInferencer
+   ImageRetrievalInferencer
+   FeatureExtractor
 
 .. autosummary::
    :toctree: generated

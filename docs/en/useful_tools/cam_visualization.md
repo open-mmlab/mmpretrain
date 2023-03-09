@@ -2,7 +2,7 @@
 
 ## Introduction of the CAM visualization tool
 
-MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
+MMPretrain provides `tools/visualization/vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
 
 The supported methods are as follows:
 
@@ -18,7 +18,7 @@ The supported methods are as follows:
 **Command**：
 
 ```bash
-python tools/visualizations/vis_cam.py \
+python tools/visualization/vis_cam.py \
     ${IMG} \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
@@ -73,7 +73,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
 1. Use different methods to visualize CAM for `ResNet50`, the `target-category` is the predicted result by the given checkpoint, using the default `target-layers`.
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG \
        configs/resnet/resnet50_8xb32_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
@@ -88,7 +88,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
 2. Use different `target-category` to get CAM from the same picture. In `ImageNet` dataset, the category 238 is 'Greater Swiss Mountain dog', the category 281 is 'tabby, tabby cat'.
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
        --target-layers 'backbone.layer4.2' \
@@ -105,7 +105,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
 3. Use `--eigen-smooth` and `--aug-smooth` to improve visual effects.
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/dog.jpg  \
        configs/mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
@@ -129,12 +129,12 @@ For ViT-like networks, such as ViT, T2T-ViT and Swin-Transformer, the features a
 
 Besides the flattened features, some ViT-like networks also add extra tokens like the class token in ViT and T2T-ViT, and the distillation token in DeiT. In these networks, the final classification is done on the tokens computed in the last attention block, and therefore, the classification score will not be affected by other features and the gradient of the classification score with respect to them, will be zero. Therefore, you shouldn't use the output of the last attention block as the target layer in these networks.
 
-To exclude these extra tokens, we need know the number of extra tokens. Almost all transformer-based backbones in MMClassification have the `num_extra_tokens` attribute. If you want to use this tool in a new or third-party network that don't have the `num_extra_tokens` attribute, please specify it the `--num-extra-tokens` argument.
+To exclude these extra tokens, we need know the number of extra tokens. Almost all transformer-based backbones in MMPretrain have the `num_extra_tokens` attribute. If you want to use this tool in a new or third-party network that don't have the `num_extra_tokens` attribute, please specify it the `--num-extra-tokens` argument.
 
 1. Visualize CAM for `Swin Transformer`, using default `target-layers`:
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/swin_transformer/swin-tiny_16xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
@@ -144,7 +144,7 @@ To exclude these extra tokens, we need know the number of extra tokens. Almost a
 2. Visualize CAM for `Vision Transformer(ViT)`:
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
        https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
@@ -155,7 +155,7 @@ To exclude these extra tokens, we need know the number of extra tokens. Almost a
 3. Visualize CAM for `T2T-ViT`:
 
    ```shell
-   python tools/visualizations/vis_cam.py \
+   python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
        configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \

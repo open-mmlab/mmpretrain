@@ -257,7 +257,7 @@ env_cfg = dict(
 # set visualizer
 vis_backends = [dict(type='LocalVisBackend')]  # use local HDD backend
 visualizer = dict(
-    type='ClsVisualizer', vis_backends=vis_backends, name='visualizer')
+    type='UniversalVisualizer', vis_backends=vis_backends, name='visualizer')
 
 # set log level
 log_level = 'INFO'
