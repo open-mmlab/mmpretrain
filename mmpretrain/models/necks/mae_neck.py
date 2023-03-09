@@ -183,7 +183,6 @@ class ClsBatchNormNeck(BaseModule):
             self,
             inputs: Tuple[List[torch.Tensor]]) -> Tuple[List[torch.Tensor]]:
         """The forward function."""
-        # Only apply batch norm to cls token, which is the second tensor in
-        # each item of the tuple
+        # Only apply batch norm to cls_token
         inputs = [self.bn(input_) for input_ in inputs]
         return tuple(inputs)
