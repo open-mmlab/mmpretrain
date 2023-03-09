@@ -2,7 +2,7 @@
 
 ## Introduction of the CAM visualization tool
 
-MMClassification provides `tools/visualization/vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
+MMPretrain provides `tools/visualization/vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
 
 The supported methods are as follows:
 
@@ -129,7 +129,7 @@ For ViT-like networks, such as ViT, T2T-ViT and Swin-Transformer, the features a
 
 Besides the flattened features, some ViT-like networks also add extra tokens like the class token in ViT and T2T-ViT, and the distillation token in DeiT. In these networks, the final classification is done on the tokens computed in the last attention block, and therefore, the classification score will not be affected by other features and the gradient of the classification score with respect to them, will be zero. Therefore, you shouldn't use the output of the last attention block as the target layer in these networks.
 
-To exclude these extra tokens, we need know the number of extra tokens. Almost all transformer-based backbones in MMClassification have the `num_extra_tokens` attribute. If you want to use this tool in a new or third-party network that don't have the `num_extra_tokens` attribute, please specify it the `--num-extra-tokens` argument.
+To exclude these extra tokens, we need know the number of extra tokens. Almost all transformer-based backbones in MMPretrain have the `num_extra_tokens` attribute. If you want to use this tool in a new or third-party network that don't have the `num_extra_tokens` attribute, please specify it the `--num-extra-tokens` argument.
 
 1. Visualize CAM for `Swin Transformer`, using default `target-layers`:
 

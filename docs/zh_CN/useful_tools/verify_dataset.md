@@ -1,6 +1,6 @@
 # 数据集验证
 
-在MMClassification中，`tools/misc/verify_dataset.py` 脚本会检查数据集的所有图片，查看是否有**已经损坏**的图片。
+在 MMPretrain 中，`tools/misc/verify_dataset.py` 脚本会检查数据集的所有图片，查看是否有**已经损坏**的图片。
 
 ## 工具介绍
 

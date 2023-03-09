@@ -1,8 +1,8 @@
 # Torchserve Deployment
 
-In order to serve an `MMClassification` model with [`TorchServe`](https://pytorch.org/serve/), you can follow the steps:
+In order to serve an `MMPretrain` model with [`TorchServe`](https://pytorch.org/serve/), you can follow the steps:
 
-## 1. Convert model from MMClassification to TorchServe
+## 1. Convert model from MMPretrain to TorchServe
 
 ```shell
 python tools/torchserve/mmpretrain2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \
