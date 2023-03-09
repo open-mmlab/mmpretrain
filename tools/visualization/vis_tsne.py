@@ -31,6 +31,9 @@ def parse_args():
     parser.add_argument('--checkpoint', default=None, help='checkpoint file')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
+        '--test-cfg',
+        help='tsne config file path to load config of test dataloader.')
+    parser.add_argument(
         '--vis-stage',
         choices=['backbone', 'neck', 'pre_logits'],
         help='The visualization stage of the model')
@@ -148,7 +151,15 @@ def main():
     logger.info('Model loaded.')
 
     # build the dataset
-    dataloader_cfg = cfg.get('test_dataloader')
+    if args.test_cfg is not None:
+        dataloader_cfg = Config.fromfile(args.test_cfg).get('test_dataloader')
+    elif 'test_dataloader' not in cfg:
+        raise ValueError('No `test_dataloader` in the config, you can '
+                         'specify another config file that includes test '
+                         'dataloader settings by the `--test-cfg` option.')
+    else:
+        dataloader_cfg = cfg.get('test_dataloader')
+
     dataset = DATASETS.build(dataloader_cfg.pop('dataset'))
     classes = dataset.metainfo.get('classes')
 
@@ -174,6 +185,7 @@ def main():
     logger.info(f'Apply t-SNE to visualize {len(subset_idx_list)} samples.')
 
     dataloader_cfg.dataset = dataset
+    dataloader_cfg.setdefault('collate_fn', dict(type='default_collate'))
     dataloader = Runner.build_dataloader(dataloader_cfg)
 
     results = dict()
