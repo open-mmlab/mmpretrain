@@ -6,11 +6,12 @@ import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.bricks import ConvModule, DropPath, build_activation_layer, build_conv_layer
 from mmengine.model import BaseModule, Sequential
 from mmengine.model.weight_init import trunc_normal_
+from mmcv.cnn.bricks import LayerScale
+from mmcv.cnn.bricks.drop import build_dropout
 
 
 from .base_backbone import BaseBackbone
@@ -18,22 +19,96 @@ from mmcls.models.utils import SELayer, make_divisible
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple, LayerNorm2d
 
+"""
+TODO: using nn.GELU with approximate parameter in pytorch 1.12.
+"""
 
-#### TODO 1 : the GELU active function in pytorch 1.12 and 1.13 version add a new
-####          parameter ————  approximate='none' , but mmcls and old version in pytorch
-####          isnot support this parameter. The MaxViT backbone need this parameter. Details in
-####          https://pytorch.org/docs/1.13/generated/torch.nn.GELU.html?highlight=nn+gelu#torch.nn.GELU
+def window_partition(x, window_size: Tuple[int]) -> torch.Tensor:
+    """ Window partition function.
 
+    Args:
+        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
+        window_size (Tuple[int]): Window size to be applied.
+        
+    Returns:
+        windows (torch.Tensor): Unfolded input tensor of the shape
+            [B * windows, window_size[0], window_size[1], C].
+    """
+
+    B, H, W, C = x.shape
+    assert H % window_size[0] == 0, \
+        f'height ({H}) must be divisible by window ({window_size[0]})'
+    assert W % window_size[1] == 0, \
+        f'height ({W}) must be divisible by window ({window_size[1]})'
+    x = x.view(B, H // window_size[0], window_size[0], W // window_size[1], window_size[1], C)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size[0], window_size[1], C)
+    return windows
+
+
+def window_reverse(x, window_size: Tuple[int], img_size: Tuple[int]):
+    """ Reverses the window partition.
+
+    Args:
+        x (torch.Tensor): Window tensor of the shape
+            [B * windows, window_size[0], window_size[1], C].
+        window_size (Tuple[int]): Window size which have been applied.
+        img_size (Tuple[int]): Image shape.
+
+    Returns:
+        output (torch.Tensor): Folded output tensor of the shape
+            [B, C, original_size[0], original_size[1]].
+    """
+    H, W = img_size
+    C = x.shape[-1]
+    x = x.view(-1, H // window_size[0], W // window_size[1], window_size[0], window_size[1], C)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, H, W, C)
+    return x
+
+
+def grid_partition(x, grid_size: Tuple[int]):
+    """ Grid partition function.
+
+    Args:
+        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
+        grid_size (Tuple[int]): Grid size to be applied.
+    Returns:
+        grid (torch.Tensor): Unfolded input tensor of the shape
+            [B * grids, grid_size[0], grid_size[1], C].
+    """
+
+    B, H, W, C = x.shape
+    assert H % grid_size[0] == 0, \
+        f'height {H} must be divisible by grid {grid_size[0]}'
+    assert W % grid_size[1] == 0, \
+        f'height {W} must be divisible by grid {grid_size[1]}'
+    x = x.view(B, grid_size[0], H // grid_size[0], grid_size[1], W // grid_size[1], C)
+    windows = x.permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, grid_size[0], grid_size[1], C)
+    return windows
+
+
+def grid_reverse(windows, grid_size: Tuple[int], img_size: Tuple[int]):
+    """ Reverses the grid partition.
+    Args:
+        windows (torch.Tensor): Grid tensor of the shape
+            [B * grids, grid_size[0], grid_size[1], C].
+        grid_size (Tuple[int]): Grid size which have been applied.
+        img_size (Tuple[int]): Original shape.
+    Returns:
+        output (torch.Tensor): Folded output tensor of the shape
+            [B, C, original_size[0], original_size[1]].
+    """
+
+    H, W = img_size
+    C = windows.shape[-1]
+    x = windows.view(-1, H // grid_size[0], W // grid_size[1], grid_size[0], grid_size[1], C)
+    x = x.permute(0, 3, 1, 4, 2, 5).contiguous().view(-1, H, W, C)
+    return x
 
 class MBConv(BaseModule):
     """ MBConv layer in MaxViT Backbone.
 
-    A PyTorch implementation of MBConv introduced by:
-    `MaxViT: Multi-Axis Vision Transformer
-    <https://arxiv.org/pdf/2204.01697.pdf>`_
-
-    Note: This implementation differs slightly from the original MobileNet implementation!
-          This implementation differs slightly from the original EfficientnetV2 implementation!
+    Note: This implementation differs slightly from the original MobileNet,
+        EfficientnetV2 implementation!
 
     Args:
         in_channels (int): Number of channels in the input feature map.
@@ -130,7 +205,7 @@ class MBConv(BaseModule):
         """
         shortcut = self.shortcut(x)
         x = self.pre_norm(x)
-        for i,layer in enumerate(self.layers):
+        for layer in self.layers:
             x = layer(x)
         x = self.drop_path(x) + shortcut
         return x
@@ -194,6 +269,7 @@ def generate_lookup_tensor(
 
 class RelPosBiasTf(BaseModule):
     """ Relative Position Bias Impl (Compatible with Tensorflow MaxViT models)
+    
     Adapted from:
      https://github.com/google-research/maxvit/blob/main/maxvit/models/attention_utils.py # noqa: E501
 
@@ -237,16 +313,14 @@ class RelPosBiasTf(BaseModule):
             self.width_lookup
         )
 
-    def forward(self, attn, shared_rel_pos = None):
+    def forward(self, attn, **kwargs):
         return attn + self.get_bias()
 
 
-class AttentionCl(BaseModule):
-    """ Channels-last multi-head attention (B, ..., C) layer in MaxViT Backbone.
+# MultiheadAttentionWithRelPos
 
-    A PyTorch implementation of Channels-last multi-head attention introduced by:
-    `MaxViT: Multi-Axis Vision Transformer
-    <https://arxiv.org/pdf/2204.01697.pdf>`_
+class Attention(BaseModule):
+    """Multi Head self Attention (B, ..., C) layer in MaxViT Backbone.
 
     Args:
         dim (int): Number of input channels.
@@ -258,8 +332,6 @@ class AttentionCl(BaseModule):
             Defaults to True.
         expand_first (bool): Whether to expend the dimensions
             Defaults to True.
-        head_first (bool): Whether to put ``num_heads`` first.
-            Defaults to False.
         rel_pos_cls (Callable): Relative Position Bias module.
             Defaults to None,
         attn_drop (float): The drop out rate for attention output weights.
@@ -268,29 +340,25 @@ class AttentionCl(BaseModule):
             Defaults to 0.
         init_cfg (dict | list[dict], optional): Initialization config dict.
     """
-
-
     def __init__(self,
                  dim: int,
                  dim_out: Optional[int] = None,
                  dim_head: int = 32,
                  bias: bool = True,
                  expand_first: bool = True,
-                 head_first: bool = False,
                  rel_pos_cls: Callable = None,
                  attn_drop: float = 0.,
                  proj_drop: float = 0.,
                  init_cfg=None):
-        super(AttentionCl,self).__init__(init_cfg=init_cfg)
+        super(Attention, self).__init__(init_cfg=init_cfg)
 
         dim_out = dim_out or dim
         dim_attn = dim_out if expand_first and dim_out > dim else dim
         assert dim_attn % dim_head == 0, 'attn dim should be divisible by head_dim'
         self.num_heads = dim_attn // dim_head
         self.dim_head = dim_head
-        self.head_first = head_first
+        self.head_dims = self.dim_head
         self.scale = dim_head ** -0.5
-        self.fast_attn = hasattr(F, 'scaled_dot_product_attention')  # FIXME
 
         self.qkv = nn.Linear(dim, dim_attn * 3, bias=bias)
         self.rel_pos = rel_pos_cls(num_heads=self.num_heads) if rel_pos_cls else None
@@ -303,33 +371,19 @@ class AttentionCl(BaseModule):
         B = x.shape[0]
         restore_shape = x.shape[:-1]
 
-        if self.head_first:
-            q, k, v = self.qkv(x).view(B, -1, self.num_heads, self.dim_head * 3).transpose(1, 2).chunk(3, dim=3)
-        else:
-            q, k, v = self.qkv(x).reshape(B, -1, 3, self.num_heads, self.dim_head).transpose(1, 3).unbind(2)
+        qkv = self.qkv(x).reshape(B, -1, 3, self.num_heads,
+                                  self.head_dims).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
 
-        if self.fast_attn:
-            if self.rel_pos is not None:
-                attn_bias = self.rel_pos.get_bias()
-            elif shared_rel_pos is not None:
-                attn_bias = shared_rel_pos
-            else:
-                attn_bias = None
-            x = F.scaled_dot_product_attention(
-                q, k, v,
-                attn_mask=attn_bias,
-                dropout_p=self.attn_drop_rate,
-            )
-        else:
-            q = q * self.scale
-            attn = q @ k.transpose(-2, -1)
-            if self.rel_pos is not None:
-                attn = self.rel_pos(attn, shared_rel_pos=shared_rel_pos)
-            elif shared_rel_pos is not None:
-                attn = attn + shared_rel_pos
-            attn = attn.softmax(dim=-1)
-            attn = self.attn_drop(attn)
-            x = attn @ v
+        q = q * self.scale
+        attn = q @ k.transpose(-2, -1)
+        if self.rel_pos is not None:
+            attn = self.rel_pos(attn, shared_rel_pos=shared_rel_pos)
+        elif shared_rel_pos is not None:
+            attn = attn + shared_rel_pos
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+        x = attn @ v
 
         x = x.transpose(1, 2).reshape(restore_shape + (-1,))
         x = self.proj(x)
@@ -337,96 +391,48 @@ class AttentionCl(BaseModule):
         return x
 
 
-def window_partition(x, window_size: Tuple[int]) -> torch.Tensor:
-    """ Window partition function.
-
-    Args:
-        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
-        window_size (Tuple[int]): Window size to be applied.
-    Returns:
-        windows (torch.Tensor): Unfolded input tensor of the shape
-            [B * windows, window_size[0], window_size[1], C].
-    """
-
-    B, H, W, C = x.shape
-    assert H % window_size[0] == 0, \
-        f'height ({H}) must be divisible by window ({window_size[0]})'
-    assert W % window_size[1] == 0, \
-        f'height ({W}) must be divisible by window ({window_size[1]})'
-    x = x.view(B, H // window_size[0], window_size[0], W // window_size[1], window_size[1], C)
-    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size[0], window_size[1], C)
-    return windows
-
-
-def window_reverse(windows, window_size: Tuple[int], img_size: Tuple[int]):
-    """ Reverses the window partition.
-
-    Args:
-        windows (torch.Tensor): Window tensor of the shape
-            [B * windows, window_size[0], window_size[1], C].
-        window_size (Tuple[int]): Window size which have been applied.
-        img_size (Tuple[int]): Image shape.
-    Returns:
-        output (torch.Tensor): Folded output tensor of the shape
-            [B, C, original_size[0], original_size[1]].
-    """
-
-    H, W = img_size
-    C = windows.shape[-1]
-    x = windows.view(-1, H // window_size[0], W // window_size[1], window_size[0], window_size[1], C)
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, H, W, C)
-    return x
+class WindowAttn(Attention):
+    """ Window partition Attention + FFN layer."""
+    def __init__(self,
+                 *args,
+                 window_size: Tuple[int] = (7, 7),
+                 grid_size: Tuple[int] = (7, 7),
+                 **kwargs):
+        print(args)
+        print(kwargs)
+        super(WindowAttn, self).__init__(*args, **kwargs) 
+        self.window_size = window_size
+        self.grid_size = grid_size
+    
+    def forward(self, x, **kwargs):
+        img_size = x.shape[1:3]
+        x = window_partition(x, self.window_size)
+        x = super().forward(x, **kwargs)
+        x = window_reverse(x, self.window_size, img_size)
+        return x
 
 
-def grid_partition(x, grid_size: Tuple[int]):
-    """ Grid partition function.
 
-    Args:
-        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
-        grid_size (Tuple[int]): Grid size to be applied.
-    Returns:
-        grid (torch.Tensor): Unfolded input tensor of the shape
-            [B * grids, grid_size[0], grid_size[1], C].
-    """
+class GridAttn(Attention):
+    """ Window partition Attention + FFN layer."""
+    def __init__(self,
+                 *args,
+                 window_size: Tuple[int] = (7, 7),
+                 grid_size: Tuple[int] = (7, 7),
+                 **kwargs):
+        super(GridAttn, self).__init__(*args, **kwargs) 
+        self.window_size = window_size
+        self.grid_size = grid_size
+    
+    def forward(self, x, **kwargs):
+        img_size = x.shape[1:3]
+        x = grid_partition(x, self.grid_size)
+        x = super().forward(x, **kwargs)
+        x = grid_reverse(x,  self.grid_size, img_size)
+        return x
 
-    B, H, W, C = x.shape
-    assert H % grid_size[0] == 0, \
-        f'height {H} must be divisible by grid {grid_size[0]}'
-    assert W % grid_size[1] == 0, \
-        f'height {W} must be divisible by grid {grid_size[1]}'
-    x = x.view(B, grid_size[0], H // grid_size[0], grid_size[1], W // grid_size[1], C)
-    windows = x.permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, grid_size[0], grid_size[1], C)
-    return windows
-
-
-def grid_reverse(windows, grid_size: Tuple[int], img_size: Tuple[int]):
-    """ Reverses the grid partition.
-    Args:
-        windows (torch.Tensor): Grid tensor of the shape
-            [B * grids, grid_size[0], grid_size[1], C].
-        grid_size (Tuple[int]): Grid size which have been applied.
-        img_size (Tuple[int]): Original shape.
-    Returns:
-        output (torch.Tensor): Folded output tensor of the shape
-            [B, C, original_size[0], original_size[1]].
-    """
-
-    H, W = img_size
-    C = windows.shape[-1]
-    x = windows.view(-1, H // grid_size[0], W // grid_size[1], grid_size[0], grid_size[1], C)
-    x = x.permute(0, 3, 1, 4, 2, 5).contiguous().view(-1, H, W, C)
-    return x
-
-
-class PartitionAttentionCl(BaseModule):
-    """ Grid or Block partition Attention + FFN layer.
-    NxC 'channels last' tensor layout.
-
-    A PyTorch implementation of
-    Grid or Block partition Attention + FFN layer
-    introduced by:
-    `MaxViT: Multi-Axis Vision Transformer
-    <https://arxiv.org/pdf/2204.01697.pdf>`_
+class PartitionAttention(BaseModule):
+    """ Grid or Window partition Attention + FFN layer.
 
     Args:
         dim (int): Number of input channels.
@@ -440,8 +446,6 @@ class PartitionAttentionCl(BaseModule):
             Channel-last Attention layer. Defaults to 32.
         attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
             Defaults to True.
-        head_first (bool): Whether to put ``num_heads`` first in
-            Channel-last Attention layer. Defaults to False,
         attn_drop (float): The drop out rate for attention output weights in
             Channel-last Attention layer. Defaults to 0.
         proj_drop (float): The drop out rate for Linear output weights in
@@ -456,17 +460,19 @@ class PartitionAttentionCl(BaseModule):
             Defaults to dict(type='LN', eps=1e-5),
         act_cfg (dict): Config dict for activation layer.
             Defaults to dict(type='GELU').
+        attn_module (Callable): To build an attention module.
+            Defaults to :class:`MultiheadAttention`.
+        attn_cfg (dict, optional): The extra config to build an attention
+            module. Defaults to ``dict()``.
         init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
                  dim: int,
-                 partition_type: str = 'block',
                  window_size: Tuple[int] = (7, 7),
                  grid_size: Tuple[int] = (7, 7),
                  dim_head: int = 32,
                  attn_bias: bool = True,
-                 head_first: bool = False,
                  attn_drop: float = 0.,
                  proj_drop: float = 0.,
                  ffn_expand_ratio: float = 4.0,
@@ -474,24 +480,22 @@ class PartitionAttentionCl(BaseModule):
                  drop_path: float = 0.,
                  norm_cfg=dict(type='LN', eps=1e-5),
                  act_cfg=dict(type='GELU'),
+                 attn_module=WindowAttn,
+                 attn_cfg=dict(),
                  init_cfg=None):
-        super(PartitionAttentionCl, self).__init__(init_cfg=init_cfg)
-
-        assert partition_type in {None, 'block', 'grid'}
-        self.partition_block = partition_type == 'block'
-        self.partition_size = to_2tuple(window_size if self.partition_block else grid_size)
+        super(PartitionAttention, self).__init__(init_cfg=init_cfg)
         rel_pos_cls = partial(RelPosBiasTf, window_size=window_size)
 
         self.norm1 = build_norm_layer(norm_cfg, dim)
-        self.attn = AttentionCl(dim=dim,
-                                dim_out=dim,
-                                dim_head=dim_head,
-                                bias=attn_bias,
-                                head_first=head_first,
-                                rel_pos_cls=rel_pos_cls,
-                                attn_drop=attn_drop,
-                                proj_drop=proj_drop,
-        )
+        self.attn = attn_module(dim=dim,
+                              dim_out=dim,
+                              dim_head=dim_head,
+                              window_size = window_size,
+                              bias=attn_bias,
+                              rel_pos_cls=rel_pos_cls,
+                              grid_size=grid_size,
+                              attn_drop=attn_drop,
+                              proj_drop=proj_drop)
 
         # self.ls1 and self.ls2 can be changed by LayerScale
         self.ls1 = nn.Identity()
@@ -506,25 +510,10 @@ class PartitionAttentionCl(BaseModule):
         self.ls2 = nn.Identity()
         self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
 
-    def _partition_attn(self, x):
-        img_size = x.shape[1:3]
-        if self.partition_block:
-            partitioned = window_partition(x, self.partition_size)
-        else:
-            partitioned = grid_partition(x, self.partition_size)
-
-        partitioned = self.attn(partitioned)
-
-        if self.partition_block:
-            x = window_reverse(partitioned, self.partition_size, img_size)
-        else:
-            x = grid_reverse(partitioned, self.partition_size, img_size)
-        return x
-
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         shortcut = x
         x = self.norm1(x)
-        x = self._partition_attn(x)
+        x = self.attn(x, **kwargs)
         x = self.ls1(x)
         x = shortcut + self.drop_path1(x)
 
@@ -567,8 +556,6 @@ class MaxViTBlock(BaseModule):
             Channel-last Attention layers. Defaults to 32.
         attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
             Defaults to True.
-        head_first (bool): Whether to put ``num_heads`` first in
-            Channel-last Attention layer. Defaults to False,
         attn_drop (float): The drop out rate for attention output weights in
             Channel-last Attention layer. Defaults to 0.
         proj_drop (float): The drop out rate for Linear output weights in
@@ -598,7 +585,6 @@ class MaxViTBlock(BaseModule):
                  grid_size: Tuple[int] = (7, 7),
                  dim_head: int = 32,
                  attn_bias: bool = True,
-                 head_first: bool = False,
                  attn_drop: float = 0.,
                  proj_drop: float = 0.,
                  ffn_expand_ratio: float = 4.,
@@ -618,41 +604,38 @@ class MaxViTBlock(BaseModule):
                              norm_cfg=norm_cfg_conv,
                              drop_path=drop_path)
 
-        self.attn_block = PartitionAttentionCl(dim=dim_out,
-                                               partition_type='block',
+        self.wind_attn_block = PartitionAttention(dim=dim_out,
                                                window_size=window_size,
                                                grid_size=grid_size,
                                                dim_head=dim_head,
                                                attn_bias=attn_bias,
-                                               head_first=head_first,
                                                attn_drop=attn_drop,
                                                proj_drop=proj_drop,
                                                ffn_expand_ratio=ffn_expand_ratio,
                                                ffn_drop=ffn_drop,
                                                drop_path=drop_path,
                                                norm_cfg=norm_cfg_transformer,
+                                               attn_module=WindowAttn,
                                                act_cfg=act_cfg_transformer)
 
-        self.attn_grid = PartitionAttentionCl(dim=dim_out,
-                                              partition_type='grid',
+        self.grid_attn_block = PartitionAttention(dim=dim_out,
                                               window_size=window_size,
                                               grid_size=grid_size,
                                               dim_head=dim_head,
                                               attn_bias=attn_bias,
-                                              head_first=head_first,
                                               attn_drop=attn_drop,
                                               proj_drop=proj_drop,
                                               ffn_expand_ratio=ffn_expand_ratio,
                                               ffn_drop=ffn_drop,
+                                              attn_module=GridAttn,
                                               drop_path=drop_path)
 
     def forward(self, x):
-        # NCHW format
         x = self.mbconv(x)
-        x = x.permute(0, 2, 3, 1)  # to NHWC (channels-last)
-        x = self.attn_block(x)
-        x = self.attn_grid(x)
-        x = x.permute(0, 3, 1, 2)  # back to NCHW
+        x = x.permute(0, 2, 3, 1)  # NCHW to NHWC 
+        x = self.wind_attn_block(x)
+        x = self.grid_attn_block(x)
+        x = x.permute(0, 3, 1, 2)  # NHWC to NCHW
         return x
 
 
@@ -668,8 +651,6 @@ class Stem(BaseModule):
         out_channels (int): Number of output channels.
         kernel_size (int): The kernel size of the convolution layer.
             Defaults to 3.
-        stride (int): The stride of the first convolution layer.
-            Defaults to 2.
         conv_cfg (Tuple[dict]): Config dict for convolution layer.
             Defaults to (dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
             which means using two different conv modules.
@@ -683,17 +664,15 @@ class Stem(BaseModule):
                  in_channels: int,
                  out_channels: int,
                  kernel_size: int = 3,
-                 stride: int = 2,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg=dict(type='BN', eps=1e-3),
                  act_cfg=dict(type='GELU'),
                  init_cfg=None):
         super(Stem,self).__init__(init_cfg=init_cfg)
-
         self.conv1 = ConvModule(in_channels=in_channels,
                                 out_channels=out_channels,
                                 kernel_size=kernel_size,
-                                stride=stride,
+                                stride=2,
                                 bias=True,
                                 conv_cfg=conv_cfg[1],
                                 norm_cfg=norm_cfg,
@@ -722,20 +701,11 @@ class MaxViT(BaseBackbone):
     <https://arxiv.org/pdf/2204.01697.pdf>`_
 
     Args:
-        embed_dim (Tuple[int]): The embedding dimensions in four stages.
-            Defaults to (64, 128, 256, 512). Means maxvit_tiny.
-        depths (Tuple[int]): The number of layers in for stages.
-            Defaults to (2, 2, 5, 2). Means maxvit_tiny.
         img_size (Union[int, Tuple[int, int]]): The size of input image.
             Defaults to 224.
         in_channels (int): The channels of input image. Defaults to 3.
-        stem_width (int): The output channels in the stem layer. Defaults to 64,
         head_hidden_size (int): The hidden channels in final MLP layer, is also the
             output channels in MaxViT backbone. Defaults to 512. Means maxvit_tiny.
-        kernel_size (int): The kernel size of the convolution layer in stem layer.
-            Defaults to 3.
-        stride (int) : Stride of the convolution layer in MBConv layer.
-            Defaults to 1.
         expand_ratio_conv (float) : Expend ratio in mid_channels in MBConv layer.
             The mid_channel will be ``make_divisible(channels * ratio, divisor)``.
             Defaults to 4.0
@@ -752,8 +722,6 @@ class MaxViT(BaseBackbone):
             Channel-last Attention layers. Defaults to 32.
         attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
             Defaults to True.
-        head_first (bool): Whether to put ``num_heads`` first in
-            Channel-last Attention layer. Defaults to False,
         attn_drop (float): The drop out rate for attention output weights in
             Channel-last Attention layer. Defaults to 0.
         proj_drop (float): The drop out rate for Linear output weights in
@@ -774,16 +742,33 @@ class MaxViT(BaseBackbone):
             Defaults to 0, which means not freezing any parameters.
         init_cfg (dict | list[dict], optional): Initialization config dict.
     """
+    arch_zoo = {
+        **dict.fromkeys(['t', 'tiny'],
+                        {'embed_dims': [64, 128, 256, 512],
+                         'depths':     [2, 2, 5, 2],
+                         'stem_width': 64}),
+        **dict.fromkeys(['s', 'small'],
+                        {'embed_dims': [96, 192, 384, 768],
+                         'depths':     [2, 2, 5, 2],
+                         'stem_width': 64}),
+        **dict.fromkeys(['b', 'base'],
+                        {'embed_dims': [96, 192, 384, 768],
+                         'depths':     [2, 6, 14, 2],
+                         'stem_width': 64}),
+        **dict.fromkeys(['l', 'large'],
+                        {'embed_dims': [128, 256, 512, 1024],
+                         'depths':     [2, 6, 14, 2],
+                         'stem_width': 128}),
+        **dict.fromkeys(['xl', 'xlarge'],
+                        {'embed_dims': [192, 384, 768, 1536],
+                         'depths':     [2, 6, 14, 2],
+                         'stem_width': 192})
+    }  # yapf: disable
 
     def __init__(self,
-                 embed_dim: Tuple[int] = (64, 128, 256, 512),
-                 depths: Tuple[int] = (2, 2, 5, 2),
+                 arch='tiny',
                  img_size: Union[int, Tuple[int, int]] = 224,
                  in_channels: int = 3,
-                 stem_width: int = 64,
-                 head_hidden_size: int = 512,
-                 kernel_size: int = 3,
-                 stride: int = 2,
                  expand_ratio_conv: float = 4.,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg_conv=dict(type='BN', eps=1e-3),
@@ -791,7 +776,6 @@ class MaxViT(BaseBackbone):
                  partition_ratio: int = 32,
                  dim_head: int = 32,
                  attn_bias: bool = True,
-                 head_first: bool = False,
                  attn_drop: float = 0.,
                  proj_drop: float = 0.,
                  ffn_expand_ratio: float = 4.,
@@ -799,37 +783,49 @@ class MaxViT(BaseBackbone):
                  norm_cfg_transformer=dict(type='LN', eps=1e-5),
                  act_cfg_transformer=dict(type='GELU'),
                  drop_path_rate: float = 0.,
+                 with_gap_neck: bool = True,
                  out_indices: Sequence[int] = (-1,),
                  frozen_stages: int = 0,
                  init_cfg=dict(type='TruncNormal', layer='Linear')):
         super(MaxViT, self).__init__(init_cfg=init_cfg)
 
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            self.arch_settings = self.arch_zoo[arch]
+        else:
+            essential_keys = {'embed_dims', 'depths', 'stem_width'}
+            assert isinstance(arch, dict) and set(arch) == essential_keys, \
+                f'Custom arch needs a dict with keys {essential_keys}'
+            self.arch_settings = arch
+
         img_size = to_2tuple(img_size)
-        self.embed_dim = embed_dim[-1]
-        self.head_hidden_size = head_hidden_size
+        self.embed_dims = self.arch_settings['embed_dims']
+        self.with_gap_neck = with_gap_neck
+        self.depths = self.arch_settings['depths']
+        self.stem_width =  self.arch_settings['stem_width']
 
         window_size = (img_size[0] // partition_ratio, img_size[1] // partition_ratio)
         grid_size = (img_size[0] // partition_ratio, img_size[1] // partition_ratio)
 
         self.stem = Stem(in_channels=in_channels,
-                         out_channels=stem_width,
-                         kernel_size=kernel_size,
-                         stride=stride,
+                         out_channels=self.arch_settings['stem_width'],
                          conv_cfg=conv_cfg,
                          norm_cfg=norm_cfg_conv,
                          act_cfg=act_cfg_conv)
 
         self.layers = nn.ModuleList()
-        self.num_layers = sum(depths)
+        self.num_layers = sum(self.depths)
         dpr = [
             x.tolist()
-            for x in torch.linspace(0, drop_path_rate, self.num_layers).split(depths)
+            for x in torch.linspace(0, drop_path_rate, self.num_layers).split(self.depths)
         ]  # stochastic depth decay rule
-        in_channels = stem_width
-        for i in range(len(depths)):
-            for j in range(depths[i]):
+        in_channels = self.stem_width
+        for i in range(len(self.depths)):
+            for j in range(self.depths[i]):
                 stride = 2 if j == 0 else 1
-                out_channels = embed_dim[i]
+                out_channels = self.embed_dims[i]
                 self.layers.append(
                     MaxViTBlock(
                         dim=in_channels,
@@ -843,7 +839,6 @@ class MaxViT(BaseBackbone):
                         grid_size=grid_size,
                         dim_head=dim_head,
                         attn_bias=attn_bias,
-                        head_first=head_first,
                         attn_drop=attn_drop,
                         proj_drop=proj_drop,
                         ffn_expand_ratio=ffn_expand_ratio,
@@ -854,13 +849,12 @@ class MaxViT(BaseBackbone):
                     ))
                 in_channels = out_channels
 
-        # self.final_norm = LayerNorm2d(self.embed_dim)
-        if self.head_hidden_size:
-            self.final_mlp = Sequential(
+        if self.with_gap_neck:
+            self.gap_neck = Sequential(
                 nn.AdaptiveAvgPool2d(1),
-                LayerNorm2d(self.embed_dim),
+                LayerNorm2d(self.embed_dims[-1]),
                 nn.Flatten(1),
-                nn.Linear(self.embed_dim,self.head_hidden_size),
+                nn.Linear(self.embed_dims[-1], self.embed_dims[-1]),
                 build_activation_layer(dict(type='Tanh')))
 
         # Transform out_indices
@@ -907,8 +901,8 @@ class MaxViT(BaseBackbone):
             if i in self.out_indices:
                 outs.append(x)
 
-        if self.head_hidden_size:
-            x = self.final_mlp(x)
+        if self.with_gap_neck:
+            x = self.gap_neck(x)
             if self.num_layers in self.out_indices:
                 outs.append(x)
 
@@ -917,3 +911,4 @@ class MaxViT(BaseBackbone):
     def train(self, mode=True):
         super().train(mode)
         self._freeze_stages()
+        return self
