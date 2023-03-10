@@ -21,20 +21,8 @@ Welcome to MMPretrain's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Useful Tools
-
-   useful_tools/dataset_visualization.md
-   useful_tools/scheduler_visualization.md
-   useful_tools/cam_visualization.md
-   useful_tools/print_config.md
-   useful_tools/verify_dataset.md
-   useful_tools/log_result_analysis.md
-   useful_tools/complexity_analysis.md
-   useful_tools/model_serving.md
-
-.. toctree::
-   :maxdepth: 1
    :caption: Advanced Guides
+   :glob:
 
    advanced_guides/datasets.md
    advanced_guides/pipeline.md
@@ -44,6 +32,32 @@ Welcome to MMPretrain's documentation!
    advanced_guides/evaluation.md
    advanced_guides/data_flow.md
    advanced_guides/convention.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Visualization
+   :glob:
+
+   useful_tools/dataset_visualization.md
+   useful_tools/scheduler_visualization.md
+   useful_tools/cam_visualization.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Analysis
+   :glob:
+
+   useful_tools/print_config.md
+   useful_tools/verify_dataset.md
+   useful_tools/log_result_analysis.md
+   useful_tools/complexity_analysis.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Deployment
+   :glob:
+
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1
