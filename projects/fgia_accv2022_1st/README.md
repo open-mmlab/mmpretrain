@@ -10,11 +10,11 @@ This is fine-tuning part of the 1st Place Solution for Webly-supervised Fine-gra
 
 <br>
 
-**LB A**
+**Leaderboard A**
 
 ![LB-A](https://user-images.githubusercontent.com/18586273/205498131-5728e470-b4f6-43b7-82a5-5f8e3bd5168e.png)
 
-**LB B**
+**Leaderboard B**
 
 ![LB-B](https://user-images.githubusercontent.com/18586273/205498171-5a3a3055-370a-4a8b-9779-b686254ebc94.png)
 
@@ -22,7 +22,7 @@ This is fine-tuning part of the 1st Place Solution for Webly-supervised Fine-gra
 
 </details>
 
-## Reproduce / 复现
+## Reproduce
 
 For detailed self-supervised pretrain code, please refer to [Self-spervised Pre-training](#self-supervised-pre-training).
 For detailed finetuning and inference code, please refer to [this repo](https://github.com/Ezra-Yu/ACCV2022_FGIA_1st).
@@ -35,7 +35,7 @@ For detailed finetuning and inference code, please refer to [this repo](https://
 
 ### Our Model
 
-- ViT(MAE-pre-train)   # Pretrained with [MAE](https://github.com/open-mmlab/mmppretrain/tree/main/configs/mae)
+- ViT(MAE-pre-train)   # Pretrained with [MAE](https://github.com/open-mmlab/mmppretrain/tree/main/projects/fgia_accv2022_1st/config/mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k.py)
 - Swin-v2(SimMIM-pre-train)   # From [MMPretrain-swin_transformer_v2](https://github.com/open-mmlab/mmppretrain/tree/main/configs/swin_transformer_v2).
 
 \*\*The architectures we use \*\*
@@ -112,7 +112,7 @@ NNODES=2 NODE_RANK=1 PORT=${MASTER_PORT} MASTER_ADDR=${MASTER_ADDR} bash tools/d
 
 All these logs and checkpoints will be saved under the folder `work_dirs`in the root.
 
-## bag of tricks paper and code
+## Fine-tuning with bag of tricks
 
 - [MAE](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mae) |  [Config](https://github.com/Ezra-Yu/ACCV_workshop/tree/master/configs/vit)
 - [Swinv2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/swin_transformer_v2) | [Config](https://github.com/Ezra-Yu/ACCV_workshop/tree/master/configs/swin)
