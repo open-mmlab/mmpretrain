@@ -17,7 +17,7 @@ Welcome to MMPretrain's documentation!
    user_guides/train.md
    user_guides/test.md
    user_guides/finetune.md
-   user_guides/pretrain_custom_dataset.md
+   user_guides/downstream.md
 
 .. toctree::
    :maxdepth: 1
@@ -81,7 +81,7 @@ Welcome to MMPretrain's documentation!
    notes/projects.md
    notes/changelog.md
    notes/faq.md
-
+   notes/pretrain_custom_dataset.md
 
 Indices and tables
 ==================

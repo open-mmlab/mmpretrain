@@ -1,6 +1,6 @@
-# Pretrain with Custom Dataset
+# How to Pretrain with Custom Dataset
 
-- [Pretrain with Custom Dataset](#pretrain-with-custom-dataset)
+- [How to Pretrain with Custom Dataset](#how-to-pretrain-with-custom-dataset)
   - [Train MAE on Custom Dataset](#train-mae-on-custom-dataset)
     - [Step-1: Get the path of custom dataset](#step-1-get-the-path-of-custom-dataset)
     - [Step-2: Choose one config as template](#step-2-choose-one-config-as-template)
