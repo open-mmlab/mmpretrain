@@ -22,7 +22,6 @@ Welcome to MMPretrain's documentation!
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Guides
-   :glob:
 
    advanced_guides/datasets.md
    advanced_guides/pipeline.md
@@ -35,8 +34,15 @@ Welcome to MMPretrain's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Visualization
+   :caption: Model Zoo
    :glob:
+
+   modelzoo_statistics.md
+   papers/*
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Visualization
 
    useful_tools/dataset_visualization.md
    useful_tools/scheduler_visualization.md
@@ -44,8 +50,7 @@ Welcome to MMPretrain's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Analysis
-   :glob:
+   :caption: Analysis Tools
 
    useful_tools/print_config.md
    useful_tools/verify_dataset.md
@@ -55,17 +60,8 @@ Welcome to MMPretrain's documentation!
 .. toctree::
    :maxdepth: 1
    :caption: Deployment
-   :glob:
 
    useful_tools/model_serving.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Model zoo
-   :glob:
-
-   modelzoo_statistics.md
-   papers/*
 
 .. toctree::
    :maxdepth: 1

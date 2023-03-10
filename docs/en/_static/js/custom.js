@@ -1,4 +1,4 @@
-var collapsedSections = ['Useful Tools', 'Advanced Guids', 'Model zoo', 'Notes'];
+var collapsedSections = ['Advanced Guides', 'Model zoo', 'Visualization', 'Analysis Tools', 'Deployment', 'Notes'];
 
 $(document).ready(function () {
   $('.model-summary').DataTable({
