@@ -9,30 +9,36 @@ Collections:
         - ResNet
         - SwAV
     Paper:
-        URL: https://arxiv.org/abs/2006.09882
-        Title: "Unsupervised Learning of Visual Features by Contrasting Cluster Assignments"
+      Title: Unsupervised Learning of Visual Features by Contrasting Cluster Assignments
+      URL: https://arxiv.org/abs/2006.09882
     README: configs/swav/README.md
 
 Models:
   - Name: swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px
-    In Collection: SwAV
     Metadata:
       Epochs: 200
       Batch Size: 256
+      FLOPs: 4109364224
+      Parameters: 28354752
+      Training Data: ImageNet-1k
+    In Collection: SwAV
     Results: null
-    Config: configs/swav/swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96_20220825-5b3fc7fc.pth
+    Config: configs/swav/swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px.py
     Downstream:
       - resnet50_swav-pre_8xb32-linear-coslr-100e_in1k
   - Name: resnet50_swav-pre_8xb32-linear-coslr-100e_in1k
-    In Collection: SwAV
     Metadata:
       Epochs: 100
       Batch Size: 256
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: SwAV
     Results:
       - Task: Image Classification
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 70.5
-    Config: configs/swav/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/resnet50_linear-8xb32-coslr-100e_in1k/resnet50_linear-8xb32-coslr-100e_in1k_20220825-80341e08.pth
+    Config: configs/swav/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py

@@ -10,7 +10,7 @@
 - Name: swin-small_16xb64_in1k
   Cycle: month
 
-- Name: vit-base-p16_pt-32xb128-mae_in1k
+- Name: vit-base-p16_32xb128-mae_in1k
   Cycle: month
 
 - Name: resnet50_8xb256-rsb-a1-600e_in1k
@@ -34,53 +34,85 @@
 - Name: regnetx-1.6gf_8xb128_in1k
   Cycle: half-year
 
-- Name: van-small_8xb128_in1k
-  Cycle: no-training
+- Name: conformer-small-p32_8xb128_in1k
+  Cycle: half-year
 
-- Name: res2net50-w14-s8_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: convnext-small_32xb128_in1k
+  Cycle: month
 
-- Name: repvgg-A2_3rdparty_4xb64-coslr-120e_in1k
-  Cycle: no-training
+- Name: mobilenet-v3-small_8xb128_in1k
+  Cycle: half-year
 
-- Name: tnt-small-p16_3rdparty_in1k
-  Cycle: no-training
+- Name: mobileone-s2_8xb32_in1k
+  Cycle: quarter
 
-- Name: mlp-mixer-base-p16_3rdparty_64xb64_in1k
-  Cycle: no-training
+- Name: repvgg-b2g4_8xb32_in1k
+  Cycle: half-year
 
-- Name: conformer-small-p16_3rdparty_8xb128_in1k
-  Cycle: no-training
+- Name: barlowtwins_resnet50_8xb256-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
 
-- Name: twins-pcpvt-base_3rdparty_8xb128_in1k
-  Cycle: no-training
+- Name: beit_beit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: quarter
+  Downstream: beit-base-p16_beit-pre_8xb128-coslr-100e_in1k
 
-- Name: efficientnet-b0_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: quarter
+  Downstream: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
 
-- Name: convnext-small_3rdparty_32xb128_in1k
-  Cycle: no-training
+- Name: byol_resnet50_16xb256-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_byol-pre_8xb512-linear-coslr-90e_in1k
 
-- Name: hrnet-w18_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: cae_vit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
 
-- Name: repmlp-base_3rdparty_8xb64_in1k
-  Cycle: no-training
+- Name: densecl_resnet50_8xb32-coslr-200e_in1k
+  Cycle: half-year
+  Downstream: resnet50_densecl-pre_8xb32-linear-steplr-100e_in1k
 
-- Name: wide-resnet50_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k
+  Cycle: half-year
+  Downstream: vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
 
-- Name: cspresnet50_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: mae_vit-base-p16_8xb512-amp-coslr-300e_in1k
+  Cycle: month
+  Downstream: vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
 
-- Name: convmixer-768-32_10xb64_in1k
-  Cycle: no-training
+- Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: month
+  Downstream: vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
 
-- Name: densenet169_4xb256_in1k
-  Cycle: no-training
+- Name: milan_vit-base-p16_16xb256-amp-coslr-400e_in1k
+  Cycle: quarter
+  Downstream: vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
 
-- Name: poolformer-s24_3rdparty_32xb128_in1k
-  Cycle: no-training
+- Name: mixmim_mixmim-base_16xb128-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
 
-- Name: inception-v3_3rdparty_8xb32_in1k
-  Cycle: no-training
+- Name: mocov2_resnet50_8xb32-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
+
+- Name: mocov3_vit-small-p16_16xb256-amp-coslr-300e_in1k
+  Cycle: month
+  Downstream: vit-small-p16_mocov3-pre_8xb128-linear-coslr-90e_in1k
+
+- Name: simclr_resnet50_16xb256-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_simclr-200e-pre_8xb512-linear-coslr-90e_in1k
+
+- Name: simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px
+  Cycle: month
+  Downstream: swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
+
+- Name: simsiam_resnet50_8xb32-coslr-100e_in1k
+  Cycle: quarter
+  Downstream: resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
+
+- Name: swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px
+  Cycle: half-year
+  Downstream: resnet50_swav-pre_8xb32-linear-coslr-100e_in1k
