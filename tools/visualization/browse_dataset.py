@@ -87,18 +87,40 @@ def parse_args():
 
 def make_grid(imgs, names, rescale_factor=None):
     """Concat list of pictures into a single big picture, align height here."""
-    figure = create_figure()
-    gs = figure.add_gridspec(1, len(imgs))
+    figure = create_figure(margin=True)
 
-    ori_shapes = [img.shape[:2] for img in imgs]
-    if rescale_factor is not None:
-        imgs = [mmcv.imrescale(img, rescale_factor) for img in imgs]
+    # deal with imgs
+    max_nrows = 1
+    ori_shapes = []
+    rescaled_imgs = []
+    for img in imgs:
+        if isinstance(img, list):
+            max_nrows = len(img) if len(img) > max_nrows else max_nrows
+            ori_shapes.append([i.shape[:2] for i in img])
+            if rescale_factor is not None:
+                rescaled_imgs.append(
+                    [mmcv.imrescale(i, rescale_factor) for i in img])
+        else:
+            ori_shapes.append(img.shape[:2])
+            if rescale_factor is not None:
+                rescaled_imgs.append(mmcv.imrescale(img, rescale_factor))
+    gs = figure.add_gridspec(max_nrows, len(imgs))
+
+    imgs = rescaled_imgs if rescale_factor is not None else imgs
 
     for i, img in enumerate(imgs):
-        subplot = figure.add_subplot(gs[0, i])
-        subplot.axis(False)
-        subplot.imshow(img)
-        subplot.set_title(f'{names[i]}\n{ori_shapes[i]}')
+        if isinstance(img, list):
+            for j in range(len(img)):
+                subplot = figure.add_subplot(gs[j, i])
+                subplot.axis(False)
+                subplot.imshow(img[j])
+                subplot.set_title(f'{names[i]+str(j)}\n{ori_shapes[i][j]}')
+
+        else:
+            subplot = figure.add_subplot(gs[0, i])
+            subplot.axis(False)
+            subplot.imshow(img)
+            subplot.set_title(f'{names[i]}\n{ori_shapes[i]}')
 
     return img_from_canvas(figure.canvas)
 
@@ -178,9 +200,6 @@ def main():
                               ['original', 'transformed'], rescale_factor)
             rescale_factor = None
         else:
-            for result in intermediate_imgs:
-                if isinstance(result['img'], list):
-                    result['img'] = result['img'][0]
             image = make_grid([result['img'] for result in intermediate_imgs],
                               [result['name'] for result in intermediate_imgs],
                               rescale_factor)
