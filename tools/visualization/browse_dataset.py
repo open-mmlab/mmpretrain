@@ -192,7 +192,9 @@ def main():
         if args.mode == 'original':
             image = intermediate_imgs[0]['img']
         elif args.mode == 'transformed':
-            image = intermediate_imgs[-1]['img']
+            image = make_grid([intermediate_imgs[-1]['img']], ['transformed'],
+                              rescale_factor)
+            rescale_factor = None
         elif args.mode == 'concat':
             ori_image = intermediate_imgs[0]['img']
             trans_image = intermediate_imgs[-1]['img']
