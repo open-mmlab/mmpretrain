@@ -6,6 +6,7 @@ import os
 import os.path as osp
 import re
 from collections import defaultdict
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
@@ -128,6 +129,7 @@ def create_train_job_batch(model_info, args, port, pretrain_info=None):
     job_name = f'{args.job_name}_{model_name}'
     work_dir = Path(args.work_dir) / model_name
     work_dir.mkdir(parents=True, exist_ok=True)
+    cfg_options = deepcopy(args.cfg_options)
 
     if args.quotatype is not None:
         quota_cfg = f'#SBATCH --quotatype {args.quotatype}'
@@ -147,6 +149,9 @@ def create_train_job_batch(model_info, args, port, pretrain_info=None):
         runner = 'srun python'
     elif not args.non_distributed:
         launcher = 'pytorch'
+        if gpus > 8:
+            gpus = 8
+            cfg_options.append('auto_scale_lr.enable=True')
         runner = ('torchrun --master_addr="127.0.0.1" '
                   f'--master_port={port} --nproc_per_node={gpus}')
     else:
@@ -164,8 +169,7 @@ def create_train_job_batch(model_info, args, port, pretrain_info=None):
                   f'#SBATCH --cpus-per-task=5\n\n'
                   f'{runner} tools/train.py {config} '
                   f'--work-dir={work_dir} --cfg-option '
-                  f'env_cfg.dist_cfg.port={port} '
-                  f'{" ".join(args.cfg_options)} '
+                  f'{" ".join(cfg_options)} '
                   f'default_hooks.checkpoint.max_keep_ckpts=2 '
                   f'default_hooks.checkpoint.save_best="auto" '
                   f'{pretrain_cfg} '
