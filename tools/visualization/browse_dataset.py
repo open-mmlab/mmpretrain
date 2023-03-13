@@ -143,6 +143,7 @@ def main():
     dataset_cfg = cfg.get(args.phase + '_dataloader').get('dataset')
     dataset = build_dataset(dataset_cfg)
 
+    # init inspection
     intermediate_imgs = []
     dataset.pipeline = InspectCompose(dataset.pipeline.transforms,
                                       intermediate_imgs)
@@ -158,6 +159,14 @@ def main():
 
     for i, item in zip(range(display_number), dataset):
         rescale_factor = args.rescale_factor
+
+        if hasattr(item['data_samples'], 'mask'):
+            tmp_img = intermediate_imgs[-1]['img'][0] if isinstance(
+                intermediate_imgs[-1]['img'],
+                list) else intermediate_imgs[-1]['img']
+            intermediate_imgs[-1]['img'] = visualizer.add_mask_to_image(
+                tmp_img, item['data_samples'])
+
         if args.mode == 'original':
             image = intermediate_imgs[0]['img']
         elif args.mode == 'transformed':
@@ -169,6 +178,9 @@ def main():
                               ['original', 'transformed'], rescale_factor)
             rescale_factor = None
         else:
+            for result in intermediate_imgs:
+                if isinstance(result['img'], list):
+                    result['img'] = result['img'][0]
             image = make_grid([result['img'] for result in intermediate_imgs],
                               [result['name'] for result in intermediate_imgs],
                               rescale_factor)
