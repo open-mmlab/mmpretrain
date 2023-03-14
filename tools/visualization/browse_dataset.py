@@ -4,7 +4,7 @@ import os.path as osp
 import sys
 import textwrap
 
-from matplotlib import _tight_bbox, transforms
+from matplotlib import transforms
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
 from mmengine.registry import init_default_scope
@@ -13,6 +13,12 @@ from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.datasets.builder import build_dataset
 from mmpretrain.visualization import UniversalVisualizer, create_figure
+
+try:
+    from matplotlib._tight_bbox import adjust_bbox
+except ImportError:
+    # To be compatible with matplotlib 3.5
+    from matplotlib.tight_bbox import adjust_bbox
 
 
 def parse_args():
@@ -45,7 +51,7 @@ def parse_args():
         '--show-interval',
         '-i',
         type=float,
-        default=0,
+        default=2,
         help='the interval of show (s)')
     parser.add_argument(
         '--mode',
@@ -126,8 +132,9 @@ def make_grid(imgs, names):
     figure.tight_layout()
 
     # Remove the white boundary (reserve 0.5 inches at the top to show label)
-    points = figure.get_tightbbox().get_points() + [[0, 0], [0, 0.5]]
-    _tight_bbox.adjust_bbox(figure, transforms.Bbox(points))
+    points = figure.get_tightbbox(
+        figure.canvas.get_renderer()).get_points() + [[0, 0], [0, 0.5]]
+    adjust_bbox(figure, transforms.Bbox(points))
 
     return img_from_canvas(figure.canvas)
 
@@ -143,6 +150,7 @@ class InspectCompose(Compose):
         self.intermediate_imgs = intermediate_imgs
 
     def __call__(self, data):
+        print(data['img_path'])
         if 'img' in data:
             self.intermediate_imgs.append({
                 'name': 'Original',
