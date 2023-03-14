@@ -12,6 +12,7 @@ from mmengine.utils import ProgressBar
 from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.datasets.builder import build_dataset
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import UniversalVisualizer, create_figure
 
 try:
@@ -119,7 +120,6 @@ def make_grid(imgs, names):
                     f'{name}\n{img_shapes[i][j]}',
                     fontsize=15,
                     family='monospace')
-
         else:
             subplot = figure.add_subplot(gs[:, i])
             subplot.axis(False)
@@ -145,9 +145,10 @@ class InspectCompose(Compose):
     And record "img" field of all results in one list.
     """
 
-    def __init__(self, transforms, intermediate_imgs):
+    def __init__(self, transforms, intermediate_imgs, visualizer):
         super().__init__(transforms=transforms)
         self.intermediate_imgs = intermediate_imgs
+        self.visualizer = visualizer
 
     def __call__(self, data):
         if 'img' in data:
@@ -161,9 +162,18 @@ class InspectCompose(Compose):
             if data is None:
                 return None
             if 'img' in data:
+                img = data['img'].copy()
+                if 'mask' in data:
+                    tmp_img = img[0] if isinstance(img, list) else img
+                    tmp_img = self.visualizer.add_mask_to_image(
+                        tmp_img,
+                        DataSample().set_mask(data['mask']),
+                        resize=tmp_img.shape[:2])
+                    img = [tmp_img] + img[1:] if isinstance(img,
+                                                            list) else tmp_img
                 self.intermediate_imgs.append({
                     'name': t.__class__.__name__,
-                    'img': data['img'].copy()
+                    'img': img
                 })
         return data
 
@@ -179,11 +189,6 @@ def main():
     dataset_cfg = cfg.get(args.phase + '_dataloader').get('dataset')
     dataset = build_dataset(dataset_cfg)
 
-    # init inspection
-    intermediate_imgs = []
-    dataset.pipeline = InspectCompose(dataset.pipeline.transforms,
-                                      intermediate_imgs)
-
     # init visualizer
     cfg.visualizer.pop('type')
     fig_cfg = dict(figsize=(16, 10))
@@ -191,18 +196,16 @@ def main():
         **cfg.visualizer, fig_show_cfg=fig_cfg, fig_save_cfg=fig_cfg)
     visualizer.dataset_meta = dataset.metainfo
 
+    # init inspection
+    intermediate_imgs = []
+    dataset.pipeline = InspectCompose(dataset.pipeline.transforms,
+                                      intermediate_imgs, visualizer)
+
     # init visualization image number
     display_number = min(args.show_number, len(dataset))
     progress_bar = ProgressBar(display_number)
 
     for i, item in zip(range(display_number), dataset):
-
-        if hasattr(item['data_samples'], 'mask'):
-            tmp_img = intermediate_imgs[-1]['img'][0] if isinstance(
-                intermediate_imgs[-1]['img'],
-                list) else intermediate_imgs[-1]['img']
-            intermediate_imgs[-1]['img'] = visualizer.add_mask_to_image(
-                tmp_img, item['data_samples'], resize=tmp_img.shape[:2])
 
         rescale_factor = None
         if args.mode == 'original':
