@@ -256,7 +256,6 @@ class UniversalVisualizer(Visualizer):
 
         return drawn_img
 
-    @master_only
     def add_mask_to_image(
         self,
         image: np.ndarray,
