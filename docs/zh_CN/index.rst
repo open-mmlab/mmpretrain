@@ -91,6 +91,7 @@
    notes/projects.md
    notes/changelog.md
    notes/faq.md
+   notes/pretrain_custom_dataset.md
 
 .. toctree::
    :caption: 切换语言
