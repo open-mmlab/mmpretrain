@@ -14,6 +14,12 @@ from .base_backbone import BaseBackbone
 
 
 class Attention4D(BaseModule):
+    """Attention layer fo 4D(N,C,H,W) input.
+    A PyTorch implementation of Attention layer fo 4D(N,C,H,W) input
+    introduced by:
+    `Attention is all you Need <https://arxiv.org/abs/2212.08059>`_
+    """
+
     def __init__(self,
                  dim=384,
                  key_dim=32,
@@ -31,7 +37,6 @@ class Attention4D(BaseModule):
         self.scale = key_dim ** -0.5
         self.key_dim = key_dim
         self.nh_kd = key_dim * num_heads
-
 
         if stride is not None:
             self.resolution = math.ceil(resolution / stride)
@@ -135,7 +140,7 @@ class Attention4D(BaseModule):
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):  # x (B,N,C)
+    def forward(self, x):  # -> x (B,N,C)
         B, C, H, W = x.shape
         if self.stride_conv is not None:
             x = self.stride_conv(x)
@@ -165,6 +170,10 @@ class Attention4D(BaseModule):
 
 
 class LGQuery(BaseModule):
+    """
+    Quert in attention downsample layer is calculated by this module.
+    """
+
     def __init__(self,
                  in_dim,
                  out_dim,
@@ -173,7 +182,7 @@ class LGQuery(BaseModule):
                  conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN'),
                  init_cfg=None):
-        super(LGQuery,self).__init__(init_cfg=init_cfg)
+        super(LGQuery, self).__init__(init_cfg=init_cfg)
 
         self.resolution1 = resolution1
         self.resolution2 = resolution2
@@ -206,6 +215,10 @@ class LGQuery(BaseModule):
 
 
 class Attention4DDownsample(BaseModule):
+    """
+    The attention downsample layer in SubSample layer.
+    """
+
     def __init__(self,
                  dim=384,
                  out_dim=None,
@@ -217,7 +230,7 @@ class Attention4DDownsample(BaseModule):
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
                  init_cfg=None):
-        super(Attention4DDownsample,self).__init__(init_cfg=init_cfg)
+        super(Attention4DDownsample, self).__init__(init_cfg=init_cfg)
 
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
@@ -331,6 +344,12 @@ class Attention4DDownsample(BaseModule):
 
 
 class Embedding(BaseModule):
+    """SubSample layer in EfficientFormerV2 module.
+
+    Including Attention4DDownsample(if asub==True),
+    and Conv Module.
+    """
+
     def __init__(self,
                  kernel_size=3,
                  stride=2,
@@ -484,15 +503,41 @@ class ConvMlp(BaseModule):
 
 
 class EfficientFormerBlock(BaseModule):
+    """EfficientFormerBlock using Attention4D.
+
+    Args:
+        dim (int): The input dimension.
+        mlp_ratio (float): The hidden dimension ratio for mlp layer.
+            Defaults to 4.
+        drop (float): Probability of an element to be zeroed
+            in the ConvMlp layer. Defaults to 0.
+        drop_path (float): Stochastic depth rate. Defaults to 0.
+        ues_attn (bool): Whether to use attention layer.
+            Defaults to True.
+        resolution (int): The resolution of the input feature map.
+            Defaults to 7.
+        stride (int, optional): The stride of the conv module in the
+            Attention4D layer. Defaults to None.
+        use_layer_scale (bool): Whether to use layer_scale.
+            Defaults to True.
+        conv_cfg (dict): Config dict for convolution layer.
+            Defaults to conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+    """
+
     def __init__(self,
-                 dim,
-                 mlp_ratio=4.,
-                 drop=0.,
-                 drop_path=0.,
-                 ues_attn=True,
-                 resolution=7,
-                 stride=None,
-                 use_layer_scale=True,
+                 dim: int,
+                 mlp_ratio: float = 4.,
+                 drop: float = 0.,
+                 drop_path: float = 0.,
+                 ues_attn: bool = True,
+                 resolution: int = 7,
+                 stride: Optional[int] = None,
+                 use_layer_scale: bool = True,
                  conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
@@ -537,7 +582,6 @@ class EfficientFormerBlock(BaseModule):
         else:
             self.ls1, self.ls2 = nn.Identity(), nn.Identity()
 
-
     def forward(self, x):
         if self.use_attn:
             x = x + self.drop_path(self.ls1(self.token_mixer(x)))
@@ -547,10 +591,53 @@ class EfficientFormerBlock(BaseModule):
 
 @MODELS.register_module()
 class EfficientFormerV2(BaseBackbone):
+    """EfficientFormerV2 backbone.
+
+    A PyTorch implementation of EfficientFormerV2 backbone introduced by:
+    `Rethinking Vision Transformers for MobileNet Size and Speed
+    <https://arxiv.org/abs/2212.08059>`_
+
+    Args:
+        arch (str): Architecture of EfficientFormerV2. Defaults to s0.
+        down_patch_size (int): The downsample size of patch in
+            SubSample(alias Embedding) layer. Defaults to 3.
+        down_stride (int): The downsample stride of conv module in
+            SubSample(alias Embedding) layer. Defaults to 2.
+        down_pad (float): The downsample padding of conv module in
+            SubSample(alias Embedding) layer. Defaults to 1.
+        drop_rate (float): Probability of an element to be zeroed
+            in the ConvMlp layer. Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
+        use_layer_scale (bool): Whether to use layer_scale in a block.
+            Defaults to True.
+        resolution (int): The resolution of the input image size.
+            Defaults to 224.
+        out_indices (Sequence[int]): Output from which layers.
+            Defaults to (-1, ).
+        frozen_stages (int): Layers to be frozen (all param fixed), and 0
+            means to freeze the stem stage. Defaults to -1, which means
+            not freeze any parameters.
+        conv_cfg (dict): Config dict for convolution layer.
+            Defaults to conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+
+
+    Note: The architecture of the model is
+        Stem -> Sequential(EfficientFormerBlock) -> SubSample(alias Embedding)
+             -> Sequential(EfficientFormerBlock) -> SubSample(alias Embedding)
+             -> Sequential(EfficientFormerBlock) -> SubSample(alias Embedding)
+             -> Sequential(EfficientFormerBlock)
+        So if EfficientFormerV2 is used for Detection and Segmentation,
+        use out_indices = [0,2,4,6], represent the four feature maps after
+        Sequential(EfficientFormerBlock).
+    """
 
     # --layers: [x,x,x,x], numbers of layers for the four stages
     # --embed_dims: [x,x,x,x], embedding dims for the four stages
-    # --downsamples: [x,x,x,x], has downsample or not in the four stages
     # --vit_num: (int), the num of vit blocks in the last stage
     # --expansion_ratios: [[],[],[],[]], the expansion ratio for each layer
     arch_settings = {
@@ -601,16 +688,16 @@ class EfficientFormerV2(BaseBackbone):
     }
 
     def __init__(self,
-                 arch='s0',
-                 down_patch_size=3,
-                 down_stride=2,
-                 down_pad=1,
-                 drop_rate=0.,
-                 drop_path_rate=0.,
-                 use_layer_scale=True,
-                 resolution=224,
-                 out_indices=(-1,),
-                 frozen_stages=-1,
+                 arch: str = 's0',
+                 down_patch_size: int = 3,
+                 down_stride: int = 2,
+                 down_pad: int = 1,
+                 drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 use_layer_scale: bool = True,
+                 resolution: int = 224,
+                 out_indices: Sequence[int] = (-1,),
+                 frozen_stages: int = -1,
                  conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
@@ -728,7 +815,6 @@ class EfficientFormerV2(BaseBackbone):
         self.frozen_stages = frozen_stages
         self._freeze_stages()
 
-
     def _make_stem(self,
                    in_channels,
                    stem_channels,
@@ -776,11 +862,9 @@ class EfficientFormerV2(BaseBackbone):
                 for param in norm_layer.parameters():
                     param.requires_grad = False
 
-
-    def _format_output(self,x,idx):
+    def _format_output(self, x, idx):
         norm_layer = getattr(self, f'norm{idx}')
         return norm_layer(x)
-
 
     def forward(self, x):
         outs = []
@@ -788,6 +872,6 @@ class EfficientFormerV2(BaseBackbone):
         for idx, block in enumerate(self.network):
             x = block(x)
             if idx in self.out_indices:
-                outs.append(self._format_output(x,idx))
+                outs.append(self._format_output(x, idx))
 
         return tuple(outs)
