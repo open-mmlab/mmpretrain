@@ -1,40 +1,55 @@
 # 学习配置文件
 
+- [学习配置文件](#学习配置文件)
+  - [配置文件结构](#配置文件结构)
+    - [模型配置](#模型配置)
+    - [数据](#数据)
+    - [训练策略](#训练策略)
+    - [运行设置](#运行设置)
+  - [继承并修改配置文件](#继承并修改配置文件)
+    - [使用配置文件里的中间变量](#使用配置文件里的中间变量)
+    - [忽略基础配置文件里的部分内容](#忽略基础配置文件里的部分内容)
+    - [引用基础配置文件里的变量](#引用基础配置文件里的变量)
+  - [通过命令行参数修改配置信息](#通过命令行参数修改配置信息)
+
 为了管理深度学习实验的各种设置，我们使用配置文件来记录所有这些配置。这种配置文件系统具有模块化和继承特性，更多细节可以在{external+mmengine:doc}`MMEngine 中的教程 <advanced_tutorials/config>`。
 
-MMClassification 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) 文件夹下，目录结构如下所示:
+MMClassification 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmpretrain/tree/main/configs) 文件夹下，目录结构如下所示:
 
 ```text
-MMClassification/
+MMPretrain/
     ├── configs/
-    │   ├── _base_/                     # 原始配置文件夹
-    │   │   ├── datasets/                   # 原始数据集
-    │   │   ├── models/                     # 原始模型
-    │   │   ├── schedules/                  # 原始优化策略
-    │   │   └── default_runtime.py          # 原始运行设置
-    │   ├── resnet/                     # ResNet 算法文件夹
-    │   ├── swin_transformer/           # Swin 算法文件夹
-    │   ├── vision_transformer/         # ViT 算法文件夹
+    │   ├── _base_/                       # primitive configuration folder
+    │   │   ├── datasets/                      # primitive datasets
+    │   │   ├── models/                        # primitive models
+    │   │   ├── schedules/                     # primitive schedules
+    │   │   └── default_runtime.py             # primitive runtime setting
+    │   ├── beit/                         # BEiT Algorithms Folder
+    │   ├── mae/                          # MAE Algorithms Folder
+    │   ├── mocov2/                       # MoCoV2 Algorithms Folder
+    │   ├── resnet/                       # ResNet Algorithms Folder
+    │   ├── swin_transformer/             # Swin Algorithms Folder
+    │   ├── vision_transformer/           # ViT Algorithms Folder
     │   ├── ...
     └── ...
 ```
 
 可以使用 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
-本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 配置文件](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
+本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 配置文件](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
 
 ## 配置文件结构
 
 在 `configs/_base_` 文件夹下有 4 个基本组件类型，分别是：
 
-- [模型(model)](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/models)
-- [数据(data)](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/datasets)
-- [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/schedules)
-- [运行设置(runtime)](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)
+- [模型(model)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/models)
+- [数据(data)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/datasets)
+- [训练策略(schedule)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/schedules)
+- [运行设置(runtime)](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/default_runtime.py)
 
 你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。我们称这些被继承的配置文件为 _原始配置文件_，如 `_base_` 文件夹中的文件一般仅作为原始配置文件。
 
-下面使用 [ResNet50 配置文件](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。
+下面使用 [ResNet50 配置文件](https://github.com/open-mmlab/mmpretrain/blob/main//configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。
 
 ```python
 _base_ = [                                    # 此配置文件将继承所有 `_base_` 中的配置
@@ -63,7 +78,7 @@ _base_ = [                                    # 此配置文件将继承所有 `
 配置文件中的 'type' 不是构造时的参数，而是类名。
 ```
 
-以下是 ResNet50 的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/models/resnet50.py)：
+以下是 ResNet50 的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmpretrain/blob/main//configs/_base_/models/resnet50.py)：
 
 ```python
 model = dict(
@@ -103,7 +118,7 @@ model = dict(
     - `type`:  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](mmpretrain.datasets)
     - `pipeline`:  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/tutorials/data_pipeline.html)
 
-以下是 ResNet50 的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
+以下是 ResNet50 的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmpretrain/blob/main//configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
 dataset_type = 'ImageNet'
@@ -178,7 +193,7 @@ test_evaluator = val_evaluator    # 测试集的评估配置，这里直接与 v
 - `param_scheduler` : 学习率策略，你可以指定训练期间的学习率和动量曲线。有关详细信息，请参阅 MMEngine 中的 {external+mmengine:doc}`文档 <tutorials/param_scheduler>`。
 - `train_cfg | val_cfg | test_cfg`: 训练、验证以及测试的循环执行器配置，请参考相关的{external+mmengine:doc}`MMEngine 文档 <design/runner>`。
 
-以下是 ResNet50 的训练策略配置['configs/_base_/schedules/imagenet_bs256.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/schedules/imagenet_bs256.py)：
+以下是 ResNet50 的训练策略配置['configs/_base_/schedules/imagenet_bs256.py'](https://github.com/open-mmlab/mmpretrain/blob/main//configs/_base_/schedules/imagenet_bs256.py)：
 
 ```python
 optim_wrapper = dict(
@@ -208,7 +223,7 @@ auto_scale_lr = dict(base_batch_size=256)
 
 本部分主要包括保存权重策略、日志配置、训练参数、断点权重路径和工作目录等等。
 
-以下是几乎所有算法都使用的运行配置['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)：
+以下是几乎所有算法都使用的运行配置['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmpretrain/blob/main//configs/_base_/default_runtime.py)：
 
 ```python
 # 默认所有注册器使用的域
@@ -352,7 +367,7 @@ param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 
 有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。可以查看 {external+mmengine:doc}`MMEngine 文档 <advanced_tutorials/config>` 进一步了解该设计。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment` 数据增强，参考配置文件 [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnest/resnest50_32xb64_in1k.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment` 数据增强，参考配置文件 [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmpretrain/blob/main//configs/resnest/resnest50_32xb64_in1k.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
 ```python
 _base_ = [

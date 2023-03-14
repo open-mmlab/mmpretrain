@@ -24,7 +24,7 @@ If your dataset is not in the abvove list, you could reorganize the format of yo
 Place all samples in one folder as below:
 
 ```text
-Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names.
+Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names):
 As follows, class_x and class_y represent different categories.):
     data_prefix/
     ├── class_x
@@ -75,14 +75,14 @@ The text annotation file format uses text files to store path and category infor
 In the following case, the dataset directory is as follows:
 
 ```text
-The annotation file (for ``with_label=True``, supervised tasks.):
+The annotation file (for ``with_label=True``, supervised tasks):
     folder_1/xxx.png 0
     folder_1/xxy.png 1
     123.png 4
     nsdf3.png 3
     ...
 
-The annotation file (for ``with_label=False``, unsupervised tasks.):
+The annotation file (for ``with_label=False``, unsupervised tasks):
     folder_1/xxx.png
     folder_1/xxy.png
     123.png

@@ -11,24 +11,13 @@
    :maxdepth: 1
    :caption: 教程
 
-   user_guides/inference.md
-   user_guides/dataset_prepare.md
-   user_guides/train_test.md
    user_guides/config.md
+   user_guides/dataset_prepare.md
+   user_guides/inference.md
+   user_guides/train.md
+   user_guides/test.md
    user_guides/finetune.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: 实用工具
-
-   useful_tools/dataset_visualization.md
-   useful_tools/scheduler_visualization.md
-   useful_tools/cam_visualization.md
-   useful_tools/print_config.md
-   useful_tools/verify_dataset.md
-   useful_tools/log_result_analysis.md
-   useful_tools/complexity_analysis.md
-   useful_tools/model_serving.md
+   user_guides/downstream.md
 
 .. toctree::
    :maxdepth: 1
@@ -50,6 +39,29 @@
 
    modelzoo_statistics.md
    papers/*
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 可视化
+
+   useful_tools/dataset_visualization.md
+   useful_tools/scheduler_visualization.md
+   useful_tools/cam_visualization.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 分析工具
+
+   useful_tools/print_config.md
+   useful_tools/verify_dataset.md
+   useful_tools/log_result_analysis.md
+   useful_tools/complexity_analysis.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 部署
+
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1

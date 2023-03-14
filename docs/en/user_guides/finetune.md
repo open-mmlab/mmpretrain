@@ -2,8 +2,8 @@
 
 - [Fine-tune Models](#fine-tune-models)
   - [Inherit base configs](#inherit-base-configs)
-  - [Modify dataset configs](#modify-dataset-configs)
   - [Specify pre-trained model in configs](#specify-pre-trained-model-in-configs)
+  - [Modify dataset configs](#modify-dataset-configs)
   - [Modify training schedule configs](#modify-training-schedule-configs)
   - [Start Training](#start-training)
     - [Apply pre-trained model with command line](#apply-pre-trained-model-with-command-line)
@@ -53,31 +53,6 @@ _base_ = [
 
 Besides, you can also choose to write the whole contents rather than use inheritance.
 Refers to [`configs/lenet/lenet5_mnist.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/lenet/lenet5_mnist.py) for more details.
-
-## Modify dataset configs
-
-When fine-tuning on a new dataset, usually we need to modify some dataset
-configs. Here, we need to modify the pipeline to resize the image from 32 to
-224 to fit the input size of the model pre-trained on ImageNet, and modify
-dataloaders correspondingly.
-
-```python
-# data pipeline settings
-train_pipeline = [
-    dict(type='RandomCrop', crop_size=32, padding=4),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='Resize', scale=224),
-    dict(type='PackInputs'),
-]
-test_pipeline = [
-    dict(type='Resize', scale=224),
-    dict(type='PackInputs'),
-]
-# dataloader settings
-train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
-val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
-test_dataloader = val_dataloader
-```
 
 ## Specify pre-trained model in configs
 
@@ -136,6 +111,31 @@ model = dict(
 Not all backbones support the `frozen_stages` argument by now. Please check
 [the docs](https://mmpretrain.readthedocs.io/en/main/api.html#module-mmpretrain.models.backbones)
 to confirm if your backbone supports it.
+```
+
+## Modify dataset configs
+
+When fine-tuning on a new dataset, usually we need to modify some dataset
+configs. Here, we need to modify the pipeline to resize the image from 32 to
+224 to fit the input size of the model pre-trained on ImageNet, and modify
+dataloaders correspondingly.
+
+```python
+# data pipeline settings
+train_pipeline = [
+    dict(type='RandomCrop', crop_size=32, padding=4),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='Resize', scale=224),
+    dict(type='PackInputs'),
+]
+test_pipeline = [
+    dict(type='Resize', scale=224),
+    dict(type='PackInputs'),
+]
+# dataloader settings
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+test_dataloader = val_dataloader
 ```
 
 ## Modify training schedule configs
