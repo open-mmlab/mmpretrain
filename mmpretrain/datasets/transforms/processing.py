@@ -118,6 +118,7 @@ def register_vision_transforms() -> List[str]:
     return vision_transforms
 
 
+# register all the transforms in torchvision by using a transform wrapper
 VISION_TRANSFORMS = register_vision_transforms()
 
 
