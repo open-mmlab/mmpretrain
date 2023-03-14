@@ -202,7 +202,7 @@ def main():
                 intermediate_imgs[-1]['img'],
                 list) else intermediate_imgs[-1]['img']
             intermediate_imgs[-1]['img'] = visualizer.add_mask_to_image(
-                tmp_img, item['data_samples'])
+                tmp_img, item['data_samples'], resize=tmp_img.shape[:2])
 
         rescale_factor = None
         if args.mode == 'original':
