@@ -150,7 +150,6 @@ class InspectCompose(Compose):
         self.intermediate_imgs = intermediate_imgs
 
     def __call__(self, data):
-        print(data['img_path'])
         if 'img' in data:
             self.intermediate_imgs.append({
                 'name': 'Original',
