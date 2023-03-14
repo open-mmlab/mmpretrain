@@ -69,9 +69,9 @@ We will explain the four primitive config files separately below.
 This primitive config file includes a dict variable `model`, which mainly includes information such as network structure and loss function:
 
 - `type`: The type of model to build, we support several tasks.
-  - For image classification tasks, it's usually `'ImageClassifier'` You can find more details in the [API documentation](mmpretrain.models.classifiers).
-  - For self-supervised leanrning, there are several `'SelfSupervisors'`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
-  - For image retrieval tasks, it's usually `'ImageToImageRetriever'` You can find more details in the [API documentation](mmpretrain.models.retrievers).
+  - For image classification tasks, it's usually `ImageClassifier` You can find more details in the [API documentation](mmpretrain.models.classifiers).
+  - For self-supervised leanrning, there are several `SelfSupervisors`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
+  - For image retrieval tasks, it's usually `ImageToImageRetriever` You can find more details in the [API documentation](mmpretrain.models.retrievers).
 - `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
   - For self-supervised leanrning, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
 - `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](mmpretrain.models.necks).
