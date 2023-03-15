@@ -560,16 +560,16 @@ test_evaluator = val_evaluator
 
 `mmpretrain.datasets.pipelines` 包被重命名为 `mmpretrain.datasets.transforms`
 
-|           数据变换类            | 变动                                                                                                                                                                                              |
-| :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|       `LoadImageFromFile`       | 移除，使用 [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile)                                                                                                               |
-|          `RandomFlip`           | 移除，使用 [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip)，其中 `flip_prob` 参数被重命名为 `prob`                                                                                     |
-|          `RandomCrop`           | `size` 参数被重命名为 `crop_size`                                                                                                                                                                 |
+|           数据变换类            | 变动                                                                                                                                                                      |
+| :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|       `LoadImageFromFile`       | 移除，使用 [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile)                                                                                       |
+|          `RandomFlip`           | 移除，使用 [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip)，其中 `flip_prob` 参数被重命名为 `prob`                                                             |
+|          `RandomCrop`           | `size` 参数被重命名为 `crop_size`                                                                                                                                         |
 |       `RandomResizedCrop`       | `size` 参数被重命名为 `scale`；`scale` 参数被重命名为 `crop_ratio_range`；不再支持 `efficientnet_style`，请使用 [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop) |
-|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop)    |
-|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge)     |
-| `AutoAugment` & `RandomAugment` | `policies` 参数现在支持使用字符串指定预设的策略集。                                                                                                                                               |
-|            `Compose`            | 移除，使用 [`mmcv.transforms.Compose`](mmcv.transforms.Compose)                                                                                                                                   |
+|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop) |
+|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge) |
+| `AutoAugment` & `RandomAugment` | `policies` 参数现在支持使用字符串指定预设的策略集。                                                                                                                       |
+|            `Compose`            | 移除，使用 [`mmcv.transforms.Compose`](mmcv.transforms.Compose)                                                                                                           |
 
 ### `mmpretrain.models`
 
@@ -738,17 +738,17 @@ model = dict(
 
 下列表格记录了代码模块、文件夹的主要改变。
 
-| MMSelfSup 0.x            | MMPretrain 1.x      | Remark                                                                                                                                                                          |
-| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| apis                     | /                   | 目前 `apis` 文件夹已暂时被**移除**，在未来可能会再添加回来。                                                                                                                    |
-| core                     | engine              | `core` 文件夹重命名为 `engine`，包含了 `hooks`，`opimizers`。([API link](mmpretrain.engine))                                                                                    |
-| datasets                 | datasets            | 数据集相关类主要基于不同的数据集实现，例如 ImageNet，Places205。([API link](mmpretrain.datasets))                                                                               |
-| datasets/data_sources    | /                   | `data_sources` 已经被**移除**，并且现在 `datasets` 的逻辑和 OpenMMLab 其它项目保持一致。                                                                                        |
-| datasets/pipelines       | datasets/transforms | `pipelines` 文件夹已经重命名为 `transforms`。([API link](mmpretrain.datasets.transforms))                                                                                       |
-| /                        | evaluation          | `evaluation` 主要负责管理一些评测函数或者是类。([API link](mmpretrain.evaluation))                                                                                              |
-| models/algorithms        | selfsup             | 算法文件移动至 `selfsup` 文件夹。([API link](mmpretrain.models.selfsup))                                                                                                        |
-| models/backbones         | selfsup             | 自监督学习算法对应的，重新实现的主干网络移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                                      |
-| models/target_generators | selfsup             | 目标生成器的实现移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                                                              |
-| /                        | models/losses       | `losses` 文件夹提供了各种不同损失函数的实现。([API link](mmpretrain.models.losses))                                                                                             |
+| MMSelfSup 0.x            | MMPretrain 1.x      | Remark                                                                                                                                                        |
+| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| apis                     | /                   | 目前 `apis` 文件夹已暂时被**移除**，在未来可能会再添加回来。                                                                                                  |
+| core                     | engine              | `core` 文件夹重命名为 `engine`，包含了 `hooks`，`opimizers`。([API link](mmpretrain.engine))                                                                  |
+| datasets                 | datasets            | 数据集相关类主要基于不同的数据集实现，例如 ImageNet，Places205。([API link](mmpretrain.datasets))                                                             |
+| datasets/data_sources    | /                   | `data_sources` 已经被**移除**，并且现在 `datasets` 的逻辑和 OpenMMLab 其它项目保持一致。                                                                      |
+| datasets/pipelines       | datasets/transforms | `pipelines` 文件夹已经重命名为 `transforms`。([API link](mmpretrain.datasets.transforms))                                                                     |
+| /                        | evaluation          | `evaluation` 主要负责管理一些评测函数或者是类。([API link](mmpretrain.evaluation))                                                                            |
+| models/algorithms        | selfsup             | 算法文件移动至 `selfsup` 文件夹。([API link](mmpretrain.models.selfsup))                                                                                      |
+| models/backbones         | selfsup             | 自监督学习算法对应的，重新实现的主干网络移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                    |
+| models/target_generators | selfsup             | 目标生成器的实现移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                                            |
+| /                        | models/losses       | `losses` 文件夹提供了各种不同损失函数的实现。([API link](mmpretrain.models.losses))                                                                           |
 | /                        | structures          | `structures` 文件夹提供了数据结构的实现。在 MMPretrain 中，我们实现了一种新的数据结构，`DataSample`，在训练/验证过程中来传输和接受数据信息。([API link](mmpretrain.structures)) |
-| /                        | visualization       | `visualization` 文件夹包含了 visualizer，主要负责一些可视化的工作，例如数据增强的可视化。([API link](mmpretrain.visualization))                                                 |
+| /                        | visualization       | `visualization` 文件夹包含了 visualizer，主要负责一些可视化的工作，例如数据增强的可视化。([API link](mmpretrain.visualization))                               |
