@@ -3,24 +3,24 @@ import argparse
 import copy
 import math
 import pkg_resources
-import re
+from functools import partial
 from pathlib import Path
 
 import mmcv
 import numpy as np
+import torch.nn as nn
 from mmcv.transforms import Compose
 from mmengine.config import Config, DictAction
 from mmengine.dataset import default_collate
-from mmengine.registry import init_default_scope
 from mmengine.utils import to_2tuple
-from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
+from mmengine.utils.dl_utils import is_norm
 
 from mmpretrain import digit_version
-from mmpretrain.apis import init_model
+from mmpretrain.apis import get_model
+from mmpretrain.registry import TRANSFORMS
 
 try:
-    from pytorch_grad_cam import (EigenCAM, EigenGradCAM, GradCAM,
-                                  GradCAMPlusPlus, LayerCAM, XGradCAM)
+    import pytorch_grad_cam as cam
     from pytorch_grad_cam.activations_and_gradients import \
         ActivationsAndGradients
     from pytorch_grad_cam.utils.image import show_cam_on_image
@@ -28,15 +28,14 @@ except ImportError:
     raise ImportError('Please run `pip install "grad-cam>=1.3.6"` to install '
                       '3rd party package pytorch_grad_cam.')
 
-# Supported grad-cam type map
+# Alias name
 METHOD_MAP = {
-    'gradcam': GradCAM,
-    'gradcam++': GradCAMPlusPlus,
-    'xgradcam': XGradCAM,
-    'eigencam': EigenCAM,
-    'eigengradcam': EigenGradCAM,
-    'layercam': LayerCAM,
+    'gradcam++': cam.GradCAMPlusPlus,
 }
+METHOD_MAP.update({
+    cam_class.__name__.lower(): cam_class
+    for cam_class in cam.base_cam.BaseCAM.__subclasses__()
+})
 
 
 def parse_args():
@@ -113,33 +112,21 @@ def parse_args():
     return args
 
 
-def build_reshape_transform(model, args):
+def reshape_transform(tensor, model, args):
     """Build reshape_transform for `cam.activations_and_grads`, which is
     necessary for ViT-like networks."""
     # ViT_based_Transformers have an additional clstoken in features
-    if not args.vit_like:
+    if tensor.ndim == 4:
+        # For (B, C, H, W)
+        return tensor
+    elif tensor.ndim == 3:
+        if not args.vit_like:
+            raise ValueError(f"The tensor shape is {tensor.shape}, if it's a "
+                             'vit-like backbone, please specify `--vit-like`.')
+        # For (B, L, C)
+        num_extra_tokens = args.num_extra_tokens or getattr(
+            model.backbone, 'num_extra_tokens', 1)
 
-        def check_shape(tensor):
-            assert len(tensor.size()) != 3, \
-                (f"The input feature's shape is {tensor.size()}, and it seems "
-                 'to have been flattened or from a vit-like network. '
-                 "Please use `--vit-like` if it's from a vit-like network.")
-            return tensor
-
-        return check_shape
-
-    if args.num_extra_tokens is not None:
-        num_extra_tokens = args.num_extra_tokens
-    elif hasattr(model.backbone, 'num_extra_tokens'):
-        num_extra_tokens = model.backbone.num_extra_tokens
-    else:
-        num_extra_tokens = 1
-
-    def _reshape_transform(tensor):
-        """reshape_transform helper."""
-        assert len(tensor.size()) == 3, \
-            (f"The input feature's shape is {tensor.size()}, "
-             'and the feature seems not from a vit-like network?')
         tensor = tensor[:, num_extra_tokens:, :]
         # get heat_map_height and heat_map_width, preset input is a square
         heat_map_area = tensor.size()[1]
@@ -149,13 +136,13 @@ def build_reshape_transform(model, args):
              f'minus num-extra-tokens ({num_extra_tokens}) is {heat_map_area},'
              ' which is not a perfect square number. Please check if you used '
              'a wrong num-extra-tokens.')
+        # (B, L, C) -> (B, H, W, C)
         result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
-
-        # Bring the channels to the first dimension, like in CNNs.
-        result = result.transpose(2, 3).transpose(1, 2)
+        # (B, H, W, C) -> (B, C, H, W)
+        result = result.permute(0, 3, 1, 2)
         return result
-
-    return _reshape_transform
+    else:
+        raise ValueError(f'Unsupported tensor shape {tensor.shape}.')
 
 
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
@@ -175,37 +162,12 @@ def init_cam(method, model, target_layers, use_cuda, reshape_transform):
 
 def get_layer(layer_str, model):
     """get model layer from given str."""
-    cur_layer = model
-    layer_names = layer_str.strip().split('.')
-
-    def get_children_by_name(model, name):
-        try:
-            return getattr(model, name)
-        except AttributeError as e:
-            raise AttributeError(
-                e.args[0] +
-                '. Please use `--preview-model` to check keys at first.')
-
-    def get_children_by_eval(model, name):
-        try:
-            return eval(f'model{name}', {}, {'model': model})
-        except (AttributeError, IndexError) as e:
-            raise AttributeError(
-                e.args[0] +
-                '. Please use `--preview-model` to check keys at first.')
-
-    for layer_name in layer_names:
-        match_res = re.match('(?P<name>.+?)(?P<indices>(\\[.+\\])+)',
-                             layer_name)
-        if match_res:
-            layer_name = match_res.groupdict()['name']
-            indices = match_res.groupdict()['indices']
-            cur_layer = get_children_by_name(cur_layer, layer_name)
-            cur_layer = get_children_by_eval(cur_layer, indices)
-        else:
-            cur_layer = get_children_by_name(cur_layer, layer_name)
-
-    return cur_layer
+    for name, layer in model.named_modules():
+        if name == layer_str:
+            return layer
+    raise AttributeError(
+        f'Cannot get the layer "{layer_str}". Please choose from: \n' +
+        '\n'.join(name for name, _ in model.named_modules()))
 
 
 def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
@@ -224,39 +186,32 @@ def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
 def get_default_traget_layers(model, args):
     """get default target layers from given model, here choose nrom type layer
     as default target layer."""
-    norm_layers = []
-    for m in model.backbone.modules():
-        if isinstance(m, (BatchNorm2d, LayerNorm, GroupNorm, BatchNorm1d)):
-            norm_layers.append(m)
-    if len(norm_layers) == 0:
-        raise ValueError(
-            '`--target-layers` is empty. Please use `--preview-model`'
-            ' to check keys at first and then specify `target-layers`.')
-    # if the model is CNN model or Swin model, just use the last norm
-    # layer as the target-layer, if the model is ViT model, the final
-    # classification is done on the class token computed in the last
-    # attention block, the output will not be affected by the 14x14
-    # channels in the last layer. The gradient of the output with
-    # respect to them, will be 0! here use the last 3rd norm layer.
-    # means the first norm of the last decoder block.
+    norm_layers = [
+        (name, layer)
+        for name, layer in model.backbone.named_modules(prefix='backbone')
+        if is_norm(layer)
+    ]
     if args.vit_like:
-        if args.num_extra_tokens:
-            num_extra_tokens = args.num_extra_tokens
-        elif hasattr(model.backbone, 'num_extra_tokens'):
-            num_extra_tokens = model.backbone.num_extra_tokens
-        else:
-            raise AttributeError('Please set num_extra_tokens in backbone'
-                                 " or using 'num-extra-tokens'")
+        # For ViT models, the final classification is done on the class token.
+        # And the patch tokens and class tokens won't interact each other after
+        # the final attention layer. Therefore, we need to choose the norm
+        # layer before the last attention layer.
+        num_extra_tokens = args.num_extra_tokens or getattr(
+            model.backbone, 'num_extra_tokens', 1)
 
-        # if a vit-like backbone's num_extra_tokens bigger than 0, view it
-        # as a VisionTransformer backbone, eg. DeiT, T2T-ViT.
-        if num_extra_tokens >= 1:
+        out_type = getattr(model.backbone, 'out_type')
+        if out_type == 'cls_token' or num_extra_tokens > 0:
+            # Assume the backbone feature is class token.
+            name, layer = norm_layers[-3]
             print('Automatically choose the last norm layer before the '
-                  'final attention block as target_layer..')
-            return [norm_layers[-3]]
-    print('Automatically choose the last norm layer as target_layer.')
-    target_layers = [norm_layers[-1]]
-    return target_layers
+                  f'final attention block "{name}" as the target layer.')
+            return [layer]
+
+    # For CNN models, use the last norm layer as the target-layer
+    name, layer = norm_layers[-1]
+    print('Automatically choose the last norm layer '
+          f'"{name}" as the target layer.')
+    return [layer]
 
 
 def main():
@@ -265,16 +220,16 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    init_default_scope('mmpretrain')
     # build the model from a config file and a checkpoint file
-    model = init_model(cfg, args.checkpoint, device=args.device)
+    model: nn.Module = get_model(cfg, args.checkpoint, device=args.device)
     if args.preview_model:
         print(model)
         print('\n Please remove `--preview-model` to get the CAM.')
         return
 
     # apply transform and perpare data
-    transforms = Compose(cfg.test_dataloader.dataset.pipeline)
+    transforms = Compose(
+        [TRANSFORMS.build(t) for t in cfg.test_dataloader.dataset.pipeline])
     data = transforms({'img_path': args.img})
     src_img = copy.deepcopy(data['inputs']).numpy().transpose(1, 2, 0)
     data = model.data_preprocessor(default_collate([data]), False)
@@ -289,9 +244,8 @@ def main():
 
     # init a cam grad calculator
     use_cuda = ('cuda' in args.device)
-    reshape_transform = build_reshape_transform(model, args)
     cam = init_cam(args.method, model, target_layers, use_cuda,
-                   reshape_transform)
+                   partial(reshape_transform, model=model, args=args))
 
     # warp the target_category with ClassifierOutputTarget in grad_cam>=1.3.7,
     # to fix the bug in #654.

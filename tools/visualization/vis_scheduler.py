@@ -108,7 +108,10 @@ def parse_args():
         'WARNING.')
     parser.add_argument('--title', type=str, help='title of figure')
     parser.add_argument(
-        '--style', type=str, default='whitegrid', help='style of plt')
+        '--style',
+        type=str,
+        default='whitegrid',
+        help='style of the figure, need `seaborn` package.')
     parser.add_argument('--not-show', default=False, action='store_true')
     parser.add_argument(
         '--window-size',

@@ -67,8 +67,7 @@ class DatasetValidator():
             with open(self.log_file_path, 'a') as f:
                 # add file lock to prevent multi-process writing errors
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                filepath = os.path.join(item['img_prefix'],
-                                        item['img_info']['filename'])
+                filepath = item['img_path']
                 f.write(filepath + '\n')
                 print(f'{filepath} cannot be read correctly, please check it.')
                 # Release files lock automatic using with

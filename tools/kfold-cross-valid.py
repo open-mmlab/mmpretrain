@@ -166,7 +166,7 @@ def train_single_fold(cfg, num_splits, fold, resume_ckpt=None):
             dataset=dataset,
             fold=fold,
             num_splits=num_splits,
-            seed=cfg.seed,
+            seed=cfg.kfold_split_seed,
             test_mode=test_mode,
         )
 
@@ -203,13 +203,13 @@ def train_single_fold(cfg, num_splits, fold, resume_ckpt=None):
     class SaveInfoHook(Hook):
 
         def after_train_epoch(self, runner):
-            try:
-                last_ckpt = find_latest_checkpoint(cfg.work_dir)
-                exp_info = dict(
-                    fold=fold, last_ckpt=last_ckpt, seed=runner.seed)
-                dump(exp_info, osp.join(root_dir, EXP_INFO_FILE))
-            except OSError:
-                pass
+            last_ckpt = find_latest_checkpoint(cfg.work_dir)
+            exp_info = dict(
+                fold=fold,
+                last_ckpt=last_ckpt,
+                kfold_split_seed=cfg.kfold_split_seed,
+            )
+            dump(exp_info, osp.join(root_dir, EXP_INFO_FILE))
 
     runner.register_hook(SaveInfoHook(), 'LOWEST')
 
@@ -226,17 +226,14 @@ def main():
     # merge cli arguments to config
     cfg = merge_args(cfg, args)
 
-    # set preprocess configs to model
-    cfg.model.setdefault('data_preprocessor', cfg.get('data_preprocessor', {}))
-
     # set the unify random seed
-    cfg.seed = args.seed or sync_random_seed()
+    cfg.kfold_split_seed = args.seed or sync_random_seed()
 
     # resume from the previous experiment
     if args.resume:
         experiment_info = load(osp.join(cfg.work_dir, EXP_INFO_FILE))
         resume_fold = experiment_info['fold']
-        cfg.seed = experiment_info['seed']
+        cfg.kfold_split_seed = experiment_info['kfold_split_seed']
         resume_ckpt = experiment_info.get('last_ckpt', None)
     else:
         resume_fold = 0

@@ -5,11 +5,16 @@ import random
 from unittest import TestCase
 from unittest.mock import ANY, call, patch
 
-import albumentations
 import mmengine
 import numpy as np
+import pytest
 
 from mmpretrain.registry import TRANSFORMS
+
+try:
+    import albumentations
+except ImportError:
+    albumentations = None
 
 
 def construct_toy_data():
@@ -666,6 +671,8 @@ class TestAlbumentations(TestCase):
     DEFAULT_ARGS = dict(
         type='Albumentations', transforms=[dict(type='ChannelShuffle', p=1)])
 
+    @pytest.mark.skipif(
+        albumentations is None, reason='No Albumentations module.')
     def test_assertion(self):
         # Test with non-list transforms
         with self.assertRaises(AssertionError):
@@ -697,6 +704,8 @@ class TestAlbumentations(TestCase):
             cfg['keymap'] = []
             TRANSFORMS.build(cfg)
 
+    @pytest.mark.skipif(
+        albumentations is None, reason='No Albumentations module.')
     def test_transform(self):
         ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
         results = dict(img=copy.deepcopy(ori_img))
@@ -795,6 +804,8 @@ class TestAlbumentations(TestCase):
         assert min(ablu_result['img'].shape[:2]) == 400
         assert ablu_result['img_shape'] == (400, 600)
 
+    @pytest.mark.skipif(
+        albumentations is None, reason='No Albumentations module.')
     def test_repr(self):
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
         transform = TRANSFORMS.build(cfg)
