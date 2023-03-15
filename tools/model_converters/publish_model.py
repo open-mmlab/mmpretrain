@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import datetime
-import subprocess
+import hashlib
+import shutil
 import warnings
 from collections import OrderedDict
 from pathlib import Path
@@ -80,7 +81,8 @@ def process_checkpoint(in_file, out_file, args):
     temp_out_file = Path(out_file).with_name('temp_' + Path(out_file).name)
     torch.save(checkpoint, temp_out_file)
 
-    sha = subprocess.check_output(['sha256sum', temp_out_file]).decode()
+    with open(temp_out_file, 'rb') as f:
+        sha = hashlib.sha256(f.read()).hexdigest()[:8]
     if out_file.endswith('.pth'):
         out_file_name = out_file[:-4]
     else:
@@ -88,7 +90,7 @@ def process_checkpoint(in_file, out_file, args):
 
     current_date = datetime.datetime.now().strftime('%Y%m%d')
     final_file = out_file_name + f'_{current_date}-{sha[:8]}.pth'
-    subprocess.Popen(['mv', temp_out_file, final_file]).wait()
+    shutil.move(temp_out_file, final_file)
 
     print(f'Successfully generated the publish-ckpt as {final_file}.')
 

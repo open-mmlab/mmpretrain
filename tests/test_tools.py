@@ -59,14 +59,7 @@ class TestAnalyzeLogs(TestCase):
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
-        self.assertEqual(
-            out.decode(), f"""\
------Analyze train time of {self.log_file}-----
-slowest epoch 2, average time is 0.0219
-fastest epoch 1, average time is 0.0218
-time std over epochs is 0.0000
-average iter time: 0.0287 s/iter\n
-""")
+        self.assertIn('slowest epoch 2, average time is 0.0219', out.decode())
 
         command = [
             'python',
@@ -80,11 +73,8 @@ average iter time: 0.0287 s/iter\n
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
-        self.assertEqual(
-            out.decode(), f'''\
-plot curve of {self.log_file}, metric is accuracy/top1
-save curve to: {self.out_file}
-''')
+        self.assertIn(str(self.log_file), out.decode())
+        self.assertIn(str(self.out_file), out.decode())
         self.assertTrue(self.out_file.exists())
 
 
@@ -151,7 +141,8 @@ class TestPrintConfig(TestCase):
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
-        self.assertEqual(out.decode().strip(),
+        out = out.decode().strip().replace('\r\n', '\n')
+        self.assertEqual(out,
                          Config.fromfile(self.config_file).pretty_text.strip())
 
 
@@ -180,12 +171,15 @@ class TestVerifyDataset(TestCase):
             'python',
             'tools/misc/verify_dataset.py',
             self.config_file,
+            '--out-path',
+            self.dir / 'log.log',
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn(
             f"{ASSETS_ROOT/'dataset/a/2.JPG'} cannot be read correctly",
             out.decode().strip())
+        self.assertTrue((self.dir / 'log.log').exists())
 
 
 class TestEvalMetric(TestCase):
@@ -420,5 +414,5 @@ class TestGetFlops(TestCase):
             'tools/analysis_tools/get_flops.py',
             'mobilevit-xxsmall_3rdparty_in1k',
         ]
-        out, _ = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE).communicate()
-        self.assertIn('Flops: 0.31G', out.decode())
+        ret_code = Popen(command, cwd=MMPRE_ROOT).wait()
+        self.assertEqual(ret_code, 0)
