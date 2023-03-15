@@ -256,6 +256,30 @@ class UniversalVisualizer(Visualizer):
 
         return drawn_img
 
+    def add_mask_to_image(
+        self,
+        image: np.ndarray,
+        data_sample: DataSample,
+        resize: Union[int, Tuple[int]] = 224,
+        color: Union[str, Tuple[int]] = 'black',
+        alpha: Union[int, float] = 0.8,
+    ) -> np.ndarray:
+        if isinstance(resize, int):
+            resize = (resize, resize)
+
+        image = mmcv.imresize(image, resize)
+        self.set_image(image)
+
+        if isinstance(data_sample.mask, np.ndarray):
+            data_sample.mask = torch.tensor(data_sample.mask)
+        mask = data_sample.mask.float()[None, None, ...]
+        mask_ = F.interpolate(mask, image.shape[:2], mode='nearest')[0, 0]
+
+        self.draw_binary_masks(mask_.bool(), colors=color, alphas=alpha)
+
+        drawn_img = self.get_image()
+        return drawn_img
+
     @master_only
     def visualize_masked_image(self,
                                image: np.ndarray,
@@ -299,18 +323,12 @@ class UniversalVisualizer(Visualizer):
         Returns:
             np.ndarray: The visualization image.
         """
-        if isinstance(resize, int):
-            resize = (resize, resize)
-
-        image = mmcv.imresize(image, resize)
-        self.set_image(image)
-
-        mask = data_sample.mask.float()[None, None, ...]
-        mask_ = F.interpolate(mask, image.shape[:2], mode='nearest')[0, 0]
-
-        self.draw_binary_masks(mask_.bool(), colors=color, alphas=alpha)
-
-        drawn_img = self.get_image()
+        drawn_img = self.add_mask_to_image(
+            image=image,
+            data_sample=data_sample,
+            resize=resize,
+            color=color,
+            alpha=alpha)
 
         if show:
             self.show(drawn_img, win_name=name, wait_time=wait_time)

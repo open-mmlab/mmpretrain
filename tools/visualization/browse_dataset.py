@@ -2,8 +2,9 @@
 import argparse
 import os.path as osp
 import sys
+import textwrap
 
-import mmcv
+from matplotlib import transforms
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
 from mmengine.registry import init_default_scope
@@ -11,7 +12,14 @@ from mmengine.utils import ProgressBar
 from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.datasets.builder import build_dataset
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import UniversalVisualizer, create_figure
+
+try:
+    from matplotlib._tight_bbox import adjust_bbox
+except ImportError:
+    # To be compatible with matplotlib 3.5
+    from matplotlib.tight_bbox import adjust_bbox
 
 
 def parse_args():
@@ -62,8 +70,8 @@ def parse_args():
         '--rescale-factor',
         '-r',
         type=float,
-        help='image rescale factor, which is useful if the output is too '
-        'large or too small.')
+        help='(For `mode=original`) Image rescale factor, which is useful if'
+        'the output is too large or too small.')
     parser.add_argument(
         '--channel-order',
         '-c',
@@ -85,20 +93,48 @@ def parse_args():
     return args
 
 
-def make_grid(imgs, names, rescale_factor=None):
+def make_grid(imgs, names):
     """Concat list of pictures into a single big picture, align height here."""
-    figure = create_figure()
-    gs = figure.add_gridspec(1, len(imgs))
+    # A large canvas to ensure all text clear.
+    figure = create_figure(dpi=150, figsize=(16, 9))
 
-    ori_shapes = [img.shape[:2] for img in imgs]
-    if rescale_factor is not None:
-        imgs = [mmcv.imrescale(img, rescale_factor) for img in imgs]
+    # deal with imgs
+    max_nrows = 1
+    img_shapes = []
+    for img in imgs:
+        if isinstance(img, list):
+            max_nrows = max(len(img), max_nrows)
+            img_shapes.append([i.shape[:2] for i in img])
+        else:
+            img_shapes.append(img.shape[:2])
+    gs = figure.add_gridspec(max_nrows, len(imgs))
 
     for i, img in enumerate(imgs):
-        subplot = figure.add_subplot(gs[0, i])
-        subplot.axis(False)
-        subplot.imshow(img)
-        subplot.set_title(f'{names[i]}\n{ori_shapes[i]}')
+        if isinstance(img, list):
+            for j in range(len(img)):
+                subplot = figure.add_subplot(gs[j, i])
+                subplot.axis(False)
+                subplot.imshow(img[j])
+                name = '\n'.join(textwrap.wrap(names[i] + str(j), width=20))
+                subplot.set_title(
+                    f'{name}\n{img_shapes[i][j]}',
+                    fontsize=15,
+                    family='monospace')
+        else:
+            subplot = figure.add_subplot(gs[:, i])
+            subplot.axis(False)
+            subplot.imshow(img)
+            name = '\n'.join(textwrap.wrap(names[i], width=20))
+            subplot.set_title(
+                f'{name}\n{img_shapes[i]}', fontsize=15, family='monospace')
+
+    # Manage the gap of subplots
+    figure.tight_layout()
+
+    # Remove the white boundary (reserve 0.5 inches at the top to show label)
+    points = figure.get_tightbbox(
+        figure.canvas.get_renderer()).get_points() + [[0, 0], [0, 0.5]]
+    adjust_bbox(figure, transforms.Bbox(points))
 
     return img_from_canvas(figure.canvas)
 
@@ -109,9 +145,10 @@ class InspectCompose(Compose):
     And record "img" field of all results in one list.
     """
 
-    def __init__(self, transforms, intermediate_imgs):
+    def __init__(self, transforms, intermediate_imgs, visualizer):
         super().__init__(transforms=transforms)
         self.intermediate_imgs = intermediate_imgs
+        self.visualizer = visualizer
 
     def __call__(self, data):
         if 'img' in data:
@@ -125,9 +162,18 @@ class InspectCompose(Compose):
             if data is None:
                 return None
             if 'img' in data:
+                img = data['img'].copy()
+                if 'mask' in data:
+                    tmp_img = img[0] if isinstance(img, list) else img
+                    tmp_img = self.visualizer.add_mask_to_image(
+                        tmp_img,
+                        DataSample().set_mask(data['mask']),
+                        resize=tmp_img.shape[:2])
+                    img = [tmp_img] + img[1:] if isinstance(img,
+                                                            list) else tmp_img
                 self.intermediate_imgs.append({
                     'name': t.__class__.__name__,
-                    'img': data['img'].copy()
+                    'img': img
                 })
         return data
 
@@ -143,36 +189,40 @@ def main():
     dataset_cfg = cfg.get(args.phase + '_dataloader').get('dataset')
     dataset = build_dataset(dataset_cfg)
 
-    intermediate_imgs = []
-    dataset.pipeline = InspectCompose(dataset.pipeline.transforms,
-                                      intermediate_imgs)
-
     # init visualizer
     cfg.visualizer.pop('type')
-    visualizer = UniversalVisualizer(**cfg.visualizer)
+    fig_cfg = dict(figsize=(16, 10))
+    visualizer = UniversalVisualizer(
+        **cfg.visualizer, fig_show_cfg=fig_cfg, fig_save_cfg=fig_cfg)
     visualizer.dataset_meta = dataset.metainfo
+
+    # init inspection
+    intermediate_imgs = []
+    dataset.pipeline = InspectCompose(dataset.pipeline.transforms,
+                                      intermediate_imgs, visualizer)
 
     # init visualization image number
     display_number = min(args.show_number, len(dataset))
     progress_bar = ProgressBar(display_number)
 
     for i, item in zip(range(display_number), dataset):
-        rescale_factor = args.rescale_factor
+
+        rescale_factor = None
         if args.mode == 'original':
             image = intermediate_imgs[0]['img']
+            # Only original mode need rescale factor, `make_grid` will use
+            # matplotlib to manage the size of subplots.
+            rescale_factor = args.rescale_factor
         elif args.mode == 'transformed':
-            image = intermediate_imgs[-1]['img']
+            image = make_grid([intermediate_imgs[-1]['img']], ['transformed'])
         elif args.mode == 'concat':
             ori_image = intermediate_imgs[0]['img']
             trans_image = intermediate_imgs[-1]['img']
             image = make_grid([ori_image, trans_image],
-                              ['original', 'transformed'], rescale_factor)
-            rescale_factor = None
+                              ['original', 'transformed'])
         else:
             image = make_grid([result['img'] for result in intermediate_imgs],
-                              [result['name'] for result in intermediate_imgs],
-                              rescale_factor)
-            rescale_factor = None
+                              [result['name'] for result in intermediate_imgs])
 
         intermediate_imgs.clear()
 
