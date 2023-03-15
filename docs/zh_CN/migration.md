@@ -1,18 +1,292 @@
-# 从 MMClassification 0.x 迁移
+# 迁移文档
 
-我们在 MMClassification 1.x 版本中引入了一些修改，可能会产生兼容性问题。请按照本教程从 MMClassification 0.x 迁移您的项目。
+我们在 MMPretrain 1.x 版本中引入了一些修改，可能会产生兼容性问题。请按照本教程从 MMClassification 0.x 或是 MMSelfSup 0.x 迁移您的项目。
+
+- [迁移文档](#迁移文档)
+  - [新的依赖](#新的依赖)
+- [配置文件的通用改变](#配置文件的通用改变)
+  - [训练策略设置](#训练策略设置)
+  - [运行设置](#运行设置)
+  - [其他变动](#其他变动)
+- [从 MMClassification 0.x 迁移](#从-mmclassification-0x-迁移)
+  - [配置文件](#配置文件)
+    - [模型设置](#模型设置)
+    - [数据设置](#数据设置)
+  - [模块变动](#模块变动)
+    - [`mmpretrain.apis`](#mmpretrainapis)
+    - [`mmpretrain.core`](#mmpretraincore)
+    - [`mmpretrain.datasets`](#mmpretraindatasets)
+    - [`mmpretrain.models`](#mmpretrainmodels)
+    - [`mmpretrain.utils`](#mmpretrainutils)
+- [迁移自 MMSelfSup 0.x 版本](#迁移自-mmselfsup-0x-版本)
+  - [配置文件](#配置文件-1)
+    - [数据集](#数据集)
+    - [模型](#模型)
+  - [代码包](#代码包)
 
 ## 新的依赖
 
-MMClassification 1.x 依赖一些新的包。你可以准备一个干净的新环境，并按照[安装教程](./get_started.md)重新安装；或者手动安装以下软件包。
+```{warning}
+MMPretrain 1.x 版本依赖于一些新的代码包，您应该根据 [安装教程](./get_started.md) 来创建新的环境，尽管你可能已经拥有了一个可以正常运行 MMClassification 0.x 或 MMSelfSup 0.x 的环境。请参考[安装文档](./get_started.md) 对依赖库进行对应的安装。
+```
 
 1. [MMEngine](https://github.com/open-mmlab/mmengine)：MMEngine 是 OpenMMLab 2.0 架构的核心库，我们将许多与计算机视觉无关的组件从 MMCV 拆分到了 MMEngine。
 2. [MMCV](https://github.com/open-mmlab/mmcv)：OpenMMLab 计算机视觉基础库，这不是一个新的依赖，但你需要将其升级到 `2.0.0rc1` 版本以上。
 3. [rich](https://github.com/Textualize/rich)：一个命令行美化库，用以在命令行中呈现更美观的输出。
 
+# 配置文件的通用改变
+
+在这个部分，我们将介绍一些旧版本 (**MMClassification 0.x** 或 **MMSelfSup 0.x**) 和 **MMPretrain 1.x** 之间通用的变化规范。
+
+## 训练策略设置
+
+| MMCls or MMSelfSup 0.x | MMPretrain 1.x  | 备注                                                                                                     |
+| ---------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
+| optimizer_config       | /               | `optimizer_config` 已经被**移除**。                                                                      |
+| /                      | optim_wrapper   | `optim_wrapper` 提供了参数更新的相关字段。                                                               |
+| lr_config              | param_scheduler | `param_scheduler` 是一个列表设置学习率或者是其它参数，这将比之前更加灵活。                               |
+| runner                 | train_cfg       | `train_cfg` 中的循环设置（如 `EpochBasedTrainLoop`，`IterBasedTrainLoop`）将控制模型训练过程中的工作流。 |
+
+**`optimizer`** 和 **`optimizer_config`** 字段的变化：
+
+- 现在我们使用 `optim_wrapper` 字段指定与优化过程有关的所有配置。而 `optimizer` 字段是 `optim_wrapper` 的一个
+  子字段。
+- `paramwise_cfg` 字段不再是 `optimizer` 的子字段，而是 `optim_wrapper` 的子字段。
+- `optimizer_config` 字段被移除，其配置项被移入 `optim_wrapper` 字段。
+- `grad_clip` 被重命名为 `clip_grad`
+
+<table class="docutils">
+<tr>
+<td>原配置</td>
+<td>
+
+```python
+optimizer = dict(
+    type='AdamW',
+    lr=0.0015,
+    weight_decay=0.3,
+    paramwise_cfg = dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+    ))
+
+optimizer_config = dict(grad_clip=dict(max_norm=1.0))
+```
+
+</td>
+<tr>
+<td>新配置</td>
+<td>
+
+```python
+optim_wrapper = dict(
+    optimizer=dict(type='AdamW', lr=0.0015, weight_decay=0.3),
+    paramwise_cfg = dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+    ),
+    clip_grad=dict(max_norm=1.0),
+)
+```
+
+</td>
+</tr>
+</table>
+
+**`lr_config`** 字段的变化：
+
+- `lr_config` 字段被移除，我们使用新的 `param_scheduler` 配置取代。
+- `warmup` 相关的字段都被移除，因为学习率预热可以通过多个学习率规划器的组合来实现，因此不再单独实现。
+
+新的优化器参数规划器组合机制非常灵活，你可以使用它来设计多种学习率、动量曲线，详见{external+mmengine:doc}`MMEngine 中的教程 <tutorials/param_scheduler>`。
+
+<table class="docutils">
+<tr>
+<td>原配置</td>
+<td>
+
+```python
+lr_config = dict(
+    policy='CosineAnnealing',
+    min_lr=0,
+    warmup='linear',
+    warmup_iters=5,
+    warmup_ratio=0.01,
+    warmup_by_epoch=True)
+```
+
+</td>
+<tr>
+<td>新配置</td>
+<td>
+
+```python
+param_scheduler = [
+    # 学习率预热
+    dict(
+        type='LinearLR',
+        start_factor=0.01,
+        by_epoch=True,
+        end=5,
+        # 每轮迭代都更新学习率，而不是每个 epoch
+        convert_to_iter_based=True),
+    # 主学习率规划器
+    dict(type='CosineAnnealingLR', by_epoch=True, begin=5),
+]
+```
+
+</td>
+</tr>
+</table>
+
+**`runner`** 字段的变化：
+
+原 `runner` 字段被拆分为 `train_cfg`，`val_cfg` 和 `test_cfg` 三个字段，分别配置训练、验证和测试循环。
+
+<table class="docutils">
+<tr>
+<td>原配置</td>
+<td>
+
+```python
+runner = dict(type='EpochBasedRunner', max_epochs=100)
+```
+
+</td>
+<tr>
+<td>新配置</td>
+<td>
+
+```python
+# `val_interval` 字段来自原配置中 `evaluation.interval` 字段
+train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+val_cfg = dict()   # 空字典表示使用默认验证配置
+test_cfg = dict()  # 空字典表示使用默认测试配置
+```
+
+</td>
+</tr>
+</table>
+
+在 OpenMMLab 2.0 中，我们引入了“循环控制器”来控制训练、验证和测试行为，而原先 `Runner` 功能也相应地发生了变化。详细介绍参见 MMEngine 中的{external+mmengine:doc}`执行器教程 <design/runner>`。
+
+## 运行设置
+
+**`checkpoint_config`** 和 **`log_config`** 字段的变化：
+
+`checkpoint_config` 被移动至 `default_hooks.checkpoint`，`log_config` 被移动至 `default_hooks.logger`。同时，
+我们将很多原先在训练脚本中隐式定义的钩子移动到了 `default_hooks` 字段。
+
+```python
+default_hooks = dict(
+    # 记录每轮迭代的耗时
+    timer=dict(type='IterTimerHook'),
+
+    # 每 100 轮迭代打印一次日志
+    logger=dict(type='LoggerHook', interval=100),
+
+    # 启用优化器参数规划器
+    param_scheduler=dict(type='ParamSchedulerHook'),
+
+    # 每个 epoch 保存一次模型权重文件，并且自动保存最优权重文件
+    checkpoint=dict(type='CheckpointHook', interval=1, save_best='auto'),
+
+    # 在分布式环境中设置采样器种子
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+
+    # 可视化验证结果，将 `enable` 设为 True 来启用这一功能。
+    visualization=dict(type='VisualizationHook', enable=False),
+)
+```
+
+此外，我们将原来的日志功能拆分为日志记录和可视化器。日志记录负责按照指定间隔保存日志数据，以及进行数据平滑等处理，可视化器用于在不同的后端记录日志，如终端、TensorBoard 和 WandB。
+
+<table class="docutils">
+<tr>
+<td>原配置</td>
+<td>
+
+```python
+log_config = dict(
+    interval=100,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        dict(type='TensorboardLoggerHook'),
+    ])
+```
+
+</td>
+<tr>
+<td>新配置</td>
+<td>
+
+```python
+default_hooks = dict(
+    ...
+    logger=dict(type='LoggerHook', interval=100),
+)
+
+visualizer = dict(
+    type='UniversalVisualizer',
+    vis_backends=[dict(type='LocalVisBackend'), dict(type='TensorboardVisBackend')],
+)
+```
+
+</td>
+</tr>
+</table>
+
+**`load_from`** 和 **`resume_from`** 字段的变动：
+
+- `resume_from` 字段被移除。我们现在使用 `resume` 和 `load_from` 字段实现以下功能：
+  - 如 `resume=True` 且 `load_from` 不为 None，从 `load_from` 指定的权重文件恢复训练。
+  - 如 `resume=True` 且 `load_from` 为 None，尝试从工作目录中最新的权重文件恢复训练。
+  - 如 `resume=False` 且 `load_from` 不为 None，仅加载指定的权重文件，不恢复训练。
+  - 如 `resume=False` 且 `load_from` 为 None，不进行任何操作。
+
+**`dist_params`** 字段的变动：`dist_params` 字段被移动为 `env_cfg` 字段的一个子字段。以下为 `env_cfg` 字段的所
+有配置项：
+
+```python
+env_cfg = dict(
+    # 是否启用 cudnn benchmark
+    cudnn_benchmark=False,
+
+    # 设置多进程相关参数
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+
+    # 设置分布式相关参数
+    dist_cfg=dict(backend='nccl'),
+)
+```
+
+**`workflow`** 字段的变动：`workflow` 相关的功能现已被移除。
+
+新字段 **`visualizer`**：可视化器是 OpenMMLab 2.0 架构中的新设计，我们使用可视化器进行日志、结果的可视化与多后
+端的存储。详见 MMEngine 中的{external+mmengine:doc}`可视化教程 <advanced_tutorials/visualization>`。
+
+```python
+visualizer = dict(
+    type='UniversalVisualizer',
+    vis_backends=[
+        dict(type='LocalVisBackend'),
+        # 将下行取消注释，即可将日志和可视化结果保存至 TesnorBoard
+        # dict(type='TensorboardVisBackend')
+    ]
+)
+```
+
+新字段 **`default_scope`**：指定所有注册器进行模块搜索默认的起点。MMPretrain 中的 `default_scope` 字段为 `mmpretrain`，大部分情况下不需要修改。详见 MMengine 中的{external+mmengine:doc}`注册器教程 <advanced_tutorials/registry>`。
+
+## 其他变动
+
+我们将所有注册器的定义从各个包移动到了 `mmpretrain.registry`。
+
+# 从 MMClassification 0.x 迁移
+
 ## 配置文件
 
-在 MMClassification 1.x 中，我们重构了配置文件的结构，绝大部分原来的配置文件无法直接使用。
+在 MMPretrain 1.x 中，我们重构了配置文件的结构，绝大部分原来的配置文件无法直接使用。
 
 在本节中，我们将介绍配置文件的所有变化。我们假设您已经对[配置文件](./user_guides/config.md)有所了解。
 
@@ -237,239 +511,6 @@ test_evaluator = val_evaluator
 </tr>
 </table>
 
-### 训练策略设置
-
-**`optimizer`** 和 **`optimizer_config`** 字段的变化：
-
-- 现在我们使用 `optim_wrapper` 字段指定与优化过程有关的所有配置。而 `optimizer` 字段是 `optim_wrapper` 的一个
-  子字段。
-- `paramwise_cfg` 字段不再是 `optimizer` 的子字段，而是 `optim_wrapper` 的子字段。
-- `optimizer_config` 字段被移除，其配置项被移入 `optim_wrapper` 字段。
-- `grad_clip` 被重命名为 `clip_grad`
-
-<table class="docutils">
-<tr>
-<td>原配置</td>
-<td>
-
-```python
-optimizer = dict(
-    type='AdamW',
-    lr=0.0015,
-    weight_decay=0.3,
-    paramwise_cfg = dict(
-        norm_decay_mult=0.0,
-        bias_decay_mult=0.0,
-    ))
-
-optimizer_config = dict(grad_clip=dict(max_norm=1.0))
-```
-
-</td>
-<tr>
-<td>新配置</td>
-<td>
-
-```python
-optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=0.0015, weight_decay=0.3),
-    paramwise_cfg = dict(
-        norm_decay_mult=0.0,
-        bias_decay_mult=0.0,
-    ),
-    clip_grad=dict(max_norm=1.0),
-)
-```
-
-</td>
-</tr>
-</table>
-
-**`lr_config`** 字段的变化：
-
-- `lr_config` 字段被移除，我们使用新的 `param_scheduler` 配置取代。
-- `warmup` 相关的字段都被移除，因为学习率预热可以通过多个学习率规划器的组合来实现，因此不再单独实现。
-
-新的优化器参数规划器组合机制非常灵活，你可以使用它来设计多种学习率、动量曲线，详见{external+mmengine:doc}`MMEngine 中的教程 <tutorials/param_scheduler>`。
-
-<table class="docutils">
-<tr>
-<td>原配置</td>
-<td>
-
-```python
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=0.01,
-    warmup_by_epoch=True)
-```
-
-</td>
-<tr>
-<td>新配置</td>
-<td>
-
-```python
-param_scheduler = [
-    # 学习率预热
-    dict(
-        type='LinearLR',
-        start_factor=0.01,
-        by_epoch=True,
-        end=5,
-        # 每轮迭代都更新学习率，而不是每个 epoch
-        convert_to_iter_based=True),
-    # 主学习率规划器
-    dict(type='CosineAnnealingLR', by_epoch=True, begin=5),
-]
-```
-
-</td>
-</tr>
-</table>
-
-**`runner`** 字段的变化：
-
-原 `runner` 字段被拆分为 `train_cfg`，`val_cfg` 和 `test_cfg` 三个字段，分别配置训练、验证和测试循环。
-
-<table class="docutils">
-<tr>
-<td>原配置</td>
-<td>
-
-```python
-runner = dict(type='EpochBasedRunner', max_epochs=100)
-```
-
-</td>
-<tr>
-<td>新配置</td>
-<td>
-
-```python
-# `val_interval` 字段来自原配置中 `evaluation.interval` 字段
-train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
-val_cfg = dict()   # 空字典表示使用默认验证配置
-test_cfg = dict()  # 空字典表示使用默认测试配置
-```
-
-</td>
-</tr>
-</table>
-
-在 OpenMMLab 2.0 中，我们引入了“循环控制器”来控制训练、验证和测试行为，而原先 `Runner` 功能也相应地发生了变化。详细介绍参见 MMEngine 中的{external+mmengine:doc}`执行器教程 <design/runner>`。
-
-### 运行设置
-
-**`checkpoint_config`** 和 **`log_config`** 字段的变化：
-
-`checkpoint_config` 被移动至 `default_hooks.checkpoint`，`log_config` 被移动至 `default_hooks.logger`。同时，
-我们将很多原先在训练脚本中隐式定义的钩子移动到了 `default_hooks` 字段。
-
-```python
-default_hooks = dict(
-    # 记录每轮迭代的耗时
-    timer=dict(type='IterTimerHook'),
-
-    # 每 100 轮迭代打印一次日志
-    logger=dict(type='LoggerHook', interval=100),
-
-    # 启用优化器参数规划器
-    param_scheduler=dict(type='ParamSchedulerHook'),
-
-    # 每个 epoch 保存一次模型权重文件，并且自动保存最优权重文件
-    checkpoint=dict(type='CheckpointHook', interval=1, save_best='auto'),
-
-    # 在分布式环境中设置采样器种子
-    sampler_seed=dict(type='DistSamplerSeedHook'),
-
-    # 可视化验证结果，将 `enable` 设为 True 来启用这一功能。
-    visualization=dict(type='VisualizationHook', enable=False),
-)
-```
-
-此外，我们将原来的日志功能拆分为日志记录和可视化器。日志记录负责按照指定间隔保存日志数据，以及进行数据平滑等处理，可视化器用于在不同的后端记录日志，如终端、TensorBoard 和 WandB。
-
-<table class="docutils">
-<tr>
-<td>原配置</td>
-<td>
-
-```python
-log_config = dict(
-    interval=100,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        dict(type='TensorboardLoggerHook'),
-    ])
-```
-
-</td>
-<tr>
-<td>新配置</td>
-<td>
-
-```python
-default_hooks = dict(
-    ...
-    logger=dict(type='LoggerHook', interval=100),
-)
-
-visualizer = dict(
-    type='UniversalVisualizer',
-    vis_backends=[dict(type='LocalVisBackend'), dict(type='TensorboardVisBackend')],
-)
-```
-
-</td>
-</tr>
-</table>
-
-**`load_from`** 和 **`resume_from`** 字段的变动：
-
-- `resume_from` 字段被移除。我们现在使用 `resume` 和 `load_from` 字段实现以下功能：
-  - 如 `resume=True` 且 `load_from` 不为 None，从 `load_from` 指定的权重文件恢复训练。
-  - 如 `resume=True` 且 `load_from` 为 None，尝试从工作目录中最新的权重文件恢复训练。
-  - 如 `resume=False` 且 `load_from` 不为 None，仅加载指定的权重文件，不恢复训练。
-  - 如 `resume=False` 且 `load_from` 为 None，不进行任何操作。
-
-**`dist_params`** 字段的变动：`dist_params` 字段被移动为 `env_cfg` 字段的一个子字段。以下为 `env_cfg` 字段的所
-有配置项：
-
-```python
-env_cfg = dict(
-    # 是否启用 cudnn benchmark
-    cudnn_benchmark=False,
-
-    # 设置多进程相关参数
-    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
-
-    # 设置分布式相关参数
-    dist_cfg=dict(backend='nccl'),
-)
-```
-
-**`workflow`** 字段的变动：`workflow` 相关的功能现已被移除。
-
-新字段 **`visualizer`**：可视化器是 OpenMMLab 2.0 架构中的新设计，我们使用可视化器进行日志、结果的可视化与多后
-端的存储。详见 MMEngine 中的{external+mmengine:doc}`可视化教程 <advanced_tutorials/visualization>`。
-
-```python
-visualizer = dict(
-    type='UniversalVisualizer',
-    vis_backends=[
-        dict(type='LocalVisBackend'),
-        # 将下行取消注释，即可将日志和可视化结果保存至 TesnorBoard
-        # dict(type='TensorboardVisBackend')
-    ]
-)
-```
-
-新字段 **`default_scope`**：指定所有注册器进行模块搜索默认的起点。MMClassification 中的 `default_scope` 字段为 `mmpretrain`，大部分情况下不需要修改。详见 MMengine 中的{external+mmengine:doc}`注册器教程 <advanced_tutorials/registry>`。
-
 ## 模块变动
 
 ### `mmpretrain.apis`
@@ -519,16 +560,16 @@ visualizer = dict(
 
 `mmpretrain.datasets.pipelines` 包被重命名为 `mmpretrain.datasets.transforms`
 
-|           数据变换类            | 变动                                                                                                                                                                      |
-| :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|       `LoadImageFromFile`       | 移除，使用 [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile)                                                                                       |
-|          `RandomFlip`           | 移除，使用 [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip)，其中 `flip_prob` 参数被重命名为 `prob`                                                             |
-|          `RandomCrop`           | `size` 参数被重命名为 `crop_size`                                                                                                                                         |
+|           数据变换类            | 变动                                                                                                                                                                                              |
+| :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|       `LoadImageFromFile`       | 移除，使用 [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile)                                                                                                               |
+|          `RandomFlip`           | 移除，使用 [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip)，其中 `flip_prob` 参数被重命名为 `prob`                                                                                     |
+|          `RandomCrop`           | `size` 参数被重命名为 `crop_size`                                                                                                                                                                 |
 |       `RandomResizedCrop`       | `size` 参数被重命名为 `scale`；`scale` 参数被重命名为 `crop_ratio_range`；不再支持 `efficientnet_style`，请使用 [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop) |
-|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop) |
-|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge) |
-| `AutoAugment` & `RandomAugment` | `policies` 参数现在支持使用字符串指定预设的策略集。                                                                                                                       |
-|            `Compose`            | 移除，使用 [`mmcv.transforms.Compose`](mmcv.transforms.Compose)                                                                                                           |
+|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop)    |
+|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge)     |
+| `AutoAugment` & `RandomAugment` | `policies` 参数现在支持使用字符串指定预设的策略集。                                                                                                                                               |
+|            `Compose`            | 移除，使用 [`mmcv.transforms.Compose`](mmcv.transforms.Compose)                                                                                                                                   |
 
 ### `mmpretrain.models`
 
@@ -570,6 +611,144 @@ visualizer = dict(
 |   `wrap_distributed_model`   | 移除，现在 runner 会自动包装模型。                                                                            |
 |     `auto_select_device`     | 移除，现在 runner 会自动选择设备。                                                                            |
 
-### 其他变动
+# 迁移自 MMSelfSup 0.x 版本
 
-- 我们将所有注册器的定义从各个包移动到了 `mmpretrain.registry` 包。
+## 配置文件
+
+本章节将介绍 `_base_` 文件夹中的配置文件的变化，主要包含以下三个部分：
+
+- 数据集：`configs/_base_/datasets`
+- 模型：`configs/_base_/models`
+- 优化器及调度：`configs/_base_/schedules`
+
+### 数据集
+
+在 **MMSelfSup 0.x** 中，我们使用字段 `data` 来整合数据相关信息, 例如 `samples_per_gpu`，`train`，`val` 等。
+
+在 **MMPretrain 1.x** 中，我们分别使用字段  `train_dataloader`, `val_dataloader` 整理训练和验证的数据相关信息，并且 `data` 字段已经被 **移除**。
+
+<table class="docutils">
+<tr>
+<td>旧版本</td>
+<td>
+
+```python
+data = dict(
+    samples_per_gpu=32,  # total 32*8(gpu)=256
+    workers_per_gpu=4,
+    train=dict(
+        type=dataset_type,
+        data_source=dict(
+            type=data_source,
+            data_prefix='data/imagenet/train',
+            ann_file='data/imagenet/meta/train.txt',
+        ),
+        num_views=[1, 1],
+        pipelines=[train_pipeline1, train_pipeline2],
+        prefetch=prefetch,
+    ),
+    val=...)
+```
+
+</td>
+
+<tr>
+<td>新版本</td>
+<td>
+
+```python
+train_dataloader = dict(
+    batch_size=32,
+    num_workers=4,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    collate_fn=dict(type='default_collate'),
+    dataset=dict(
+        type=dataset_type,
+        data_root=data_root,
+        ann_file='meta/train.txt',
+        data_prefix=dict(img_path='train/'),
+        pipeline=train_pipeline))
+val_dataloader = ...
+```
+
+</td>
+</tr>
+</table>
+
+另外，我们 **移除** 了字段 `data_source`，以此来保证我们项目和其它 OpenMMLab 项目数据流的一致性。请查阅 [Config](user_guides/1_config.md) 获取更详细的信息。
+
+**`pipeline`** 中的变化：
+
+以 MAE 的 `pipeline` 作为例子，新的写法如下：
+
+```python
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='RandomResizedCrop',
+        size=224,
+        scale=(0.2, 1.0),
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
+]
+```
+
+### 模型
+
+在模型的配置文件中，和 MMSeflSup 0.x 版本相比，主要有两点不同。
+
+1. 有一个新的字段 `data_preprocessor`，主要负责对数据进行预处理，例如归一化，通道转换等。例子如下：
+
+```python
+data_preprocessor=dict(
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    bgr_to_rgb=True)
+model = dict(
+    type='MAE',
+    data_preprocessor=dict(
+        mean=[127.5, 127.5, 127.5],
+        std=[127.5, 127.5, 127.5],
+        bgr_to_rgb=True)，
+    backbone=...,
+    neck=...,
+    head=...,
+    init_cfg=...)
+```
+
+2. 在新版本的 `head` 字段中，我们新增加了 `loss`，主要负责损失函数的构建。例子如下：
+
+```python
+model = dict(
+    type='MAE',
+    backbone=...,
+    neck=...,
+    head=dict(
+        type='MAEPretrainHead',
+        norm_pix=True,
+        patch_size=16,
+        loss=dict(type='MAEReconstructionLoss')),
+    init_cfg=...)
+```
+
+## 代码包
+
+下列表格记录了代码模块、文件夹的主要改变。
+
+| MMSelfSup 0.x            | MMPretrain 1.x      | Remark                                                                                                                                                                          |
+| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| apis                     | /                   | 目前 `apis` 文件夹已暂时被**移除**，在未来可能会再添加回来。                                                                                                                    |
+| core                     | engine              | `core` 文件夹重命名为 `engine`，包含了 `hooks`，`opimizers`。([API link](mmpretrain.engine))                                                                                    |
+| datasets                 | datasets            | 数据集相关类主要基于不同的数据集实现，例如 ImageNet，Places205。([API link](mmpretrain.datasets))                                                                               |
+| datasets/data_sources    | /                   | `data_sources` 已经被**移除**，并且现在 `datasets` 的逻辑和 OpenMMLab 其它项目保持一致。                                                                                        |
+| datasets/pipelines       | datasets/transforms | `pipelines` 文件夹已经重命名为 `transforms`。([API link](mmpretrain.datasets.transforms))                                                                                       |
+| /                        | evaluation          | `evaluation` 主要负责管理一些评测函数或者是类。([API link](mmpretrain.evaluation))                                                                                              |
+| models/algorithms        | selfsup             | 算法文件移动至 `selfsup` 文件夹。([API link](mmpretrain.models.selfsup))                                                                                                        |
+| models/backbones         | selfsup             | 自监督学习算法对应的，重新实现的主干网络移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                                      |
+| models/target_generators | selfsup             | 目标生成器的实现移动到算法的 `.py` 文件中。([API link](mmpretrain.models.selfsup))                                                                                              |
+| /                        | models/losses       | `losses` 文件夹提供了各种不同损失函数的实现。([API link](mmpretrain.models.losses))                                                                                             |
+| /                        | structures          | `structures` 文件夹提供了数据结构的实现。在 MMPretrain 中，我们实现了一种新的数据结构，`DataSample`，在训练/验证过程中来传输和接受数据信息。([API link](mmpretrain.structures)) |
+| /                        | visualization       | `visualization` 文件夹包含了 visualizer，主要负责一些可视化的工作，例如数据增强的可视化。([API link](mmpretrain.visualization))                                                 |

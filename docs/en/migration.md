@@ -561,28 +561,28 @@ the combination of parameter schedulers, see [the tutorial](./advanced_guides/sc
 
 The documentation can be found [here](mmpretrain.datasets).
 
-|                                       Dataset class                                       | Changes                                                                                                         |
-| :---------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------- |
+|                                       Dataset class                                       | Changes                                                                                                           |
+| :---------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------- |
 |                   [`CustomDataset`](mmpretrain.datasets.CustomDataset)                    | Add `data_root` argument as the common prefix of `data_prefix` and `ann_file` and support to load unlabeled data. |
-|                        [`ImageNet`](mmpretrain.datasets.ImageNet)                         | Same as `CustomDataset`.                                                                                        |
-|                     [`ImageNet21k`](mmpretrain.datasets.ImageNet21k)                      | Same as `CustomDataset`.                                                                                        |
-|   [`CIFAR10`](mmpretrain.datasets.CIFAR10) & [`CIFAR100`](mmpretrain.datasets.CIFAR100)   | The `test_mode` argument is a required argument now.                                                            |
-| [`MNIST`](mmpretrain.datasets.MNIST) & [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) | The `test_mode` argument is a required argument now.                                                            |
-|                             [`VOC`](mmpretrain.datasets.VOC)                              | Requires `data_root`, `image_set_path` and `test_mode` now.                                                     |
-|                             [`CUB`](mmpretrain.datasets.CUB)                              | Requires `data_root` and `test_mode` now.                                                                       |
+|                        [`ImageNet`](mmpretrain.datasets.ImageNet)                         | Same as `CustomDataset`.                                                                                          |
+|                     [`ImageNet21k`](mmpretrain.datasets.ImageNet21k)                      | Same as `CustomDataset`.                                                                                          |
+|   [`CIFAR10`](mmpretrain.datasets.CIFAR10) & [`CIFAR100`](mmpretrain.datasets.CIFAR100)   | The `test_mode` argument is a required argument now.                                                              |
+| [`MNIST`](mmpretrain.datasets.MNIST) & [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) | The `test_mode` argument is a required argument now.                                                              |
+|                             [`VOC`](mmpretrain.datasets.VOC)                              | Requires `data_root`, `image_set_path` and `test_mode` now.                                                       |
+|                             [`CUB`](mmpretrain.datasets.CUB)                              | Requires `data_root` and `test_mode` now.                                                                         |
 
 The `mmpretrain.datasets.pipelines` is renamed to `mmpretrain.datasets.transforms`.
 
-|         Transform class         | Changes                                                                                                                                                                   |
-| :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-|       `LoadImageFromFile`       | Removed, use [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile).                                                                                    |
-|          `RandomFlip`           | Removed, use [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip). The argument `flip_prob` is renamed to `prob`.                                                   |
-|          `RandomCrop`           | The argument `size` is renamed to `crop_size`.                                                                                                                            |
+|         Transform class         | Changes                                                                                                                                                                                                                      |
+| :-----------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|       `LoadImageFromFile`       | Removed, use [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile).                                                                                                                                       |
+|          `RandomFlip`           | Removed, use [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip). The argument `flip_prob` is renamed to `prob`.                                                                                                      |
+|          `RandomCrop`           | The argument `size` is renamed to `crop_size`.                                                                                                                                                                               |
 |       `RandomResizedCrop`       | The argument `size` is renamed to `scale`. The argument `scale` is renamed to `crop_ratio_range`. Won't support `efficientnet_style`, use [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop). |
-|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop). |
-|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge). |
-| `AutoAugment` & `RandomAugment` | The argument `policies` supports using string to specify preset policies.                                                                                                 |
-|            `Compose`            | Removed, use [`mmcv.transforms.Compose`](mmcv.transforms.Compose).                                                                                                        |
+|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop).                          |
+|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge).              |
+| `AutoAugment` & `RandomAugment` | The argument `policies` supports using string to specify preset policies.                                                                                                                                                    |
+|            `Compose`            | Removed, use [`mmcv.transforms.Compose`](mmcv.transforms.Compose).                                                                                                                                                           |
 
 ### `mmpretrain.models`
 
@@ -749,17 +749,17 @@ model = dict(
 
 The table below records the general modification of the folders and files.
 
-| MMSelfSup 0.x            | MMPretrain 1.x      | Remark                                                                                                                                                        |
-| ------------------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| apis                     | apis                | The high level APIs are updated.                                                                                                                              |
-| core                     | engine              | The `core` folder has been renamed to `engine`, which includes `hooks`, `opimizers`. ([API link](mmpretrain.engine))                                          |
-| datasets                 | datasets            | The datasets is implemented according to different datasets, such as ImageNet, Places205. ([API link](mmpretrain.datasets))                                   |
-| datasets/data_sources    | /                   | The `data_sources` has been **removed** and the directory of `datasets` now is consistent with other OpenMMLab projects.                                      |
-| datasets/pipelines       | datasets/transforms | The `pipelines` folder has been renamed to `transforms`. ([API link](mmpretrain.datasets.transforms))                                                         |
-| /                        | evaluation          | The `evaluation` is created for some evaluation functions or classes. ([API link](mmpretrain.evaluation))                                                     |
-| models/algorithms        | selfsup             | The algorithms are moved to `selfsup` folder. ([API link](mmpretrain.models.selfsup))                                                                         |
-| models/backbones         | selfsup             | The original `backbones` folder is **removed**, the re-implemented backbones are moved to corresponding self-supervised learning algorithm `.py` files. ([API link](mmpretrain.models.selfsup)) |
-| models/target_generators | selfsup             | The original `target_generators` folder is **removed**, the target generators are moved to corresponding self-supervised learning algorithm `.py` files. ([API link](mmpretrain.models.selfsup)) |
-| /                        | models/losses       | The `losses` folder is created to provide different loss implementations, which is from `heads`. ([API link](mmpretrain.models.losses))                       |
+| MMSelfSup 0.x            | MMPretrain 1.x      | Remark                                                                                                                                                                                                                                   |
+| ------------------------ | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| apis                     | apis                | The high level APIs are updated.                                                                                                                                                                                                         |
+| core                     | engine              | The `core` folder has been renamed to `engine`, which includes `hooks`, `opimizers`. ([API link](mmpretrain.engine))                                                                                                                     |
+| datasets                 | datasets            | The datasets is implemented according to different datasets, such as ImageNet, Places205. ([API link](mmpretrain.datasets))                                                                                                              |
+| datasets/data_sources    | /                   | The `data_sources` has been **removed** and the directory of `datasets` now is consistent with other OpenMMLab projects.                                                                                                                 |
+| datasets/pipelines       | datasets/transforms | The `pipelines` folder has been renamed to `transforms`. ([API link](mmpretrain.datasets.transforms))                                                                                                                                    |
+| /                        | evaluation          | The `evaluation` is created for some evaluation functions or classes. ([API link](mmpretrain.evaluation))                                                                                                                                |
+| models/algorithms        | selfsup             | The algorithms are moved to `selfsup` folder. ([API link](mmpretrain.models.selfsup))                                                                                                                                                    |
+| models/backbones         | selfsup             | The re-implemented backbones are moved to corresponding self-supervised learning algorithm `.py` files. ([API link](mmpretrain.models.selfsup))                                                                                          |
+| models/target_generators | selfsup             | The target generators are moved to corresponding self-supervised learning algorithm `.py` files. ([API link](mmpretrain.models.selfsup))                                                                                                 |
+| /                        | models/losses       | The `losses` folder is created to provide different loss implementations, which is from `heads`. ([API link](mmpretrain.models.losses))                                                                                                  |
 | /                        | structures          | The `structures` folder is for the implementation of data structures. In MMPretrain, we implement a new data structure, `DataSample`,  to pass and receive data throughout the training/val process. ([API link](mmpretrain.structures)) |
-| /                        | visualization       | The `visualization` folder contains the visualizer, which is responsible for some visualization tasks like visualizing data augmentation. ([API link](mmpretrain.visualization)) |
+| /                        | visualization       | The `visualization` folder contains the visualizer, which is responsible for some visualization tasks like visualizing data augmentation. ([API link](mmpretrain.visualization))                                                         |
