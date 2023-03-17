@@ -29,7 +29,7 @@ def parse_args():
         dest='metric_options',
         help='The metric config, the key-value pair in xxx=yyy format will be '
         'parsed as the metric config items. You can specify multiple metrics '
-        'by use multiple `--metric-options`. For list type value, you can use '
+        'by use multiple `--metric`. For list type value, you can use '
         '"key=[a,b]" or "key=a,b", and it also allows nested list/tuple '
         'values, e.g. "key=[(a,b),(c,d)]".')
     args = parser.parse_args()

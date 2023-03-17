@@ -105,16 +105,12 @@ def plot_curve_helper(log_dicts, metrics, args, legend):
 
 def plot_curve(log_dicts, args):
     """Plot train metric-iter graph."""
-    # set backend and style
-    if args.backend is not None:
-        plt.switch_backend(args.backend)
+    # set style
     try:
         import seaborn as sns
         sns.set_style(args.style)
     except ImportError:
-        print("Attention: The plot style won't be applied because 'seaborn' "
-              'package is not installed, please install it if you want better '
-              'show style.')
+        pass
 
     # set plot window size
     wind_w, wind_h = args.window_size.split('*')
@@ -161,9 +157,10 @@ def add_plot_parser(subparsers):
         default=None,
         help='legend of each plot')
     parser_plt.add_argument(
-        '--backend', type=str, default=None, help='backend of plt')
-    parser_plt.add_argument(
-        '--style', type=str, default='whitegrid', help='style of plt')
+        '--style',
+        type=str,
+        default='whitegrid',
+        help='style of the figure, need `seaborn` package.')
     parser_plt.add_argument('--out', type=str, default=None)
     parser_plt.add_argument(
         '--window-size',

@@ -9,7 +9,7 @@ import torch
 from mmengine import DictAction
 
 from mmpretrain.datasets import build_dataset
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import UniversalVisualizer
 
 
@@ -18,7 +18,8 @@ def parse_args():
         description='MMCls evaluate prediction success/fail')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('result', help='test result json/pkl file')
-    parser.add_argument('--out-dir', help='dir to store output files')
+    parser.add_argument(
+        '--out-dir', required=True, help='dir to store output files')
     parser.add_argument(
         '--topk',
         default=20,
@@ -51,15 +52,12 @@ def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
     vis.dataset_meta = {'classes': dataset.CLASSES}
 
     # save imgs
-    for result in results:
-        data_sample = ClsDataSample()\
-            .set_gt_label(result['gt_label'])\
-            .set_pred_label(result['pred_label'])\
-            .set_pred_score(result['pred_scores'])
-        data_info = dataset.get_data_info(result['sample_idx'])
+    dump_infos = []
+    for data_sample in results:
+        data_info = dataset.get_data_info(data_sample.sample_idx)
         if 'img' in data_info:
             img = data_info['img']
-            name = str(result['sample_idx'])
+            name = str(data_sample.sample_idx)
         elif 'img_path' in data_info:
             img = mmcv.imread(data_info['img_path'], channel_order='rgb')
             name = Path(data_info['img_path']).name
@@ -70,18 +68,19 @@ def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
         vis.visualize_cls(
             img, data_sample, out_file=osp.join(full_dir, name + '.png'))
 
-        for k, v in result.items():
+        dump = dict()
+        for k, v in data_sample.items():
             if isinstance(v, torch.Tensor):
-                result[k] = v.tolist()
+                dump[k] = v.tolist()
+            else:
+                dump[k] = v
+            dump_infos.append(dump)
 
-    mmengine.dump(results, osp.join(full_dir, folder_name + '.json'))
+    mmengine.dump(dump_infos, osp.join(full_dir, folder_name + '.json'))
 
 
 def main():
     args = parse_args()
-
-    # load test results
-    outputs = mmengine.load(args.result)
 
     cfg = mmengine.Config.fromfile(args.config)
     if args.cfg_options is not None:
@@ -91,27 +90,25 @@ def main():
     cfg.test_dataloader.dataset.pipeline = []
     dataset = build_dataset(cfg.test_dataloader.dataset)
 
-    outputs_list = list()
-    for i in range(len(outputs)):
-        output = dict()
-        output['sample_idx'] = outputs[i]['sample_idx']
-        output['gt_label'] = outputs[i]['gt_label']['label']
-        output['pred_score'] = float(
-            torch.max(outputs[i]['pred_label']['score']).item())
-        output['pred_scores'] = outputs[i]['pred_label']['score']
-        output['pred_label'] = outputs[i]['pred_label']['label']
-        outputs_list.append(output)
+    results = list()
+    for result in mmengine.load(args.result):
+        data_sample = DataSample()
+        data_sample.set_metainfo({'sample_idx': result['sample_idx']})
+        data_sample.set_gt_label(result['gt_label'])
+        data_sample.set_pred_label(result['pred_label'])
+        data_sample.set_pred_score(result['pred_score'])
+        results.append(data_sample)
 
     # sort result
-    outputs_list = sorted(outputs_list, key=lambda x: x['pred_score'])
+    results = sorted(results, key=lambda x: torch.max(x.pred_score))
 
     success = list()
     fail = list()
-    for output in outputs_list:
-        if output['pred_label'] == output['gt_label']:
-            success.append(output)
+    for data_sample in results:
+        if (data_sample.pred_label == data_sample.gt_label).all():
+            success.append(data_sample)
         else:
-            fail.append(output)
+            fail.append(data_sample)
 
     success = success[:args.topk]
     fail = fail[:args.topk]

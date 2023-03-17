@@ -25,7 +25,9 @@ def main():
 
     # build the model from a config file and a checkpoint file
     try:
-        inferencer = ImageClassificationInferencer(args.model, args.checkpoint)
+        pretrained = args.checkpoint or True
+        inferencer = ImageClassificationInferencer(
+            args.model, pretrained=pretrained)
     except ValueError:
         raise ValueError(
             f'Unavailable model "{args.model}", you can specify find a model '
