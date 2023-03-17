@@ -53,3 +53,4 @@ Import:
   - configs/vig/metafile.yml
   - configs/arcface/metafile.yml
   - configs/xcit/metafile.yml
+  - configs/efficientformer_v2/metafile.yml

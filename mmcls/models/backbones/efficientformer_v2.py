@@ -140,7 +140,7 @@ class Attention4D(BaseModule):
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):  # -> x (B,N,C)
+    def forward(self, x):  # (B, C, H, W) -> x (B,N,C)
         B, C, H, W = x.shape
         if self.stride_conv is not None:
             x = self.stride_conv(x)

@@ -155,6 +155,7 @@ mim install -e .
 - [x] [Inception V3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/inception_v3)
 - [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
+- [x] [EfficientFormerV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer_v2)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
 - [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)

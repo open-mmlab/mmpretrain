@@ -10,6 +10,7 @@ Collections:
       Title: 'Rethinking Vision Transformers for MobileNet Size and Speed'
       URL: https://arxiv.org/abs/2212.08059
     README: configs/efficientformer_v2/README.md
+
 Models:
   - Name: efficientformerv2-s0_3rdparty_in1k
     Metadata:
