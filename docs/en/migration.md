@@ -27,15 +27,16 @@ We introduce some modifications in MMPretrain 1.x, and some of them are BC-breac
 ## New dependencies
 
 ```{warning}
-MMPretrain 1.x depends on some new packages, you should create a new environment for MMPretrain 1.x even if you have a well-rounded MMClassification 0.x or MMSelfSup 0.x environment before. Please refer to the [install tutorial](./get_started.md) for required packages installation. Or install the below packages manually.
+MMPretrain 1.x has new package dependencies, and a new environment should be created for MMPretrain 1.x even if you already have a well-rounded MMClassification 0.x or MMSelfSup 0.x environment. Please refer to the [installation tutorial](./get_started.md) for the required package installation or install the packages manually.
 ```
 
 1. [MMEngine](https://github.com/open-mmlab/mmengine): MMEngine is the core the OpenMMLab 2.0 architecture,
-   and we splited many compentents unrelated to computer vision from MMCV to MMEngine.
+   and we have split many compentents unrelated to computer vision from MMCV to MMEngine.
 2. [MMCV](https://github.com/open-mmlab/mmcv): The computer vision package of OpenMMLab. This is not a new
-   dependency, but you need to upgrade it to above `2.0.0rc1` version.
-3. [rich](https://github.com/Textualize/rich): A terminal formatting package, and we use it to beautify some
+   dependency, but it should be upgraded to version `2.0.0rc1` or above.
+3. [rich](https://github.com/Textualize/rich): A terminal formatting package, and we use it to enhance some
    outputs in the terminal.
+4. [einops](https://github.com/arogozhnikov/einops): Operators for Einstein notations.
 
 # General change of config
 
@@ -52,11 +53,11 @@ In this section, we introduce the general difference between old version(**MMCla
 
 Changes in **`optimizer`** and **`optimizer_config`**:
 
-- Now we use `optim_wrapper` field to specify all configuration about the optimization process. And the
-  `optimizer` is a sub field of `optim_wrapper` now.
-- `paramwise_cfg` is also a sub field of `optim_wrapper`, instead of `optimizer`.
-- `optimizer_config` is removed now, and all configurations of it are moved to `optim_wrapper`.
-- `grad_clip` is renamed to `clip_grad`.
+- Now we use `optim_wrapper` field to specify all configurations related to optimization process. The
+  `optimizer` has become a subfield of `optim_wrapper`.
+- The `paramwise_cfg` field is also a subfield of `optim_wrapper`, instead of `optimizer`.
+- The `optimizer_config` field has been removed, and all configurations has been moved to `optim_wrapper`.
+- The `grad_clip` field has been renamed to `clip_grad`.
 
 <table class="docutils">
 <tr>
@@ -98,12 +99,12 @@ optim_wrapper = dict(
 
 Changes in **`lr_config`**:
 
-- The `lr_config` field is removed and we use new `param_scheduler` to replace it.
-- The `warmup` related arguments are removed, since we use schedulers combination to implement this
+- The `lr_config` field has been removed and replaced by the new `param_scheduler`.
+- The `warmup` related arguments have also been removed since we use a combination of schedulers to implement this
   functionality.
 
-The new schedulers combination mechanism is very flexible, and you can use it to design many kinds of learning
-rate / momentum curves. See {external+mmengine:doc}`the tutorial <tutorials/param_scheduler>` for more details.
+The new scheduler combination mechanism is highly flexible and enables the design of various learning rate/momentum curves.
+For more details, see the {external+mmengine:doc}`parameter schedulers tutorial <tutorials/param_scheduler>`.
 
 <table class="docutils">
 <tr>
@@ -146,8 +147,8 @@ param_scheduler = [
 
 Changes in **`runner`**:
 
-Most configuration in the original `runner` field is moved to `train_cfg`, `val_cfg` and `test_cfg`, which
-configure the loop in training, validation and test.
+Most of the configurations that were originally in the `runner` field have been moved to `train_cfg`, `val_cfg`, and `test_cfg`.
+These fields are used to configure the loop for training, validation, and testing.
 
 <table class="docutils">
 <tr>
@@ -174,15 +175,16 @@ test_cfg = dict()  # Use the default test loop.
 </tr>
 </table>
 
-In fact, in OpenMMLab 2.0, we introduced `Loop` to control the behaviors in training, validation and test. And
-the functionalities of `Runner` are also changed. You can find more details in {external+mmengine:doc}`the MMEngine tutorials <design/runner>`.
+In OpenMMLab 2.0, we introduced `Loop` to control the behaviors in training, validation and testing. As a result, the functionalities of `Runner` have also been changed.
+More details can be found in the {external+mmengine:doc}`MMEngine tutorials <design/runner>`.
 
 ## Runtime settings
 
 Changes in **`checkpoint_config`** and **`log_config`**:
 
-The `checkpoint_config` are moved to `default_hooks.checkpoint` and the `log_config` are moved to `default_hooks.logger`.
-And we move many hooks settings from the script code to the `default_hooks` field in the runtime configuration.
+The `checkpoint_config` has been moved to `default_hooks.checkpoint`, and `log_config` has been moved to
+`default_hooks.logger`. Additionally, many hook settings that were previously included in the script code have
+been moved to the `default_hooks` field in the runtime configuration.
 
 ```python
 default_hooks = dict(
@@ -206,9 +208,9 @@ default_hooks = dict(
 )
 ```
 
-In addition, we splited the original logger to logger and visualizer. The logger is used to record
-information and the visualizer is used to show the logger in different backends, like terminal, TensorBoard
-and Wandb.
+In OpenMMLab 2.0, we have split the original logger into logger and visualizer. The logger is used to record
+information, while the visualizer is used to display the logger in different backends such as terminal,
+TensorBoard, and Wandb.
 
 <table class="docutils">
 <tr>
@@ -253,8 +255,15 @@ Changes in **`load_from`** and **`resume_from`**:
   - If `resume=False` and `load_from` is not None, only load the checkpoint, not resume training.
   - If `resume=False` and `load_from` is None, do not load nor resume.
 
-Changes in **`dist_params`**: The `dist_params` field is a sub field of `env_cfg` now. And there are some new
-configurations in the `env_cfg`.
+the `resume_from` field has been removed, and we use `resume` and `load_from` instead.
+
+- If `resume=True` and `load_from` is not None, training is resumed from the checkpoint in `load_from`.
+- If `resume=True` and `load_from` is None, the latest checkpoint in the work directory is used for resuming.
+- If `resume=False` and `load_from` is not None, only the checkpoint is loaded without resuming training.
+- If `resume=False` and `load_from` is None, neither checkpoint is loaded nor is training resumed.
+
+Changes in **`dist_params`**: The `dist_params` field has become a subfield of `env_cfg` now.
+Additionally, some new configurations have been added to `env_cfg`.
 
 ```python
 env_cfg = dict(
@@ -271,9 +280,9 @@ env_cfg = dict(
 
 Changes in **`workflow`**: `workflow` related functionalities are removed.
 
-New field **`visualizer`**: The visualizer is a new design in OpenMMLab 2.0 architecture. We use a
-visualizer instance in the runner to handle results & log visualization and save to different backends.
-See the {external+mmengine:doc}`MMEngine tutorial <advanced_tutorials/visualization>` for more details.
+New field **`visualizer`**: The visualizer is a new design in OpenMMLab 2.0 architecture. The runner uses an
+instance of the visualizer to handle result and log visualization, as well as to save to different backends.
+For more information, please refer to the {external+mmengine:doc}`MMEngine tutorial <advanced_tutorials/visualization>`.
 
 ```python
 visualizer = dict(
@@ -297,8 +306,6 @@ We moved the definition of all registries in different packages to the `mmpretra
 ## Config files
 
 In MMPretrain 1.x, we refactored the structure of configuration files, and the original files are not usable.
-
-<!-- TODO: migration tool -->
 
 In this section, we will introduce all changes of the configuration files. And we assume you already have
 ideas of the [config files](./user_guides/config.md).
@@ -626,7 +633,7 @@ Changes in [heads](mmpretrain.models.heads):
 
 ## Config
 
-This section illustrates the changes of our config files in `_base_` folder, which includes three parts
+This section illustrates the changes of our config files in the `_base_` folder, which includes three parts
 
 - Datasets: `configs/_base_/datasets`
 - Models: `configs/_base_/models`
