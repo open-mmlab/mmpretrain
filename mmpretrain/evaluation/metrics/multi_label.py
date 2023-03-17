@@ -457,9 +457,9 @@ class AveragePrecision(BaseMetric):
 
     References
     ----------
-    .. [1] `Wikipedia entry for the Average precision
-           <https://en.wikipedia.org/w/index.php?title=Information_retrieval&
-           oldid=793358396#Average_precision>`_
+    1. `Wikipedia entry for the Average precision
+       <https://en.wikipedia.org/w/index.php?title=Information_retrieval&
+       oldid=793358396#Average_precision>`_
 
     Examples:
         >>> import torch
