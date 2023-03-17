@@ -279,13 +279,13 @@ class NumpyToPIL(BaseTransform):
     - ``*img**``
 
     Args:
-        to_rgb (bool): Whether to convert img to rgb. Defaults to False.
+        to_rgb (bool): Whether to convert img to rgb. Defaults to True.
     """
 
     def __init__(self, to_rgb: bool = False) -> None:
         self.to_rgb = to_rgb
 
-    def transform(self, results: Dict) -> Dict:
+    def transform(self, results: dict) -> dict:
         """Method to convert images to :obj:`PIL.Image.Image`."""
         img = results['img']
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) if self.to_rgb else img
@@ -310,26 +310,26 @@ class PILToNumpy(BaseTransform):
     - ``*img**``
 
     Args:
-        to_rgb (bool): Whether to convert img to rgb. Defaults to False.
+        to_bgr (bool): Whether to convert img to rgb. Defaults to True.
         dtype (str, optional): The dtype of the converted numpy array.
             Defaults to None.
     """
 
-    def __init__(self, to_rgb: bool = False, dtype=None) -> None:
-        self.to_rgb = to_rgb
+    def __init__(self, to_bgr: bool = False, dtype=None) -> None:
+        self.to_bgr = to_bgr
         self.dtype = dtype
 
-    def transform(self, results: Dict) -> Dict:
+    def transform(self, results: dict) -> dict:
         """Method to convert img to :obj:`numpy.ndarray`."""
         img = np.array(results['img'], dtype=self.dtype)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) if self.to_rgb else img
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR) if self.to_bgr else img
 
         results['img'] = img
         return results
 
     def __repr__(self) -> str:
         return self.__class__.__name__ + \
-            f'(to_rgb={self.to_rgb}, dtype={self.dtype})'
+            f'(to_bgr={self.to_bgr}, dtype={self.dtype})'
 
 
 @TRANSFORMS.register_module()

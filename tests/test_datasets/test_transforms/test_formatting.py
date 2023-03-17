@@ -133,7 +133,7 @@ class TestToNumpy(unittest.TestCase):
         self.assertIsInstance(results['img'], np.ndarray)
         self.assertEqual(results['img'].dtype, 'uint8')
 
-        cfg = dict(type='ToNumpy', to_rgb=True)
+        cfg = dict(type='ToNumpy', to_bgr=True)
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
         self.assertIsInstance(results['img'], np.ndarray)
@@ -141,10 +141,10 @@ class TestToNumpy(unittest.TestCase):
         np.equal(results['img'], np.array(data['img'])[:, :, ::-1])
 
     def test_repr(self):
-        cfg = dict(type='ToNumpy', to_rgb=True)
+        cfg = dict(type='ToNumpy', to_bgr=True)
         transform = TRANSFORMS.build(cfg)
         self.assertEqual(
-            repr(transform), 'PILToNumpy(to_rgb=True, dtype=None)')
+            repr(transform), 'PILToNumpy(to_bgr=True, dtype=None)')
 
 
 class TestCollect(unittest.TestCase):
