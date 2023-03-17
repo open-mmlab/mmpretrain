@@ -2,28 +2,6 @@
 
 我们在 MMPretrain 1.x 版本中引入了一些修改，可能会产生兼容性问题。请按照本教程从 MMClassification 0.x 或是 MMSelfSup 0.x 迁移您的项目。
 
-- [迁移文档](#迁移文档)
-  - [新的依赖](#新的依赖)
-- [配置文件的通用改变](#配置文件的通用改变)
-  - [训练策略设置](#训练策略设置)
-  - [运行设置](#运行设置)
-  - [其他变动](#其他变动)
-- [从 MMClassification 0.x 迁移](#从-mmclassification-0x-迁移)
-  - [配置文件](#配置文件)
-    - [模型设置](#模型设置)
-    - [数据设置](#数据设置)
-  - [模块变动](#模块变动)
-    - [`mmpretrain.apis`](#mmpretrainapis)
-    - [`mmpretrain.core`](#mmpretraincore)
-    - [`mmpretrain.datasets`](#mmpretraindatasets)
-    - [`mmpretrain.models`](#mmpretrainmodels)
-    - [`mmpretrain.utils`](#mmpretrainutils)
-- [迁移自 MMSelfSup 0.x 版本](#迁移自-mmselfsup-0x-版本)
-  - [配置文件](#配置文件-1)
-    - [数据集](#数据集)
-    - [模型](#模型)
-  - [代码包](#代码包)
-
 ## 新的依赖
 
 ```{warning}
@@ -537,7 +515,7 @@ test_evaluator = val_evaluator
 |  `evaluation`   | 移除，使用 [`mmpretrain.evaluation`](mmpretrain.evaluation)                                                                       |
 |     `hook`      | 移动至 [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                                       |
 |  `optimizers`   | 移动至 [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                             |
-|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](mmengine.dist) 包                                                              |
+|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](api/dist) 包                                                                   |
 | `visualization` | 移除，其中可视化相关的功能被移动至 [`mmpretrain.visualization.UniversalVisualizer`](mmpretrain.visualization.UniversalVisualizer) |
 
 `hooks` 包中的 `MMClsWandbHook` 尚未实现。
@@ -589,13 +567,13 @@ test_evaluator = val_evaluator
 
 [heads](mmpretrain.models.heads) 中的变动：
 
-|  分类头的方法   | 变动                                                                                                                                        |
-| :-------------: | :------------------------------------------------------------------------------------------------------------------------------------------ |
-|  `pre_logits`   | 无变动                                                                                                                                      |
-| `forward_train` | 变更为 `loss` 方法。                                                                                                                        |
-|  `simple_test`  | 变更为 `predict` 方法。                                                                                                                     |
-|     `loss`      | 现在接受 `data_samples` 参数，而不是 `gt_labels`，`data_samples` 参数应当接受 [ClsDataSample](mmpretrain.structures.ClsDataSample) 的列表。 |
-|    `forward`    | 新方法，它将返回分类头的输出，不会进行任何后处理（包括 softmax 或 sigmoid）。                                                               |
+|  分类头的方法   | 变动                                                                                                                                     |
+| :-------------: | :--------------------------------------------------------------------------------------------------------------------------------------- |
+|  `pre_logits`   | 无变动                                                                                                                                   |
+| `forward_train` | 变更为 `loss` 方法。                                                                                                                     |
+|  `simple_test`  | 变更为 `predict` 方法。                                                                                                                  |
+|     `loss`      | 现在接受 `data_samples` 参数，而不是 `gt_labels`，`data_samples` 参数应当接受 [ClsDataSample](mmpretrain.structures.DataSample) 的列表。 |
+|    `forward`    | 新方法，它将返回分类头的输出，不会进行任何后处理（包括 softmax 或 sigmoid）。                                                            |
 
 ### `mmpretrain.utils`
 
@@ -611,7 +589,7 @@ test_evaluator = val_evaluator
 |   `wrap_distributed_model`   | 移除，现在 runner 会自动包装模型。                                                                            |
 |     `auto_select_device`     | 移除，现在 runner 会自动选择设备。                                                                            |
 
-# 迁移自 MMSelfSup 0.x 版本
+# 从 MMSelfSup 0.x 迁移
 
 ## 配置文件
 
@@ -676,7 +654,7 @@ val_dataloader = ...
 </tr>
 </table>
 
-另外，我们 **移除** 了字段 `data_source`，以此来保证我们项目和其它 OpenMMLab 项目数据流的一致性。请查阅 [Config](user_guides/1_config.md) 获取更详细的信息。
+另外，我们 **移除** 了字段 `data_source`，以此来保证我们项目和其它 OpenMMLab 项目数据流的一致性。请查阅 [Config](user_guides/config.md) 获取更详细的信息。
 
 **`pipeline`** 中的变化：
 
@@ -712,7 +690,7 @@ model = dict(
     data_preprocessor=dict(
         mean=[127.5, 127.5, 127.5],
         std=[127.5, 127.5, 127.5],
-        bgr_to_rgb=True)，
+        bgr_to_rgb=True),
     backbone=...,
     neck=...,
     head=...,
@@ -734,7 +712,7 @@ model = dict(
     init_cfg=...)
 ```
 
-## 代码包
+## 模块变动
 
 下列表格记录了代码模块、文件夹的主要改变。
 

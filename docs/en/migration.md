@@ -556,7 +556,7 @@ The `mmpretrain.core` package is renamed to [`mmpretrain.engine`](mmpretrain.eng
 |  `evaluation`   | Removed, use the metrics in [`mmpretrain.evaluation`](mmpretrain.evaluation).                                                     |
 |     `hook`      | Moved to [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                                     |
 |  `optimizers`   | Moved to [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                           |
-|     `utils`     | Removed, the distributed environment related functions can be found in the [`mmengine.dist`](mmengine.dist) package.              |
+|     `utils`     | Removed, the distributed environment related functions can be found in the [`mmengine.dist`](api/dist) package.                   |
 | `visualization` | Removed, the related functionalities are implemented in [`mmengine.visualization.Visualizer`](mmengine.visualization.Visualizer). |
 
 The `MMClsWandbHook` in `hooks` package is waiting for implementation.
@@ -730,7 +730,7 @@ model = dict(
     data_preprocessor=dict(
         mean=[127.5, 127.5, 127.5],
         std=[127.5, 127.5, 127.5],
-        bgr_to_rgb=True)，
+        bgr_to_rgb=True),
     backbone=...,
     neck=...,
     head=...,
