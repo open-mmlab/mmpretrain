@@ -2,7 +2,7 @@
 
 In this section we demonstrate how to prepare an environment with PyTorch.
 
-MMClassification works on Linux, Windows and macOS. It requires Python 3.7+, CUDA 9.2+ and PyTorch 1.6+.
+MMPretrain works on Linux, Windows and macOS. It requires Python 3.7+, CUDA 10.2+ and PyTorch 1.8+.
 
 ```{note}
 If you are experienced with PyTorch and have already installed it, just skip this part and jump to the [next section](#installation). Otherwise, you can follow these steps for the preparation.
@@ -41,16 +41,16 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 According to your needs, we support two install modes:
 
-- [Install from source (Recommended)](#install-from-source): You want to develop your own image classification task or new features based on MMClassification framework. For example, adding new dataset or new models. And you can use all tools we provided.
-- [Install as a Python package](#install-as-a-python-package): You just want to call MMClassification's APIs or import MMClassification's modules in your project.
+- [Install from source (Recommended)](#install-from-source): You want to develop your own network or new features based on MMPretrain framework. For example, adding new datasets or new backbones. And you can use all tools we provided.
+- [Install as a Python package](#install-as-a-python-package): You just want to call MMPretrain's APIs or import MMPretrain's modules in your project.
 
 ### Install from source
 
 In this case, install mmpretrain from source:
 
 ```shell
-git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
-cd mmclassification
+git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
+cd mmpretrain
 pip install -U openmim && mim install -e .
 ```
 
@@ -63,7 +63,7 @@ pip install -U openmim && mim install -e .
 Just install with mim.
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0.0rc0"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc5"
 ```
 
 ```{note}
@@ -72,7 +72,7 @@ pip install -U openmim && mim install "mmpretrain>=1.0.0rc0"
 
 ## Verify the installation
 
-To verify whether MMClassification is installed correctly, we provide some sample codes to run an inference demo.
+To verify whether MMPretrain is installed correctly, we provide some sample codes to run an inference demo.
 
 Option (a). If you install mmpretrain from the source, just run the following command:
 
@@ -121,27 +121,27 @@ version of cudatoolkit in `conda install` command.
 
 ### Install on CPU-only platforms
 
-MMClassification can be built for CPU only environment. In CPU mode you can train, test or inference a model.
+MMPretrain can be built for CPU only environment. In CPU mode you can train, test or inference a model.
 
 ### Install on Google Colab
 
 See [the Colab tutorial](https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb).
 
-### Using MMClassification with Docker
+### Using MMPretrain with Docker
 
-We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/1.x/docker/Dockerfile)
+We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/pretrain/docker/Dockerfile)
 to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
 
 ```shell
-# build an image with PyTorch 1.8.1, CUDA 10.2
+# build an image with PyTorch 1.12.1, CUDA 11.3
 # If you prefer other versions, just modified the Dockerfile
-docker build -t mmclassification docker/
+docker build -t mmpretrain docker/
 ```
 
 Run it with
 
 ```shell
-docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmclassification/data mmclassification
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmpretrain/data mmpretrain
 ```
 
 ## Trouble shooting
