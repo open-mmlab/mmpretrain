@@ -65,7 +65,7 @@
   Cycle: quarter
   Downstream: resnet50_byol-pre_8xb512-linear-coslr-90e_in1k
 
-- Name: cae_vit-base-p16_8xb256-amp-coslr-300e_in1k
+- Name: cae_beit-base-p16_8xb256-amp-coslr-300e_in1k
   Cycle: half-year
   Downstream: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
 
@@ -82,7 +82,7 @@
   Downstream: vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
 
 - Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k
-  Cycle: month
+  Cycle: quarter
   Downstream: vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
 
 - Name: milan_vit-base-p16_16xb256-amp-coslr-400e_in1k

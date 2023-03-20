@@ -32,7 +32,7 @@ print(predict['pred_score'])
 import torch
 from mmpretrain import get_model
 
-model = get_model('cae_vit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
+model = get_model('cae_beit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
 inputs = torch.rand(1, 3, 224, 224)
 out = model(inputs)
 print(type(out))
@@ -48,7 +48,7 @@ Prepare your dataset according to the [docs](https://mmclassification.readthedoc
 Train:
 
 ```shell
-python tools/train.py configs/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+python tools/train.py configs/cae/cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
 ```
 
 Test:
@@ -63,9 +63,9 @@ python tools/test.py configs/cae/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k
 
 ### Pretrained models
 
-| Model                                         | Params (M) | Flops (G) |                          Config                          |                                     Download                                     |
-| :-------------------------------------------- | :--------: | :-------: | :------------------------------------------------------: | :------------------------------------------------------------------------------: |
-| `cae_vit-base-p16_8xb256-amp-coslr-300e_in1k` |   288.43   |   17.58   | [config](cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.json) |
+| Model                                          | Params (M) | Flops (G) |                          Config                           |                                    Download                                    |
+| :--------------------------------------------- | :--------: | :-------: | :-------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| `cae_beit-base-p16_8xb256-amp-coslr-300e_in1k` |   288.43   |   17.58   | [config](cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.json) |
 
 ### Image Classification on ImageNet-1k
 

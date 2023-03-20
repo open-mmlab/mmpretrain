@@ -13,7 +13,7 @@ Collections:
     README: configs/cae/README.md
 
 Models:
-  - Name: cae_vit-base-p16_8xb256-amp-coslr-300e_in1k
+  - Name: cae_beit-base-p16_8xb256-amp-coslr-300e_in1k
     Metadata:
       Epochs: 300
       Batch Size: 2048
@@ -23,7 +23,7 @@ Models:
     In Collection: CAE
     Results: null
     Weights: https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth
-    Config: configs/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Config: configs/cae/cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
     Downstream:
       - beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
   - Name: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
