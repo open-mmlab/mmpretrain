@@ -16,7 +16,7 @@ To manage various configurations in a deep-learning experiment, we use a kind of
 these configurations. This config system has a modular and inheritance design, and more details can be found in
 {external+mmengine:doc}`the tutorial in MMEngine <advanced_tutorials/config>`.
 
-Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmpretrain/tree/main/configs) folder, and the directory structure is as follows:
+Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs) folder, and the directory structure is as follows:
 
 ```text
 MMPretrain/
@@ -38,20 +38,20 @@ MMPretrain/
 
 If you wish to inspect the config file, you may run `python tools/misc/print_config.py /PATH/TO/CONFIG` to see the complete config.
 
-This article mainly explains the structure of configuration files, and how to modify it based on the existing configuration files. We will take [ResNet50 config file](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
+This article mainly explains the structure of configuration files, and how to modify it based on the existing configuration files. We will take [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
 
 ## Config Structure
 
 There are four kinds of basic component files in the `configs/_base_` folders, namely：
 
-- [models](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/models)
-- [datasets](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/datasets)
-- [schedules](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/schedules)
-- [runtime](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/default_runtime.py)
+- [models](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/models)
+- [datasets](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/datasets)
+- [schedules](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/schedules)
+- [runtime](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/default_runtime.py)
 
 We call all the config files in the `_base_` folder as _primitive_ config files. You can easily build your training config file by inheriting some primitive config files.
 
-For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet50_8xb32_in1k.py) as an example and comment on each line.
+For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/resnet/resnet50_8xb32_in1k.py) as an example and comment on each line.
 
 ```python
 _base_ = [                                    # This config file will inherit all config files in `_base_`.
@@ -72,29 +72,30 @@ This primitive config file includes a dict variable `model`, which mainly includ
   - For image classification tasks, it's usually `ImageClassifier` You can find more details in the [API documentation](mmpretrain.models.classifiers).
   - For self-supervised leanrning, there are several `SelfSupervisors`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
   - For image retrieval tasks, it's usually `ImageToImageRetriever` You can find more details in the [API documentation](mmpretrain.models.retrievers).
+
+Usually, we use the `type` field to specify the class of the component and use other fields to pass
+the initialization arguments of the class. The {external+mmengine:doc}`registry tutorial <advanced_tutorials/registry>` describes it in detail.
+
+Here, we use the config fields of [`ImageClassifier`](mmpretrain.models.ImageClassifier) as an example to
+describe the below initialization arguments:
+
 - `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
   - For self-supervised leanrning, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
 - `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](mmpretrain.models.necks).
-- `head`: The settings of the task head. The head is the task-related component to do the final
-  classification. All available heads can be found in the [API documentation](mmpretrain.models.heads).
+- `head`: The settings of the task head. The head is the task-related component to do a specified task, like image classification or self-supervised training. All available heads can be found in the [API documentation](mmpretrain.models.heads).
   - `loss`: The loss function to optimize, like `CrossEntropyLoss`, `LabelSmoothLoss`, `PixelReconstructionLoss` and etc. All available losses can be found in the [API documentation](mmpretrain.models.losses).
 - `data_preprocessor`: The component before the model forwarding to preprocess the inputs. See the [documentation](mmpretrain.models.utils.data_preprocessor) for more details.
-- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](mmpretrain.models.utils.batch_augments) for more details.
+- `train_cfg`: The extra settings of `ImageClassifier` during training. In `ImageClassifier`, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](mmpretrain.models.utils.batch_augments) for more details.
 
-```{note}
-Usually, we use the `type` field to specify the class of the component and use other fields to pass
-the initialization arguments of the class. The {external+mmengine:doc}`registry tutorial <advanced_tutorials/registry>` describes it in detail.
-```
-
-Following is the model primitive config of the ResNet50 config file in [`configs/_base_/models/resnet50.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/models/resnet50.py):
+Following is the model primitive config of the ResNet50 config file in [`configs/_base_/models/resnet50.py`](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/models/resnet50.py):
 
 ```python
 model = dict(
-    type='ImageClassifier',     # The type of the main model (classifier).
+    type='ImageClassifier',     # The type of the main model (here is for image classification task).
     backbone=dict(
         type='ResNet',          # The type of the backbone module.
         # All fields except `type` come from the __init__ method of class `ResNet`
-        # and you can find them from https://mmpretrain.readthedocs.io/en/main/api/generated/mmpretrain.models.ResNet.html
+        # and you can find them from https://mmclassification.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.backbones.ResNet.html
         depth=50,
         num_stages=4,
         out_indices=(3, ),
@@ -104,7 +105,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',     # The type of the classification head module.
         # All fields except `type` come from the __init__ method of class `LinearClsHead`
-        # and you can find them from https://mmpretrain.readthedocs.io/en/main/api/generated/mmpretrain.models.LinearClsHead.html
+        # and you can find them from https://mmclassification.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.heads.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
@@ -126,7 +127,7 @@ This primitive config file includes information to construct the dataloader and 
     - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](mmpretrain.datasets).
     - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmpretrain.readthedocs.io/en/1.x/tutorials/data_pipeline.html).
 
-Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/datasets/imagenet_bs32.py)：
+Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
 dataset_type = 'ImageNet'
@@ -204,7 +205,7 @@ test loops:
 - `param_scheduler`: Optimizer parameters policy. You can use it to specify learning rate and momentum curves during training. See the {external+mmengine:doc}`documentation <tutorials/param_scheduler>` in MMEngine for more details.
 - `train_cfg | val_cfg | test_cfg`: The settings of the training, validation and test loops, refer to the relevant {external+mmengine:doc}`MMEngine documentation <design/runner>`.
 
-Following is the schedule primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/datasets/imagenet_bs32.py)：
+Following is the schedule primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
 optim_wrapper = dict(
@@ -234,7 +235,7 @@ auto_scale_lr = dict(base_batch_size=256)
 
 This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory, etc.
 
-Here is the runtime primitive config file ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/default_runtime.py) file used by almost all configs:
+Here is the runtime primitive config file ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/default_runtime.py) file used by almost all configs:
 
 ```python
 # defaults to use registries in mmpretrain
@@ -382,7 +383,7 @@ param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 
 Sometimes, you may refer to some fields in the `_base_` config, to avoid duplication of definitions. You can refer to {external+mmengine:doc}`MMEngine <advanced_tutorials/config>` for some more instructions.
 
-The following is an example of using auto augment in the training data preprocessing pipeline, refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `_base_.auto_increasing_policies` to reference the variables in the primitive config:
+The following is an example of using auto augment in the training data preprocessing pipeline, refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `_base_.auto_increasing_policies` to reference the variables in the primitive config:
 
 ```python
 _base_ = [

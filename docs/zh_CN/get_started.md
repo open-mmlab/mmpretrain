@@ -67,7 +67,7 @@ pip install -U openmim && mim install -e .
 直接使用 mim 安装即可。
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0rc0"
+pip install -U openmim && mim install "mmpretrain>=1.0rc5"
 ```
 
 ```{note}

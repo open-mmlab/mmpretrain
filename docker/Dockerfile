@@ -16,10 +16,10 @@ RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build 
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install MMCV
+# Install MIM
 RUN pip install openmim
 
-# Install MMClassification
+# Install MMPretrain
 RUN conda clean --all
 RUN git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
 WORKDIR ./mmpretrain
