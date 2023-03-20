@@ -407,6 +407,17 @@ def format_model(model: dict):
         title='Model')
 
 
+def order_models(model):
+    order = []
+    order.append(int('Downstream' not in model))
+    order.append(int('3rdparty' in model['Name']))
+    order.append(model.get('Metadata', {}).get('Parameters', 0))
+    order.append(model.get('Metadata', {}).get('FLOPs', 0))
+    order.append(len(model['Name']))
+
+    return tuple(order)
+
+
 def main():
     args = parse_args()
 
@@ -462,8 +473,7 @@ def main():
             updated_models.append(model)
 
     # Save updated models even error happened.
-    updated_models.sort(key=lambda item: (item.get('Metadata', {}).get(
-        'FLOPs', 0), int(item.get('Downstream') is None), len(item['Name'])))
+    updated_models.sort(key=order_models)
     if args.out is not None:
         with open(args.out, 'w') as f:
             yaml_dump({'Collections': [collection]}, f)

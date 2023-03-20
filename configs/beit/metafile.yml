@@ -33,6 +33,21 @@ Models:
     Config: configs/beit/beit_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
     Downstream:
       - beit-base-p16_beit-pre_8xb128-coslr-100e_in1k
+  - Name: beit-base-p16_beit-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data: ImageNet-1k
+    In Collection: BEiT
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.1
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.pth
+    Config: configs/beit/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
   - Name: beit-base-p16_beit-in21k-pre_3rdparty_in1k
     Metadata:
       FLOPs: 17581219584
@@ -52,18 +67,3 @@ Models:
     Converted From:
       Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beit/beit_base_patch16_224_pt22k_ft22kto1k.pth
       Code: https://github.com/microsoft/unilm/tree/master/beit
-  - Name: beit-base-p16_beit-pre_8xb128-coslr-100e_in1k
-    Metadata:
-      Epochs: 100
-      Batch Size: 1024
-      FLOPs: 17581219584
-      Parameters: 86530984
-      Training Data: ImageNet-1k
-    In Collection: BEiT
-    Results:
-      - Task: Image Classification
-        Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 83.1
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.pth
-    Config: configs/beit/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py

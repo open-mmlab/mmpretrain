@@ -20,6 +20,34 @@ Collections:
       Version: v1.0.0rc4
 
 Models:
+  - Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+      FLOPs: 17581223424
+      Parameters: 192811376
+      Training Data: ImageNet-1k
+    In Collection: BEiTv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221212-a157be30.pth
+    Config: configs/beitv2/beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Downstream:
+      - beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+  - Name: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data: ImageNet-1k
+    In Collection: BEiTv2
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.0
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.pth
+    Config: configs/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
   - Name: beit-base-p16_beitv2-in21k-pre_3rdparty_in1k
     Metadata:
       FLOPs: 17581219584
@@ -39,31 +67,3 @@ Models:
     Converted From:
       Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_base_patch16_224_pt1k_ft21kto1k.pth
       Code: https://github.com/microsoft/unilm/tree/master/beit2
-  - Name: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
-    Metadata:
-      Epochs: 100
-      Batch Size: 1024
-      FLOPs: 17581219584
-      Parameters: 86530984
-      Training Data: ImageNet-1k
-    In Collection: BEiTv2
-    Results:
-      - Task: Image Classification
-        Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 85.0
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.pth
-    Config: configs/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
-  - Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
-    Metadata:
-      Epochs: 300
-      Batch Size: 2048
-      FLOPs: 17581223424
-      Parameters: 192811376
-      Training Data: ImageNet-1k
-    In Collection: BEiTv2
-    Results: null
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221212-a157be30.pth
-    Config: configs/beitv2/beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
-    Downstream:
-      - beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k

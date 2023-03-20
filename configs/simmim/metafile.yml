@@ -13,6 +13,46 @@ Collections:
     README: configs/simmim/README.md
 
 Models:
+  - Name: simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px
+    Metadata:
+      Epochs: 100
+      Batch Size: 2048
+      FLOPs: 18832161792
+      Parameters: 89874104
+      Training Data: ImageNet-1k
+    In Collection: SimMIM
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192_20220829-0e15782d.pth
+    Config: configs/simmim/simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px.py
+    Downstream:
+      - swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
+      - swin-base-w7_simmim-100e-pre_8xb256-coslr-100e_in1k
+  - Name: simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px
+    Metadata:
+      Epochs: 100
+      Batch Size: 2048
+      FLOPs: 18832161792
+      Parameters: 89874104
+      Training Data: ImageNet-1k
+    In Collection: SimMIM
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192_20220916-a0e931ac.pth
+    Config: configs/simmim/simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px.py
+    Downstream:
+      - swin-base-w6_simmim-800e-pre_8xb256-coslr-100e_in1k-192px
+  - Name: simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px
+    Metadata:
+      Epochs: 100
+      Batch Size: 2048
+      FLOPs: 55849130496
+      Parameters: 199920372
+      Training Data: ImageNet-1k
+    In Collection: SimMIM
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192_20220916-4ad216d3.pth
+    Config: configs/simmim/simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px.py
+    Downstream:
+      - swin-large-w14_simmim-800e-pre_8xb256-coslr-100e_in1k
   - Name: swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
     Metadata:
       Epochs: 100
@@ -58,33 +98,6 @@ Models:
           Top 1 Accuracy: 83.8
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192/swin-base_ft-8xb256-coslr-100e_in1k-224/swin-base_ft-8xb256-coslr-100e_in1k-224_20221208-155cc6e6.pth
     Config: configs/simmim/benchmarks/swin-base-w7_8xb256-coslr-100e_in1k.py
-  - Name: simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px
-    Metadata:
-      Epochs: 100
-      Batch Size: 2048
-      FLOPs: 18832161792
-      Parameters: 89874104
-      Training Data: ImageNet-1k
-    In Collection: SimMIM
-    Results: null
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192_20220829-0e15782d.pth
-    Config: configs/simmim/simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px.py
-    Downstream:
-      - swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
-      - swin-base-w7_simmim-100e-pre_8xb256-coslr-100e_in1k
-  - Name: simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px
-    Metadata:
-      Epochs: 100
-      Batch Size: 2048
-      FLOPs: 18832161792
-      Parameters: 89874104
-      Training Data: ImageNet-1k
-    In Collection: SimMIM
-    Results: null
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192_20220916-a0e931ac.pth
-    Config: configs/simmim/simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px.py
-    Downstream:
-      - swin-base-w6_simmim-800e-pre_8xb256-coslr-100e_in1k-192px
   - Name: swin-large-w14_simmim-800e-pre_8xb256-coslr-100e_in1k
     Metadata:
       Epochs: 100
@@ -100,16 +113,3 @@ Models:
           Top 1 Accuracy: 84.8
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192/swin-large_ft-8xb256-coslr-ws14-100e_in1k-224/swin-large_ft-8xb256-coslr-ws14-100e_in1k-224_20220916-d4865790.pth
     Config: configs/simmim/benchmarks/swin-large-w14_8xb256-coslr-100e_in1k.py
-  - Name: simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px
-    Metadata:
-      Epochs: 100
-      Batch Size: 2048
-      FLOPs: 55849130496
-      Parameters: 199920372
-      Training Data: ImageNet-1k
-    In Collection: SimMIM
-    Results: null
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192_20220916-4ad216d3.pth
-    Config: configs/simmim/simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px.py
-    Downstream:
-      - swin-large-w14_simmim-800e-pre_8xb256-coslr-100e_in1k

@@ -2,7 +2,6 @@
 import argparse
 import re
 import warnings
-from collections import OrderedDict
 from pathlib import Path
 
 from modelindex.load_model_index import load
@@ -108,6 +107,7 @@ def parse_args():
         '--table', action='store_true', help='Only generate summary tables')
     parser.add_argument(
         '--update', type=str, help='Update the specified readme file.')
+    parser.add_argument('--out', type=str, help='Output to the file.')
     parser.add_argument(
         '--update-items',
         type=str,
@@ -431,7 +431,12 @@ def main():
     if 'citation' not in content:
         content['citation'] = '## Citation\n```bibtex\n```\n'
 
-    print(combine_readme(content))
+    content = combine_readme(content)
+    if args.out is not None:
+        with open(args.out, 'w') as f:
+            f.write(content)
+    else:
+        print(content)
 
 
 if __name__ == '__main__':
