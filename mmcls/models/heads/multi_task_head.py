@@ -23,7 +23,8 @@ def loss_convertor(loss_func, task_name):
                 task_data_samples.append(data_sample.get(task_name))
 
         if len(task_data_samples) == 0:
-            return {'loss': torch.tensor(0.), 'mask_size': torch.tensor(0.)}
+            loss = (inputs[0] * 0).sum()
+            return {'loss': loss, 'mask_size': torch.tensor(0.)}
 
         # Mask the inputs of the task
         def mask_inputs(inputs, mask):
