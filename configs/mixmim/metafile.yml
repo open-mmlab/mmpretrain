@@ -12,7 +12,8 @@ Collections:
         - Scaled Dot-Product Attention
         - Tanh Activation
     Paper:
-      Title: 'MixMIM: Mixed and Masked Image Modeling for Efficient Visual Representation Learning'
+      Title: 'MixMIM: Mixed and Masked Image Modeling for Efficient Visual Representation
+        Learning'
       URL: https://arxiv.org/abs/2205.13137
     README: configs/mixmim/README.md
     Code:
@@ -21,24 +22,30 @@ Collections:
 
 Models:
   - Name: mixmim_mixmim-base_16xb128-coslr-300e_in1k
-    In Collection: MixMIM
     Metadata:
       Epochs: 300
       Batch Size: 2048
+      FLOPs: 16351906816
+      Parameters: 114665784
+      Training Data: ImageNet-1k
+    In Collection: MixMIM
     Results: null
-    Config: configs/mixmim/mixmim_mixmim-base_16xb128-coslr-300e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_16xb128-coslr-300e_in1k_20221208-44fe8d2c.pth
+    Config: configs/mixmim/mixmim_mixmim-base_16xb128-coslr-300e_in1k.py
     Downstream:
       - mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
   - Name: mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
-    In Collection: MixMIM
     Metadata:
       Epochs: 100
       Batch Size: 1024
+      FLOPs: 16351906816
+      Parameters: 88344352
+      Training Data: ImageNet-1k
+    In Collection: MixMIM
     Results:
       - Task: Image Classification
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 84.63
-    Config: configs/mixmim/benchmarks/mixmim-base_8xb128-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k_20221208-41ecada9.pth
+    Config: configs/mixmim/benchmarks/mixmim-base_8xb128-coslr-100e_in1k.py

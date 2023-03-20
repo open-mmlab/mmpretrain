@@ -282,9 +282,9 @@ def list_models(pattern=None, exclude_patterns=None, task=None) -> List[str]:
         task_matches = []
         for key in matches:
             metainfo = ModelHub._models_dict[key]
-            if metainfo.results is None:
-                continue
-            if task in [result.task for result in metainfo.results]:
+            if metainfo.results is None and task == 'null':
+                task_matches.append(key)
+            elif task in [result.task for result in metainfo.results]:
                 task_matches.append(key)
         matches = task_matches
 

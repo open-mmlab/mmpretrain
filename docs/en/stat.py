@@ -145,14 +145,8 @@ def generate_summary_table(models):
         if model.results is None:
             continue
         name = model.name
-        if model.metadata.parameters is not None:
-            params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
-        else:
-            params = ''
-        if model.metadata.flops is not None:
-            flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
-        else:
-            flops = ''
+        params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
+        flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
         result = model.results[0]
         top1 = result.metrics.get('Top 1 Accuracy')
         top5 = result.metrics.get('Top 5 Accuracy')

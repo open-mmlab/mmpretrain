@@ -32,7 +32,7 @@ print(predict['pred_score'])
 import torch
 from mmpretrain import get_model
 
-model = get_model('cae_vit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
+model = get_model('cae_beit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
 inputs = torch.rand(1, 3, 224, 224)
 out = model(inputs)
 print(type(out))
@@ -48,7 +48,7 @@ Prepare your dataset according to the [docs](https://mmclassification.readthedoc
 Train:
 
 ```shell
-python tools/train.py configs/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+python tools/train.py configs/cae/cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
 ```
 
 Test:
@@ -63,15 +63,15 @@ python tools/test.py configs/cae/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k
 
 ### Pretrained models
 
-| Model                                         | Params (M) | Flops (G) |                          Config                          |                                     Download                                     |
-| :-------------------------------------------- | :--------: | :-------: | :------------------------------------------------------: | :------------------------------------------------------------------------------: |
-| `cae_vit-base-p16_8xb256-amp-coslr-300e_in1k` |    N/A     |    N/A    | [config](cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.json) |
+| Model                                          | Params (M) | Flops (G) |                          Config                           |                                    Download                                    |
+| :--------------------------------------------- | :--------: | :-------: | :-------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| `cae_beit-base-p16_8xb256-amp-coslr-300e_in1k` |   288.43   |   17.58   | [config](cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.json) |
 
 ### Image Classification on ImageNet-1k
 
 | Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
 | :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
-| `beit-base-p16_cae-pre_8xb128-coslr-100e_in1k` | [CAE](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) |    N/A     |    N/A    |   83.20   | [config](benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.json) |
+| `beit-base-p16_cae-pre_8xb128-coslr-100e_in1k` | [CAE](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) |   86.68    |   17.58   |   83.20   | [config](benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.json) |
 
 ## Citation
 

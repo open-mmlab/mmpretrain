@@ -70,9 +70,16 @@ def parse_args():
     parser.add_argument('--src', type=Path, help='The path of the matafile.')
     parser.add_argument('--out', '-o', type=Path, help='The output path.')
     parser.add_argument(
+        '--inplace',
+        '-i',
+        action='store_true',
+        help='Modify the source metafile inplace.')
+    parser.add_argument(
         '--view', action='store_true', help='Only pretty print the metafile.')
     parser.add_argument('--csv', type=str, help='Use a csv to update models.')
     args = parser.parse_args()
+    if args.inplace:
+        args.out = args.src
     return args
 
 
@@ -82,6 +89,7 @@ def get_flops(config_path):
     from fvcore.nn import FlopCountAnalysis, parameter_count
     from mmengine.config import Config
     from mmengine.dataset import Compose
+    from mmengine.model.utils import revert_sync_batchnorm
     from mmengine.registry import DefaultScope
 
     import mmpretrain.datasets  # noqa: F401
@@ -109,6 +117,8 @@ def get_flops(config_path):
         resolution = (224, 224)
 
     model = init_model(cfg, device='cpu')
+    model = revert_sync_batchnorm(model)
+    model.eval()
 
     with torch.no_grad():
         model.forward = model.extract_feat
@@ -265,8 +275,9 @@ def fill_model_by_prompt(model: dict, defaults: dict):
     if model.get('Converted From') is None and model.get(
             'Weights') is not None:
         if Confirm.ask(
-                'Is the checkpoint is converted from [red]other repository[/]?'
-        ):
+                'Is the checkpoint is converted '
+                'from [red]other repository[/]?',
+                default=False):
             converted_from = {}
             converted_from['Weights'] = prompt(
                 'Please fill the original checkpoint download link: ')
@@ -280,7 +291,7 @@ def fill_model_by_prompt(model: dict, defaults: dict):
 
     order = [
         'Name', 'Metadata', 'In Collection', 'Results', 'Weights', 'Config',
-        'Converted From'
+        'Converted From', 'Downstream'
     ]
     model = {k: model[k] for k in sorted(model.keys(), key=order.index)}
     return model
@@ -315,8 +326,8 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
     model['Metadata']['Parameters'] = params
 
     # Metadata.Training Data
-    if 'metadata.training data' in update_dict:
-        train_data = update_dict['metadata.training data'].strip()
+    if 'training dataset' in update_dict:
+        train_data = update_dict['training dataset'].strip()
         train_data = re.split(r'\s+', train_data)
         if len(train_data) > 1:
             model['Metadata']['Training Data'] = train_data
@@ -324,8 +335,8 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
             model['Metadata']['Training Data'] = train_data[0]
 
     # Results.Dataset
-    if 'results.dataset' in update_dict:
-        test_data = update_dict['results.dataset'].strip()
+    if 'test dataset' in update_dict:
+        test_data = update_dict['test dataset'].strip()
         results = model.get('Results') or [{}]
         result = results[0]
         result['Dataset'] = test_data
@@ -333,8 +344,8 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
 
     # Results.Metrics.Top 1 Accuracy
     result = None
-    if 'results.metrics.top 1 accuracy' in update_dict:
-        top1 = update_dict['results.metrics.top 1 accuracy']
+    if 'top-1' in update_dict:
+        top1 = update_dict['top-1']
         results = model.get('Results') or [{}]
         result = results[0]
         result.setdefault('Metrics', {})
@@ -343,8 +354,8 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
         model['Results'] = results
 
     # Results.Metrics.Top 5 Accuracy
-    if 'results.metrics.top 5 accuracy' in update_dict:
-        top5 = update_dict['results.metrics.top 5 accuracy']
+    if 'top-5' in update_dict:
+        top5 = update_dict['top-5']
         results = model.get('Results') or [{}]
         result = results[0]
         result.setdefault('Metrics', {})
@@ -374,7 +385,7 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
 
     order = [
         'Name', 'Metadata', 'In Collection', 'Results', 'Weights', 'Config',
-        'Converted From'
+        'Converted From', 'Downstream'
     ]
     model = {k: model[k] for k in sorted(model.keys(), key=order.index)}
     return model
@@ -394,6 +405,17 @@ def format_model(model: dict):
         Syntax(yaml_str, 'yaml', background_color='default'),
         width=150,
         title='Model')
+
+
+def order_models(model):
+    order = []
+    order.append(int('Downstream' not in model))
+    order.append(int('3rdparty' in model['Name']))
+    order.append(model.get('Metadata', {}).get('Parameters', 0))
+    order.append(model.get('Metadata', {}).get('FLOPs', 0))
+    order.append(len(model['Name']))
+
+    return tuple(order)
 
 
 def main():
@@ -446,13 +468,12 @@ def main():
                 console.print(format_model(model))
             updated_models.append(model)
 
-        while Confirm.ask('Add new model?'):
+        while Confirm.ask('Add new model?', default=False):
             model = fill_model_by_prompt({}, model_defaults)
             updated_models.append(model)
 
     # Save updated models even error happened.
-    updated_models.sort(key=lambda item: (item.get('Metadata', {}).get(
-        'FLOPs', 0), len(item['Name'])))
+    updated_models.sort(key=order_models)
     if args.out is not None:
         with open(args.out, 'w') as f:
             yaml_dump({'Collections': [collection]}, f)

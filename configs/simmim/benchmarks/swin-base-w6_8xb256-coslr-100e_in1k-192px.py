@@ -14,7 +14,7 @@ model = dict(
 # optimizer settings
 optim_wrapper = dict(
     type='AmpOptimWrapper',
-    optimizer=dict(type='AdamW', lr=5e-3),
+    optimizer=dict(type='AdamW', lr=5e-3, weight_decay=0.05),
     clip_grad=dict(max_norm=5.0),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
