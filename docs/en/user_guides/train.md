@@ -46,11 +46,11 @@ We provide a shell script to start a multi-GPUs task with `torch.distributed.lau
 bash ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [PY_ARGS]
 ```
 
-| ARGS          | Description                                                                           |
-| ------------- | ------------------------------------------------------------------------------------- |
-| `CONFIG_FILE` | The path to the config file.                                                          |
-| `GPU_NUM`     | The number of GPUs to be used.                                                        |
-| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#training-with-your-pc). |
+| ARGS          | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `CONFIG_FILE` | The path to the config file.                                                       |
+| `GPU_NUM`     | The number of GPUs to be used.                                                     |
+| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
 
 You can also specify extra arguments of the launcher by environment variables. For example, change the
 communication port of the launcher to 29666 by the below command:
@@ -106,13 +106,13 @@ If you run MMPretrain on a cluster managed with [slurm](https://slurm.schedmd.co
 
 Here are the arguments description of the script.
 
-| ARGS          | Description                                                                           |
-| ------------- | ------------------------------------------------------------------------------------- |
-| `PARTITION`   | The partition to use in your cluster.                                                 |
-| `JOB_NAME`    | The name of your job, you can name it as you like.                                    |
-| `CONFIG_FILE` | The path to the config file.                                                          |
-| `WORK_DIR`    | The target folder to save logs and checkpoints.                                       |
-| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#training-with-your-pc). |
+| ARGS          | Description                                                                        |
+| ------------- | ---------------------------------------------------------------------------------- |
+| `PARTITION`   | The partition to use in your cluster.                                              |
+| `JOB_NAME`    | The name of your job, you can name it as you like.                                 |
+| `CONFIG_FILE` | The path to the config file.                                                       |
+| `WORK_DIR`    | The target folder to save logs and checkpoints.                                    |
+| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
 
 Here are the environment variables can be used to configure the slurm job.
 

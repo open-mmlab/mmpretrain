@@ -68,7 +68,7 @@ If we want to use the automatic mixed precision training, we can simply change t
 optim_wrapper = dict(type='AmpOptimWrapper', optimizer=...)
 ```
 
-Alternatively, for conveniency, we can set `--amp` parameter to turn on the AMP option directly in the `tools/train.py` script. Refers to [Training and test](../user_guides/train_test.md) tutorial for details of starting a training.
+Alternatively, for conveniency, we can set `--amp` parameter to turn on the AMP option directly in the `tools/train.py` script. Refers to [Training tutorial](../user_guides/train.md) for details of starting a training.
 
 ### Parameter-wise finely configuration
 
