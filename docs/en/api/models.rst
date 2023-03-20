@@ -10,6 +10,7 @@ The ``models`` package contains several sub-packages for addressing the differen
 
 - :mod:`~mmpretrain.models.classifiers`: The top-level module which defines the whole process of a classification model.
 - :mod:`~mmpretrain.models.selfsup`: The top-level module which defines the whole process of a self-supervised learning model.
+- :mod:`~mmpretrain.models.retrievers`: The top-level module which defines the whole process of a retrieval model.
 - :mod:`~mmpretrain.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :mod:`~mmpretrain.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
@@ -107,6 +108,18 @@ generate the optimization target. Here is a list of target generators.
    DALLEEncoder
    HOGGenerator
    CLIPGenerator
+
+.. module:: mmpretrain.models.retrievers
+
+Retrievers
+------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   BaseRetriever
+   ImageToImageRetriever
 
 .. module:: mmpretrain.models.backbones
 

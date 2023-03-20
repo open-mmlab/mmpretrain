@@ -1,14 +1,17 @@
 # 准备数据集
 
-目前 MMClassification 所支持的数据集有：
+目前 MMPretrain 所支持的数据集有：
 
-- [CustomDataset](#customdataset)
-- [ImageNet](#imagenet)
-- [CIFAR](#cifar)
-- [MINIST](#mnist)
-- [OpenMMLab 2.0 标准数据集](#openmmlab-20-标准数据集)
-- [其他数据集](#其他数据集)
-- [数据集包装](#数据集包装)
+- [准备数据集](#准备数据集)
+  - [CustomDataset](#customdataset)
+    - [子文件夹方式](#子文件夹方式)
+    - [标注文件方式](#标注文件方式)
+  - [ImageNet](#imagenet)
+  - [CIFAR](#cifar)
+  - [MNIST](#mnist)
+  - [OpenMMLab 2.0 标准数据集](#openmmlab-20-标准数据集)
+  - [其他数据集](#其他数据集)
+  - [数据集包装](#数据集包装)
 
 如果你使用的数据集不在以上所列公开数据集中，需要转换数据集格式来适配 **`CustomDataset`**。
 
@@ -18,18 +21,32 @@
 
 ### 子文件夹方式
 
-文件夹格式通过文件来区别图片的类别，如下， class_1 和 class_2 就代表了区分了不同的类别。
+如下所示，将所有样本放在同一个文件夹下：
 
 ```text
-data_prefix/
-├── class_1
-│   ├── xxx.png
-│   ├── xxy.png
-│   └── ...
-├── class_2
-│   ├── 123.png
-│   ├── 124.png
-│   └── ...
+样本文件目录结构 (在有监督任务中设定 `with_label=True`，我们使用子文件夹的名字作为类别名):
+如下所示，class_x 和 class_y 就代表了区分了不同的类别。:
+    data_prefix/
+    ├── class_x
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    │       └── xxz.png
+    └── class_y
+        ├── 123.png
+        ├── nsdf3.png
+        ├── ...
+        └── asd932_.png
+
+样本文件目录结构 (在无监督任务中设定 `with_label=False`, 我们使用制定的文件夹下所有图片):
+    data_prefix/
+    ├── folder_1
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    ├── 123.png
+    ├── nsdf3.png
+    └── ...
 ```
 
 假如你希望将之用于训练，那么配置文件中需要添加以下配置：
@@ -53,17 +70,29 @@ train_dataloader = dict(
 如下案例，dataset 目录如下：
 
 ```text
-data_root/
-├── meta/
-│   ├── ann_file
-│   └── ...
-├── data_prefix/
-│   ├── folder_1
-│   │   ├── xxx.png │   │   ├── xxy.png
-│   │   └── ...
-│   ├── 123.png
-│   ├── nsdf3.png
-│   └── ...
+标注文件如下 (在有监督任务中设定 ``with_label=True``):
+    folder_1/xxx.png 0
+    folder_1/xxy.png 1
+    123.png 4
+    nsdf3.png 3
+    ...
+
+标注文件如下 (在无监督任务中设定 ``with_label=False``):
+    folder_1/xxx.png
+    folder_1/xxy.png
+    123.png
+    nsdf3.png
+    ...
+
+样本文件目录结构:
+    data_prefix/
+    ├── folder_1
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    ├── 123.png
+    ├── nsdf3.png
+    └── ...
 ```
 
 标注文件 `ann_file` 内为普通文本，分为两列，第一列为图片路径，第二列为**类别的序号**。如下：
@@ -71,8 +100,8 @@ data_root/
 ```text
 folder_1/xxx.png 0
 folder_1/xxy.png 1
-123.png 1
-nsdf3.png 2
+123.png 4
+nsdf3.png 3
 ...
 ```
 
@@ -278,7 +307,7 @@ dataset_cfg=dict(
 
 ## 其他数据集
 
-MMCLassification 还是支持更多其他的数据集，可以通过查阅[数据集文档](mmpretrain.datasets)获取它们的配置信息。
+MMPretrain 还是支持更多其他的数据集，可以通过查阅[数据集文档](mmpretrain.datasets)获取它们的配置信息。
 
 ## 数据集包装
 
@@ -288,4 +317,4 @@ MMEngine 中支持以下数据包装器，您可以参考 {external+mmengine:doc
 - {external:py:class}`~mmengine.dataset.RepeatDataset`
 - {external:py:class}`~mmengine.dataset.ClassBalancedDataset`
 
-除上述之外，MMClassification 还支持了[KFoldDataset](mmpretrain.datasets.KFoldDataset)，需用通过使用 `tools/kfold-cross-valid.py` 来使用它。
+除上述之外，MMPretrain 还支持了[KFoldDataset](mmpretrain.datasets.KFoldDataset)，需用通过使用 `tools/kfold-cross-valid.py` 来使用它。

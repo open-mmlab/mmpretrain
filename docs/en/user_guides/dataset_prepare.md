@@ -1,14 +1,17 @@
 # Prepare Dataset
 
-MMClassification supports following datasets:
+MMPretrain supports following datasets:
 
-- [CustomDataset](#customdataset)
-- [ImageNet](#imagenet)
-- [CIFAR](#cifar)
-- [MINIST](#mnist)
-- [OpenMMLab 2.0 Standard Dataset](#openmmlab-20-standard-dataset)
-- [Other Datasets](#other-datasets)
-- [Dataset Wrappers](#dataset-wrappers)
+- [Prepare Dataset](#prepare-dataset)
+  - [CustomDataset](#customdataset)
+    - [Subfolder Format](#subfolder-format)
+    - [Text Annotation File Format](#text-annotation-file-format)
+  - [ImageNet](#imagenet)
+  - [CIFAR](#cifar)
+  - [MNIST](#mnist)
+  - [OpenMMLab 2.0 Standard Dataset](#openmmlab-20-standard-dataset)
+  - [Other Datasets](#other-datasets)
+  - [Dataset Wrappers](#dataset-wrappers)
 
 If your dataset is not in the abvove list, you could reorganize the format of your dataset to adapt to **`CustomDataset`**.
 
@@ -18,18 +21,33 @@ If your dataset is not in the abvove list, you could reorganize the format of yo
 
 ### Subfolder Format
 
-The sub-folder format distinguishes the categories of pictures by folders. As follows, class_1 and class_2 represent different categories.
+Place all samples in one folder as below:
 
 ```text
-data_prefix/
-├── class_1     # Use the category name as the folder name
-│   ├── xxx.png
-│   ├── xxy.png
-│   └── ...
-├── class_2
-│   ├── 123.png
-│   ├── 124.png
-│   └── ...
+Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names):
+As follows, class_x and class_y represent different categories.):
+    data_prefix/
+    ├── class_x
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    │       └── xxz.png
+    └── class_y
+        ├── 123.png
+        ├── nsdf3.png
+        ├── ...
+        └── asd932_.png
+
+
+Sample files (for `with_label=False`, unsupervised tasks, we use all sample files under the specified folder):
+    data_prefix/
+    ├── folder_1
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    ├── 123.png
+    ├── nsdf3.png
+    └── ...
 ```
 
 Assume you want to use it as the training dataset, and the below is the configurations in your config file.
@@ -57,21 +75,29 @@ The text annotation file format uses text files to store path and category infor
 In the following case, the dataset directory is as follows:
 
 ```text
-data_root/
-├── meta/
-│   ├── train_annfile.txt
-│   ├── val_annfile.txt
-│   └── ...
-├── train/
-│   ├── folder_1
-│   │   ├── xxx.png
-│   │   ├── xxy.png
-│   │   └── ...
-│   ├── 123.png
-│   ├── nsdf3.png
-│   └── ...
-├── val/
-└── ...
+The annotation file (for ``with_label=True``, supervised tasks):
+    folder_1/xxx.png 0
+    folder_1/xxy.png 1
+    123.png 4
+    nsdf3.png 3
+    ...
+
+The annotation file (for ``with_label=False``, unsupervised tasks):
+    folder_1/xxx.png
+    folder_1/xxy.png
+    123.png
+    nsdf3.png
+    ...
+
+Sample files:
+    data_prefix/
+    ├── folder_1
+    │   ├── xxx.png
+    │   ├── xxy.png
+    │   └── ...
+    ├── 123.png
+    ├── nsdf3.png
+    └── ...
 ```
 
 Assume you want to use the training dataset, and the annotation file is `train_annfile.txt` as above. The annotation file contains ordinary text, which is divided into two columns, the first column is the image path, and the second column is the **index number** of its category:
@@ -79,8 +105,8 @@ Assume you want to use the training dataset, and the annotation file is `train_a
 ```text
 folder_1/xxx.png 0
 folder_1/xxy.png 1
-123.png 1
-nsdf3.png 2
+123.png 4
+nsdf3.png 3
 ...
 ```
 
@@ -300,7 +326,7 @@ train_dataloader = dict(
 
 ## Other Datasets
 
-To find more datasets supported by MMClassification, and get more configurations of the above datasets, please see the [dataset documentation](mmpretrain.datasets).
+To find more datasets supported by MMPretrain, and get more configurations of the above datasets, please see the [dataset documentation](mmpretrain.datasets).
 
 ## Dataset Wrappers
 
@@ -310,4 +336,4 @@ The following datawrappers are supported in MMEngine, you can refer to {external
 - [RepeatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#repeatdataset)
 - [ClassBalanced](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#classbalanceddataset)
 
-The MMClassification also support [KFoldDataset](mmpretrain.datasets.KFoldDataset), please use it with `tools/kfold-cross-valid.py`.
+The MMPretrain also support [KFoldDataset](mmpretrain.datasets.KFoldDataset), please use it with `tools/kfold-cross-valid.py`.

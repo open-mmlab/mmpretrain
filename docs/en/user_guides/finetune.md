@@ -1,8 +1,17 @@
 # Fine-tune Models
 
-In most scenarios, we want to apply a model on new datasets without training from scratch, which might possibly introduce extra uncertainties about the model convergency and therefore, is time-consuming.
+- [Fine-tune Models](#fine-tune-models)
+  - [Inherit base configs](#inherit-base-configs)
+  - [Specify pre-trained model in configs](#specify-pre-trained-model-in-configs)
+  - [Modify dataset configs](#modify-dataset-configs)
+  - [Modify training schedule configs](#modify-training-schedule-configs)
+  - [Start Training](#start-training)
+    - [Apply pre-trained model with command line](#apply-pre-trained-model-with-command-line)
+
+In most scenarios, we want to apply a pre-trained model without training from scratch, which might possibly introduce extra uncertainties about the model convergency and therefore, is time-consuming.
 The common sense is to learn from previous models trained on large dataset, which can hopefully provide better knowledge than a random beginner. Roughly speaking, this process is as known as fine-tuning.
-Classification models pre-trained on the ImageNet dataset have been demonstrated to be effective for other datasets and other downstream tasks.
+
+Models pre-trained on the ImageNet dataset have been demonstrated to be effective for other datasets and other downstream tasks.
 Hence, this tutorial provides instructions for users to use the models provided in the [Model Zoo](../modelzoo_statistics.md) for other datasets to obtain better performance.
 
 There are two steps to fine-tune a model on a new dataset.
@@ -43,9 +52,9 @@ _base_ = [
 ```
 
 Besides, you can also choose to write the whole contents rather than use inheritance.
-Refers to [`configs/lenet/lenet5_mnist.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/lenet/lenet5_mnist.py) for more details.
+Refers to [`configs/lenet/lenet5_mnist.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/lenet/lenet5_mnist.py) for more details.
 
-## Modify model configs
+## Specify pre-trained model in configs
 
 When fine-tuning a model, usually we want to load the pre-trained backbone
 weights and train a new classification head from scratch.
@@ -54,10 +63,10 @@ To load the pre-trained backbone, we need to change the initialization config
 of the backbone and use `Pretrained` initialization function. Besides, in the
 `init_cfg`, we use `prefix='backbone'` to tell the initialization function
 the prefix of the submodule that needs to be loaded in the checkpoint.
+
 For example, `backbone` here means to load the backbone submodule. And here we
 use an online checkpoint, it will be downloaded automatically during training,
 you can also download the model manually and use a local path.
-
 And then we need to modify the head according to the class numbers of the new
 datasets by just changing `num_classes` in the head.
 
@@ -81,7 +90,7 @@ inherited configs will be merged and get the entire configs.
 When new dataset is small and shares the domain with the pre-trained dataset,
 we might want to freeze the first several stages' parameters of the
 backbone, that will help the network to keep ability to extract low-level
-information learnt from pre-trained model. In MMClassification, you can simply
+information learnt from pre-trained model. In MMPretrain, you can simply
 specify how many stages to freeze by `frozen_stages` argument. For example, to
 freeze the first two stages' parameters, just use the following configs:
 
@@ -100,7 +109,7 @@ model = dict(
 
 ```{note}
 Not all backbones support the `frozen_stages` argument by now. Please check
-[the docs](https://mmclassification.readthedocs.io/en/1.x/api.html#module-mmpretrain.models.backbones)
+[the docs](https://mmpretrain.readthedocs.io/en/main/api.html#module-mmpretrain.models.backbones)
 to confirm if your backbone supports it.
 ```
 
@@ -228,3 +237,16 @@ It's because our training schedule is for a batch size of 128. If using 8 GPUs,
 just use `batch_size=16` config in the base config file for every GPU, and the total batch
 size will be 128. But if using one GPU, you need to change it to 128 manually to
 match the training schedule.
+
+### Apply pre-trained model with command line
+
+If you don't want to modify the configs, you could use `--cfg-options` to add your pre-trained model path to `init_cfg`.
+
+For example, the command below will also load pre-trained model.
+
+```shell
+bash tools/dist_train.sh configs/tutorial/resnet50_finetune_cifar.py 8 \
+    --cfg-options model.backbone.init_cfg.type='Pretrained' \
+    model.backbone.init_cfg.checkpoint='https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_resnet50_8xb512-amp-coslr-100e_in1k/mocov3_resnet50_8xb512-amp-coslr-100e_in1k_20220927-f1144efa.pth' \
+    model.backbone.init_cfg.prefix='backbone' \
+```

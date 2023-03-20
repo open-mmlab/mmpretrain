@@ -11,24 +11,13 @@ Welcome to MMPretrain's documentation!
    :maxdepth: 1
    :caption: User Guides
 
-   user_guides/inference.md
-   user_guides/dataset_prepare.md
-   user_guides/train_test.md
    user_guides/config.md
+   user_guides/dataset_prepare.md
+   user_guides/inference.md
+   user_guides/train.md
+   user_guides/test.md
    user_guides/finetune.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Useful Tools
-
-   useful_tools/dataset_visualization.md
-   useful_tools/scheduler_visualization.md
-   useful_tools/cam_visualization.md
-   useful_tools/print_config.md
-   useful_tools/verify_dataset.md
-   useful_tools/log_result_analysis.md
-   useful_tools/complexity_analysis.md
-   useful_tools/model_serving.md
+   user_guides/downstream.md
 
 .. toctree::
    :maxdepth: 1
@@ -45,11 +34,34 @@ Welcome to MMPretrain's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: Model zoo
+   :caption: Model Zoo
    :glob:
 
    modelzoo_statistics.md
    papers/*
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Visualization
+
+   useful_tools/dataset_visualization.md
+   useful_tools/scheduler_visualization.md
+   useful_tools/cam_visualization.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Analysis Tools
+
+   useful_tools/print_config.md
+   useful_tools/verify_dataset.md
+   useful_tools/log_result_analysis.md
+   useful_tools/complexity_analysis.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Deployment
+
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1
@@ -79,7 +91,7 @@ Welcome to MMPretrain's documentation!
    notes/projects.md
    notes/changelog.md
    notes/faq.md
-
+   notes/pretrain_custom_dataset.md
 
 Indices and tables
 ==================

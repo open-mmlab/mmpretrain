@@ -1,13 +1,16 @@
 # Inference with existing models
 
-MMClassification provides pre-trained models for classification in [Model Zoo](../modelzoo_statistics.md).
+- [Inference with existing models](#inference-with-existing-models)
+  - [Inference on a given image](#inference-on-a-given-image)
+
+MMPretrain provides pre-trained models in [Model Zoo](../modelzoo_statistics.md).
 This note will show **how to use existing models to inference on given images**.
 
 As for how to test existing models on standard datasets, please see this [guide](./train_test.md#test)
 
 ## Inference on a given image
 
-MMClassification provides high-level Python APIs for inference on a given image:
+MMPretrain provides high-level Python APIs for inference on a given image:
 
 - [`get_model`](mmpretrain.apis.get_model): Get a model with the model name.
 - [`init_model`](mmpretrain.apis.init_model): Initialize a model with a config and checkpoint
@@ -36,4 +39,4 @@ result = inference_model(model, img_path)
 {"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}
 ```
 
-An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmclassification/blob/1.x/demo/image_demo.py).
+An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmpretrain/blob/main/demo/image_demo.py).
