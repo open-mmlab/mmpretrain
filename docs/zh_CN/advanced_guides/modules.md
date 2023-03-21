@@ -1,11 +1,69 @@
 # 自定义模型
 
-在我们的设计中，我们定义一个完整的模型为`ImageClassifer`。根据功能的不同，一个`ImageClassifer`基本由以下4种类型的模型组件组成。
+在我们的设计中，我们定义一个完整的模型为顶层模块，根据功能的不同，基本几种不同类型的模型组件组成。
 
-- 主干网络：通常是一个特征提取网络，涵盖了模型直接绝大多数的差异，例如 ResNet、MobileNet。
-- 颈部：用于连接主干网络和头部的组件，例如 GlobalAveragePooling。
-- 头部：用于执行特定任务的组件，例如分类和回归。
-- 损失函数：在头部用于计算损失函数的组件，例如CrossEntropyLoss、LabelSmoothLoss。
+- 模型：顶层模块定义了具体的任务类型，例如 `ImageClassifier` 用在图像分类任务中， `MAE` 用在自监督学习中， `ImageToImageRetriever` 用在图像检索中。
+- 主干网络：通常是一个特征提取网络，涵盖了模型直接绝大多数的差异，例如 `ResNet`、`MobileNet`。
+- 颈部：用于连接主干网络和头部的组件，例如 `GlobalAveragePooling`。
+- 头部：用于执行特定任务的组件，例如 `ClsHead`、 `ContrastiveHead`。
+- 损失函数：在头部用于计算损失函数的组件，例如 `CrossEntropyLoss`、`LabelSmoothLoss`。
+- 目标生成器: 用于自监督学习任务的组件，例如 `VQKD`、 `HOGGenerator`。
+
+## 添加新的顶层模型
+
+通常来说，对于图像分类和图像检索任务来说，模型顶层模型流程基本一致。但是不同的自监督学习算法却用不同的计算流程，像 `MAE` 和 `BEiT` 就大不相同。 所以在这个部分，我们将简单介绍如何添加一个新的自监督学习算法。
+
+### 添加新的自监督学习算法
+
+1. 创建新文件 `mmpretrain/models/selfsup/new_algorithm.py` 以及实现 `NewAlgorithm`
+
+   ```python
+   from mmpretrain.registry import MODELS
+   from .base import BaseSelfSupvisor
+
+
+   @MODELS.register_module()
+   class NewAlgorithm(BaseSelfSupvisor):
+
+       def __init__(self, backbone, neck=None, head=None, init_cfg=None):
+           super().__init__(init_cfg)
+           pass
+
+       # ``extract_feat`` function is defined in BaseSelfSupvisor, you could
+       # overwrite it if needed
+       def extract_feat(self, inputs, **kwargs):
+           pass
+
+       # the core function to compute the loss
+       def loss(self, inputs, data_samples, **kwargs):
+           pass
+
+   ```
+
+2. 在 `mmpretrain/models/selfsup/__init__.py` 中导入对应的新算法
+
+   ```python
+   ...
+   from .new_algorithm import NewAlgorithm
+
+   __all__ = [
+       ...,
+       'NewAlgorithm',
+       ...
+   ]
+   ```
+
+3. 在配置文件中使用新算法
+
+   ```python
+   model = dict(
+       type='NewAlgorithm',
+       backbone=...,
+       neck=...,
+       head=...,
+       ...
+   )
+   ```
 
 ## 添加新的主干网络
 
@@ -116,6 +174,78 @@
        ...
    ```
 
+### 为自监督学习添加新的主干网络
+
+对于一部分自监督学习算法，主干网络做了一定修改，例如 `MAE`、`BEiT` 等。 这些主干网络需要处理 `mask` 相关的逻辑，以此从可见的图像块中提取对应的特征信息。
+
+以 [MAEViT](mmpretrain.models.selfsup.MAEViT) 作为例子，我们需要重写 `forward` 函数，进行基于 `mask` 的计算。我们实现了 `init_weights` 进行特定权重的初始化和 `random_masking` 函数来生成 `MAE` 预训练所需要的 `mask`。
+
+```python
+class MAEViT(VisionTransformer):
+    """Vision Transformer for MAE pre-training"""
+
+    def __init__(mask_ratio, **kwargs) -> None:
+        super().__init__(**kwargs)
+        # position embedding is not learnable during pretraining
+        self.pos_embed.requires_grad = False
+        self.mask_ratio = mask_ratio
+        self.num_patches = self.patch_resolution[0] * self.patch_resolution[1]
+
+    def init_weights(self) -> None:
+        """Initialize position embedding, patch embedding and cls token."""
+        super().init_weights()
+        # define what if needed
+        pass
+
+    def random_masking(
+        self,
+        x: torch.Tensor,
+        mask_ratio: float = 0.75
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Generate the mask for MAE Pre-training."""
+        pass
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        mask: Optional[bool] = True
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Generate features for masked images.
+
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        ``True``, the function will generate mask to masking some patches
+        randomly and get the hidden features for visible patches, which means
+        the function will be executed as masked imagemodeling pre-training;
+        if the ``mask`` is ``None`` or ``False``, the forward function will
+        call ``super().forward()``, which extract features from images without
+        mask.
+        """
+        if mask is None or False:
+            return super().forward(x)
+
+        else:
+            B = x.shape[0]
+            x = self.patch_embed(x)[0]
+            # add pos embed w/o cls token
+            x = x + self.pos_embed[:, 1:, :]
+
+            # masking: length -> length * mask_ratio
+            x, mask, ids_restore = self.random_masking(x, self.mask_ratio)
+
+            # append cls token
+            cls_token = self.cls_token + self.pos_embed[:, :1, :]
+            cls_tokens = cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_tokens, x), dim=1)
+
+            for _, layer in enumerate(self.layers):
+                x = layer(x)
+            # Use final norm
+            x = self.norm1(x)
+
+            return (x, mask, ids_restore)
+
+```
+
 ## 添加新的颈部组件
 
 这里我们以 `GlobalAveragePooling` 为例。这是一个非常简单的颈部组件，没有任何参数。
@@ -163,6 +293,8 @@
    ```
 
 ## 添加新的头部组件
+
+### 基于分类头
 
 在此，我们以一个简化的 `VisionTransformerClsHead` 为例，说明如何开发新的头部组件。
 
@@ -231,6 +363,64 @@
            ...,
        ))
    ```
+
+### 基于 BaseModule 类
+
+这是一个例子，为 `MAEPretrainHead`，基于 MMEngine 中的 `BaseModule` 进行开发，主要是为了 `MAE` 掩码学习。我们需要实现 `loss` 函数来计算损失吗，不过其它的函数均为可选项。
+
+```python
+# Copyright (c) OpenMMLab. All rights reserved.
+import torch
+from mmengine.model import BaseModule
+
+from mmpretrain.registry import MODELS
+
+
+@MODELS.register_module()
+class MAEPretrainHead(BaseModule):
+    """Head for MAE Pre-training."""
+
+    def __init__(self,
+                 loss: dict,
+                 norm_pix: bool = False,
+                 patch_size: int = 16) -> None:
+        super().__init__()
+        self.norm_pix = norm_pix
+        self.patch_size = patch_size
+        self.loss_module = MODELS.build(loss)
+
+    def patchify(self, imgs: torch.Tensor) -> torch.Tensor:
+        """Split images into non-overlapped patches."""
+        p = self.patch_size
+        assert imgs.shape[2] == imgs.shape[3] and imgs.shape[2] % p == 0
+
+        h = w = imgs.shape[2] // p
+        x = imgs.reshape(shape=(imgs.shape[0], 3, h, p, w, p))
+        x = torch.einsum('nchpwq->nhwpqc', x)
+        x = x.reshape(shape=(imgs.shape[0], h * w, p**2 * 3))
+        return x
+
+    def construct_target(self, target: torch.Tensor) -> torch.Tensor:
+        """Construct the reconstruction target."""
+        target = self.patchify(target)
+        if self.norm_pix:
+            # normalize the target image
+            mean = target.mean(dim=-1, keepdim=True)
+            var = target.var(dim=-1, keepdim=True)
+            target = (target - mean) / (var + 1.e-6)**.5
+
+        return target
+
+    def loss(self, pred: torch.Tensor, target: torch.Tensor,
+             mask: torch.Tensor) -> torch.Tensor:
+        """Generate loss."""
+        target = self.construct_target(target)
+        loss = self.loss_module(pred, target, mask)
+
+        return loss
+```
+
+完成实现后，之后的步骤和 [基于分类头](#基于分类头) 中的步骤 2 和步骤 3 一致。
 
 ## 添加新的损失函数
 

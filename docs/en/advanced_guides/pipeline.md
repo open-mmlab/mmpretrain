@@ -8,7 +8,7 @@ to initialize the entire dataset, and we save the information of every sample to
 Usually, to save memory usage, we only load image paths and labels in the `load_data_list`, and load full
 image content when we use them. Moreover, we may want to do some random data augmentation during picking
 samples when training. Almost all data loading, pre-processing, and formatting operations can be configured in
-MMClassification by the **data pipeline**.
+MMPretrain by the **data pipeline**.
 
 The data pipeline means how to process the sample dict when indexing a sample from the dataset. And it
 consists of a sequence of data transforms. Each data transform takes a dict as input, processes it, and outputs a
@@ -25,11 +25,11 @@ train_pipeline = [
 ]
 ```
 
-All available data transforms in MMClassification can be found in the [data transforms docs](mmpretrain.datasets.transforms).
+All available data transforms in MMPretrain can be found in the [data transforms docs](mmpretrain.datasets.transforms).
 
 ## Modify the training/test pipeline
 
-The data pipeline in MMClassification is pretty flexible. You can control almost every step of the data
+The data pipeline in MMPretrain is pretty flexible. You can control almost every step of the data
 preprocessing from the config file, but on the other hand, you may be confused facing so many options.
 
 Here is a common practice and guidance for image classification tasks.

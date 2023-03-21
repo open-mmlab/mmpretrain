@@ -1,6 +1,6 @@
 # 自定义训练优化策略
 
-在我们的算法库中，已经提供了通用数据集（如ImageNet，CIFAR）的[默认训练策略配置](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules)。如果想要在这些数据集上继续提升模型性能，或者在不同数据集和方法上进行新的尝试，我们通常需要修改这些默认的策略。
+在我们的算法库中，已经提供了通用数据集（如ImageNet，CIFAR）的[默认训练策略配置](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/schedules)。如果想要在这些数据集上继续提升模型性能，或者在不同数据集和方法上进行新的尝试，我们通常需要修改这些默认的策略。
 
 在本教程中，我们将介绍如何在运行自定义训练时，通过修改配置文件进行构造优化器、参数化精细配置、梯度裁剪、梯度累计以及定制动量调整策略等。同时也会通过模板简单介绍如何自定义开发优化器和构造器。
 
@@ -10,7 +10,7 @@
 
 ### 构造 PyTorch 内置优化器
 
-MMClassification 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定优化器封装需要的 `optimizer` 字段。
+MMPretrain 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定优化器封装需要的 `optimizer` 字段。
 
 如果要使用 [`SGD`](torch.optim.SGD)，则修改如下。这里要注意所有优化相关的配置都需要封装在 `optim_wrapper` 配置里。
 
@@ -87,18 +87,17 @@ optim_wrapper = dict(type='AmpOptimWrapper', optimizer=...)
 
   支持更多类型的参数配置，参考以下列表：
 
-  - `lr_mult`：所有参数的学习率系数
-  - `decay_mult`：所有参数的衰减系数
   - `bias_lr_mult`：偏置的学习率系数（不包括正则化层的偏置以及可变形卷积的 offset），默认值为 1
   - `bias_decay_mult`：偏置的权值衰减系数（不包括正则化层的偏置以及可变形卷积的 offset），默认值为 1
   - `norm_decay_mult`：正则化层权重和偏置的权值衰减系数，默认值为 1
+  - `flat_decay_mult`: 一维参数的权值衰减系数，默认值为 1
   - `dwconv_decay_mult`：Depth-wise 卷积的权值衰减系数，默认值为 1
   - `bypass_duplicate`：是否跳过重复的参数，默认为 `False`
   - `dcn_offset_lr_mult`：可变形卷积（Deformable Convolution）的学习率系数，默认值为 1
 
 - **为特定参数设置超参乘子**
 
-  MMClassification 通过 `paramwise_cfg` 的 `custom_keys` 参数来配置特定参数的超参乘子。
+  MMPretrain 通过 `paramwise_cfg` 的 `custom_keys` 参数来配置特定参数的超参乘子。
 
   例如，我们可以通过以下配置来设置所有 `backbone.layer0` 层的学习率和权重衰减为0， `backbone` 的其余层和优化器保持一致，另外 `head` 层的学习率为0.001.
 
@@ -153,7 +152,7 @@ optim_wrapper = dict(
 
 ## 配置参数优化策略
 
-在训练过程中，优化参数例如学习率、动量，通常不会是固定不变，而是随着训练进程的变化而调整。PyTorch 支持一些学习率调整的调度器，但是不足以完成复杂的策略。在MMClassification中，我们提供 `param_scheduler` 来更好地控制不同优化参数的策略。
+在训练过程中，优化参数例如学习率、动量，通常不会是固定不变，而是随着训练进程的变化而调整。PyTorch 支持一些学习率调整的调度器，但是不足以完成复杂的策略。在 MMPretrain 中，我们提供 `param_scheduler` 来更好地控制不同优化参数的策略。
 
 ### 配置学习率调整策略
 
@@ -186,7 +185,7 @@ optim_wrapper = dict(
 
   整个学习过程中，学习率将会通过预热从一个很小的值逐步提高到预定值，再会通过其他的策略进一步调整。
 
-  在 MMClassification 中，我们同样使用 `param_scheduler` ，将多种学习策略写成列表就可以完成上述预热策略的组合。
+  在 MMPretrain 中，我们同样使用 `param_scheduler` ，将多种学习策略写成列表就可以完成上述预热策略的组合。
 
   例如：
 
@@ -228,12 +227,12 @@ optim_wrapper = dict(
   如果相邻两个调度器的生效区间没有紧邻，而是有一段区间没有被覆盖，那么这段区间的学习率维持不变。而如果两个调度器的生效区间发生了重叠，则对多组调度器叠加使用，学习率的调整会按照调度器配置文件中的顺序触发（行为与 PyTorch 中 [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler) 一致）。
 
   ```{tip}
-  为了避免学习率曲线与预期不符， 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](../useful_tools/scheduler_visualization.md) 画出对应学习率调整曲线。
+  为了避免学习率曲线与预期不符， 配置完成后，可以使用 MMPretrain 提供的 [学习率可视化工具](../useful_tools/scheduler_visualization.md) 画出对应学习率调整曲线。
   ```
 
 ### 配置动量调整策略
 
-MMClassification 支持动量调度器根据学习率修改优化器的动量，从而使损失函数收敛更快。用法和学习率调度器一致。
+MMPretrain 支持动量调度器根据学习率修改优化器的动量，从而使损失函数收敛更快。用法和学习率调度器一致。
 
 我们支持的动量策略和详细的使用细节可以参考[这里](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py)。我们只将调度器中的 `LR` 替换为了 `Momentum`，动量策略可以直接追加 `param_scheduler` 列表中。
 
@@ -255,75 +254,63 @@ param_scheduler = [
 ## 新增优化器或者优化器构造器
 
 ```{note}
-本部分将修改 MMClassification 源码或者向 MMClassification 框架添加代码，初学者可跳过。
+本部分将修改 MMPretrain 源码或者向 MMPretrain 框架添加代码，初学者可跳过。
 ```
 
 ### 新增优化器
 
-在学术研究和工业实践中，可能需要使用 MMClassification 未实现的优化方法，可以通过以下方法添加。
+在学术研究和工业实践中，可能需要使用 MMPretrain 未实现的优化方法，可以通过以下方法添加。
 
-#### 1. 定义一个新的优化器
+1. 定义一个新的优化器
 
-一个自定义的优化器可根据如下规则进行定制：
+   一个自定义的优化器可根据如下规则进行定制：
 
-假设我们想添加一个名为 `MyOptimzer` 的优化器，其拥有参数 `a`, `b` 和 `c`。
-可以创建一个名为 `mmpretrain/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmpretrain/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
+   假设我们想添加一个名为 `MyOptimzer` 的优化器，其拥有参数 `a`, `b` 和 `c`。
+   可以创建一个名为 `mmpretrain/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmpretrain/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
 
-```python
-from mmpretrain.registry import OPTIMIZERS
-from torch.optim import Optimizer
+   ```python
+   from mmpretrain.registry import OPTIMIZERS
+   from torch.optim import Optimizer
 
 
-@OPTIMIZERS.register_module()
-class MyOptimizer(Optimizer):
+   @OPTIMIZERS.register_module()
+   class MyOptimizer(Optimizer):
 
-    def __init__(self, a, b, c):
-        ...
+       def __init__(self, a, b, c):
+           ...
 
-    def step(self, closure=None):
-        ...
-```
+       def step(self, closure=None):
+           ...
+   ```
 
-#### 2. 注册优化器
+2. 注册优化器
 
-要注册上面定义的上述模块，首先需要将此模块导入到主命名空间中。有两种方法可以实现它。
+   要注册上面定义的上述模块，首先需要将此模块导入到主命名空间中。有两种方法可以实现它。
 
-- 修改 `mmpretrain/engine/optimizers/__init__.py`，将其导入至 `mmpretrain.engine` 包。
+   修改 `mmpretrain/engine/optimizers/__init__.py`，将其导入至 `mmpretrain.engine` 包。
 
-  ```python
-  # 在 mmpretrain/engine/optimizers/__init__.py 中
-  ...
-  from .my_optimizer import MyOptimizer # MyOptimizer 是我们自定义的优化器的名字
+   ```python
+   # 在 mmpretrain/engine/optimizers/__init__.py 中
+   ...
+   from .my_optimizer import MyOptimizer # MyOptimizer 是我们自定义的优化器的名字
 
-  __all__ = [..., 'MyOptimizer']
-  ```
+   __all__ = [..., 'MyOptimizer']
+   ```
 
-  在运行过程中，我们会自动导入 `mmpretrain.engine` 包并同时注册 `MyOptimizer`。
+   在运行过程中，我们会自动导入 `mmpretrain.engine` 包并同时注册 `MyOptimizer`。
 
-- 在配置中使用 `custom_imports` 手动导入
+3. 在配置文件中指定优化器
 
-  ```python
-  custom_imports = dict(
-      imports=['mmpretrain.engine.optimizers.my_optimizer'],
-      allow_failed_imports=False,
-  )
-  ```
+   之后，用户便可在配置文件的 `optim_wrapper.optimizer` 域中使用 `MyOptimizer`：
 
-  `mmpretrain.engine.optimizers.my_optimizer` 模块将会在程序开始阶段被导入，`MyOptimizer` 类会随之自动被注册。
-  注意，这里只需要导入包含 `MyOptmizer` 类的包。如果填写`mmpretrain.engine.optimizers.my_optimizer.MyOptimizer` 则 **不会** 被直接导入。
-
-#### 3. 在配置文件中指定优化器
-
-之后，用户便可在配置文件的 `optim_wrapper.optimizer` 域中使用 `MyOptimizer`：
-
-```python
-optim_wrapper = dict(
-    optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
-```
+   ```python
+   optim_wrapper = dict(
+       optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
+   ```
 
 ### 新增优化器构造器
 
-某些模型可能具有一些特定于参数的设置以进行优化，例如 为所有 BatchNorm 层设置不同的权重衰减。
+某些模型可能具有一些特定于参数的设置以进行优化，例如为所有 BatchNorm 层设置不同的权重衰减。
 
 尽管我们已经可以使用 [`optim_wrapper.paramwise_cfg` 字段](#参数化精细配置)来配置特定参数的优化设置，但可能仍然无法覆盖你的需求。
 
@@ -346,6 +333,8 @@ class MyOptimWrapperConstructor:
     def __call__(self, model):
         ...
 ```
+
+这是一个已实现的 [OptimWrapperConstructor](mmpretrain.engine.optimizers.LearningRateDecayOptimWrapperConstructor) 具体例子。
 
 接下来类似 [新增优化器教程](#新增优化器) 来导入并使用新的优化器构造器。
 

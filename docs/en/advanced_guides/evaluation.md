@@ -1,8 +1,8 @@
 # Customize Evaluation Metrics
 
-## Use metrics in MMClassification
+## Use metrics in MMPretrain
 
-In MMClassification, we have provided multiple metrics for both single-label classification and multi-label
+In MMPretrain, we have provided multiple metrics for both single-label classification and multi-label
 classification:
 
 **Single-label Classification**:
@@ -54,7 +54,7 @@ Here is several examples:
 
 ## Add new metrics
 
-MMClassification supports the implementation of customized evaluation metrics for users who pursue higher customization.
+MMPretrain supports the implementation of customized evaluation metrics for users who pursue higher customization.
 
 You need to create a new file under `mmpretrain/evaluation/metrics`, and implement the new metric in the file, for example, in `mmpretrain/evaluation/metrics/my_metric.py`. And create a customized evaluation metric class `MyMetric` which inherits [`BaseMetric in MMEngine`](mmengine.evaluator.BaseMetric).
 
