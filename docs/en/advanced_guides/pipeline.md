@@ -106,8 +106,7 @@ train_pipeline = [
 ```{note}
 Usually, the data augmentation part in the data pipeline handles only image-wise transforms, but not transforms
 like image normalization or mixup/cutmix. It's because we can do image normalization and mixup/cutmix on batch data
-to accelerate. To configure image normalization and mixup/cutmix, please use the [data preprocessor]
-(mmpretrain.models.utils.data_preprocessor).
+to accelerate. To configure image normalization and mixup/cutmix, please use the [data preprocessor](mmpretrain.models.utils.data_preprocessor).
 ```
 
 ### Formatting

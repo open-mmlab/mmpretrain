@@ -366,7 +366,7 @@ class MAEViT(VisionTransformer):
 
 ### 基于 BaseModule 类
 
-这是一个例子，为 `MAEPretrainHead`，基于 MMEngine 中的 `BaseModule` 进行开发，主要是为了 `MAE` 掩码学习。我们需要实现 `loss` 函数来计算损失吗，不过其它的函数均为可选项。
+这是一个基于 MMEngine 中的 `BaseModule` 进行开发例子，`MAEPretrainHead`，主要是为了 `MAE` 掩码学习。我们需要实现 `loss` 函数来计算损失吗，不过其它的函数均为可选项。
 
 ```python
 # Copyright (c) OpenMMLab. All rights reserved.
