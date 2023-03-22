@@ -22,7 +22,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 70.35
           Top 5 Accuracy: 89.98
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty_in1k_20230213-ed776c38.pth
     Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k.py
     Converted From:
@@ -39,7 +39,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 72.36
           Top 5 Accuracy: 91.02
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty-dist_in1k_20230213-fb247f7b.pth
     Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k.py
     Converted From:
@@ -56,7 +56,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 77.21
           Top 5 Accuracy: 93.62
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty_in1k_20230213-82c547ca.pth
     Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k.py
     Converted From:
@@ -73,7 +73,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 78.7
           Top 5 Accuracy: 94.12
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty-dist_in1k_20230213-d5fde0a3.pth
     Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k.py
     Converted From:
@@ -90,7 +90,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 74.93
           Top 5 Accuracy: 92.42
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty-dist_in1k-384px_20230213-712db4d4.pth
     Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k-384px.py
     Converted From:
@@ -107,7 +107,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 73.8
           Top 5 Accuracy: 92.08
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty_in1k_20230213-3370c293.pth
     Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k.py
     Converted From:
@@ -124,7 +124,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 76.17
           Top 5 Accuracy: 93.08
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty-dist_in1k_20230213-2f87d2b3.pth
     Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k.py
     Converted From:
@@ -141,7 +141,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 79.47
           Top 5 Accuracy: 94.85
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty_in1k_20230213-366c1cd0.pth
     Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k.py
     Converted From:
@@ -158,7 +158,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 80.51
           Top 5 Accuracy: 95.17
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty-dist_in1k_20230213-b472e80a.pth
     Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k.py
     Converted From:
@@ -175,7 +175,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 80.58
           Top 5 Accuracy: 95.38
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty-dist_in1k-384px_20230213-00a20023.pth
     Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k-384px.py
     Converted From:
@@ -192,7 +192,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 79.75
           Top 5 Accuracy: 94.88
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty_in1k_20230213-8b02f8f5.pth
     Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k.py
     Converted From:
@@ -209,7 +209,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 81.26
           Top 5 Accuracy: 95.46
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty-dist_in1k_20230213-f3f9b44f.pth
     Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k.py
     Converted From:
@@ -226,7 +226,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 81.87
           Top 5 Accuracy: 95.77
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty_in1k_20230213-d36779d2.pth
     Config: configs/xcit/xcit-small-12-p16_8xb128_in1k.py
     Converted From:
@@ -243,7 +243,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.12
           Top 5 Accuracy: 96.41
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty-dist_in1k_20230213-c95bbae1.pth
     Config: configs/xcit/xcit-small-12-p16_8xb128_in1k.py
     Converted From:
@@ -260,7 +260,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 77.69
           Top 5 Accuracy: 94.09
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty-dist_in1k-384px_20230213-09d925ef.pth
     Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k-384px.py
     Converted From:
@@ -277,7 +277,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.43
           Top 5 Accuracy: 96.2
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty-dist_in1k-384px_20230213-20e13917.pth
     Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k-384px.py
     Converted From:
@@ -294,7 +294,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.38
           Top 5 Accuracy: 95.93
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty_in1k_20230213-40febe38.pth
     Config: configs/xcit/xcit-small-24-p16_8xb128_in1k.py
     Converted From:
@@ -311,7 +311,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.7
           Top 5 Accuracy: 96.61
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty-dist_in1k_20230213-130d7262.pth
     Config: configs/xcit/xcit-small-24-p16_8xb128_in1k.py
     Converted From:
@@ -328,7 +328,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 81.7
           Top 5 Accuracy: 95.9
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty_in1k_20230213-4b9ba392.pth
     Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k.py
     Converted From:
@@ -345,7 +345,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.62
           Top 5 Accuracy: 96.16
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty-dist_in1k_20230213-ad9c44b0.pth
     Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k.py
     Converted From:
@@ -362,7 +362,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.46
           Top 5 Accuracy: 96.22
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty-dist_in1k-384px_20230213-a072174a.pth
     Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k-384px.py
     Converted From:
@@ -379,7 +379,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 84.74
           Top 5 Accuracy: 97.19
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty-dist_in1k-384px_20230213-ba36c982.pth
     Config: configs/xcit/xcit-small-12-p16_8xb128_in1k-384px.py
     Converted From:
@@ -396,7 +396,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.56
           Top 5 Accuracy: 95.82
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty_in1k_20230213-ad0aa92e.pth
     Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k.py
     Converted From:
@@ -413,7 +413,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 84.15
           Top 5 Accuracy: 96.82
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty-dist_in1k_20230213-aca5cd0c.pth
     Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k.py
     Converted From:
@@ -430,7 +430,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.21
           Top 5 Accuracy: 96.41
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty_in1k_20230213-9e364ce3.pth
     Config: configs/xcit/xcit-small-12-p8_8xb128_in1k.py
     Converted From:
@@ -447,7 +447,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.97
           Top 5 Accuracy: 96.81
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty-dist_in1k_20230213-71886580.pth
     Config: configs/xcit/xcit-small-12-p8_8xb128_in1k.py
     Converted From:
@@ -464,7 +464,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.1
           Top 5 Accuracy: 97.32
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty-dist_in1k-384px_20230213-28fa2d0e.pth
     Config: configs/xcit/xcit-small-24-p16_8xb128_in1k-384px.py
     Converted From:
@@ -481,7 +481,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.77
           Top 5 Accuracy: 96.72
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty-dist_in1k-384px_20230213-30d5e5ec.pth
     Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k-384px.py
     Converted From:
@@ -498,7 +498,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.62
           Top 5 Accuracy: 96.51
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty_in1k_20230213-280ebcc7.pth
     Config: configs/xcit/xcit-small-24-p8_8xb128_in1k.py
     Converted From:
@@ -515,7 +515,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 84.68
           Top 5 Accuracy: 97.07
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty-dist_in1k_20230213-f2773c78.pth
     Config: configs/xcit/xcit-small-24-p8_8xb128_in1k.py
     Converted From:
@@ -532,7 +532,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 82.97
           Top 5 Accuracy: 95.86
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty_in1k_20230214-d29d2529.pth
     Config: configs/xcit/xcit-large-24-p16_8xb128_in1k.py
     Converted From:
@@ -549,7 +549,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 84.61
           Top 5 Accuracy: 97.07
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty-dist_in1k_20230214-4fea599c.pth
     Config: configs/xcit/xcit-large-24-p16_8xb128_in1k.py
     Converted From:
@@ -566,7 +566,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.47
           Top 5 Accuracy: 97.49
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty-dist_in1k-384px_20230214-6c23a201.pth
     Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k-384px.py
     Converted From:
@@ -583,7 +583,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.12
           Top 5 Accuracy: 97.31
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty-dist_in1k-384px_20230214-9f2178bc.pth
     Config: configs/xcit/xcit-small-12-p8_8xb128_in1k-384px.py
     Converted From:
@@ -600,7 +600,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.61
           Top 5 Accuracy: 96.23
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty_in1k_20230214-c362850b.pth
     Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k.py
     Converted From:
@@ -617,7 +617,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.0
           Top 5 Accuracy: 97.16
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty-dist_in1k_20230214-625c953b.pth
     Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k.py
     Converted From:
@@ -634,7 +634,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.57
           Top 5 Accuracy: 97.6
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty-dist_in1k-384px_20230214-57298eca.pth
     Config: configs/xcit/xcit-small-24-p8_8xb128_in1k-384px.py
     Converted From:
@@ -651,7 +651,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.78
           Top 5 Accuracy: 97.6
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty-dist_in1k-384px_20230214-bd515a34.pth
     Config: configs/xcit/xcit-large-24-p16_8xb128_in1k-384px.py
     Converted From:
@@ -668,7 +668,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 84.23
           Top 5 Accuracy: 96.58
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty_in1k_20230214-08f2f664.pth
     Config: configs/xcit/xcit-large-24-p8_8xb128_in1k.py
     Converted From:
@@ -685,7 +685,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.14
           Top 5 Accuracy: 97.32
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty-dist_in1k_20230214-8c092b34.pth
     Config: configs/xcit/xcit-large-24-p8_8xb128_in1k.py
     Converted From:
@@ -702,7 +702,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.87
           Top 5 Accuracy: 97.61
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty-dist_in1k-384px_20230214-5db925e0.pth
     Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k-384px.py
     Converted From:
@@ -719,7 +719,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 86.13
           Top 5 Accuracy: 97.75
-          Task: Image Classification
+        Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty-dist_in1k-384px_20230214-9f718b1a.pth
     Config: configs/xcit/xcit-large-24-p8_8xb128_in1k-384px.py
     Converted From:

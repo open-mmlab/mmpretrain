@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import numpy as np
 import requests
 
-from mmpretrain.apis import inference_model, init_model
+from mmpretrain.apis import get_model, inference_model
 
 
 def parse_args():
@@ -25,7 +25,7 @@ def parse_args():
 
 def main(args):
     # Inference single image by native apis.
-    model = init_model(args.config, args.checkpoint, device=args.device)
+    model = get_model(args.config, args.checkpoint, device=args.device)
     model_result = inference_model(model, args.img)
 
     # Inference single image by torchserve engine.

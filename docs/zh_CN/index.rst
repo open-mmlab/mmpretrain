@@ -16,7 +16,6 @@
    user_guides/inference.md
    user_guides/train.md
    user_guides/test.md
-   user_guides/finetune.md
    user_guides/downstream.md
 
 .. toctree::
@@ -29,7 +28,6 @@
    advanced_guides/schedule.md
    advanced_guides/runtime.md
    advanced_guides/evaluation.md
-   advanced_guides/data_flow.md
    advanced_guides/convention.md
 
 .. toctree::
@@ -92,6 +90,7 @@
    notes/changelog.md
    notes/faq.md
    notes/pretrain_custom_dataset.md
+   notes/finetune_custom_dataset.md
 
 .. toctree::
    :caption: 切换语言

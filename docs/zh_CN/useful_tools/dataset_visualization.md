@@ -23,7 +23,7 @@ python tools/visualization/browse_dataset.py \
 - **`-n, --show-number`**: 可视化样本数量。如果没有指定，默认展示数据集的所有图片。
 - `-i, --show-interval`: 浏览时，每张图片的停留间隔，单位为秒。
 - **`-m, --mode`**: 可视化的模式，只能为 `['original', 'transformed', 'concat', 'pipeline']` 之一。 默认为`'transformed'`.
-- **`-r, --rescale-factor`**: 对可视化图片的放缩倍数，在图片过大或过小时设置。
+- `-r, --rescale-factor`: 在 `mode='original'` 下，可视化图片的放缩倍数，在图片过大或过小时设置。
 - `-c, --channel-order`: 图片的通道顺序，为  `['BGR', 'RGB']` 之一，默认为 `'BGR'`。
 - `--cfg-options` : 对配置文件的修改，参考[学习配置文件](../user_guides/config.md)。
 
@@ -60,7 +60,7 @@ python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet101_8xb16_
 使用 **'transformed'** 模式：
 
 ```shell
-python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
+python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
@@ -82,3 +82,9 @@ python ./tools/visualization/browse_dataset.py configs/swin_transformer/swin-sma
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
+
+```shell
+python ./tools/visualization/browse_dataset.py configs/beit/beit_beit-base-p16_8xb256-amp-coslr-300e_in1k.py -m pipeline
+```
+
+<div align=center><img src="https://user-images.githubusercontent.com/26739999/226542300-74216187-e3d0-4a6e-8731-342abe719721.png" style=" width: auto; height: 40%; "></div>

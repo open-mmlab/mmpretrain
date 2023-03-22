@@ -1,11 +1,7 @@
 # 训练
 
-- [训练](#训练)
-  - [单机单卡训练](#单机单卡训练)
-  - [单机多卡训练](#单机多卡训练)
-  - [多机训练](#多机训练)
-    - [同一网络下的多机](#同一网络下的多机)
-    - [Slurm 管理下的多机集群](#slurm-管理下的多机集群)
+在本教程中，我们将介绍如何使用 MMPretrain 中提供的脚本启动训练任务。
+如果你需要了解一些具体的训练例子，可以查阅 [如何在自定义数据集上进行模型预训练](../notes/pretrain_custom_dataset.md) 和 [如何在自定义数据集上微调模型](../notes/finetune_custom_dataset.md).
 
 ## 单机单卡训练
 
@@ -33,8 +29,8 @@ CUDA_VISIBLE_DEVICES=-1 python tools/train.py ${CONFIG_FILE} [ARGS]
 | `--amp`                               | 启用混合精度训练。                                                                                                                                                  |
 | `--no-validate`                       | **不建议** 在训练过程中不进行验证集上的精度验证。                                                                                                                   |
 | `--auto-scale-lr`                     | 自动根据实际的批次大小（batch size）和预设的批次大小对学习率进行缩放。                                                                                              |
-| `--no-pin-memory`                     | 是否在 dataloaders 中关闭 pin_memory 选项                                                                                                                           |
-| `--no-persistent-workers`             | 是否在 dataloaders 中关闭 persistent_workers 选项                                                                                                                   |
+| `--no-pin-memory`                     | 是否在 dataloaders 中关闭 `pin_memory` 选项                                                                                                                         |
+| `--no-persistent-workers`             | 是否在 dataloaders 中关闭 `persistent_workers` 选项                                                                                                                 |
 | `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="[(a,b),(c,d)]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
 | `--launcher {none,pytorch,slurm,mpi}` | 启动器，默认为 "none"。                                                                                                                                             |
 

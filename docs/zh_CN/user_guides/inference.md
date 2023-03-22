@@ -1,19 +1,15 @@
 # 使用现有模型推理
 
-- [使用现有模型推理](#使用现有模型推理)
-  - [推理单张图片](#推理单张图片)
-
 MMPretrain 在 [Model Zoo](../modelzoo_statistics.md) 中提供了预训练模型。
 本说明将展示**如何使用现有模型对给定图像进行推理**。
 
-至于如何在标准数据集上测试现有模型，请看这个[指南](./train_test.md#测试)
+至于如何在标准数据集上测试现有模型，请看这个[指南](./test.md)
 
 ## 推理单张图片
 
 MMPretrain 为图像推理提供高级 Python API：
 
 - [`get_model`](mmpretrain.apis.get_model): 根据名称获取一个模型。
-- [`init_model`](mmpretrain.apis.init_model): 根据配置文件和权重文件初始化一个模型。
 - [`inference_model`](mmpretrain.apis.inference_model)：对给定图片进行推理。
 
 下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推理给定图像。

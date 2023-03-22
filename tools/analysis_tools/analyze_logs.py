@@ -98,8 +98,9 @@ def plot_curve_helper(log_dicts, metrics, args, legend):
             elif key in train_keys:
                 plot_phase_train(key, log_dict['train'], curve_label)
             else:
-                raise ValueError(f'Invalid key "{key}", please choose from '
-                                 f'{set.union(train_keys, val_keys)}.')
+                raise ValueError(
+                    f'Invalid key "{key}", please choose from '
+                    f'{set.union(set(train_keys), set(val_keys))}.')
             plt.legend()
 
 

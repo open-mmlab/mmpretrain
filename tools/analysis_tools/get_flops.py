@@ -45,8 +45,8 @@ def main():
     activations = analysis_results['activations_str']
     out_table = analysis_results['out_table']
     out_arch = analysis_results['out_arch']
-    print(out_table)
     print(out_arch)
+    print(out_table)
     split_line = '=' * 30
     print(f'{split_line}\nInput shape: {input_shape}\n'
           f'Flops: {flops}\nParams: {params}\n'

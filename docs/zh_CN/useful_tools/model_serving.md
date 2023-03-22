@@ -40,6 +40,7 @@ docker build -t mmpretrain-serve:latest docker/serve/
 
 ```shell
 docker run --rm \
+--name mar \
 --cpus 8 \
 --gpus device=0 \
 -p8080:8080 -p8081:8081 -p8082:8082 \

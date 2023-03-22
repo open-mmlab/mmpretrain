@@ -22,7 +22,6 @@ Model
 
    list_models
    get_model
-   init_model
 
 Inference
 ------------------

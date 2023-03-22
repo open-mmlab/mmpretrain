@@ -1,17 +1,5 @@
 # Learn about Configs
 
-- [Learn about Configs](#learn-about-configs)
-  - [Config Structure](#config-structure)
-    - [Model settings](#model-settings)
-    - [Data settings](#data-settings)
-    - [Schedule settings](#schedule-settings)
-    - [Runtime settings](#runtime-settings)
-  - [Inherit and Modify Config File](#inherit-and-modify-config-file)
-    - [Use intermediate variables in configs](#use-intermediate-variables-in-configs)
-    - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
-    - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
-  - [Modify config in command](#modify-config-in-command)
-
 To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of
 these configurations. This config system has a modular and inheritance design, and more details can be found in
 {external+mmengine:doc}`the tutorial in MMEngine <advanced_tutorials/config>`.
@@ -73,11 +61,11 @@ This primitive config file includes a dict variable `model`, which mainly includ
   - For self-supervised leanrning, there are several `SelfSupervisors`, such as `MoCoV2`, `BEiT`, `MAE`, etc. You can find more details in the [API documentation](mmpretrain.models.selfsup).
   - For image retrieval tasks, it's usually `ImageToImageRetriever` You can find more details in the [API documentation](mmpretrain.models.retrievers).
 
-Usually, we use the `type` field to specify the class of the component and use other fields to pass
+Usually, we use the **`type` field** to specify the class of the component and use other fields to pass
 the initialization arguments of the class. The {external+mmengine:doc}`registry tutorial <advanced_tutorials/registry>` describes it in detail.
 
-Here, we use the config fields of [`ImageClassifier`](mmpretrain.models.ImageClassifier) as an example to
-describe the below initialization arguments:
+Here, we use the config fields of [`ImageClassifier`](mmpretrain.models.classifiers.ImageClassifier) as an example to
+describe the initialization arguments as below:
 
 - `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
   - For self-supervised leanrning, some of the backbones are re-implemented, you can find more details in the [API documentation](mmpretrain.models.selfsup).
@@ -188,7 +176,7 @@ test_evaluator = val_evaluator    # The settings of the evaluation metrics for t
 ```
 
 ```{note}
-'model.data_preprocessor' can be defined either in `model=dict(data_preprocessor=dict())` or using the `data_preprocessor` definition here, if both of them exist, use the `model.data_preprocessor` configuration.
+The data preprocessor can be defined either in the subfield of `model`, or a using the `data_preprocessor` definition here, if both of them exist, use the `model.data_preprocessor` configuration.
 ```
 
 ### Schedule settings

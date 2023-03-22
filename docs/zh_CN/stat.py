@@ -5,17 +5,18 @@ from collections import defaultdict
 from pathlib import Path
 
 from modelindex.load_model_index import load
+from modelindex.models.Result import Result
 from tabulate import tabulate
 
 MMPT_ROOT = Path(__file__).absolute().parents[2]
 PAPERS_ROOT = Path('papers')  # Path to save generated paper pages.
 GITHUB_PREFIX = 'https://github.com/open-mmlab/mmpretrain/blob/1.x/'
-MODELZOO_TEMPLATE = """
+MODELZOO_TEMPLATE = """\
 # 模型库统计
 
 在本页面中，我们列举了我们支持的[所有算法](#所有已支持的算法)。你可以点击链接跳转至对应的模型详情页面。
 
-另外，我们还列出了我们提供的[所有模型权重文件](#所有模型权重文件)。你可以使用排序和搜索功能找到需要的模型权重，并使用链接跳转至模型详情页面。
+另外，我们还列出了我们提供的所有模型权重文件。你可以使用排序和搜索功能找到需要的模型权重，并使用链接跳转至模型详情页面。
 
 ## 所有已支持的算法
 
@@ -25,8 +26,12 @@ MODELZOO_TEMPLATE = """
 * 模型权重文件数量：{num_ckpts}
 {paper_msg}
 
-## 所有模型权重文件
 """  # noqa: E501
+
+METRIC_ALIAS = {
+    'Top 1 Accuracy': 'Top-1 (%)',
+    'Top 5 Accuracy': 'Top-5 (%)',
+}
 
 model_index = load(str(MMPT_ROOT / 'model-index.yml'))
 
@@ -41,6 +46,10 @@ def build_collections(model_index):
         col = col_by_name[model.in_collection]
         col.models.append(model)
         setattr(model, 'collection', col)
+        if model.results is None:
+            setattr(model, 'tasks', [])
+        else:
+            setattr(model, 'tasks', [result.task for result in model.results])
 
 
 build_collections(model_index)
@@ -139,41 +148,99 @@ for collection in model_index.collections:
     generate_paper_page(collection)
 
 
-def generate_summary_table(models):
-    dataset_rows = defaultdict(list)
+def scatter_results(models):
+    model_result_pairs = []
     for model in models:
         if model.results is None:
+            result = Result(task=None, dataset=None, metrics={})
+            model_result_pairs.append((model, result))
+        else:
+            for result in model.results:
+                model_result_pairs.append((model, result))
+    return model_result_pairs
+
+
+def generate_summary_table(task, model_result_pairs, title=None):
+    metrics = set()
+    for model, result in model_result_pairs:
+        if result.task == task:
+            metrics = metrics.union(result.metrics.keys())
+    metrics = sorted(list(metrics))
+
+    rows = []
+    for model, result in model_result_pairs:
+        if result.task != task:
             continue
         name = model.name
         params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
         flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
-        result = model.results[0]
-        top1 = result.metrics.get('Top 1 Accuracy')
-        top5 = result.metrics.get('Top 5 Accuracy')
         readme = Path(model.collection.filepath).parent.with_suffix('.md').name
         page = f'[链接]({PAPERS_ROOT / readme})'
-        row = [name, params, flops, top1, top5, page]
-        dataset_rows[result.dataset].append(row)
+        model_metrics = []
+        for metric in metrics:
+            model_metrics.append(str(result.metrics.get(metric, '')))
+
+        rows.append([name, params, flops, *model_metrics, page])
 
     with open('modelzoo_statistics.md', 'a') as f:
-        for dataset, rows in dataset_rows.items():
-            f.write(f'\n### {dataset}\n')
-            f.write("""```{table}\n:class: model-summary\n""")
-            header = [
-                '模型',
-                '参数量 (M)',
-                'Flops (G)',
-                'Top-1 (%)',
-                'Top-5 (%)',
-                'Readme',
-            ]
-            table_cfg = dict(
-                tablefmt='pipe',
-                floatfmt='.2f',
-                numalign='right',
-                stralign='center')
-            f.write(tabulate(rows, header, **table_cfg))
-            f.write('\n```\n')
+        if title is not None:
+            f.write(f'\n{title}')
+        f.write("""\n```{table}\n:class: model-summary\n""")
+        header = [
+            '模型',
+            '参数量 (M)',
+            'Flops (G)',
+            *[METRIC_ALIAS.get(metric, metric) for metric in metrics],
+            'Readme',
+        ]
+        table_cfg = dict(
+            tablefmt='pipe',
+            floatfmt='.2f',
+            numalign='right',
+            stralign='center')
+        f.write(tabulate(rows, header, **table_cfg))
+        f.write('\n```\n')
 
 
-generate_summary_table(model_index.models)
+def generate_dataset_wise_table(task, model_result_pairs, title=None):
+    dataset_rows = defaultdict(list)
+    for model, result in model_result_pairs:
+        if result.task == task:
+            dataset_rows[result.dataset].append((model, result))
+
+    if title is not None:
+        with open('modelzoo_statistics.md', 'a') as f:
+            f.write(f'\n{title}')
+    for dataset, pairs in dataset_rows.items():
+        generate_summary_table(task, pairs, title=f'### {dataset}')
+
+
+model_result_pairs = scatter_results(model_index.models)
+
+# Generate Pretrain Summary
+generate_summary_table(
+    task=None,
+    model_result_pairs=model_result_pairs,
+    title='## 预训练模型',
+)
+
+# Generate Image Classification Summary
+generate_dataset_wise_table(
+    task='Image Classification',
+    model_result_pairs=model_result_pairs,
+    title='## 图像分类',
+)
+
+# Generate Multi-Label Classification Summary
+generate_dataset_wise_table(
+    task='Multi-Label Classification',
+    model_result_pairs=model_result_pairs,
+    title='## 图像多标签分类',
+)
+
+# Generate Image Retrieval Summary
+generate_dataset_wise_table(
+    task='Image Retrieval',
+    model_result_pairs=model_result_pairs,
+    title='## 图像检索',
+)

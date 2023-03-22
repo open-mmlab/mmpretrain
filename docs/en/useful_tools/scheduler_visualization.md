@@ -1,6 +1,6 @@
 # Hyper-parameter Scheduler Visualization
 
-This tool aims to help the user to check the hyper-parameter scheduler of the optimizer(without training), which support the "learning rate" or "momentum"
+This tool aims to help the user to check the hyper-parameter scheduler of the optimizer (without training), which support the "learning rate" or "momentum"
 
 ## Introduce the scheduler visualization tool
 
@@ -35,18 +35,10 @@ Loading annotations maybe consume much time, you can directly specify the size o
 
 ## How to plot the learning rate curve without training
 
-You can use the following command to plot the step learning rate schedule used in the config `configs/resnet/resnet50_b16x8_cifar100.py`:
+You can use the following command to plot the step learning rate schedule used in the config `configs/swin_transformer/swin-base_16xb64_in1k.py`:
 
 ```bash
-python tools/visualization/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
+python tools/visualization/vis_scheduler.py configs/swin_transformer/swin-base_16xb64_in1k.py --dataset-size 1281167 --ngpus 16
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
-
-When using ImageNet, directly specify the size of ImageNet, as below:
-
-```bash
-python tools/visualization/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/26739999/226544329-cf3a3d45-6ab3-48aa-8972-2c2a58c35e62.png" style=" width: auto; height: 40%; "></div>

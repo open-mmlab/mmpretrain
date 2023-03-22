@@ -1,27 +1,33 @@
-# 教程 4: 使用自定义数据集进行预训练
+# 如何在自定义数据集上进行模型预训练
 
-- [教程 4: 使用自定义数据集进行预训练](#教程-4-使用自定义数据集进行预训练)
-  - [在自定义数据集上使用 MAE 算法进行预训练](#在自定义数据集上使用-mae-算法进行预训练)
-    - [第一步：获取自定义数据路径](#第一步获取自定义数据路径)
-    - [第二步：选择一个配置文件作为模板](#第二步选择一个配置文件作为模板)
-    - [第三步：修改数据集相关的配置](#第三步修改数据集相关的配置)
-  - [在 COCO 数据集上使用 MAE 算法进行预训练](#在-coco-数据集上使用-mae-算法进行预训练)
-
-在本教程中，我们将介绍如何使用自定义数据集(无需标注)进行自监督预训练。
-
-## 在自定义数据集上使用 MAE 算法进行预训练
+在本教程中，我们提供了一个实践示例和一些有关如何在您自己的数据集上进行训练的技巧。
 
 在 MMPretrain 中, 我们支持用户直接调用 MMPretrain 的 `CustomDataset` (类似于 `torchvision` 的 `ImageFolder`), 该数据集能自动的读取给的路径下的图片。你只需要准备你的数据集路径，并修改配置文件，即可轻松使用 MMPretrain 进行预训练。
 
-### 第一步：获取自定义数据路径
+## 第一步：准备你的数据集
 
-路径应类似这种形式： `data/custom_dataset/`
+按照 [准备数据集](../user_guides/dataset_prepare.md) 准备你的数据集。
+假设我们的数据集根文件夹路径为 `data/custom_dataset/`
 
-### 第二步：选择一个配置文件作为模板
+假设我们想使用 MAE 算法进行图像自监督训练，并使用子文件夹格式的 `CustomDataset` 来组织数据集：
 
-在本教程中，我们使用 `configs/selfsup/mae/mae_vit-base-p16_8xb512-coslr-400e_in1k.py`作为一个示例进行讲解。我们首先复制这个配置文件，将新复制的文件命名为`mae_vit-base-p16_8xb512-coslr-400e_${custom_dataset}.py`.
+```text
+data/custom_dataset/
+├── sample1.png
+├── sample2.png
+├── sample3.png
+├── sample4.png
+└── ...
+```
 
-- `custom_dataset`: 表明你用的那个数据集。例如，用 `in1k` 代表ImageNet 数据集，`coco` 代表COCO数据集。
+## 第二步：选择一个配置文件作为模板
+
+在本教程中，我们使用 `configs/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py` 作为一个示例进行介绍。
+首先在同一文件夹下复制一份配置文件，并将其重命名为 `mae_vit-base-p16_8xb512-amp-coslr-300e_custom.py`。
+
+```{tip}
+按照惯例，配置名称的最后一个字段是数据集，例如，`in1k` 表示 ImageNet-1k，`coco` 表示 coco 数据集
+```
 
 这个配置文件的内容如下：
 
@@ -31,6 +37,7 @@ _base_ = [
     '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
+
 # optimizer wrapper
 optim_wrapper = dict(
     type='AmpOptimWrapper',
@@ -48,6 +55,7 @@ optim_wrapper = dict(
             'mask_token': dict(decay_mult=0.),
             'cls_token': dict(decay_mult=0.)
         }))
+
 # learning rate scheduler
 param_scheduler = [
     dict(
@@ -65,49 +73,50 @@ param_scheduler = [
         end=300,
         convert_to_iter_based=True)
 ]
+
 # runtime settings
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
+
 randomness = dict(seed=0, diff_rank_seed=True)
+
 # auto resume
 resume = True
+
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.
 auto_scale_lr = dict(base_batch_size=4096)
 ```
 
-### 第三步：修改数据集相关的配置
+## 第三步：修改数据集设置
 
-数据集相关的配置是定义在 `_base_`的`'../_base_/datasets/imagenet_mae.py'` 文件内。我们直接将其内容复制到刚刚创建的新的配置文件 `mae_vit-base-p16_8xb512-coslr-400e_${custom_dataset}.py` 中.
+- 重载数据集设置中的 `type` 为 `'CustomDataset'`
+- 重载数据集设置中的 `data_root` 为 `data/custom_dataset`
+- 重载数据集设置中的 `ann_file` 为空字符串，这是因为我们使用子文件格式的 `CustomDataset`，需要将配置文件置空
+- 重载数据集设置中的 `data_prefix` 为空字符串，这是因为我们希望使用数据集根目录下的所有数据进行训练，并不需要将其拆分为不同子集。
 
-- 修改`dataset_type = 'CustomDataset'`和` data_root = /dataset/my_custom_dataset`.
-- 删除 `train_dataloader`中的 `ann_file` ，同时根据自己的实际情况决定是否需要设定 `data_prefix`。
-
-```{note}
-`CustomDataset` 是在 MMPretrain 实现的, 因此我们使用这种方式 `dataset_type=CustomDataset` 来使用这个类。
-```
-
-此时，修改后的文件应如下：
+修改后的文件应如下：
 
 ```python
-# >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
     '../_base_/models/mae_vit-base-p16.py',
-    '../_base_/datasets/imagenet_mae.py',
+    '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
-# custom dataset
-dataset_type = 'CustomDataset'
-data_root = 'data/custom_dataset/'
+
+# >>>>>>>>>>>>>>> 在此重载数据设置 >>>>>>>>>>>>>>>>>>>
 train_dataloader = dict(
     dataset=dict(
-        type=dataset_type,
-        data_root=data_root,
-        # ann_file='meta/train.txt', # removed if you don't have the annotation file
-        data_prefix=dict(img_path='./'))
-# <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
+        type='CustomDataset',
+        data_root='data/custom_dataset/',
+        ann_file='',       # 我们假定使用子文件夹格式，因此需要将标注文件置空
+        data_prefix='',    # 使用 `data_root` 路径下所有数据
+    )
+)
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 # optimizer wrapper
 optim_wrapper = dict(
     type='AmpOptimWrapper',
@@ -125,6 +134,7 @@ optim_wrapper = dict(
             'mask_token': dict(decay_mult=0.),
             'cls_token': dict(decay_mult=0.)
         }))
+
 # learning rate scheduler
 param_scheduler = [
     dict(
@@ -142,14 +152,18 @@ param_scheduler = [
         end=300,
         convert_to_iter_based=True)
 ]
+
 # runtime settings
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
+
 randomness = dict(seed=0, diff_rank_seed=True)
+
 # auto resume
 resume = True
+
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.
 auto_scale_lr = dict(base_batch_size=4096)
@@ -157,7 +171,7 @@ auto_scale_lr = dict(base_batch_size=4096)
 
 使用上述配置文件，你就能够轻松的在自定义数据集上使用 `MAE` 算法来进行预训练了。
 
-## 在 COCO 数据集上使用 MAE 算法进行预训练
+## 另一个例子：在 COCO 数据集上训练 MAE
 
 ```{note}
 你可能需要参考[文档](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md)安装 MMDetection 来使用 `mmdet.CocoDataset`。
@@ -172,16 +186,18 @@ _base_ = [
     '../_base_/datasets/imagenet_mae.py',
     '../_base_/default_runtime.py',
 ]
-# custom dataset
-dataset_type = 'mmdet.CocoDataset'
-data_root = 'data/coco/'
+
+# >>>>>>>>>>>>>>> 在这里重载数据配置 >>>>>>>>>>>>>>>>>>>
 train_dataloader = dict(
     dataset=dict(
-        type=dataset_type,
-        data_root=data_root,
+        type='mmdet.CocoDataset',
+        data_root='data/coco/',
         ann_file='annotations/instances_train2017.json',
-        data_prefix=dict(img='train2017/')))
-# <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
+        data_prefix=dict(img='train2017/'),
+    )
+)
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 # optimizer wrapper
 optim_wrapper = dict(
     type='AmpOptimWrapper',

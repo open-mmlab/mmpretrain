@@ -68,7 +68,7 @@ optim_wrapper = dict(
 optim_wrapper = dict(type='AmpOptimWrapper', optimizer=...)
 ```
 
-另外，为了方便，我们同时在启动训练脚本 `tools/train.py` 中提供了 `--amp` 参数作为开启混合精度训练的开关，更多细节可以参考[训练与测试](../user_guides/train_test.md)教程。
+另外，为了方便，我们同时在启动训练脚本 `tools/train.py` 中提供了 `--amp` 参数作为开启混合精度训练的开关，更多细节可以参考[训练教程](../user_guides/train.md)。
 
 ### 参数化精细配置
 

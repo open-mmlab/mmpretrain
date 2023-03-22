@@ -20,6 +20,7 @@ from .norm import GRN, LayerNorm2d, build_norm_layer
 from .position_encoding import (ConditionalPositionEncoding,
                                 PositionEncodingFourier,
                                 build_2d_sincos_position_embedding)
+from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
 from .vector_quantizer import NormEMAVectorQuantizer
 
@@ -67,4 +68,5 @@ __all__ = [
     'TwoNormDataPreprocessor',
     'VideoDataPreprocessor',
     'CosineEMA',
+    'ResLayerExtraNorm',
 ]

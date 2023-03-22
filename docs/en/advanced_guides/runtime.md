@@ -245,7 +245,7 @@ env_cfg = dict(
      )
      ```
 
-     See the [Fine-tune Models](../user_guides/finetune.md) for more details about fine-tuning.
+     See the [Fine-tune Models](../notes/finetune_custom_dataset.md) for more details about fine-tuning.
 
 2. **What's the difference between `default_hooks` and `custom_hooks`?**
 

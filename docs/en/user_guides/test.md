@@ -1,12 +1,5 @@
 # Test
 
-- [Test](#test)
-  - [Test with your PC](#test-with-your-pc)
-  - [Test with multiple GPUs](#test-with-multiple-gpus)
-  - [Test with multiple machines](#test-with-multiple-machines)
-    - [Multiple machines in the same network](#multiple-machines-in-the-same-network)
-    - [Multiple machines managed with slurm](#multiple-machines-managed-with-slurm)
-
 For image classification task and image retrieval task, you could test your model after training.
 
 ## Test with your PC
@@ -39,7 +32,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | `--show`                              | Visualize the prediction result in a window.                                                                                                                        |
 | `--interval INTERVAL`                 | The interval of samples to visualize.                                                                                                                               |
 | `--wait-time WAIT_TIME`               | The display time of every window (in seconds). Defaults to 1.                                                                                                       |
-| `--no-pin-memory`                     | Whether to disable the pin_memory option in dataloaders.                                                                                                            |
+| `--no-pin-memory`                     | Whether to disable the `pin_memory` option in dataloaders.                                                                                                          |
 | `--tta`                               | Whether to enable the Test-Time-Aug (TTA). If the config file has `tta_pipeline` and `tta_model` fields, use them to determine the TTA transforms and how to merge the TTA results. Otherwise, use flip TTA by averaging classification score. |
 | `--launcher {none,pytorch,slurm,mpi}` | Options for job launcher.                                                                                                                                           |
 
