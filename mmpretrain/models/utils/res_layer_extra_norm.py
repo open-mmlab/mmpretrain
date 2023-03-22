@@ -28,4 +28,4 @@ try:
             return out
 
 except ImportError:
-    pass
+    ResLayerExtraNorm = None
