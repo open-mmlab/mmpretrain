@@ -1,6 +1,6 @@
 # 模型复杂度分析
 
-## 计算FLOPs 和参数数量（实验性的）
+## 计算 FLOPs 和参数数量（实验性的）
 
 我们根据 [MMEngine](https://github.com/open-mmlab/mmengine/blob/main/mmengine/analysis/complexity_analysis.py) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量。
 
@@ -13,6 +13,12 @@ python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 - `config` : 配置文件的路径。
 - `--shape`: 输入尺寸，支持单值或者双值， 如： `--shape 256`、`--shape 224 256`。默认为`224 224`。
 
+示例：
+
+```shell
+python tools/analysis_tools/get_flops.py configs/resnet/resnet50_8xb32_in1k.py
+```
+
 你将获得如下结果：
 
 ```text
@@ -24,7 +30,7 @@ Activation: 11.114M
 ==============================
 ```
 
-同时，你会得到每层的详细复杂度信息，如下所示:
+同时，你会得到每层的详细复杂度信息，如下所示：
 
 ```text
 +--------------------------+----------------------+-----------+--------------+

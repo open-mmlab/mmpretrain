@@ -257,32 +257,62 @@ param_scheduler = dict(
 接下来，我们使用一台 8 张 GPU 的电脑来训练我们的模型，指令如下：
 
 ```shell
-bash tools/dist_train.sh configs/tutorial/resnet50_finetune_cifar.py 8
+bash tools/dist_train.sh configs/resnet/resnet50_8xb32-ft_custom.py 8
 ```
 
 当然，我们也可以使用单张 GPU 来进行训练，使用如下命令：
 
 ```shell
-python tools/train.py configs/tutorial/resnet50_finetune_cifar.py
+python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py
 ```
 
 但是如果我们使用单张 GPU 进行训练的话，需要在数据集设置部分作如下修改：
 
 ```python
+data_root = 'data/custom_dataset'
 train_dataloader = dict(
-    batch_size=128,
-    dataset=dict(pipeline=train_pipeline),
-)
+    batch_size=256,
+    dataset=dict(
+        type='CustomDataset',
+        data_root=data_root,
+        ann_file='',
+        data_prefix='train',
+    ))
 val_dataloader = dict(
-    batch_size=128,
-    dataset=dict(pipeline=test_pipeline),
-)
+    dataset=dict(
+        type='CustomDataset',
+        data_root=data_root,
+        ann_file='',
+        data_prefix='test',
+    ))
 test_dataloader = val_dataloader
 ```
 
-这是因为我们的训练策略是针对批次大小（batch size）为 128 设置的。在父配置文件中，
-设置了单张 `batch_size=16`，如果使用 8 张 GPU，总的批次大小就是 128。而如果使
-用单张 GPU，就必须手动修改 `batch_size=128` 来匹配训练策略。
+这是因为我们的训练策略是针对批次大小（batch size）为 256 设置的。在父配置文件中，
+设置了单张 `batch_size=32`，如果使用 8 张 GPU，总的批次大小就是 256。而如果使
+用单张 GPU，就必须手动修改 `batch_size=256` 来匹配训练策略。
+
+然而，更大的批次大小需要更大的 GPU 显存，这里有几个简单的技巧来节省显存：
+
+1. 启用自动混合精度训练
+
+   ```shell
+   python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py --amp
+   ```
+
+2. 使用较小的批次大小，例如仍然使用 `batch_size=32`，而不是 256，并启用学习率自动缩放
+
+   ```shell
+   python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py --auto-scale-lr
+   ```
+
+   学习率自动缩放功能会根据实际的 batch size 和配置文件中的 `auto_scale_lr.base_batch_size`
+   字段对学习率进行线性调整（你可以在基配置文件 `configs/_base_/schedules/imagenet_bs256.py`
+   中找到这一字段）
+
+```{note}
+以上技巧都有可能对训练效果造成轻微影响。
+```
 
 ### 在命令行指定预训练模型
 

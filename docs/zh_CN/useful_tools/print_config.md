@@ -12,8 +12,8 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 
 所有参数的说明：
 
-- `config` : 模型配置文件的路径。
-- `--cfg-options`::额外的配置选项，会被合入配置文件，参考[学习配置文件](../user_guides/config.md)。
+- `config`：模型配置文件的路径。
+- `--cfg-options`：额外的配置选项，会被合入配置文件，参考[学习配置文件](../user_guides/config.md)。
 
 ## 示例：
 

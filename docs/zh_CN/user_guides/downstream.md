@@ -85,7 +85,7 @@ bash tools/benchmarks/mmsegmentation/mim_dist_train.sh ${CONFIG} ${PRETRAIN} ${G
 bash tools/benchmarks/mmsegmentation/mim_slurm_train.sh ${PARTITION} ${CONFIG} ${PRETRAIN}
 ```
 
-备注:
+备注：
 
 - `${CONFIG}`：直接用 MMSegmentation 中的配置文件路径即可。对于一些算法，我们有一些修改过的配置文件，
   可以在相应算法文件夹下的 `benchmarks` 文件夹中找到。另外，您也可以从头开始编写配置文件。

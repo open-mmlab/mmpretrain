@@ -29,7 +29,7 @@ model = get_model('resnet50_8xb32_in1k', pretrained=True, device="cpu")  # `devi
 result = inference_model(model, img_path)
 ```
 
-`result` 为一个包含了 `pred_label`, `pred_score`, `pred_scores` 和 `pred_class`的字典，结果如下:
+`result` 为一个包含了 `pred_label`, `pred_score`, `pred_scores` 和 `pred_class`的字典，结果如下：
 
 ```text
 {"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}

@@ -18,7 +18,7 @@ python tools/print_config.py \
 - `config` : 配置文件的路径。
 - `--out-path` : 输出结果路径，默认为 ‘brokenfiles.log’。
 - `--phase` :  检查哪个阶段的数据集，可用值为 “train” 、”test” 或者 “val”， 默认为 “train”。
-- `--num-process` : 指定的进程数，默认为1。
+- `--num-process` : 指定的进程数，默认为 1。
 - `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ## 示例：

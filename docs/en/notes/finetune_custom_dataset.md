@@ -266,13 +266,13 @@ param_scheduler = dict(
 Here we use 8 GPUs on your computer to train the model with the following command:
 
 ```shell
-bash tools/dist_train.sh configs/tutorial/resnet50_finetune_cifar.py 8
+bash tools/dist_train.sh configs/resnet/resnet50_8xb32-ft_custom.py 8
 ```
 
 Also, you can use only one GPU to train the model with the following command:
 
 ```shell
-python tools/train.py configs/tutorial/resnet50_finetune_cifar.py
+python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py
 ```
 
 But wait, an important config need to be changed if using one GPU. We need to
@@ -281,7 +281,7 @@ change the dataset config as following:
 ```python
 data_root = 'data/custom_dataset'
 train_dataloader = dict(
-    batch_size=128
+    batch_size=256,
     dataset=dict(
         type='CustomDataset',
         data_root=data_root,
@@ -298,10 +298,33 @@ val_dataloader = dict(
 test_dataloader = val_dataloader
 ```
 
-It's because our training schedule is for a batch size of 128. If using 8 GPUs,
-just use `batch_size=16` config in the base config file for every GPU, and the total batch
-size will be 128. But if using one GPU, you need to change it to 128 manually to
+It's because our training schedule is for a batch size of 256. If using 8 GPUs,
+just use `batch_size=32` config in the base config file for every GPU, and the total batch
+size will be 256. But if using one GPU, you need to change it to 256 manually to
 match the training schedule.
+
+However, a larger batch size requires a larger GPU memory, and here are several simple tricks to save the GPU
+memory:
+
+1. Enable Automatic-Mixed-Precision training.
+
+   ```shell
+   python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py --amp
+   ```
+
+2. Use a smaller batch size, like `batch_size=32` instead of 256, and enable the auto learning rate scaling.
+
+   ```shell
+   python tools/train.py configs/resnet/resnet50_8xb32-ft_custom.py --auto-scale-lr
+   ```
+
+   The auto learning rate scaling will adjust the learning rate according to the actual batch size and the
+   `auto_scale_lr.base_batch_size` (You can find it in the base config
+   `configs/_base_/schedules/imagenet_bs256.py`)
+
+```{note}
+Most of these tricks may influence the training performance slightly.
+```
 
 ### Apply pre-trained model with command line
 
@@ -310,7 +333,7 @@ If you don't want to modify the configs, you could use `--cfg-options` to add yo
 For example, the command below will also load pre-trained model.
 
 ```shell
-bash tools/dist_train.sh configs/resnet/resnet50_8xb32_custom.py 8 \
+bash tools/dist_train.sh configs/resnet/resnet50_8xb32-ft_custom.py 8 \
     --cfg-options model.backbone.init_cfg.type='Pretrained' \
     model.backbone.init_cfg.checkpoint='https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_resnet50_8xb512-amp-coslr-100e_in1k/mocov3_resnet50_8xb512-amp-coslr-100e_in1k_20220927-f1144efa.pth' \
     model.backbone.init_cfg.prefix='backbone' \

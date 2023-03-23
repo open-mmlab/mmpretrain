@@ -197,6 +197,8 @@ Note that the ``model.data_preprocessor`` has higher priority than ``data_prepro
 
    ClsDataPreprocessor
    SelfSupDataPreprocessor
+   TwoNormDataPreprocessor
+   VideoDataPreprocessor
 
 .. module:: mmpretrain.models.utils.batch_augments
 

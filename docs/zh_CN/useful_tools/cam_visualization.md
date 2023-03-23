@@ -42,7 +42,7 @@ python tools/visualization/vis_cam.py \
 - `img`：目标图片路径。
 - `config`：模型配置文件的路径。
 - `checkpoint`：权重路径。
-- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层, 如果不设置，将使用最后一个`block`中的`norm`层。
+- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层，如果不设置，将使用最后一个`block`中的`norm`层。
 - `--preview-model`：是否查看模型所有网络层。
 - `--method`：类别激活图图可视化的方法，目前支持 `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`，不区分大小写。如果不设置，默认为 `GradCAM`。
 - `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
@@ -60,7 +60,7 @@ python tools/visualization/vis_cam.py \
 
 ## 如何可视化 CNN 网络的类别激活图（如 ResNet-50）
 
-`--target-layers` 在 `Resnet-50` 中的一些示例如下:
+`--target-layers` 在 `Resnet-50` 中的一些示例如下：
 
 - `'backbone.layer4'`，表示第四个 `ResLayer` 层的输出。
 - `'backbone.layer4.2'` 表示第四个 `ResLayer` 层中第三个 `BottleNeck` 块的输出。
@@ -81,7 +81,7 @@ python tools/visualization/vis_cam.py \
    | ------------------------------------ | --------------------------------------- | ----------------------------------------- | -------------------------------------------- | ---------------------------------------- |
    | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065002-f1c86516-38b2-47ba-90c1-e00b49556c70.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065119-82581fa1-3414-4d6c-a849-804e1503c74b.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065096-75a6a2c1-6c57-4789-ad64-ebe5e38765f4.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065129-814d20fb-98be-4106-8c5e-420adcc85295.jpg' height="auto" width="150"></div> |
 
-2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog'，类别281为 'tabby, tabby cat'。
+2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别 238 为 'Greater Swiss Mountain dog'，类别 281 为 'tabby, tabby cat'。
 
    ```shell
    python tools/visualization/vis_cam.py \
@@ -116,7 +116,7 @@ python tools/visualization/vis_cam.py \
 
 ## 如何可视化 Transformer 类型网络的类别激活图
 
-`--target-layers` 在 Transformer-based 网络中的一些示例如下:
+`--target-layers` 在 Transformer-based 网络中的一些示例如下：
 
 - Swin-Transformer 中：`'backbone.norm3'`
 - ViT 中：`'backbone.layers.11.ln1'`

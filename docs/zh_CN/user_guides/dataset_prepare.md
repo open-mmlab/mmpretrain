@@ -46,6 +46,7 @@ train_dataloader = dict(
     dataset=dict(
         type='CustomDataset',
         data_prefix='path/to/data_prefix',
+        with_label=True,  # 对于无监督任务，使用 False
         pipeline=...
     )
 )
@@ -138,7 +139,7 @@ train_dataloader = dict(
 ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/)。 可以通过以下步骤使用它。
 
 1. 注册一个帐户并登录到[下载页面](http://www.image-net.org/download-images)。
-2. 找到ILSVRC2012的下载链接，下载以下两个文件：
+2. 找到 ILSVRC2012 的下载链接，下载以下两个文件：
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. 解压已下载的图片。

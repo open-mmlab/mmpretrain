@@ -117,6 +117,7 @@ train_dataloader = dict(
         data_root='data/custom_dataset/',
         ann_file='',       # We assume you are using the sub-folder format without ann_file
         data_prefix='',    # The `data_root` is the data_prefix directly.
+        with_label=False,
     )
 )
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -195,7 +196,7 @@ train_dataloader = dict(
     dataset=dict(
         type='mmdet.CocoDataset',
         data_root='data/coco/',
-        ann_file='annotations/instances_train2017.json',
+        ann_file='annotations/instances_train2017.json',  # Only for loading images, and the labels won't be used.
         data_prefix=dict(img='train2017/'),
     )
 )

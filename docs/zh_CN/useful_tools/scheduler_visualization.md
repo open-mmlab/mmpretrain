@@ -22,7 +22,7 @@ python tools/visualization/vis_scheduler.py \
 - `config` : 模型配置文件的路径。
 - **`-p, parameter`**: 可视化参数名，只能为 `["lr", "momentum"]` 之一， 默认为 `"lr"`.
 - **`-d, --dataset-size`**: 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
-- **`-n, --ngpus`**: 使用 GPU 的数量, 默认为1。
+- **`-n, --ngpus`**: 使用 GPU 的数量，默认为 1。
 - **`-s, --save-path`**: 保存的可视化图片的路径，默认不保存。
 - `--title`: 可视化图片的标题，默认为配置文件名。
 - `--style`: 可视化图片的风格，默认为 `whitegrid`。

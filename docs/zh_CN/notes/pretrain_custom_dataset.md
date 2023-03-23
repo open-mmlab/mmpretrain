@@ -2,7 +2,7 @@
 
 在本教程中，我们提供了一个实践示例和一些有关如何在您自己的数据集上进行训练的技巧。
 
-在 MMPretrain 中, 我们支持用户直接调用 MMPretrain 的 `CustomDataset` (类似于 `torchvision` 的 `ImageFolder`), 该数据集能自动的读取给的路径下的图片。你只需要准备你的数据集路径，并修改配置文件，即可轻松使用 MMPretrain 进行预训练。
+在 MMPretrain 中，我们支持用户直接调用 MMPretrain 的 `CustomDataset` （类似于 `torchvision` 的 `ImageFolder`）, 该数据集能自动的读取给的路径下的图片。你只需要准备你的数据集路径，并修改配置文件，即可轻松使用 MMPretrain 进行预训练。
 
 ## 第一步：准备你的数据集
 
@@ -113,6 +113,7 @@ train_dataloader = dict(
         data_root='data/custom_dataset/',
         ann_file='',       # 我们假定使用子文件夹格式，因此需要将标注文件置空
         data_prefix='',    # 使用 `data_root` 路径下所有数据
+        with_label=False,
     )
 )
 # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -192,7 +193,7 @@ train_dataloader = dict(
     dataset=dict(
         type='mmdet.CocoDataset',
         data_root='data/coco/',
-        ann_file='annotations/instances_train2017.json',
+        ann_file='annotations/instances_train2017.json',  # 仅用于加载图片，不会使用标签
         data_prefix=dict(img='train2017/'),
     )
 )

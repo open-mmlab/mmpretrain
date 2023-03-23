@@ -48,6 +48,7 @@ train_dataloader = dict(
     dataset=dict(
         type='CustomDataset',
         data_prefix='path/to/data_prefix',
+        with_label=True,   # or False for unsupervised tasks
         pipeline=...
     )
 )
@@ -123,6 +124,7 @@ train_dataloader = dict(
         data_root='path/to/data_root',  # The common prefix of both `ann_flie` and `data_prefix`.
         ann_file='meta/train.txt',      # The path of annotation file relative to the data_root.
         data_prefix='train',            # The prefix of file paths in the `ann_file`, relative to the data_root.
+        with_label=True,                # or False for unsupervised tasks
         classes=['A', 'B', 'C', 'D', ...],  # The name of every category.
         pipeline=...,    # The transformations to process the dataset samples.
     )

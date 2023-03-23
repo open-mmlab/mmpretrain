@@ -46,11 +46,11 @@ python tools/visualization/browse_dataset.py \
 python ./tools/visualization/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
 ```
 
-- `--phase val`: 可视化验证集, 可简化为 `-p val`;
-- `--output-dir tmp`: 可视化结果保存在 "tmp" 文件夹, 可简化为 `-o tmp`;
-- `--mode original`: 可视化原图, 可简化为 `-m original`;
-- `--show-number 100`: 可视化100张图，可简化为 `-n 100`;
-- `--rescale-factor`: 图像放大10倍，可简化为 `-r 10`;
+- `--phase val`: 可视化验证集，可简化为 `-p val`;
+- `--output-dir tmp`: 可视化结果保存在 "tmp" 文件夹，可简化为 `-o tmp`;
+- `--mode original`: 可视化原图，可简化为 `-m original`;
+- `--show-number 100`: 可视化 100 张图，可简化为 `-n 100`;
+- `--rescale-factor`: 图像放大 10 倍，可简化为 `-r 10`;
 - `--channel-order RGB`: 可视化图像的通道顺序为 "RGB", 可简化为 `-c RGB`。
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>

@@ -2,7 +2,7 @@
 
 为了管理深度学习实验的各种设置，我们使用配置文件来记录所有这些配置。这种配置文件系统具有模块化和继承特性，更多细节可以在{external+mmengine:doc}`MMEngine 中的教程 <advanced_tutorials/config>`。
 
-MMPretrain 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs) 文件夹下，目录结构如下所示:
+MMPretrain 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs) 文件夹下，目录结构如下所示：
 
 ```text
 MMPretrain/
@@ -102,7 +102,7 @@ model = dict(
 
 数据原始配置文件主要包括预处理设置、dataloader 以及 评估器等设置：
 
-- `data_preprocessor`: 模型输入预处理配置, 与 `model.data_preprocessor` 相同，但优先级更低。
+- `data_preprocessor`: 模型输入预处理配置，与 `model.data_preprocessor` 相同，但优先级更低。
 - `train_evaluator | val_evaluator | test_evaluator`: 构建评估器，参考 [API 文档](mmpretrain.evaluation)。
 - `train_dataloader | val_dataloader | test_dataloader`: 构建 dataloader
   - `samples_per_gpu`: 每个 GPU 的 batch size
@@ -133,15 +133,15 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),     # 读取图像
-    dict(type='ResizeEdge', scale=256, edge='short'),  # 短边对其256进行放缩
+    dict(type='ResizeEdge', scale=256, edge='short'),  # 缩放短边尺寸至 256px
     dict(type='CenterCrop', crop_size=224),     # 中心裁剪
     dict(type='PackInputs'),                 # 准备图像以及标签
 ]
 
 # 构造训练集 dataloader
 train_dataloader = dict(
-    batch_size=32,                     # 每张GPU的 batchsize
-    num_workers=5,                     # 每个GPU的线程数
+    batch_size=32,                     # 每张 GPU 的 batchsize
+    num_workers=5,                     # 每个 GPU 的线程数
     dataset=dict(                      # 训练数据集
         type=dataset_type,
         data_root='data/imagenet',
@@ -149,7 +149,7 @@ train_dataloader = dict(
         data_prefix='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),   # 默认采样器
-    persistent_workers=True,                             # 是否保持进程，可以缩短每个epoch的准备时间
+    persistent_workers=True,                             # 是否保持进程，可以缩短每个 epoch 的准备时间
 )
 
 # 构造验证集 dataloader
@@ -168,7 +168,7 @@ val_dataloader = dict(
 # 验证集评估设置，使用准确率为指标， 这里使用 topk1 以及 top5 准确率
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 
-test_dataloader = val_dataloader  # test dataloader配置，这里直接与 val_dataloader相同
+test_dataloader = val_dataloader  # test dataloader 配置，这里直接与 val_dataloader 相同
 test_evaluator = val_evaluator    # 测试集的评估配置，这里直接与 val_evaluator 相同
 ```
 
@@ -200,7 +200,7 @@ optim_wrapper = dict(
 param_scheduler = dict(
     type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
 
-# 训练的配置, 迭代 100 个epoch，每一个训练 epoch 后都做验证集评估
+# 训练的配置，迭代 100 个 epoch，每一个训练 epoch 后都做验证集评估
 # 'by_epoch=True' 默认使用 `EpochBaseLoop`,  'by_epoch=False' 默认使用 `IterBaseLoop`
 train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
 # 使用默认的验证循环控制器
@@ -224,7 +224,7 @@ auto_scale_lr = dict(base_batch_size=256)
 # 默认所有注册器使用的域
 default_scope = 'mmpretrain'
 
-# 配置默认的hook
+# 配置默认的 hook
 default_hooks = dict(
     # 记录每次迭代的时间。
     timer=dict(type='IterTimerHook'),
@@ -232,10 +232,10 @@ default_hooks = dict(
     # 每 100 次迭代打印一次日志。
     logger=dict(type='LoggerHook', interval=100),
 
-    # 启用默认参数调度hook。
+    # 启用默认参数调度 hook。
     param_scheduler=dict(type='ParamSchedulerHook'),
 
-    # 每个epoch保存检查点。
+    # 每个 epoch 保存检查点。
     checkpoint=dict(type='CheckpointHook', interval=1),
 
     # 在分布式环境中设置采样器种子。
@@ -247,7 +247,7 @@ default_hooks = dict(
 
 # 配置环境
 env_cfg = dict(
-   # 是否开启cudnn benchmark
+   # 是否开启 cudnn benchmark
     cudnn_benchmark=False,
 
     # 设置多进程参数
@@ -279,7 +279,7 @@ resume = False
 对于在同一算法文件夹下的所有配置文件，MMPretrain 推荐只存在 **一个** 对应的 _原始配置_ 文件。
 所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
 
-例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上使用 `CutMix` 训练增强，将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
+例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上使用 `CutMix` 训练增强，将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容：
 
 ```python
 # 在 'configs/resnet/' 创建此文件
@@ -293,7 +293,7 @@ model = dict(
 )
 
 # 优化策略在之前基础上训练更多个 epoch
-train_cfg = dict(max_epochs=300, val_interval=10)  # 训练300个 epoch，每10个 epoch 评估一次
+train_cfg = dict(max_epochs=300, val_interval=10)  # 训练 300 个 epoch，每 10 个 epoch 评估一次
 param_scheduler = dict(step=[150, 200, 250])   # 学习率调整也有所变动
 
 # 使用自己的数据集目录
@@ -349,7 +349,7 @@ test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 
 有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。可以查看 {external+mmengine:doc}`MMEngine 文档 <advanced_tutorials/config>` 进一步了解该设计。
 
-以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用余弦调度 ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 `param_scheduler` 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `param_scheduler` 相关域内容：
+以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用余弦调度 ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错，因为基础配置文件 `param_scheduler` 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `param_scheduler` 相关域内容：
 
 ```python
 _base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'

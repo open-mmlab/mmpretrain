@@ -13,6 +13,12 @@ Description of all arguments:
 - `config`: The path of the model config file.
 - `--shape`: Input size, support single value or double value parameter, such as `--shape 256` or `--shape 224 256`. If not set, default to be `224 224`.
 
+Example:
+
+```shell
+python tools/analysis_tools/get_flops.py configs/resnet/resnet50_8xb32_in1k.py
+```
+
 You will get the final result like this.
 
 ```text
