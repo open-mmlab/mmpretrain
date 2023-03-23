@@ -63,7 +63,7 @@ jobs:
     strategy:
       matrix:
         python: [3.7]
-        platform: [cu111]
+        platform: [cpu]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -76,8 +76,8 @@ jobs:
         run: pip install torch==1.8.2+${{matrix.platform}} torchvision==0.9.2+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
       - name: Install mmpretrain dependencies
         run: |
-          pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install -U openmim
+          mim install mmengine
           mim install 'mmcv >= 2.0.0rc1'
           pip install -r requirements.txt
       - name: Build and install
