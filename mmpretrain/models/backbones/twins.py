@@ -95,11 +95,10 @@ class GlobalSubsampledAttention(MultiheadAttention):
                                 self.head_dims).permute(2, 0, 3, 1, 4)
         k, v = kv[0], kv[1]
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
+        attn_drop = self.attn_drop if self.training else 0.
+        x = self.scaled_dot_product_attention(q, k, v, dropout_p=attn_drop)
+        x = x.transpose(1, 2).reshape(B, N, self.embed_dims)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
         x = self.proj(x)
         x = self.out_drop(self.proj_drop(x))
 

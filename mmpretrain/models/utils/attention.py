@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+from functools import partial
 from typing import List, Optional, Union
 
 import numpy as np
@@ -19,7 +20,6 @@ from .layer_scale import LayerScale
 # will raise extra warning. For more details,
 # refers to https://github.com/pytorch/pytorch/issues/50276
 if digit_version(torch.__version__) >= digit_version('1.10.0'):
-    from functools import partial
     torch_meshgrid = partial(torch.meshgrid, indexing='ij')
 else:
     torch_meshgrid = torch.meshgrid
@@ -1098,11 +1098,10 @@ class PromptMultiheadAttention(MultiheadAttention):
                                  self.head_dims).permute(2, 0, 3, 1, 4)
         k, v = kv[0], kv[1]
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
+        attn_drop = self.attn_drop if self.training else 0.
+        attn = self.scaled_dot_product_attention(q, k, v, dropout_p=attn_drop)
+        x = attn.transpose(1, 2).reshape(B, x.shape[1], self.embed_dims)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, x.shape[1], self.embed_dims)
         x = self.proj(x)
         x = self.out_drop(self.gamma1(self.proj_drop(x)))
         return x
