@@ -25,6 +25,34 @@ else:
     torch_meshgrid = torch.meshgrid
 
 
+def scaled_dot_product_attention_pyimpl(query,
+                                        key,
+                                        value,
+                                        attn_mask=None,
+                                        dropout_p=0.,
+                                        scale=None,
+                                        is_causal=False):
+    scale = scale or query.size(-1)**0.5
+    if is_causal and attn_mask is not None:
+        attn_mask = torch.ones(
+            query.size(-2), key.size(-2), dtype=torch.bool).tril(diagonal=0)
+    if attn_mask is not None and attn_mask.dtype == torch.bool:
+        attn_mask = attn_mask.masked_fill(not attn_mask, -float('inf'))
+
+    attn_weight = query @ key.transpose(-2, -1) / scale
+    if attn_mask is not None:
+        attn_weight += attn_mask
+    attn_weight = torch.softmax(attn_weight, dim=-1)
+    attn_weight = torch.dropout(attn_weight, dropout_p, True)
+    return attn_weight @ value
+
+
+if digit_version(torch.__version__) >= digit_version('2.0.0'):
+    scaled_dot_product_attention = F.scaled_dot_product_attention
+else:
+    scaled_dot_product_attention = scaled_dot_product_attention_pyimpl
+
+
 class WindowMSA(BaseModule):
     """Window based multi-head self-attention (W-MSA) module with relative
     position bias.
@@ -525,10 +553,15 @@ class MultiheadAttention(BaseModule):
         self.v_shortcut = v_shortcut
 
         self.head_dims = embed_dims // num_heads
-        self.scale = qk_scale or self.head_dims**-0.5
+        if qk_scale is not None:
+            self.scaled_dot_product_attention = partial(
+                scaled_dot_product_attention_pyimpl,
+                scale=self.head_dims**-0.5)
+        else:
+            self.scaled_dot_product_attention = scaled_dot_product_attention
 
         self.qkv = nn.Linear(self.input_dims, embed_dims * 3, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
+        self.attn_drop = attn_drop
         self.proj = nn.Linear(embed_dims, embed_dims, bias=proj_bias)
         self.proj_drop = nn.Dropout(proj_drop)
 
@@ -545,11 +578,10 @@ class MultiheadAttention(BaseModule):
                                   self.head_dims).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
+        attn_drop = self.attn_drop if self.training else 0.
+        x = self.scaled_dot_product_attention(q, k, v, dropout_p=attn_drop)
+        x = x.transpose(1, 2).reshape(B, N, self.embed_dims)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, self.embed_dims)
         x = self.proj(x)
         x = self.out_drop(self.gamma1(self.proj_drop(x)))
 
