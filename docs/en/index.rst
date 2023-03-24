@@ -81,6 +81,12 @@ Welcome to MMClassification's documentation!
    notes/faq.md
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Device Support
+
+   device/npu.md
+
+.. toctree::
    :caption: Switch Language
 
    English <https://mmclassification.readthedocs.io/en/1.x/>
