@@ -7,40 +7,18 @@
 
 ## 安装
 
-- MMCV 与 MMPretrain 的兼容问题。如遇到
-  "AssertionError: MMCV==xxx is used but incompatible. Please install mmcv>=xxx, \<=xxx."
+- MMEngine, MMCV 与 MMPretrain 的兼容问题
 
-  这里我们列举了各版本 MMPretrain 对 MMCV 版本的依赖，请选择合适的 MMCV
+  这里我们列举了各版本 MMPretrain 对 MMEngine 和 MMCV 版本的依赖，请选择合适的 MMEngine 和 MMCV
   版本来避免安装和使用中的问题。
 
-  | MMPretrain version |      MMCV version      |
-  | :----------------: | :--------------------: |
-  |   1.0.0rc4 (1.x)   |     mmcv>=2.0.0rc1     |
-  |  0.24.0 (master)   |  mmcv>=1.4.2, \<1.7.0  |
-  |       0.23.1       |  mmcv>=1.4.2, \<1.6.0  |
-  |       0.22.1       |  mmcv>=1.4.2, \<1.6.0  |
-  |       0.21.0       | mmcv>=1.4.2, \<=1.5.0  |
-  |       0.20.1       | mmcv>=1.4.2, \<=1.5.0  |
-  |       0.19.0       | mmcv>=1.3.16, \<=1.5.0 |
-  |       0.18.0       | mmcv>=1.3.16, \<=1.5.0 |
-  |       0.17.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.16.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.15.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.15.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.14.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.13.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.12.0       | mmcv>=1.3.1, \<=1.5.0  |
-  |       0.11.1       | mmcv>=1.3.1, \<=1.5.0  |
-  |       0.11.0       |      mmcv>=1.3.0       |
-  |       0.10.0       |      mmcv>=1.3.0       |
-  |       0.9.0        |      mmcv>=1.1.4       |
-  |       0.8.0        |      mmcv>=1.1.4       |
-  |       0.7.0        |      mmcv>=1.1.4       |
-  |       0.6.0        |      mmcv>=1.1.4       |
+  | MMPretrain version | MMEngine version  |   MMCV version   |
+  | :----------------: | :---------------: | :--------------: |
+  |  1.0.0rc0 (main)   | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
-  由于 `dev` 分支处于频繁开发中，MMCV 版本依赖可能不准确。如果您在使用
-  `dev` 分支时遇到问题，请尝试更新 MMCV 到最新版。
+  由于 `dev` 分支处于频繁开发中，MMEngine 和 MMCV 版本依赖可能不准确。如果您在使用
+  `dev` 分支时遇到问题，请尝试更新 MMEngine 和 MMCV 到最新版。
   ```
 
 - 使用 Albumentations

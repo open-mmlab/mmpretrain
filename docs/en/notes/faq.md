@@ -9,41 +9,20 @@ and make sure you fill in all required information in the template.
 
 ## Installation
 
-- Compatibility issue between MMCV and MMPretrain; "AssertionError:
-  MMCV==xxx is used but incompatible. Please install mmcv>=xxx, \<=xxx."
+- Compatibility issue between MMEngine, MMCV and MMPretrain
 
-  Compatible MMPretrain and MMCV versions are shown as below. Please
-  choose the correct version of MMCV to avoid installation issues.
+  Compatible MMPretrain and MMEngine, MMCV versions are shown as below. Please
+  choose the correct version of MMEngine and MMCV to avoid installation issues.
 
-  | MMPretrain version |      MMCV version      |
-  | :----------------: | :--------------------: |
-  |   1.0.0rc4 (1.x)   |     mmcv>=2.0.0rc1     |
-  |  0.24.0 (master)   |  mmcv>=1.4.2, \<1.7.0  |
-  |       0.23.1       |  mmcv>=1.4.2, \<1.6.0  |
-  |       0.22.1       |  mmcv>=1.4.2, \<1.6.0  |
-  |       0.21.0       | mmcv>=1.4.2, \<=1.5.0  |
-  |       0.20.1       | mmcv>=1.4.2, \<=1.5.0  |
-  |       0.19.0       | mmcv>=1.3.16, \<=1.5.0 |
-  |       0.18.0       | mmcv>=1.3.16, \<=1.5.0 |
-  |       0.17.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.16.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.15.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.15.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.14.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.13.0       | mmcv>=1.3.8, \<=1.5.0  |
-  |       0.12.0       | mmcv>=1.3.1, \<=1.5.0  |
-  |       0.11.1       | mmcv>=1.3.1, \<=1.5.0  |
-  |       0.11.0       |      mmcv>=1.3.0       |
-  |       0.10.0       |      mmcv>=1.3.0       |
-  |       0.9.0        |      mmcv>=1.1.4       |
-  |       0.8.0        |      mmcv>=1.1.4       |
-  |       0.7.0        |      mmcv>=1.1.4       |
-  |       0.6.0        |      mmcv>=1.1.4       |
+  | MMPretrain version | MMEngine version  |   MMCV version   |
+  | :----------------: | :---------------: | :--------------: |
+  |  1.0.0rc0 (main)   | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+
 
   ```{note}
-  Since the `dev` branch is under frequent development, the MMCV
+  Since the `dev` branch is under frequent development, the MMEngine and MMCV
   version dependency may be inaccurate. If you encounter problems when using
-  the `dev` branch, please try to update MMCV to the latest version.
+  the `dev` branch, please try to update MMEngine and MMCV to the latest version.
   ```
 
 - Using Albumentations
