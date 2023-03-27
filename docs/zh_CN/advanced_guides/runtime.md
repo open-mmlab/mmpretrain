@@ -31,7 +31,7 @@ default_hooks = dict(
 - **`save_best`** (str, List[str]): 如果指定，它将保存具有最佳评估结果的权重。
   通常情况下，你可以直接使用`save_best="auto"`来自动选择评估指标。
 
-而如果你想要更高级的配置，请参考[权重文件钩子(CheckpointHook)](https://mmengine.readthedocs.io/zh_CN/latest/tutorials/hook.html#checkpointhook)。
+而如果你想要更高级的配置，请参考[权重文件钩子(CheckpointHook)](tutorials/hook.md#checkpointhook)。
 
 ## 权重加载 / 断点训练
 
@@ -88,7 +88,7 @@ log_level = 'INFO'
 ```
 
 在 `default_hooks.logger` 字段中，你可以指定训练和测试期间的日志间隔。
-而所有可用的参数可以在[日志钩子文档](https://mmengine.readthedocs.io/zh_CN/latest/tutorials/hook.html#loggerhook)中找到。
+而所有可用的参数可以在[日志钩子文档](tutorials/hook.md#loggerhook)中找到。
 
 ```python
 default_hooks = dict(
@@ -101,7 +101,7 @@ default_hooks = dict(
 
 在 `log_processor` 字段中，你可以指定日志信息的平滑方法。
 通常，我们使用一个长度为10的窗口来平滑日志中的值，并输出所有信息的平均值。
-如果你想特别指定某些信息的平滑方法，请参阅[日志处理器文档](https://mmengine.readthedocs.io/zh_CN/latest/advanced_tutorials/logging.html)。
+如果你想特别指定某些信息的平滑方法，请参阅{external+mmengine:doc}`日志处理器文档 <advanced_tutorials/logging>`。
 
 ```python
 # 默认设置，它将通过一个10长度的窗口平滑训练日志中的值

@@ -34,7 +34,7 @@ Here are some usual arguments, and all available arguments can be found in the [
 - **`save_best`** (str, List[str]): If specified, it will save the checkpoint with the best evaluation result.
   Usually, you can simply use `save_best="auto"` to automatically select the evaluation metric.
 
-And if youwant more advanced configuration, please refer to the [CheckpointHook docs](https://mmengine.readthedocs.io/en/latest/tutorials/hook.html#checkpointhook).
+And if you want more advanced configuration, please refer to the [CheckpointHook docs](tutorials/hook.md#checkpointhook).
 
 ## Load Checkpoint / Resume Training
 
@@ -93,7 +93,7 @@ log_level = 'INFO'
 ```
 
 In the `default_hooks.logger` field, you can specify the logging interval during training and testing. And all
-available arguments can be found in the [LoggerHook docs](https://mmengine.readthedocs.io/en/latest/tutorials/hook.html#loggerhook).
+available arguments can be found in the [LoggerHook docs](tutorials/hook.md#loggerhook).
 
 ```python
 default_hooks = dict(
@@ -106,7 +106,7 @@ default_hooks = dict(
 
 In the `log_processor` field, you can specify the log smooth method. Usually, we use a window with length of 10
 to smooth the log and output the mean value of all information. If you want to specify the smooth method of
-some information finely, see the [LogProcessor docs](https://mmengine.readthedocs.io/en/latest/advanced_tutorials/logging.html).
+some information finely, see the {external+mmengine:doc}`LogProcessor docs <advanced_tutorials/logging>`.
 
 ```python
 # The default setting, which will smooth the values in training log by a 10-length window.

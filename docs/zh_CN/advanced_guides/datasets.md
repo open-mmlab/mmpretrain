@@ -66,7 +66,7 @@ train_dataloader = dict(
 )
 ```
 
-所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 [mmengine.basedataset](https://mmengine.readthedocs.io/zh_CN/latest/advanced_tutorials/basedataset.html)。
+所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`。
 
 ```{note}
 如果数据样本时获取的字典中，只包含了 'img_path' 不包含 'img'， 则在 pipeline 中必须包含 'LoadImgFromFile'。

@@ -65,7 +65,7 @@ train_dataloader = dict(
 )
 ```
 
-All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents [mmengine.basedataset](https://mmengine.readthedocs.io/en/latest/advanced_tutorials/basedataset.html).
+All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents of {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`.
 
 ```{note}
 If the dictionary of the data sample contains 'img_path' but not 'img', then 'LoadImgFromFile' transform must be added in the pipeline.
