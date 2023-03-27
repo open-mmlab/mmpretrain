@@ -15,6 +15,8 @@ MMPretrain 提供 `tools/visualization/vis_cam.py` 工具来可视化类别激�
 | EigenGradCAM | 类似 EigenCAM，但支持类别区分，使用了激活 * 梯度的第一主成分，看起来和 GradCAM 差不多，但是更干净 |
 |   LayerCAM   |                        使用正梯度对激活进行空间加权，对于浅层有更好的效果                         |
 
+也可以使用新版本 `pytorch-grad-cam` 支持的更多 CAM 方法，但我们尚未验证可用性。
+
 **命令行**：
 
 ```bash
@@ -40,7 +42,7 @@ python tools/visualization/vis_cam.py \
 - `img`：目标图片路径。
 - `config`：模型配置文件的路径。
 - `checkpoint`：权重路径。
-- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层, 如果不设置，将使用最后一个`block`中的`norm`层。
+- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层，如果不设置，将使用最后一个`block`中的`norm`层。
 - `--preview-model`：是否查看模型所有网络层。
 - `--method`：类别激活图图可视化的方法，目前支持 `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`，不区分大小写。如果不设置，默认为 `GradCAM`。
 - `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
@@ -58,15 +60,11 @@ python tools/visualization/vis_cam.py \
 
 ## 如何可视化 CNN 网络的类别激活图（如 ResNet-50）
 
-`--target-layers` 在 `Resnet-50` 中的一些示例如下:
+`--target-layers` 在 `Resnet-50` 中的一些示例如下：
 
 - `'backbone.layer4'`，表示第四个 `ResLayer` 层的输出。
 - `'backbone.layer4.2'` 表示第四个 `ResLayer` 层中第三个 `BottleNeck` 块的输出。
 - `'backbone.layer4.2.conv1'` 表示上述 `BottleNeck` 块中 `conv1` 层的输出。
-
-```{note}
-对于 `ModuleList` 或者 `Sequential` 类型的网络层，可以直接使用索引的方式指定子模块。比如 `backbone.layer4[-1]` 和 `backbone.layer4.2` 是相同的，因为 `layer4` 是一个拥有三个子模块的 `Sequential`。
-```
 
 1. 使用不同方法可视化 `ResNet50`，默认 `target-category` 为模型检测的结果，使用默认推导的 `target-layers`。
 
@@ -83,7 +81,7 @@ python tools/visualization/vis_cam.py \
    | ------------------------------------ | --------------------------------------- | ----------------------------------------- | -------------------------------------------- | ---------------------------------------- |
    | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065002-f1c86516-38b2-47ba-90c1-e00b49556c70.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065119-82581fa1-3414-4d6c-a849-804e1503c74b.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065096-75a6a2c1-6c57-4789-ad64-ebe5e38765f4.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065129-814d20fb-98be-4106-8c5e-420adcc85295.jpg' height="auto" width="150"></div> |
 
-2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog'，类别281为 'tabby, tabby cat'。
+2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别 238 为 'Greater Swiss Mountain dog'，类别 281 为 'tabby, tabby cat'。
 
    ```shell
    python tools/visualization/vis_cam.py \
@@ -118,10 +116,10 @@ python tools/visualization/vis_cam.py \
 
 ## 如何可视化 Transformer 类型网络的类别激活图
 
-`--target-layers` 在 Transformer-based 网络中的一些示例如下:
+`--target-layers` 在 Transformer-based 网络中的一些示例如下：
 
 - Swin-Transformer 中：`'backbone.norm3'`
-- ViT 中：`'backbone.layers[-1].ln1'`
+- ViT 中：`'backbone.layers.11.ln1'`
 
 对于 Transformer-based 的网络，比如 ViT、T2T-ViT 和 Swin-Transformer，特征是被展平的。为了绘制 CAM 图，我们需要指定 `--vit-like` 选项，从而让被展平的特征恢复方形的特征图。
 
@@ -144,10 +142,10 @@ python tools/visualization/vis_cam.py \
    ```shell
    python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
-       configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
+       configs/vision_transformer/vit-base-p16_64xb64_in1k-384px.py \
        https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
        --vit-like \
-       --target-layers 'backbone.layers[-1].ln1'
+       --target-layers 'backbone.layers.11.ln1'
    ```
 
 3. 对 `T2T-ViT` 进行 CAM 可视化：
@@ -158,7 +156,7 @@ python tools/visualization/vis_cam.py \
        configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
        --vit-like \
-       --target-layers 'backbone.encoder[-1].ln1'
+       --target-layers 'backbone.encoder.12.ln1'
    ```
 
 | Image                                   | ResNet50                                   | ViT                                    | Swin                                    | T2T-ViT                                    |

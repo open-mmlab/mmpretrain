@@ -22,7 +22,7 @@ python tools/visualization/vis_scheduler.py \
 - `config` : 模型配置文件的路径。
 - **`-p, parameter`**: 可视化参数名，只能为 `["lr", "momentum"]` 之一， 默认为 `"lr"`.
 - **`-d, --dataset-size`**: 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
-- **`-n, --ngpus`**: 使用 GPU 的数量, 默认为1。
+- **`-n, --ngpus`**: 使用 GPU 的数量，默认为 1。
 - **`-s, --save-path`**: 保存的可视化图片的路径，默认不保存。
 - `--title`: 可视化图片的标题，默认为配置文件名。
 - `--style`: 可视化图片的风格，默认为 `whitegrid`。
@@ -35,18 +35,10 @@ python tools/visualization/vis_scheduler.py \
 
 ## 如何在开始训练前可视化学习率曲线
 
-你可以使用如下命令来绘制配置文件 `configs/resnet/resnet50_b16x8_cifar100.py` 将会使用的变化率曲线：
+你可以使用如下命令来绘制配置文件 `configs/swin_transformer/swin-base_16xb64_in1k.py` 将会使用的变化率曲线：
 
 ```bash
-python tools/visualization/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
+python tools/visualization/vis_scheduler.py configs/swin_transformer/swin-base_16xb64_in1k.py --dataset-size 1281167 --ngpus 16
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
-
-当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
-
-```bash
-python tools/visualization/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/26739999/226544329-cf3a3d45-6ab3-48aa-8972-2c2a58c35e62.png" style=" width: auto; height: 40%; "></div>

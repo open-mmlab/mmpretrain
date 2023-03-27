@@ -18,7 +18,7 @@ import sys
 import pytorch_sphinx_theme
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -233,7 +233,7 @@ napoleon_custom_sections = [
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
+autodoc_mock_imports = ['rich', 'attr', 'einops']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 

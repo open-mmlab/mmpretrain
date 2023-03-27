@@ -1,53 +1,42 @@
 # Prepare Dataset
 
-MMPretrain supports following datasets:
-
-- [Prepare Dataset](#prepare-dataset)
-  - [CustomDataset](#customdataset)
-    - [Subfolder Format](#subfolder-format)
-    - [Text Annotation File Format](#text-annotation-file-format)
-  - [ImageNet](#imagenet)
-  - [CIFAR](#cifar)
-  - [MNIST](#mnist)
-  - [OpenMMLab 2.0 Standard Dataset](#openmmlab-20-standard-dataset)
-  - [Other Datasets](#other-datasets)
-  - [Dataset Wrappers](#dataset-wrappers)
-
-If your dataset is not in the abvove list, you could reorganize the format of your dataset to adapt to **`CustomDataset`**.
-
 ## CustomDataset
 
 [`CustomDataset`](mmpretrain.datasets.CustomDataset) is a general dataset class for you to use your own datasets. To use `CustomDataset`, you need to organize your dataset files according to the following two formats:
 
 ### Subfolder Format
 
-Place all samples in one folder as below:
+In this format, you only need to re-organize your dataset folder and place all samples in one folder without
+creating any annotation files.
+
+For supervised tasks (with `with_label=True`), we use the name of sub-folders as the categories names, as
+shown in the below example, `class_x` and `class_y` will be recognized as the categories names.
 
 ```text
-Sample files (for `with_label=True`, supervised tasks, we use the name of sub-folders as the categories names):
-As follows, class_x and class_y represent different categories.):
-    data_prefix/
-    ├── class_x
-    │   ├── xxx.png
-    │   ├── xxy.png
-    │   └── ...
-    │       └── xxz.png
-    └── class_y
-        ├── 123.png
-        ├── nsdf3.png
-        ├── ...
-        └── asd932_.png
-
-
-Sample files (for `with_label=False`, unsupervised tasks, we use all sample files under the specified folder):
-    data_prefix/
-    ├── folder_1
-    │   ├── xxx.png
-    │   ├── xxy.png
-    │   └── ...
+data_prefix/
+├── class_x
+│   ├── xxx.png
+│   ├── xxy.png
+│   └── ...
+│       └── xxz.png
+└── class_y
     ├── 123.png
     ├── nsdf3.png
-    └── ...
+    ├── ...
+    └── asd932_.png
+```
+
+For unsupervised tasks (with `with_label=False`), we directly load all sample files under the specified folder:
+
+```text
+data_prefix/
+├── folder_1
+│   ├── xxx.png
+│   ├── xxy.png
+│   └── ...
+├── 123.png
+├── nsdf3.png
+└── ...
 ```
 
 Assume you want to use it as the training dataset, and the below is the configurations in your config file.
@@ -59,48 +48,28 @@ train_dataloader = dict(
     dataset=dict(
         type='CustomDataset',
         data_prefix='path/to/data_prefix',
+        with_label=True,   # or False for unsupervised tasks
         pipeline=...
     )
 )
 ```
 
 ```{note}
-Do not specify `ann_file`, or specify `ann_file=None` if you want to use this method.
+If you want to use this format, do not specify `ann_file`, or specify `ann_file=''`.
+
+And please note that the subfolder format requires a folder scanning which may cause a slower initialization,
+especially for large datasets or slow file IO.
 ```
 
 ### Text Annotation File Format
 
-The text annotation file format uses text files to store path and category information. All the images are placed in the folder of `data_prefix`, and `ann_file` contaions all the ground-truth annotation.
+In this format, we use a text annotation file to store image file paths and the corespondding category
+indices.
 
-In the following case, the dataset directory is as follows:
+For supervised tasks (with `with_label=True`), the annotation file should include the file path and the
+category index of one sample in one line and split them by a space, as below:
 
-```text
-The annotation file (for ``with_label=True``, supervised tasks):
-    folder_1/xxx.png 0
-    folder_1/xxy.png 1
-    123.png 4
-    nsdf3.png 3
-    ...
-
-The annotation file (for ``with_label=False``, unsupervised tasks):
-    folder_1/xxx.png
-    folder_1/xxy.png
-    123.png
-    nsdf3.png
-    ...
-
-Sample files:
-    data_prefix/
-    ├── folder_1
-    │   ├── xxx.png
-    │   ├── xxy.png
-    │   └── ...
-    ├── 123.png
-    ├── nsdf3.png
-    └── ...
-```
-
-Assume you want to use the training dataset, and the annotation file is `train_annfile.txt` as above. The annotation file contains ordinary text, which is divided into two columns, the first column is the image path, and the second column is the **index number** of its category:
+All these file paths can be absolute paths, or paths relative to the `data_prefix`.
 
 ```text
 folder_1/xxx.png 0
@@ -112,27 +81,59 @@ nsdf3.png 3
 
 ```{note}
 The index numbers of categories start from 0. And the value of ground-truth labels should fall in range `[0, num_classes - 1]`.
+
+In addition, please use the `classes` field in the dataset settings to specify the name of every category.
 ```
 
-In the annotation file, we only specified the category index of every sample, you also need to specify `classes` field in the dataset config to record the name of every category:
+For unsupervised tasks (with `with_label=False`), the annotation file only need to include the file path of
+one sample in one line, as below:
+
+```text
+folder_1/xxx.png
+folder_1/xxy.png
+123.png
+nsdf3.png
+...
+```
+
+Assume the entire dataset folder is as below:
+
+```text
+data_root
+├── meta
+│   ├── test.txt     # The annotation file for the test dataset
+│   ├── train.txt    # The annotation file for the training dataset
+│   └── val.txt      # The annotation file for the validation dataset.
+├── train
+│   ├── 123.png
+│   ├── folder_1
+│   │   ├── xxx.png
+│   │   └── xxy.png
+│   └── nsdf3.png
+├── test
+└── val
+```
+
+Here is an example dataset settings in config files:
 
 ```python
+# Training dataloader configurations
 train_dataloader = dict(
-    ...
-    # Training dataset configurations
     dataset=dict(
         type='CustomDataset',
-        data_root='path/to/data_root',
-        ann_file='meta/train_annfile.txt',
-        data_prefix='train',
-        classes=['A', 'B', 'C', 'D', ...],
-        pipeline=...,
+        data_root='path/to/data_root',  # The common prefix of both `ann_flie` and `data_prefix`.
+        ann_file='meta/train.txt',      # The path of annotation file relative to the data_root.
+        data_prefix='train',            # The prefix of file paths in the `ann_file`, relative to the data_root.
+        with_label=True,                # or False for unsupervised tasks
+        classes=['A', 'B', 'C', 'D', ...],  # The name of every category.
+        pipeline=...,    # The transformations to process the dataset samples.
     )
+    ...
 )
 ```
 
 ```{note}
-If the `ann_file` is specified, the dataset will be generated by the the ``ann_file``. Otherwise, try the first way.
+For a complete example about how to use the `CustomDataset`, please see [How to Pretrain with Custom Dataset](../notes/pretrain_custom_dataset.md)
 ```
 
 ## ImageNet
@@ -144,31 +145,94 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
-4. Download and untar the meta data from this [link](https://download.openmmlab.com/mmclassification/datasets/imagenet/meta/caffe_ilsvrc12.tar.gz).
-5. Re-organize the image files according to the path in the meta data, and it should be like:
+4. Re-organize the image files according the format convention of [CustomDataset](#CustomDataset)
+
+```{note}
+In MMPretrain, we use the text annotation file format ImageNet in all provided config files. Therefore, to use
+the subfolder format, you please set `ann_file=''` in these config files.
+```
+
+### Subfolder Format
+
+Re-organize the dataset as below:
 
 ```text
-   imagenet/
-   ├── meta/
-   │   ├── train.txt
-   │   ├── test.txt
-   │   └── val.txt
-   ├── train/
-   │   ├── n01440764
-   │   │   ├── n01440764_10026.JPEG
-   │   │   ├── n01440764_10027.JPEG
-   │   │   ├── n01440764_10029.JPEG
-   │   │   ├── n01440764_10040.JPEG
-   │   │   ├── n01440764_10042.JPEG
-   │   │   ├── n01440764_10043.JPEG
-   │   │   └── n01440764_10048.JPEG
-   │   ├── ...
-   ├── val/
-   │   ├── ILSVRC2012_val_00000001.JPEG
-   │   ├── ILSVRC2012_val_00000002.JPEG
-   │   ├── ILSVRC2012_val_00000003.JPEG
-   │   ├── ILSVRC2012_val_00000004.JPEG
-   │   ├── ...
+data/imagenet/
+├── train/
+│   ├── n01440764
+│   │   ├── n01440764_10026.JPEG
+│   │   ├── n01440764_10027.JPEG
+│   │   ├── n01440764_10029.JPEG
+│   │   ├── n01440764_10040.JPEG
+│   │   ├── n01440764_10042.JPEG
+│   │   ├── n01440764_10043.JPEG
+│   │   └── n01440764_10048.JPEG
+│   ├── ...
+├── val/
+│   ├── n01440764
+│   │   ├── ILSVRC2012_val_00000293.JPEG
+│   │   ├── ILSVRC2012_val_00002138.JPEG
+│   │   ├── ILSVRC2012_val_00003014.JPEG
+│   │   └── ...
+│   ├── ...
+```
+
+And then, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
+
+```python
+train_dataloader = dict(
+    ...
+    # Training dataset configurations
+    dataset=dict(
+        type='ImageNet',
+        data_root='data/imagenet',
+        data_prefix='train',
+        ann_file='',
+        pipeline=...,
+    )
+)
+
+val_dataloader = dict(
+    ...
+    # Validation dataset configurations
+    dataset=dict(
+        type='ImageNet',
+        data_root='data/imagenet',
+        data_prefix='val',
+        ann_file='',
+        pipeline=...,
+    )
+)
+
+test_dataloader = val_dataloader
+```
+
+### Text Annotation File Format
+
+You can download and untar the meta data from this [link](https://download.openmmlab.com/mmclassification/datasets/imagenet/meta/caffe_ilsvrc12.tar.gz). And re-organize the dataset as below:
+
+```text
+data/imagenet/
+├── meta/
+│   ├── train.txt
+│   ├── test.txt
+│   └── val.txt
+├── train/
+│   ├── n01440764
+│   │   ├── n01440764_10026.JPEG
+│   │   ├── n01440764_10027.JPEG
+│   │   ├── n01440764_10029.JPEG
+│   │   ├── n01440764_10040.JPEG
+│   │   ├── n01440764_10042.JPEG
+│   │   ├── n01440764_10043.JPEG
+│   │   └── n01440764_10048.JPEG
+│   ├── ...
+├── val/
+│   ├── ILSVRC2012_val_00000001.JPEG
+│   ├── ILSVRC2012_val_00000002.JPEG
+│   ├── ILSVRC2012_val_00000003.JPEG
+│   ├── ILSVRC2012_val_00000004.JPEG
+│   ├── ...
 ```
 
 And then, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
@@ -180,8 +244,8 @@ train_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='imagenet_folder',
-        ann_file='meta/train.txt',
         data_prefix='train/',
+        ann_file='meta/train.txt',
         pipeline=...,
     )
 )
@@ -192,8 +256,8 @@ val_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='imagenet_folder',
-        ann_file='meta/val.txt',
         data_prefix='val/',
+        ann_file='meta/val.txt',
         pipeline=...,
     )
 )
@@ -327,6 +391,8 @@ train_dataloader = dict(
 ## Other Datasets
 
 To find more datasets supported by MMPretrain, and get more configurations of the above datasets, please see the [dataset documentation](mmpretrain.datasets).
+
+To implement your own dataset class for some special formats, please see the [Adding New Dataset](../advanced_guides/datasets.md).
 
 ## Dataset Wrappers
 

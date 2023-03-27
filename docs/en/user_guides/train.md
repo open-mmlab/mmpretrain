@@ -1,11 +1,8 @@
 # Train
 
-- [Train](#train)
-  - [Train with your PC](#train-with-your-pc)
-  - [Train with multiple GPUs](#train-with-multiple-gpus)
-  - [Train with multiple machines](#train-with-multiple-machines)
-    - [Multiple machines in the same network](#multiple-machines-in-the-same-network)
-    - [Multiple machines managed with slurm](#multiple-machines-managed-with-slurm)
+In this tutorial, we will introduce how to use the scripts provided in MMPretrain to start a training task. If
+you need, we also have some practice examples about [how to pretrain with custom dataset](../notes/pretrain_custom_dataset.md)
+and [how to finetune with custom dataset](../notes/finetune_custom_dataset.md).
 
 ## Train with your PC
 
@@ -33,8 +30,8 @@ CUDA_VISIBLE_DEVICES=-1 python tools/train.py ${CONFIG_FILE} [ARGS]
 | `--amp`                               | Enable automatic-mixed-precision training.                                                                                                                          |
 | `--no-validate`                       | **Not suggested**. Disable checkpoint evaluation during training.                                                                                                   |
 | `--auto-scale-lr`                     | Auto scale the learning rate according to the actual batch size and the original batch size.                                                                        |
-| `--no-pin-memory`                     | Whether to disable the pin_memory option in dataloaders.                                                                                                            |
-| `--no-persistent-workers`             | Whether to disable the persistent_workers option in dataloaders.                                                                                                    |
+| `--no-pin-memory`                     | Whether to disable the `pin_memory` option in dataloaders.                                                                                                          |
+| `--no-persistent-workers`             | Whether to disable the `persistent_workers` option in dataloaders.                                                                                                  |
 | `--cfg-options CFG_OPTIONS`           | Override some settings in the used config, the key-value pair in xxx=yyy format will be merged into the config file. If the value to be overwritten is a list, it should be of the form of either `key="[a,b]"` or `key=a,b`. The argument also allows nested list/tuple values, e.g. `key="[(a,b),(c,d)]"`. Note that the quotation marks are necessary and that no white space is allowed. |
 | `--launcher {none,pytorch,slurm,mpi}` | Options for job launcher.                                                                                                                                           |
 

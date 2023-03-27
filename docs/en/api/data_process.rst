@@ -60,6 +60,7 @@ Loading and Formatting
 
    LoadImageFromFile
    PackInputs
+   PackMultiTaskInputs
    ToNumpy
    ToPIL
    Transpose
@@ -88,6 +89,8 @@ Processing and Augmentation
    RandomResizedCrop
    Resize
    ResizeEdge
+   BEiTMaskGenerator
+   SimMIMMaskGenerator
 
 Composed Augmentation
 """""""""""""""""""""
@@ -193,6 +196,9 @@ Note that the ``model.data_preprocessor`` has higher priority than ``data_prepro
    :nosignatures:
 
    ClsDataPreprocessor
+   SelfSupDataPreprocessor
+   TwoNormDataPreprocessor
+   VideoDataPreprocessor
 
 .. module:: mmpretrain.models.utils.batch_augments
 

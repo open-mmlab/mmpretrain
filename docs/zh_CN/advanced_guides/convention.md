@@ -1,33 +1,49 @@
-# MMCLS 中的约定
+# MMPretrain 中的约定
 
-## 配置文件命名规则
+## 模型命名规则
 
-MMClassification 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
+MMPretrain 按照以下风格进行模型命名，代码库的贡献者需要遵循相同的命名规则。模型名总体分为五个部分：算法信息，模块信息，预训练信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
 
 ```text
-{algorithm info}_{module info}_{training info}_{data info}.py
+{algorithm info}_{module info}_{pretrain info}_{training info}_{data info}
 ```
 
-- `algorithm info`：算法信息，算法名称或者网络架构，如 resnet 等；
-- `module info`： 模块信息，因任务而异，用以表示一些特殊的 neck、head 和 pretrain 信息；
-- `training info`：一些训练信息，训练策略设置，包括 batch size，schedule 以及数据增强等；
+- `algorithm info`（可选）：算法信息，表示用以训练该模型的主要算法，如 MAE、BEiT 等
+- `module info`：模块信息，主要包含模型的主干网络名称，如 resnet、vit 等
+- `pretrain info`（可选）：预训练信息，比如预训练模型是在 ImageNet-21k 数据集上训练的等
+- `training info`：训练信息，训练策略设置，包括 batch size，schedule 以及数据增强等；
 - `data info`：数据信息，数据集名称、模态、输入尺寸等，如 imagenet, cifar 等；
 
 ### 算法信息
 
-指论文中的算法名称缩写，以及相应的分支架构信息。例如：
+指用以训练该模型的算法名称，例如：
 
-- `resnet50`
-- `mobilenet-v3-large`
-- `vit-small-patch32`   : `patch32` 表示 `ViT` 切分的分块大小
-- `seresnext101-32x4d`  : `SeResNet101` 基本网络结构，`32x4d` 表示在 `Bottleneck` 中  `groups` 和 `width_per_group` 分别为32和4
+- `simclr`
+- `mocov2`
+- `eva-mae-style`
+
+使用监督图像分类任务训练的模型可以省略这个字段。
 
 ### 模块信息
 
-指一些特殊的 `neck` 、`head` 或者 `pretrain` 的信息， 在分类中常见为预训练信息，比如：
+指模型的结构信息，一般主要包含模型的主干网络结构，`neck` 和 `head` 信息一般被省略。例如：
 
-- `in21k-pre` : 在 `ImageNet21k` 上预训练
-- `in21k-pre-3rd-party` : 在 `ImageNet21k` 上预训练，其权重来自其他仓库
+- `resnet50`
+- `vit-base-p16`
+- `swin-base`
+
+### 预训练信息
+
+如果该模型是在预训练模型基础上，通过微调获得的，我们需要记录预训练模型的一些信息。例如：
+
+- 预训练模型的来源：`fb`、`openai`等。
+- 训练预训练模型的方法：`clip`、`mae`、`distill` 等。
+- 用于预训练的数据集：`in21k`、`laion2b`等（`in1k`可以省略）
+- 训练时长：`300e`、`1600e` 等。
+
+并非所有信息都是必要的，只需要选择用以区分不同的预训练模型的信息即可。
+
+在此字段的末尾，使用 `-pre` 作为标识符，例如 `mae-in21k-pre`。
 
 ### 训练信息
 
@@ -46,6 +62,8 @@ Batch size 信息：
 - `coslr-200e` : 使用 cosine scheduler, 训练 200 个 epoch
 - `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了 50 个轮次
 
+如果模型是从官方仓库等第三方仓库转换过来的，训练信息可以省略，使用 `3rdparty` 作为标识符。
+
 ### 数据信息
 
 - `in1k` : `ImageNet1k` 数据集，默认使用 `224x224` 大小的图片
@@ -53,29 +71,44 @@ Batch size 信息：
 - `in1k-384px` : 表示训练的输出图片大小为 `384x384`
 - `cifar100`
 
-### 配置文件命名案例
+### 模型命名案例
 
 ```text
-repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
+vit-base-p32_clip-openai-pre_3rdparty_in1k
 ```
 
-- `repvgg-D2se`:  算法信息
-  - `repvgg`: 主要算法名称。
-  - `D2se`: 模型的结构。
-- `deploy`:模块信息，该模型为推理状态。
-- `4xb64-autoaug-lbs-mixup-coslr-200e`: 训练信息
-  - `4xb64`: 使用4块 GPU 并且 每块 GPU 的批大小为64。
-  - `autoaug`: 使用 `AutoAugment` 数据增强方法。
-  - `lbs`: 使用 `label smoothing` 损失函数。
-  - `mixup`: 使用 `mixup` 训练增强方法。
-  - `coslr`: 使用 `cosine scheduler` 优化策略。
-  - `200e`: 训练 200 轮次。
-- `in1k`: 数据信息。 配置文件用于 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
+- `vit-base-p32`: 模块信息
+- `clip-openai-pre`：预训练信息
+  - `clip`：预训练方法是 clip
+  - `openai`：预训练模型来自 OpenAI
+  - `pre`：预训练标识符
+- `3rdparty`：模型是从第三方仓库转换而来的
+- `in1k`：数据集信息。该模型是从 ImageNet-1k 数据集训练而来的，输入大小为 `224x224`
+
+```text
+beit_beit-base-p16_8xb256-amp-coslr-300e_in1k
+```
+
+- `beit`: 算法信息
+- `beit-base`：模块信息，由于主干网络来自 BEiT 中提出的修改版 ViT，主干网络名称也是 `beit`
+- `8xb256-amp-coslr-300e`：训练信息
+  - `8xb256`：使用 8 个 GPU，每个 GPU 的批量大小为 256
+  - `amp`：使用自动混合精度训练
+  - `coslr`：使用余弦退火学习率调度器
+  - `300e`：训练 300 个 epoch
+- `in1k`：数据集信息。该模型是从 ImageNet-1k 数据集训练而来的，输入大小为 `224x224`
+
+## 配置文件命名规则
+
+配置文件的命名与模型名称几乎相同，有几点不同：
+
+- 训练信息是必要的，不能是 `3rdparty`
+- 如果配置文件只包含主干网络设置，既没有头部设置也没有数据集设置，我们将其命名为`{module info}_headless.py`。这种配置文件通常用于大型数据集上的第三方预训练模型。
 
 ### 权重命名规则
 
-权重的命名主要包括配置文件名，日期和哈希值。
+权重的命名主要包括模型名称，日期和哈希值。
 
 ```text
-{config_name}_{date}-{hash}.pth
+{model_name}_{date}-{hash}.pth
 ```

@@ -54,7 +54,7 @@ python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accu
 #### Compare the top-1 accuracy of two log files in the same figure.
 
 ```shell
-python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
+python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy/top1 --legend exp1 exp2
 ```
 
 ### How to calculate training time
@@ -100,7 +100,7 @@ We provide `tools/analysis_tools/eval_metric.py` to enable the user evaluate the
 ```shell
 python tools/analysis_tools/eval_metric.py \
       ${RESULT} \
-      [--metric ${METRIC_OPTIONS} ...] \
+      [--metric ${METRIC_OPTIONS} ...]
 ```
 
 Description of all arguments:
@@ -127,9 +127,56 @@ python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
 # Eval the top-1 and top-5 accuracy
 python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy topk=1,5
 
-# Eval accuracy, precision, recall and f1-score
+# Eval the overall accuracy and the class-wise precision, recall, f1-score
 python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy \
-    --metric type=SingleLabelMetric items=precision,recall,f1-score
+    --metric type=SingleLabelMetric items=precision,recall,f1-score average=None
+```
+
+### How to plot the confusion matrix for the test result
+
+We provide `tools/analysis_tools/confusion_matrix.py` to enable the user plot the confusion matrix from the prediction files.
+
+```shell
+python tools/analysis_tools/confusion_matrix.py \
+      ${CONFIG} \
+      ${RESULT} \
+      [--out ${OUT}] \
+      [--show] \
+      [--show-path ${SHOW_PATH}] \
+      [--include-values] \
+      [--cmap] \
+      [--cfg-options ${CFG_OPTIONS} ...] \
+```
+
+Description of all arguments:
+
+- `config`: The config file path.
+- `result`:  The output result file in pickle format from `tools/test.py`, or a checkpoint file.
+- `--out`: The path to save the confusion matrix in pickle format.
+- `--show`: Whether to show the confusion matrix plot.
+- `--show-path`: The path to save the confusion matrix plot.
+- `--include-values`: Whether to show the values in the confusion matrix plot.
+- `--cmap`: The color map to plot the confusion matrix.
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
+
+```{note}
+In `tools/test.py`, we support using `--out-item` option to select which kind of results will be saved.
+Please ensure the `--out-item` is not specified or `--out-item=pred` to use this tool.
+```
+
+**Examples**:
+
+```shell
+# Get the prediction results
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# Save the confusion matrix in a pickle file
+python tools/analysis_tools/confusion_matrix.py configs/resnet/resnet18_8xb16_cifar10.py results.pkl --out cm.pkl
+
+# Show the confusion matrix plot in a graphical window.
+python tools/analysis_tools/confusion_matrix.py configs/resnet/resnet18_8xb16_cifar10.py results.pkl --show
 ```
 
 ### How to visualize the prediction results

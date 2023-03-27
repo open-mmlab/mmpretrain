@@ -1,4 +1,4 @@
-# Class Activation Map(CAM) Visualization
+# Class Activation Map (CAM) Visualization
 
 ## Introduction of the CAM visualization tool
 
@@ -14,6 +14,8 @@ The supported methods are as follows:
 | EigenCAM     | Takes the first principle component of the 2D Activations (no class discrimination, but seems to give great results)         |
 | EigenGradCAM | Like EigenCAM but with class discrimination: First principle component of Activations\*Grad. Looks like GradCAM, but cleaner |
 | LayerCAM     | Spatially weight the activations by positive gradients. Works better especially in lower layers                              |
+
+More CAM methods supported by the new version `pytorch-grad-cam` can also be used but we haven't verified the availability.
 
 **Command**：
 
@@ -37,38 +39,32 @@ python tools/visualization/vis_cam.py \
 
 **Description of all arguments**：
 
-- `img` : The target picture path.
-- `config` : The path of the model config file.
-- `checkpoint` : The path of the checkpoint.
-- `--target-layers` : The target layers to get activation maps, one or more network layers can be specified. If not set, use the norm layer of the last block.
-- `--preview-model` : Whether to print all network layer names in the model.
-- `--method` : Visualization method, supports `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`, which is case insensitive. Defaults to `GradCAM`.
-- `--target-category` : Target category, if not set, use the category detected by the given model.
-- `--save-path` : The path to save the CAM visualization image. If not set, the CAM image will not be saved.
-- `--vit-like` : Whether the network is ViT-like network.
-- `--num-extra-tokens` : The number of extra tokens in ViT-like backbones. If not set, use num_extra_tokens the backbone.
-- `--aug_smooth` : Whether to use TTA(Test Time Augment) to get CAM.
-- `--eigen_smooth` : Whether to use the principal component to reduce noise.
-- `--device` : The computing device used. Default to 'cpu'.
-- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](../user_guides/config.md).
+- `img`: The target picture path.
+- `config`: The path of the model config file.
+- `checkpoint`: The path of the checkpoint.
+- `--target-layers`: The target layers to get activation maps, one or more network layers can be specified. If not set, use the norm layer of the last block.
+- `--preview-model`: Whether to print all network layer names in the model.
+- `--method`: Visualization method, supports `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`, which is case insensitive. Defaults to `GradCAM`.
+- `--target-category`: Target category, if not set, use the category detected by the given model.
+- `--eigen-smooth`: Whether to use the principal component to reduce noise.
+- `--aug-smooth`: Whether to use TTA(Test Time Augment) to get CAM.
+- `--save-path`: The path to save the CAM visualization image. If not set, the CAM image will not be saved.
+- `--vit-like`: Whether the network is ViT-like network.
+- `--num-extra-tokens`: The number of extra tokens in ViT-like backbones. If not set, use num_extra_tokens the backbone.
+- `--device`: The computing device used. Default to 'cpu'.
+- `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](../user_guides/config.md).
 
 ```{note}
 The argument `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about the model layers when setting `--target-layers`.
 ```
 
-## How to visualize the CAM of CNN(ResNet-50)
+## How to visualize the CAM of CNN (ResNet-50)
 
 Here are some examples of `target-layers` in ResNet-50, which can be any module or layer:
 
 - `'backbone.layer4'` means the output of the forth ResLayer.
 - `'backbone.layer4.2'` means the output of the third BottleNeck block in the forth ResLayer.
 - `'backbone.layer4.2.conv1'` means the output of the `conv1` layer in above BottleNeck block.
-
-```{note}
-For `ModuleList` or `Sequential`, you can also use the index to specify which sub-module is the target layer.
-
-For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since `layer4` is a `Sequential` with three sub-modules.
-```
 
 1. Use different methods to visualize CAM for `ResNet50`, the `target-category` is the predicted result by the given checkpoint, using the default `target-layers`.
 
@@ -123,7 +119,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
 Here are some examples:
 
 - `'backbone.norm3'` for Swin-Transformer;
-- `'backbone.layers[-1].ln1'` for ViT;
+- `'backbone.layers.11.ln1'` for ViT;
 
 For ViT-like networks, such as ViT, T2T-ViT and Swin-Transformer, the features are flattened. And for drawing the CAM, we need to specify the `--vit-like` argument to reshape the features into square feature maps.
 
@@ -146,10 +142,10 @@ To exclude these extra tokens, we need know the number of extra tokens. Almost a
    ```shell
    python tools/visualization/vis_cam.py \
        demo/bird.JPEG  \
-       configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
+       configs/vision_transformer/vit-base-p16_64xb64_in1k-384px.py \
        https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
        --vit-like \
-       --target-layers 'backbone.layers[-1].ln1'
+       --target-layers 'backbone.layers.11.ln1'
    ```
 
 3. Visualize CAM for `T2T-ViT`:
@@ -160,7 +156,7 @@ To exclude these extra tokens, we need know the number of extra tokens. Almost a
        configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
        --vit-like \
-       --target-layers 'backbone.encoder[-1].ln1'
+       --target-layers 'backbone.encoder.12.ln1'
    ```
 
 | Image                                   | ResNet50                                   | ViT                                    | Swin                                    | T2T-ViT                                    |

@@ -1,12 +1,5 @@
 # 测试
 
-- [测试](#测试)
-  - [单机单卡测试](#单机单卡测试)
-  - [单机多卡测试](#单机多卡测试)
-  - [多机测试](#多机测试)
-    - [同一网络下的多机](#同一网络下的多机)
-    - [Slurm 管理下的多机集群](#slurm-管理下的多机集群)
-
 ## 单机单卡测试
 
 你可以使用 `tools/test.py` 在电脑上用 CPU 或是 GPU 进行模型的测试。
@@ -37,7 +30,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | `--show`                              | 在窗口中显示预测结果图像。                                                                                                                                          |
 | `--interval INTERVAL`                 | 每隔多少样本进行一次预测结果可视化。                                                                                                                                |
 | `--wait-time WAIT_TIME`               | 每个窗口的显示时间（单位为秒）。                                                                                                                                    |
-| `--no-pin-memory`                     | 是否在 dataloaders 中关闭 pin_memory 选项                                                                                                                           |
+| `--no-pin-memory`                     | 是否在 dataloaders 中关闭 `pin_memory` 选项                                                                                                                         |
 | `--tta`                               | 是否开启 Test-Time-Aug (TTA). 如果配置文件有 `tta_pipeline` 和 `tta_model`，将使用这些配置指定 TTA transforms，并且决定如何融合 TTA 的结果。 否则，通过平均分类分数使用 flip TTA。 |
 | `--launcher {none,pytorch,slurm,mpi}` | 启动器，默认为 "none"。                                                                                                                                             |
 

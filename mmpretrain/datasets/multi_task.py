@@ -6,7 +6,7 @@ from typing import Optional, Sequence
 
 import mmengine
 from mmcv.transforms import Compose
-from mmengine.fileio import FileClient
+from mmengine.fileio import get_file_backend
 
 from .builder import DATASETS
 
@@ -136,10 +136,6 @@ class MultiTaskDataset:
             represents a operation defined in
             :mod:`mmpretrain.datasets.pipelines`. Defaults to an empty tuple.
         test_mode (bool): in train mode or test mode. Defaults to False.
-        file_client_args (dict, optional): Arguments to instantiate a
-            FileClient. See :class:`mmengine.fileio.FileClient` for details.
-            If None, automatically inference from the ``data_root``.
-            Defaults to None.
     """
     METAINFO = dict()
 
@@ -149,18 +145,15 @@ class MultiTaskDataset:
                  data_root: Optional[str] = None,
                  data_prefix: Optional[str] = None,
                  pipeline: Sequence = (),
-                 test_mode: bool = False,
-                 file_client_args: Optional[dict] = None):
+                 test_mode: bool = False):
 
         self.data_root = expanduser(data_root)
 
         # Inference the file client
         if self.data_root is not None:
-            file_client = FileClient.infer_client(
-                file_client_args, uri=self.data_root)
+            self.file_backend = get_file_backend(uri=self.data_root)
         else:
-            file_client = FileClient(file_client_args)
-        self.file_client: FileClient = file_client
+            self.file_backend = None
 
         self.ann_file = self._join_root(expanduser(ann_file))
         self.data_prefix = self._join_root(data_prefix)
@@ -189,7 +182,7 @@ class MultiTaskDataset:
         if isabs(path):
             return path
 
-        joined_path = self.file_client.join_path(self.data_root, path)
+        joined_path = self.file_backend.join_path(self.data_root, path)
         return joined_path
 
     @classmethod

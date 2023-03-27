@@ -235,7 +235,7 @@ env_cfg = dict(
      )
      ```
 
-     参见 [微调模型](../user_guides/finetune.md) 以了解更多关于模型微调的细节。
+     参见 [微调模型](../notes/finetune_custom_dataset.md) 以了解更多关于模型微调的细节。
 
 2. **`default_hooks` 和 `custom_hooks` 之间有什么区别？**
 

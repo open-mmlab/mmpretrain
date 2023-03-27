@@ -54,7 +54,7 @@ python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accu
 #### 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
 
 ```shell
-python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
+python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy/top1 --legend exp1 exp2
 ```
 
 ### 如何统计训练时间
@@ -99,7 +99,7 @@ average iter time: 0.3777 s/iter
 ```shell
 python tools/analysis_tools/eval_metric.py \
       ${RESULT} \
-      [--metric ${METRIC_OPTIONS} ...]  \
+      [--metric ${METRIC_OPTIONS} ...]
 ```
 
 **所有参数说明**：
@@ -125,9 +125,56 @@ python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
 # 计算 top-1 和 top-5 准确率
 python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy topk=1,5
 
-# 计算准确率、精确度、召回率、F1-score
+# 计算总体准确率，各个类别上的精确度、召回率、F1-score
 python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy \
-    --metric type=SingleLabelMetric items=precision,recall,f1-score
+    --metric type=SingleLabelMetric items=precision,recall,f1-score average=None
+```
+
+### 如何绘制测试结果的混淆矩阵
+
+我们提供 `tools/analysis_tools/confusion_matrix.py`，帮助用户能够从测试输出文件中绘制混淆矩阵。
+
+```shell
+python tools/analysis_tools/confusion_matrix.py \
+      ${CONFIG} \
+      ${RESULT} \
+      [--out ${OUT}] \
+      [--show] \
+      [--show-path ${SHOW_PATH}] \
+      [--include-values] \
+      [--cmap] \
+      [--cfg-options ${CFG_OPTIONS} ...] \
+```
+
+**所有参数说明**：
+
+- `config`：配置文件的路径。
+- `result`：`tools/test.py`的输出结果文件，或是模型权重文件。
+- `--out`：将混淆矩阵保存到指定路径下的 pickle 文件中。
+- `--show`：是否可视化混淆矩阵图。
+- `--show-path`：将可视化混淆矩阵图保存到指定路径下。
+- `--include-values`：是否在可视化混淆矩阵图中显示具体值。
+- `--cmap`：用以可视化混淆矩阵的颜色配置。
+- `--cfg-options`：额外的配置选项，会被合入配置文件，参考[学习配置文件](../user_guides/config.md)。
+
+```{note}
+在 `tools/test.py` 中，我们支持使用 `--out-item` 选项来选择保存何种结果至输出文件。
+请确保没有额外指定 `--out-item`，或指定了 `--out-item=pred`。
+```
+
+**Examples**:
+
+```shell
+# 获取结果文件
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# 将混淆矩阵计算结果保存至 cm.pkl 中
+python tools/analysis_tools/confusion_matrix.py configs/resnet/resnet18_8xb16_cifar10.py results.pkl --out cm.pkl
+
+# 可视化混淆矩阵图，并在图形窗口显示
+python tools/analysis_tools/confusion_matrix.py configs/resnet/resnet18_8xb16_cifar10.py results.pkl --show
 ```
 
 ### 如何将预测结果可视化

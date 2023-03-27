@@ -1,27 +1,35 @@
 # How to Pretrain with Custom Dataset
 
-- [How to Pretrain with Custom Dataset](#how-to-pretrain-with-custom-dataset)
-  - [Train MAE on Custom Dataset](#train-mae-on-custom-dataset)
-    - [Step-1: Get the path of custom dataset](#step-1-get-the-path-of-custom-dataset)
-    - [Step-2: Choose one config as template](#step-2-choose-one-config-as-template)
-    - [Step-3: Edit the dataset related config](#step-3-edit-the-dataset-related-config)
-  - [Train MAE on COCO Dataset](#train-mae-on-coco-dataset)
-
-In this tutorial, we provide some tips on how to conduct self-supervised learning on your own dataset(without the need of label).
-
-## Train MAE on Custom Dataset
+In this tutorial, we provide a practice example and some tips on how to train on your own dataset.
 
 In MMPretrain, We support the `CustomDataset` (similar to the `ImageFolder` in `torchvision`),  which is able to read the images within the specified folder directly. You only need to prepare the path information of the custom dataset and edit the config.
 
-### Step-1: Get the path of custom dataset
+## Step-1: Prepare your dataset
 
-It should be like `data/custom_dataset/`
+Prepare your dataset following [Prepare Dataset](../user_guides/dataset_prepare.md).
+And the root folder of the dataset can be like `data/custom_dataset/`.
 
-### Step-2: Choose one config as template
+Here, we assume you want to do unsupervised training, and use the sub-folder format `CustomDataset` to
+organize your dataset as:
 
-Here, we would like to use `configs/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py` as the example. We first copy this config file and rename it as `mae_vit-base-p16_8xb512-amp-coslr-300e_${custom_dataset}.py`.
+```text
+data/custom_dataset/
+├── sample1.png
+├── sample2.png
+├── sample3.png
+├── sample4.png
+└── ...
+```
 
-- `custom_dataset`: indicate which dataset you used, e.g.,`in1k` for ImageNet dataset, `coco` for COCO dataset
+## Step-2: Choose one config as template
+
+Here, we would like to use `configs/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py` as the example. We
+first copy this config file to the same folder and rename it as
+`mae_vit-base-p16_8xb512-amp-coslr-300e_custom.py`.
+
+```{tip}
+As a convention, the last field of the config name is the dataset, e.g.,`in1k` for ImageNet dataset, `coco` for COCO dataset
+```
 
 The content of this config is:
 
@@ -84,34 +92,35 @@ resume = True
 auto_scale_lr = dict(base_batch_size=4096)
 ```
 
-### Step-3: Edit the dataset related config
+## Step-3: Edit the dataset related config
 
-The dataset related config is defined in `'../_base_/datasets/imagenet_bs512_mae.py'` in `_base_`. We then copy the content of dataset config file into our created file `mae_vit-base-p16_8xb512-coslr-400e_${custom_dataset}.py`.
+- Override the `type` of dataset settings as `'CustomDataset'`
+- Override the `data_root` of dataset settings as `data/custom_dataset`.
+- Override the `ann_file` of dataset settings as an empty string since we assume you are using the sub-folder
+  format `CustomDataset`.
+- Override the `data_prefix` of dataset settings as an empty string since we are using the whole dataset under
+  the `data_root`, and you don't need to split samples into different subset and set the `data_prefix`.
 
-- Set the `dataset_type = 'CustomDataset'`, and the path of the custom dataset ` data_root = /dataset/my_custom_dataset`.
-- Remove the `ann_file` in `train_dataloader`, and edit the `data_prefix` if needed.
-
-And the edited config will be like this:
+The modified config will be like:
 
 ```python
-# >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
     '../_base_/models/mae_vit-base-p16.py',
-    '../_base_/datasets/imagenet_mae.py',
+    '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
 
-# custom dataset
-dataset_type = 'CustomDataset'
-data_root = 'data/custom_dataset/'
-
+# >>>>>>>>>>>>>>> Override dataset settings here >>>>>>>>>>>>>>>>>>>
 train_dataloader = dict(
     dataset=dict(
-        type=dataset_type,
-        data_root=data_root,
-        # ann_file='meta/train.txt', # removed if you don't have the annotation file
-        data_prefix=dict(img_path='./'))
-# <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
+        type='CustomDataset',
+        data_root='data/custom_dataset/',
+        ann_file='',       # We assume you are using the sub-folder format without ann_file
+        data_prefix='',    # The `data_root` is the data_prefix directly.
+        with_label=False,
+    )
+)
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # optimizer wrapper
 optim_wrapper = dict(
@@ -167,7 +176,7 @@ auto_scale_lr = dict(base_batch_size=4096)
 
 By using the edited config file, you are able to train a self-supervised model with MAE algorithm on the custom dataset.
 
-## Train MAE on COCO Dataset
+## Another example: Train MAE on COCO Dataset
 
 ```{note}
 You need to install MMDetection to use the `mmdet.CocoDataset` follow this [documentation](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md)
@@ -176,25 +185,22 @@ You need to install MMDetection to use the `mmdet.CocoDataset` follow this [docu
 Follow the aforementioned idea, we also present an example of how to train MAE on COCO dataset.  The edited file will be like this:
 
 ```python
-# >>>>>>>>>>>>>>>>>>>>> Start of Changed >>>>>>>>>>>>>>>>>>>>>>>>>
 _base_ = [
     '../_base_/models/mae_vit-base-p16.py',
     '../_base_/datasets/imagenet_mae.py',
     '../_base_/default_runtime.py',
 ]
 
-# custom dataset
-dataset_type = 'mmdet.CocoDataset'
-data_root = 'data/coco/'
-
+# >>>>>>>>>>>>>>> Override dataset settings here >>>>>>>>>>>>>>>>>>>
 train_dataloader = dict(
     dataset=dict(
-        type=dataset_type,
-        data_root=data_root,
-        ann_file='annotations/instances_train2017.json',
-        data_prefix=dict(img='train2017/')))
-
-# <<<<<<<<<<<<<<<<<<<<<< End of Changed <<<<<<<<<<<<<<<<<<<<<<<<<<<
+        type='mmdet.CocoDataset',
+        data_root='data/coco/',
+        ann_file='annotations/instances_train2017.json',  # Only for loading images, and the labels won't be used.
+        data_prefix=dict(img='train2017/'),
+    )
+)
+# <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 # optimizer wrapper
 optim_wrapper = dict(
