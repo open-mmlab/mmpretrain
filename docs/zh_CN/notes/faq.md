@@ -9,12 +9,11 @@
 
 - MMEngine, MMCV 与 MMPretrain 的兼容问题
 
-  这里我们列举了各版本 MMPretrain 对 MMEngine 和 MMCV 版本的依赖，请选择合适的 MMEngine 和 MMCV
-  版本来避免安装和使用中的问题。
+  这里我们列举了各版本 MMPretrain 对 MMEngine 和 MMCV 版本的依赖，请选择合适的 MMEngine 和 MMCV 版本来避免安装和使用中的问题。
 
-  | MMPretrain version | MMEngine version  |   MMCV version   |
-  | :----------------: | :---------------: | :--------------: |
-  |  1.0.0rc0 (main)   | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  | MMPretrain 版本 |   MMEngine 版本   |    MMCV 版本     |
+  | :-------------: | :---------------: | :--------------: |
+  | 1.0.0rc0 (main) | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
   由于 `dev` 分支处于频繁开发中，MMEngine 和 MMCV 版本依赖可能不准确。如果您在使用
