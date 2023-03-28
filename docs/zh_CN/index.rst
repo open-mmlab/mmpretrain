@@ -81,6 +81,12 @@
    notes/faq.md
 
 .. toctree::
+   :maxdepth: 1
+   :caption: 设备支持
+
+   device/npu.md
+
+.. toctree::
    :caption: 切换语言
 
    English <https://mmclassification.readthedocs.io/en/1.x/>
