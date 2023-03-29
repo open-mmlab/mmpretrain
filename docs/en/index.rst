@@ -34,7 +34,7 @@ roadmap we have created for the library:
    Additionally, we provide **Analysis** and **Visualization** tools to help
    diagnose algorithms.
 
-   Besides, if you have any other questions or concerns, please refer to the 
+   Besides, if you have any other questions or concerns, please refer to the
    **Notes** section for potential answers.
    you may find answers.
 
