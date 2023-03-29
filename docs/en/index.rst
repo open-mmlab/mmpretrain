@@ -1,40 +1,40 @@
 Welcome to MMPretrain's documentation!
 ============================================
 
-MMPretrain aims to provide various powerful pre-trained backbones and supports 
-different pre-training strategies. In pre-training stage, we expect that 
+MMPretrain aims to provide various powerful pre-trained backbones and supports
+different pre-training strategies. In pre-training stage, we expect that
 backbones are able to learn the discriminative and rich semantic representation
-of the data. Equipped with the powerful pre-trained model, we are able to 
+of the data. Equipped with the powerful pre-trained model, we are able to
 improve various downstream vision tasks currently.
 
-Our codebase aims to become an easy-to-use and user-friendly library. To help 
-the research and engineering, we elaborate the properties and design of 
+Our codebase aims to become an easy-to-use and user-friendly library. To help
+the research and engineering, we elaborate the properties and design of
 MMPretrain in the following different sections.
 
 
 Hands-on Roadmap of MMPretrain
 -------------------------------
 
-To help the user to use the MMPretrain quickly, we recommend the following 
+To help the user to use the MMPretrain quickly, we recommend the following
 roadmap for using our library:
 
    For the user who wants to try MMPretrain, we recommend the user to read
    **Get Started** part for the environment setup.
 
-   For the basic usage, we refer the user to **User Guides** for using various 
-   algorithms to obtain the pre-trained models and evaulate them in downstream 
+   For the basic usage, we refer the user to **User Guides** for using various
+   algorithms to obtain the pre-trained models and evaluate them in downstream
    tasks.
 
-   For the customization of your own algorithms, we provide **Advanced Guides** 
+   For the customization of your own algorithms, we provide **Advanced Guides**
    illustrating hints and rules of code modification.
 
    To find your desired pre-trained models, you could check the **Model Zoo**,
    which consists of summary, various backbones and pre-training methods.
-    
-   Also, we provide some **Analysis** and **Visualization** tools to help 
+
+   Also, we provide some **Analysis** and **Visualization** tools to help
    diagnose the algorithms.
 
-   Besides, if you have any other questions, please refer to **Notes**, where 
+   Besides, if you have any other questions, please refer to **Notes**, where
    you may find answers.
 
 PRs and Issues are welcome!
