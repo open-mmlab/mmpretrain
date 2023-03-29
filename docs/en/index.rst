@@ -1,43 +1,44 @@
 Welcome to MMPretrain's documentation!
 ============================================
 
-MMPretrain aims to provide various powerful pre-trained backbones and supports
-different pre-training strategies. In pre-training stage, we expect that
-backbones are able to learn the discriminative and rich semantic representation
-of the data. Equipped with the powerful pre-trained model, we are able to
-improve various downstream vision tasks currently.
+MMPretrain has set out to provide multiple powerful pre-trained backbones and
+support different pre-training strategies. During the pre-training stage, we
+anticipate the backbones to learn discriminative and rich semantic
+representations of data. With the powerful pre-trained model, we are currently
+capable of improving various downstream vision tasks.
 
-Our codebase aims to become an easy-to-use and user-friendly library. To help
-the research and engineering, we elaborate the properties and design of
-MMPretrain in the following different sections.
-
+Our primary objective for the codebase is to become an easily accessible and
+user-friendly library. We aim to streamline research and engineering by
+detailing the properties and design of MMPretrain across different sections.
 
 Hands-on Roadmap of MMPretrain
 -------------------------------
 
-To help the user to use the MMPretrain quickly, we recommend the following
-roadmap for using our library:
+To help users quickly utilize MMPretrain, we recommend following the hands-on
+roadmap we have created for the library:
 
-   For the user who wants to try MMPretrain, we recommend the user to read
-   **Get Started** part for the environment setup.
+   For users who want to try MMPretrain, we suggest reading the **Get Started**
+   section for the environment setup.
 
-   For the basic usage, we refer the user to **User Guides** for using various
-   algorithms to obtain the pre-trained models and evaluate them in downstream
-   tasks.
+   For basic usage, we refer users to **User Guides** for utilizing various
+   algorithms to obtain the pre-trained models and evaluate their performance
+   in downstream tasks.
 
-   For the customization of your own algorithms, we provide **Advanced Guides**
-   illustrating hints and rules of code modification.
+   For those who wish to customize their own algorithms, we provide
+   **Advanced Guides** that include hints and rules for modifying code.
 
-   To find your desired pre-trained models, you could check the **Model Zoo**,
-   which consists of summary, various backbones and pre-training methods.
+   To find your desired pre-trained models, users could check the **Model Zoo**,
+   which features a summary of various backbones and pre-training methods and
+   introfuction of different algorithms.
 
-   Also, we provide some **Analysis** and **Visualization** tools to help
-   diagnose the algorithms.
+   Additionally, we provide **Analysis** and **Visualization** tools to help
+   diagnose algorithms.
 
-   Besides, if you have any other questions, please refer to **Notes**, where
+   Besides, if you have any other questions or concerns, please refer to the 
+   **Notes** section for potential answers.
    you may find answers.
 
-PRs and Issues are welcome!
+We always welcome *PRs* and *Issues* for the betterment of MMPretrain.
 
 
 .. toctree::
