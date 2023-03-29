@@ -1,4 +1,4 @@
-# Projects based on MMClassification
+# Projects based on MMPretrain
 
 There are many projects built upon MMClassification.
 We list some of them as examples of how to extend MMClassification for your own projects.
