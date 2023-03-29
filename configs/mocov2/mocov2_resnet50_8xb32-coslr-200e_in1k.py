@@ -10,7 +10,11 @@ model = dict(
     queue_len=65536,
     feat_dim=128,
     momentum=0.001,
-    backbone=dict(type='ResNet', depth=50, norm_cfg=dict(type='BN')),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        norm_cfg=dict(type='BN'),
+        zero_init_residual=False),
     neck=dict(
         type='MoCoV2Neck',
         in_channels=2048,
