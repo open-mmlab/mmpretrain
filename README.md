@@ -33,6 +33,8 @@
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
+:point_right: **MMPreTrain 1.0 branch is in trial, welcome every to [try it](https://github.com/open-mmlab/mmclassification/tree/pretain) and [discuss with us](https://github.com/open-mmlab/mmclassification/discussions)!** :point_left:
+
 </div>
 
 ## Introduction
