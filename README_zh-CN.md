@@ -33,7 +33,7 @@
 [🆕 更新日志](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
 [🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
-:point_right: **MMClassification 1.0 版本即将正式发布，欢迎大家 [试用](https://github.com/open-mmlab/mmclassification/tree/1.x) 并 [参与讨论](https://github.com/open-mmlab/mmclassification/discussions)！** :point_left:
+:point_right: **MMPreTrain 1.0 版本即将正式发布，欢迎大家 [试用](https://github.com/open-mmlab/mmclassification/tree/pretain) 并 [参与讨论](https://github.com/open-mmlab/mmclassification/discussions)！** :point_left:
 
 </div>
 
