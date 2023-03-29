@@ -11,7 +11,11 @@ model = dict(
     feat_dim=128,
     momentum=0.001,
     loss_lambda=0.5,
-    backbone=dict(type='ResNet', depth=50, norm_cfg=dict(type='BN')),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        norm_cfg=dict(type='BN'),
+        zero_init_residual=False),
     neck=dict(
         type='DenseCLNeck',
         in_channels=2048,

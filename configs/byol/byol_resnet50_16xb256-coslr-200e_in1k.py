@@ -10,7 +10,11 @@ train_dataloader = dict(batch_size=256)
 model = dict(
     type='BYOL',
     base_momentum=0.01,
-    backbone=dict(type='ResNet', depth=50, norm_cfg=dict(type='SyncBN')),
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        norm_cfg=dict(type='SyncBN'),
+        zero_init_residual=False),
     neck=dict(
         type='NonLinearNeck',
         in_channels=2048,
