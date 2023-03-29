@@ -35,6 +35,10 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
+        '--amp',
+        action='store_true',
+        help='enable automatic-mixed-precision test')
+    parser.add_argument(
         '--show-dir',
         help='directory where the visualization images will be saved.')
     parser.add_argument(
@@ -67,7 +71,10 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
+    # When using PyTorch version >= 2.0.0, the `torch.distributed.launch`
+    # will pass the `--local-rank` parameter to `tools/train.py` instead
+    # of `--local_rank`.
+    parser.add_argument('--local_rank', '--local-rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -88,6 +95,10 @@ def merge_args(cfg, args):
                                 osp.splitext(osp.basename(args.config))[0])
 
     cfg.load_from = args.checkpoint
+
+    # enable automatic-mixed-precision test
+    if args.amp:
+        cfg.test_cfg.fp16 = True
 
     # -------------------- visualization --------------------
     if args.show or (args.show_dir is not None):
