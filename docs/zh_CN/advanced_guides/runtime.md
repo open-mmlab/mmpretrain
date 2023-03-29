@@ -2,8 +2,6 @@
 
 运行参数配置包括许多有用的功能，如权重文件保存、日志配置等等，在本教程中，我们将介绍如何配置这些功能。
 
-<!-- TODO: Link to MMEngine docs instead of API reference after the MMEngine English docs is done. -->
-
 ## 保存权重文件
 
 权重文件保存功能是一个在训练阶段默认注册的钩子， 你可以通过配置文件中的 `default_hooks.checkpoint` 字段配置它。
@@ -29,10 +27,11 @@ default_hooks = dict(
 - **`interval`** (int): 文件保存周期。如果使用-1，它将永远不会保存权重。
 - **`by_epoch`** (bool): 选择 **`interval`** 是基于epoch还是基于iteration， 默认为 `True`.
 - **`out_dir`** (str): 保存权重文件的根目录。如果不指定，检查点将被保存在工作目录中。如果指定，检查点将被保存在 **`out_dir`** 的子文件夹中。
-- **`max_keep_ckpts`** (int): 要保留的权重文件数量。在某些情况下，为了节省磁盘空间，我们希望只保留最近的几个权重文件。默认为-1，也就是无限制。
+- **`max_keep_ckpts`** (int): 要保留的权重文件数量。在某些情况下，为了节省磁盘空间，我们希望只保留最近的几个权重文件。默认为 -1，也就是无限制。
 - **`save_best`** (str, List[str]): 如果指定，它将保存具有最佳评估结果的权重。
   通常情况下，你可以直接使用`save_best="auto"`来自动选择评估指标。
-  而如果你想要更高级的配置，请参考[权重文件钩子(CheckpointHook)](mmengine.hooks.CheckpointHook)。
+
+而如果你想要更高级的配置，请参考[权重文件钩子(CheckpointHook)](tutorials/hook.md#checkpointhook)。
 
 ## 权重加载 / 断点训练
 
@@ -46,14 +45,14 @@ load_from = "Your checkpoint path"
 resume = False
 ```
 
-`load_from`字段可以是本地路径，也可以是HTTP路径。你可以从检查点恢复训练，方法是指定 `resume=True`。
+`load_from` 字段可以是本地路径，也可以是HTTP路径。你可以从检查点恢复训练，方法是指定 `resume=True`。
 
 ```{tip}
 你也可以通过指定 `load_from=None` 和 `resume=True` 启用从最新的断点自动恢复。
 Runner执行器将自动从工作目录中找到最新的权重文件。
 ```
 
-如果你用我们的`tools/train.py`脚本来训练模型，你只需使用 `--resume` 参数来恢复训练，就不用手动修改配置文件了。如下所示:
+如果你用我们的 `tools/train.py` 脚本来训练模型，你只需使用 `--resume` 参数来恢复训练，就不用手动修改配置文件了。如下所示:
 
 ```bash
 # 自动从最新的断点恢复
@@ -75,8 +74,8 @@ python tools/train.py configs/resnet/resnet50_8xb32_in1k.py --resume checkpoints
 randomness = dict(seed=None, deterministic=False)
 ```
 
-为了使实验更具可复现性，你可以指定一个种子并设置`deterministic=True`。
-`deterministic`选项的使用效果可以在[这里](https://pytorch.org/docs/stable/notes/randomness.html#cuda-convolution-benchmarking)找到。
+为了使实验更具可复现性，你可以指定一个种子并设置 `deterministic=True`。
+`deterministic` 选项的使用效果可以在[这里](https://pytorch.org/docs/stable/notes/randomness.html#cuda-convolution-benchmarking)找到。
 
 ## 日志配置
 
@@ -89,7 +88,7 @@ log_level = 'INFO'
 ```
 
 在 `default_hooks.logger` 字段中，你可以指定训练和测试期间的日志间隔。
-而所有可用的参数可以在[日志钩子文档](mmengine.hooks.LoggerHook)中找到。
+而所有可用的参数可以在[日志钩子文档](tutorials/hook.md#loggerhook)中找到。
 
 ```python
 default_hooks = dict(
@@ -102,7 +101,7 @@ default_hooks = dict(
 
 在 `log_processor` 字段中，你可以指定日志信息的平滑方法。
 通常，我们使用一个长度为10的窗口来平滑日志中的值，并输出所有信息的平均值。
-如果你想特别指定某些信息的平滑方法，请参阅[日志处理器文档](mmengine.runner.LogProcessor)
+如果你想特别指定某些信息的平滑方法，请参阅{external+mmengine:doc}`日志处理器文档 <advanced_tutorials/logging>`。
 
 ```python
 # 默认设置，它将通过一个10长度的窗口平滑训练日志中的值
@@ -115,7 +114,7 @@ log_processor = dict(window_size=10)
 ## 自定义钩子
 
 上述许多功能是由钩子实现的，你也可以通过修改 `custom_hooks` 字段来插入其他的自定义钩子。
-下面是MMEngine和MMClassification中的一些钩子，你可以直接使用，例如：
+下面是 MMEngine 和 MMPretrain 中的一些钩子，你可以直接使用，例如：
 
 - [EMAHook](mmpretrain.engine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
@@ -136,7 +135,7 @@ custom_hooks = [
 验证可视化钩子是一个验证过程中默认注册的钩子。
 你可以在 `default_hooks.visualization` 字段中来配置它。
 
-默认情况下，我们禁用这个钩子，你可以通过指定`enable=True`来启用它。而更多的参数可以在
+默认情况下，我们禁用这个钩子，你可以通过指定 `enable=True` 来启用它。而更多的参数可以在
 [可视化钩子文档](mmpretrain.engine.hooks.VisualizationHook)中找到。
 
 ```python
@@ -151,11 +150,11 @@ default_hooks = dict(
 你可以用它来观察训练期间模型在实际图像上的性能变化。
 
 此外，如果你的验证数据集中的图像很小（\<100， 如Cifra数据集），
-你可以指定 rescale_factor 来缩放它们，如 `rescale_factor=2.`, 将可视化的图像放大两倍。
+你可以指定 `rescale_factor` 来缩放它们，如 `rescale_factor=2.`, 将可视化的图像放大两倍。
 
 ## Visualizer
 
-Visualizer用于记录训练和测试过程中的各种信息，包括日志、图像和标量。
+`Visualizer` 用于记录训练和测试过程中的各种信息，包括日志、图像和标量。
 默认情况下，记录的信息将被保存在工作目录下的 `vis_data` 文件夹中。
 
 **默认配置:**
@@ -170,7 +169,7 @@ visualizer = dict(
 ```
 
 通常，最有用的功能是将日志和标量如 `loss` 保存到不同的后端。
-例如，要把它们保存到TensorBoard，只需像下面这样设置：
+例如，要把它们保存到 TensorBoard，只需像下面这样设置：
 
 ```python
 visualizer = dict(
@@ -182,7 +181,7 @@ visualizer = dict(
 )
 ```
 
-或者像下面这样把它们保存到WandB：
+或者像下面这样把它们保存到 WandB：
 
 ```python
 visualizer = dict(
@@ -196,7 +195,7 @@ visualizer = dict(
 
 ## 环境配置
 
-在 `env_cfg` 字段中，你可以配置一些底层的参数，如cuDNN、多进程和分布式通信。
+在 `env_cfg` 字段中，你可以配置一些底层的参数，如 cuDNN、多进程和分布式通信。
 
 **在修改这些参数之前，请确保你理解这些参数的含义。**
 
@@ -212,48 +211,3 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
 )
 ```
-
-## FAQ
-
-1. **`load_from` 和 `init_cfg` 之间的关系是什么？**
-
-   - `load_from`: 如果`resume=False`，只导入模型权重，主要用于加载训练过的模型；
-     如果 `resume=True` ，加载所有的模型权重、优化器状态和其他训练信息，主要用于恢复中断的训练。
-
-   - `init_cfg`: 你也可以指定`init=dict(type="Pretrained", checkpoint=xxx)`来加载权重，
-     表示在模型权重初始化时加载权重，通常在训练的开始阶段执行。
-     主要用于微调预训练模型，你可以在骨干网络的配置中配置它，还可以使用 `prefix` 字段来只加载对应的权重，例如：
-
-     ```python
-     model = dict(
-        backbone=dict(
-            type='ResNet',
-            depth=50,
-            init_cfg=dict(type='Pretrained', checkpoints=xxx, prefix='backbone'),
-        )
-        ...
-     )
-     ```
-
-     参见 [微调模型](../notes/finetune_custom_dataset.md) 以了解更多关于模型微调的细节。
-
-2. **`default_hooks` 和 `custom_hooks` 之间有什么区别？**
-
-   几乎没有区别。通常，`default_hooks` 字段用于指定几乎所有实验都会使用的钩子，
-   而 `custom_hooks` 字段指部分实验特有的钩子。
-
-   另一个区别是 `default_hooks` 是一个字典，而 `custom_hooks` 是一个列表，请不要混淆。
-
-3. **在训练期间，我没有收到训练日志，这是什么原因？**
-
-   如果你的训练数据集很小，而批处理量却很大，我们默认的日志间隔可能太大，无法记录你的训练日志。
-
-   你可以缩减日志间隔，再试一次，比如:
-
-   ```python
-   default_hooks = dict(
-       ...
-       logger=dict(type='LoggerHook', interval=10),
-       ...
-   )
-   ```

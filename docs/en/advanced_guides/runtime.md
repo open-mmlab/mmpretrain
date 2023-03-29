@@ -3,8 +3,6 @@
 The runtime configurations include many helpful functionalities, like checkpoint saving, logger configuration,
 etc. In this tutorial, we will introduce how to configure these functionalities.
 
-<!-- TODO: Link to MMEngine docs instead of API reference after the MMEngine English docs is done. -->
-
 ## Save Checkpoint
 
 The checkpoint saving functionality is a default hook during training. And you can configure it in the
@@ -34,8 +32,9 @@ Here are some usual arguments, and all available arguments can be found in the [
 - **`out_dir`** (str): The root directory to save checkpoints. If not specified, the checkpoints will be saved in the work directory. If specified, the checkpoints will be saved in the sub-folder of the **`out_dir`**.
 - **`max_keep_ckpts`** (int): The maximum checkpoints to keep. In some cases, we want only the latest few checkpoints and would like to delete old ones to save disk space. Defaults to -1, which means unlimited.
 - **`save_best`** (str, List[str]): If specified, it will save the checkpoint with the best evaluation result.
-  Usually, you can simply use `save_best="auto"` to automatically select the evaluation metric. And if you
-  want more advanced configuration, please refer to the [CheckpointHook docs](mmengine.hooks.CheckpointHook).
+  Usually, you can simply use `save_best="auto"` to automatically select the evaluation metric.
+
+And if you want more advanced configuration, please refer to the [CheckpointHook docs](tutorials/hook.md#checkpointhook).
 
 ## Load Checkpoint / Resume Training
 
@@ -94,7 +93,7 @@ log_level = 'INFO'
 ```
 
 In the `default_hooks.logger` field, you can specify the logging interval during training and testing. And all
-available arguments can be found in the [LoggerHook docs](mmengine.hooks.LoggerHook).
+available arguments can be found in the [LoggerHook docs](tutorials/hook.md#loggerhook).
 
 ```python
 default_hooks = dict(
@@ -107,7 +106,7 @@ default_hooks = dict(
 
 In the `log_processor` field, you can specify the log smooth method. Usually, we use a window with length of 10
 to smooth the log and output the mean value of all information. If you want to specify the smooth method of
-some information finely, see the [LogProcessor docs](mmengine.runner.LogProcessor).
+some information finely, see the {external+mmengine:doc}`LogProcessor docs <advanced_tutorials/logging>`.
 
 ```python
 # The default setting, which will smooth the values in training log by a 10-length window.
@@ -120,7 +119,7 @@ and WandB. More details can be found in the [Visualizer section](#visualizer).
 ## Custom Hooks
 
 Many above functionalities are implemented by hooks, and you can also plug-in other custom hooks by modifying
-`custom_hooks` field. Here are some hooks in MMEngine and MMClassification that you can use directly, such as:
+`custom_hooks` field. Here are some hooks in MMEngine and MMPretrain that you can use directly, such as:
 
 - [EMAHook](mmpretrain.engine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
@@ -220,52 +219,3 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
 )
 ```
-
-## FAQ
-
-1. **What's the relationship between the `load_from` and the `init_cfg`?**
-
-   - `load_from`: If `resume=False`, only imports model weights, which is mainly used to load trained models;
-     If `resume=True`, load all of the model weights, optimizer state, and other training information, which is
-     mainly used to resume interrupted training.
-
-   - `init_cfg`: You can also specify `init=dict(type="Pretrained", checkpoint=xxx)` to load checkpoint, it
-     means load the weights during model weights initialization. That is, it will be only done at the
-     beginning of the training. It's mainly used to fine-tune a pre-trained model, and you can set it in
-     the backbone config and use `prefix` field to only load backbone weights, for example:
-
-     ```python
-     model = dict(
-        backbone=dict(
-            type='ResNet',
-            depth=50,
-            init_cfg=dict(type='Pretrained', checkpoints=xxx, prefix='backbone'),
-        )
-        ...
-     )
-     ```
-
-     See the [Fine-tune Models](../notes/finetune_custom_dataset.md) for more details about fine-tuning.
-
-2. **What's the difference between `default_hooks` and `custom_hooks`?**
-
-   Almost no difference. Usually, the `default_hooks` field is used to specify the hooks that will be used in almost
-   all experiments, and the `custom_hooks` field is used in only some experiments.
-
-   Another difference is the `default_hooks` is a dict while the `custom_hooks` is a list, please don't be
-   confused.
-
-3. **During training, I got no training log, what's the reason?**
-
-   If your training dataset is small while the batch size is large, our default log interval may be too large to
-   record your training log.
-
-   You can shrink the log interval and try again, like:
-
-   ```python
-   default_hooks = dict(
-       ...
-       logger=dict(type='LoggerHook', interval=10),
-       ...
-   )
-   ```

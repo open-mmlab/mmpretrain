@@ -1,6 +1,6 @@
 # Customize Training Schedule
 
-In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/schedules) have been provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
+In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/schedules) have been provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
 
 In this tutorial, we will introduce how to modify configs to construct optimizers, use parameter-wise finely configuration, gradient clipping, gradient accumulation as well as customize learning rate and momentum schedules. Furthermore, introduce a template to customize self-implemented optimizationmethods for the project.
 
@@ -87,18 +87,17 @@ To finely configure them, we can use the `paramwise_cfg` argument in `optim_wrap
 
   More types of parameters are supported to configured, list as follow:
 
-  - `lr_mult`: Multiplier for learning rate of all parameters.
-  - `decay_mult`: Multiplier for weight decay of all parameters.
   - `bias_lr_mult`: Multiplier for learning rate of bias (Not include normalization layers' biases and deformable convolution layers' offsets). Defaults to 1.
   - `bias_decay_mult`: Multiplier for weight decay of bias (Not include normalization layers' biases and deformable convolution layers' offsets). Defaults to 1.
-  - `norm_decay_mult`: Multiplier for weight decay of weigh and bias of normalization layers. Defaults to 1.
+  - `norm_decay_mult`: Multiplier for weight decay of weight and bias of normalization layers. Defaults to 1.
+  - `flat_decay_mult`: Multiplier for weight decay of all one-dimensional parameters. Defaults to 1.
   - `dwconv_decay_mult`: Multiplier for weight decay of depth-wise convolution layers. Defaults to 1.
   - `bypass_duplicate`: Whether to bypass duplicated parameters. Defaults to `False`.
   - `dcn_offset_lr_mult`: Multiplier for learning rate of deformable convolution layers. Defaults to 1.
 
 - **Set different hyper-parameter multipliers for specific parameters.**
 
-  MMClassification can use `custom_keys` in `paramwise_cfg` to specify different parameters to use different learning rates or weight decay.
+  MMPretrain can use `custom_keys` in `paramwise_cfg` to specify different parameters to use different learning rates or weight decay.
 
   For example, to set all learning rates and weight decays of `backbone.layer0` to 0, the rest of `backbone` remains the same as optimizer and the learning rate of `head` to 0.001, use the configs below.
 
@@ -151,7 +150,7 @@ optim_wrapper = dict(
 
 ## Customize parameter schedules
 
-In training, the optimzation parameters such as learing rate, momentum, are usually not fixed but changing through iterations or epochs. PyTorch supports several learning rate schedulers, which are not sufficient for complex strategies. In MMClassification, we provide `param_scheduler` for better controls of different parameter schedules.
+In training, the optimzation parameters such as learing rate, momentum, are usually not fixed but changing through iterations or epochs. PyTorch supports several learning rate schedulers, which are not sufficient for complex strategies. In MMPretrain, we provide `param_scheduler` for better controls of different parameter schedules.
 
 ### Customize learning rate schedules
 
@@ -186,7 +185,7 @@ names of learning rate schedulers end with `LR`.
   In some of the training cases, multiple learning rate schedules are applied for higher accuracy. For example ,in the early stage, training is easy to be volatile, and warmup is a technique to reduce volatility.
   The learning rate will increase gradually from a minor value to the expected value by warmup and decay afterwards by other schedules.
 
-  In MMClassification, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy.
+  In MMPretrain, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy.
 
   Here are some examples:
 
@@ -256,69 +255,57 @@ param_scheduler = [
 ## Add new optimizers or constructors
 
 ```{note}
-This part will modify the MMClassification source code or add code to the MMClassification framework, beginners can skip it.
+This part will modify the MMPretrain source code or add code to the MMPretrain framework, beginners can skip it.
 ```
 
 ### Add new optimizers
 
-In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and you can add them through the following methods.
+In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMPretrain, and you can add them through the following methods.
 
-#### 1. Implement a new optimizer
+1. Implement a New Optimizer
 
-Assume you want to add an optimizer named `MyOptimizer`, which has arguments `a`, `b`, and `c`.
-You need to create a new file under `mmpretrain/engine/optimizers`, and implement the new optimizer in the file, for example, in `mmpretrain/engine/optimizers/my_optimizer.py`:
+   Assume you want to add an optimizer named `MyOptimizer`, which has arguments `a`, `b`, and `c`.
+   You need to create a new file under `mmpretrain/engine/optimizers`, and implement the new optimizer in the file, for example, in `mmpretrain/engine/optimizers/my_optimizer.py`:
 
-```python
-from torch.optim import Optimizer
-from mmpretrain.registry import OPTIMIZERS
+   ```python
+   from torch.optim import Optimizer
+   from mmpretrain.registry import OPTIMIZERS
 
 
-@OPTIMIZERS.register_module()
-class MyOptimizer(Optimizer):
+   @OPTIMIZERS.register_module()
+   class MyOptimizer(Optimizer):
 
-    def __init__(self, a, b, c):
-        ...
+       def __init__(self, a, b, c):
+           ...
 
-    def step(self, closure=None):
-        ...
-```
+       def step(self, closure=None):
+           ...
+   ```
 
-#### 2. Import the optimizer
+2. Import the Optimizer
 
-To find the above module defined above, this module should be imported during the running. There are two ways to achieve it.
+   To find the above module defined above, this module should be imported during the running.
 
-- Import it in the `mmpretrain/engine/optimizers/__init__.py` to add it into the `mmpretrain.engine` package.
+   Import it in the `mmpretrain/engine/optimizers/__init__.py` to add it into the `mmpretrain.engine` package.
 
-  ```python
-  # In mmpretrain/engine/optimizers/__init__.py
-  ...
-  from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
+   ```python
+   # In mmpretrain/engine/optimizers/__init__.py
+   ...
+   from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
 
-  __all__ = [..., 'MyOptimizer']
-  ```
+   __all__ = [..., 'MyOptimizer']
+   ```
 
-  During running, we will automatically import the `mmpretrain.engine` package and register the `MyOptimizer` at the same time.
+   During running, we will automatically import the `mmpretrain.engine` package and register the `MyOptimizer` at the same time.
 
-- Use `custom_imports` in the config file to manually import it.
+3. Specify the Optimizer in Config
 
-  ```python
-  custom_imports = dict(
-      imports=['mmpretrain.engine.optimizers.my_optimizer'],
-      allow_failed_imports=False,
-  )
-  ```
+   Then you can use `MyOptimizer` in the `optim_wrapper.optimizer` field of config files.
 
-  The module `mmpretrain.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
-  Note that only the package containing the class `MyOptimizer` should be imported. `mmpretrain.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
-
-#### 3. Specify the optimizer in the config file
-
-Then you can use `MyOptimizer` in the `optim_wrapper.optimizer` field of config files.
-
-```python
-optim_wrapper = dict(
-    optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
-```
+   ```python
+   optim_wrapper = dict(
+       optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
+   ```
 
 ### Add new optimizer constructors
 
@@ -348,6 +335,8 @@ class MyOptimWrapperConstructor:
     def __call__(self, model):
         ...
 ```
+
+Here is a specific example of [OptimWrapperConstructor](mmpretrain.engine.optimizers.LearningRateDecayOptimWrapperConstructor).
 
 And then, import it and use it almost like [the optimizer tutorial](#add-new-optimizers).
 
