@@ -1,8 +1,8 @@
 .header-logo {
-    background-image: url("../image/mmcls-logo.png");
-    background-size: 204px 40px;
+    background-image: url("../image/mmpt-logo.png");
+    background-size: 180px 40px;
     height: 40px;
-    width: 204px;
+    width: 180px;
 }
 
 pre {
