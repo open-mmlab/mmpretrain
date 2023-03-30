@@ -19,7 +19,7 @@
   </div>
   <div>&nbsp;</div>
 
-[![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
+[![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
 [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/1.x/)
 [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
@@ -61,10 +61,10 @@
 
 English | [简体中文](/README_zh-CN.md)
 
-MMClassification is an open source image classification toolbox based on PyTorch. It is
+MMPretrain is an open source visual pre-training toolbox based on PyTorch. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-The `1.x` branch works with **PyTorch 1.6+**.
+The `main` branch works with **PyTorch 1.8+**.
 
 <div align="center">
   <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
@@ -73,39 +73,21 @@ The `1.x` branch works with **PyTorch 1.6+**.
 ### Major features
 
 - Various backbones and pretrained models
-- Bag of training tricks
+- Bag of training strategies and tricks
 - Large-scale training configs
 - High efficiency and extensibility
 - Powerful toolkits
 
 ## What's new
 
-v1.0.0rc5 was released in 30/12/2022
+v1.0.0rc0 was released in 30/12/2022
 
-- Support **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
-- Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
-- Support **multi-task** training and testing. See [#1229](https://github.com/open-mmlab/mmclassification/pull/1229) for more details.
-- Support Test-time Augmentation. See [#1161](https://github.com/open-mmlab/mmclassification/pull/1161) for
-  more details.
-
-v1.0.0rc4 was released in 06/12/2022.
-
-- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
-- Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
-
-v1.0.0rc3 was released in 21/11/2022.
-
-- Add **Switch Recipe** Hook, Now we can modify training pipeline, mixup and loss settings during training, see [#1101](https://github.com/open-mmlab/mmclassification/pull/1101).
-- Add **TIMM and HuggingFace** wrappers. Now you can train/use models in TIMM/HuggingFace directly, see [#1102](https://github.com/open-mmlab/mmclassification/pull/1102).
-- Support **retrieval tasks**, see [#1055](https://github.com/open-mmlab/mmclassification/pull/1055).
-- Reproduce **mobileone** training accuracy. See [#1191](https://github.com/open-mmlab/mmclassification/pull/1191)
+- Integrated Self-supervised leanrning algorithms from **MMSelfSup**
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
 to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).
 
 And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html).
-
-The release candidate will last until the end of 2022, and during the release candidate, we will develop on the `1.x` branch. And we will still maintain 0.x version still at least the end of 2023.
 
 Please refer to [changelog.md](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) for more details and other release history.
 
@@ -117,8 +99,8 @@ Below are quick steps for installation:
 conda create -n open-mmlab python=3.8 pytorch==1.10.1 torchvision==0.11.2 cudatoolkit=11.3 -c pytorch -y
 conda activate open-mmlab
 pip install openmim
-git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
-cd mmclassification
+git clone -b 1.x https://github.com/open-mmlab/mmpretrain.git
+cd mmpretrain
 mim install -e .
 ```
 
@@ -126,7 +108,7 @@ Please refer to [install.md](https://mmclassification.readthedocs.io/en/1.x/get_
 
 ## User Guides
 
-We provided a series of tutorials about the basic usage of MMClassification for new users:
+We provided a series of tutorials about the basic usage of MMPretrain for new users:
 
 - [Inference with existing models](https://mmclassification.readthedocs.io/en/1.x/user_guides/inference.html)
 - [Prepare Dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html)
@@ -141,62 +123,106 @@ We provided a series of tutorials about the basic usage of MMClassification for 
 
 Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html).
 
-<details open>
-<summary>Supported backbones</summary>
-
-- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vgg)
-- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)
-- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)
-- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)
-- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)
-- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/regnet)
-- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v1)
-- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)
-- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v2)
-- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v3)
-- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)
-- [x] [Swin-Transformer V2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer_v2)
-- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/repvgg)
-- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer)
-- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/tnt)
-- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/res2net)
-- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mlp_mixer)
-- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit)
-- [x] [DeiT-3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit3)
-- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/conformer)
-- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
-- [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
-- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet)
-- [x] [EdgeNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/edgenext)
-- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convnext)
-- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/hrnet)
-- [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/van)
-- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convmixer)
-- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/cspnet)
-- [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/poolformer)
-- [x] [Inception V3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/inception_v3)
-- [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
-- [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
-- [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
-- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
-- [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
-- [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
-- [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
-- [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
-- [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
-- [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
-- [x] [EfficientNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet_v2)
-
-</details>
+<div align="center">
+  <b>Architectures</b>
+</div>
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>Supported Backbones</b>
+      </td>
+      <td>
+        <b>Self-supervised Learning</b>
+      </td>
+      <td>
+        <b>Image Retrieval</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+        <li><a href="configs/vgg">VGG</a></li>
+        <li><a href="configs/resnet">ResNet</a></li>
+        <li><a href="configs/resnext">ResNeXt</a></li>
+        <li><a href="configs/seresnet">SE-ResNet</a></li>
+        <li><a href="configs/seresnet">SE-ResNeXt</a></li>
+        <li><a href="configs/regnet">RegNet</a></li>
+        <li><a href="configs/shufflenet_v1">ShuffleNet V1</a></li>
+        <li><a href="configs/shufflenet_v2">ShuffleNet V2</a></li>
+        <li><a href="configs/mobilenet_v2">MobileNet V2</a></li>
+        <li><a href="configs/mobilenet_v3">MobileNet V3</a></li>
+        <li><a href="configs/swin_transformer">Swin-Transformer</a></li>
+        <li><a href="configs/swin_transformer_v2">Swin-Transformer V2</a></li>
+        <li><a href="configs/repvgg">RepVGG</a></li>
+        <li><a href="configs/vision_transformer">Vision-Transformer</a></li>
+        <li><a href="configs/tnt">Transformer-in-Transformer</a></li>
+        <li><a href="configs/res2net">Res2Net</a></li>
+        <li><a href="configs/mlp_mixer">MLP-Mixer</a></li>
+        <li><a href="configs/deit">DeiT</a></li>
+        <li><a href="configs/deit3">DeiT-3</a></li>
+        <li><a href="configs/conformer">Conformer</a></li>
+        <li><a href="configs/t2t_vit">T2T-ViT</a></li>
+        <li><a href="configs/twins">Twins</a></li>
+        <li><a href="configs/efficientnet">EfficientNet</a></li>
+        <li><a href="configs/edgenext">EdgeNeXt</a></li>
+        <li><a href="configs/convnext">ConvNeXt</a></li>
+        <li><a href="configs/hrnet">HRNet</a></li>
+        <li><a href="configs/van">VAN</a></li>
+        <li><a href="configs/convmixer">ConvMixer</a></li>
+        <li><a href="configs/cspnet">CSPNet</a></li>
+        <li><a href="configs/poolformer">PoolFormer</a></li>
+        <li><a href="configs/inception_v3">Inception V3</a></li>
+        <li><a href="configs/mobileone">MobileOne</a></li>
+        <li><a href="configs/efficientformer">EfficientFormer</a></li>
+        <li><a href="configs/mvit">MViT</a></li>
+        <li><a href="configs/hornet">HorNet</a></li>
+        <li><a href="configs/mobilevit">MobileViT</a></li>
+        <li><a href="configs/davit">DaViT</a></li>
+        <li><a href="configs/replknet">RepLKNet</a></li>
+        <li><a href="configs/beit">BEiT</a></li>
+        <li><a href="configs/mixmim">MixMIM</a></li>
+        <li><a href="configs/efficientnet_v2">EfficientNet V2</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+        <li><a href="configs/mocov2">MoCo V1 (CVPR'2020)</a></li>
+        <li><a href="configs/simclr">SimCLR (ICML'2020)</a></li>
+        <li><a href="configs/mocov2">MoCo V2 (arXiv'2020)</a></li>
+        <li><a href="configs/byol">BYOL (NeurIPS'2020)</a></li>
+        <li><a href="configs/swav">SwAV (NeurIPS'2020)</a></li>
+        <li><a href="configs/densecl">DenseCL (CVPR'2021)</a></li>
+        <li><a href="configs/simsiam">SimSiam (CVPR'2021)</a></li>
+        <li><a href="configs/barlowtwins">Barlow Twins (ICML'2021)</a></li>
+        <li><a href="configs/mocov3">MoCo V3 (ICCV'2021)</a></li>
+        <li><a href="configs/beit">BEiT (ICLR'2022)</a></li>
+        <li><a href="configs/mae">MAE (CVPR'2022)</a></li>
+        <li><a href="configs/simmim">SimMIM (CVPR'2022)</a></li>
+        <li><a href="configs/maskfeat">MaskFeat (CVPR'2022)</a></li>
+        <li><a href="configs/cae">CAE (arXiv'2022)</a></li>
+        <li><a href="configs/milan">MILAN (arXiv'2022)</a></li>
+        <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
+        <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
+        <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+        <li><a href="configs/arcface">ArcFace</a></li>
+        </ul>
+      </td>
+  </tbody>
+</table>
 
 ## Contributing
 
-We appreciate all contributions to improve MMClassification.
+We appreciate all contributions to improve MMPretrain.
 Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
 
 ## Acknowledgement
 
-MMClassification is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
+MMPretrain is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
 We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new classifiers.
 
 ## Citation
