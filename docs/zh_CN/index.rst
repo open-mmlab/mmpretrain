@@ -1,8 +1,9 @@
 欢迎来到 MMPretrain 中文教程！
 ==========================================
 
-MMPretrain 旨在提供各种强大的预训练主干网络，并支持了不同的预训练策略。MMPretrain
-源自著名的开源项目 `MMClassification <https://github.com/open-mmlab/mmclassification/tree/1.x>`_
+MMPretrain 是一个全新升级的预训练开源算法框架，旨在提供各种强大的预训练主干网络，
+并支持了不同的预训练策略。MMPretrain 源自著名的开源项目
+`MMClassification <https://github.com/open-mmlab/mmclassification/tree/1.x>`_
 和 `MMSelfSup <https://github.com/open-mmlab/mmselfsup>`_，并开发了许多令人兴奋的新功能。
 目前，预训练阶段对于视觉识别至关重要，凭借丰富而强大的预训练模型，我们嫩能够改进各种下游视觉任务。
 
