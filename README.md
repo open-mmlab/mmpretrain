@@ -209,7 +209,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
       </td>
       <td>
         <ul>
-        <li><a href="configs/arcface">ArcFace</a></li>
+        <li><a href="configs/arcface">ArcFace (CVPR'2019)</a></li>
         </ul>
       </td>
   </tbody>
