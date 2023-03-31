@@ -217,12 +217,12 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 ## Contributing
 
 We appreciate all contributions to improve MMPreTrain.
-Please refer to [CONTRUBUTING documentation](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
+Please refer to [CONTRUBUTING](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
 
 ## Acknowledgement
 
 MMPreTrain is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
-We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new classifiers.
+We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and supporting their own academic research.
 
 ## Citation
 
