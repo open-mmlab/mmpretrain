@@ -12,6 +12,7 @@ def convert_eva02(ckpt):
 
     new_ckpt = OrderedDict()
     qkv_proj = {}
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
     qkv_bias = {}
 
     banned = {
@@ -20,6 +21,12 @@ def convert_eva02(ckpt):
         'lm_head.bias',
         'norm.weight',
         'norm.bias',
+=======
+
+    banned = {
+        'mask_token', 'lm_head.weight', 'lm_head.bias', 'norm.weight',
+        'norm.bias'
+>>>>>>> feat: add eva02 backbone
     }
 
     for k, v in list(ckpt.items()):
@@ -30,14 +37,22 @@ def convert_eva02(ckpt):
         if k.startswith('head'):
             new_k = k.replace('head.', 'head.fc.')
             new_ckpt[new_k] = v
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
 
+=======
+>>>>>>> feat: add eva02 backbone
         else:
             if k.startswith('patch_embed'):
                 new_k = k.replace('proj.', 'projection.')
 
             elif k.startswith('fc_norm') or k.startswith('norm'):
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
                 new_k = k.replace('norm.', 'ln1.')
                 new_k = k.replace('fc_norm.', 'ln1.')
+=======
+                new_k = k.replace('norm.', 'final_norm.')
+                new_k = k.replace('fc_norm.', 'final_norm.')
+>>>>>>> feat: add eva02 backbone
 
             elif k.startswith('blocks'):
                 new_k = k.replace('blocks.', 'layers.')
@@ -64,7 +79,10 @@ def convert_eva02(ckpt):
                         new_k = new_k.replace('ffn_ln.', 'norm.')
 
                 elif 'attn' in new_k:
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
 
+=======
+>>>>>>> feat: add eva02 backbone
                     if 'q_proj.weight' in new_k or \
                             'k_proj.weight' in new_k or \
                             'v_proj.weight' in new_k:
@@ -77,6 +95,7 @@ def convert_eva02(ckpt):
                         qkv_proj[idx][s[-2]] = v
                         continue
 
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
                     if 'q_bias' in new_k or 'v_bias' in new_k:
                         # k_bias is 0
                         s = new_k.split('.')
@@ -86,6 +105,8 @@ def convert_eva02(ckpt):
                         qkv_bias[idx][s[-1]] = v
                         continue
 
+=======
+>>>>>>> feat: add eva02 backbone
             else:
                 new_k = k
 
@@ -100,6 +121,7 @@ def convert_eva02(ckpt):
         new_k = f'backbone.layers.{idx}.attn.qkv.weight'
         new_ckpt[new_k] = weight
 
+<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
     for idx in qkv_bias:
         q_bias = qkv_bias[idx]['q_bias']
         k_bias = torch.zeros_like(q_bias)
@@ -108,6 +130,8 @@ def convert_eva02(ckpt):
         new_k = f'backbone.layers.{idx}.attn.qkv.bias'
         new_ckpt[new_k] = weight
 
+=======
+>>>>>>> feat: add eva02 backbone
     return new_ckpt
 
 
