@@ -98,7 +98,7 @@ Below are quick steps for installation:
 conda create -n open-mmlab python=3.8 pytorch==1.10.1 torchvision==0.11.2 cudatoolkit=11.3 -c pytorch -y
 conda activate open-mmlab
 pip install openmim
-git clone -b 1.x https://github.com/open-mmlab/mmpretrain.git
+git clone https://github.com/open-mmlab/mmpretrain.git
 cd mmpretrain
 mim install -e .
 ```

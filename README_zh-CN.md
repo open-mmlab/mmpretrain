@@ -61,7 +61,7 @@
 
 MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 
-主分支代码目前支持 PyTorch 1.8 以上的版本。
+`主分支`代码目前支持 PyTorch 1.8 以上的版本。
 
 <div align="center">
   <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
@@ -95,7 +95,7 @@ MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [Open
 conda create -n open-mmlab python=3.8 pytorch==1.10.1 torchvision==0.11.2 cudatoolkit=11.3 -c pytorch -y
 conda activate open-mmlab
 pip3 install openmim
-git clone -b 1.x https://github.com/open-mmlab/mmpretrain.git
+git clone https://github.com/open-mmlab/mmpretrain.git
 cd mmpretrain
 mim install -e .
 ```
