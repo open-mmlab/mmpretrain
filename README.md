@@ -61,8 +61,7 @@
 
 English | [简体中文](/README_zh-CN.md)
 
-MMPretrain is an open source visual pre-training toolbox based on PyTorch. It is
-a part of the [OpenMMLab](https://openmmlab.com/) project.
+MMPreTrain is an open source visual pre-training toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 The `main` branch works with **PyTorch 1.8+**.
 
@@ -89,7 +88,7 @@ to try according to [the documentation](https://mmclassification.readthedocs.io/
 
 And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html).
 
-Please refer to [changelog.md](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) for more details and other release history.
+Please refer to [changelog](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) for more details and other release history.
 
 ## Installation
 
@@ -104,20 +103,20 @@ cd mmpretrain
 mim install -e .
 ```
 
-Please refer to [install.md](https://mmclassification.readthedocs.io/en/1.x/get_started.html) for more detailed installation and dataset preparation.
+Please refer to [installation documentation](https://mmclassification.readthedocs.io/en/1.x/get_started.html) for more detailed installation and dataset preparation.
 
 ## User Guides
 
-We provided a series of tutorials about the basic usage of MMPretrain for new users:
+We provided a series of tutorials about the basic usage of MMPreTrain for new users:
 
-- [Inference with existing models](https://mmclassification.readthedocs.io/en/1.x/user_guides/inference.html)
-- [Prepare Dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html)
-- [Training and Test](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html)
 - [Learn about Configs](https://mmclassification.readthedocs.io/en/1.x/user_guides/config.html)
-- [Fine-tune Models](https://mmclassification.readthedocs.io/en/1.x/user_guides/finetune.html)
-- [Analysis Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/analysis.html)
-- [Visualization Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/visualization.html)
-- [Other Useful Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/useful_tools.html)
+- [Prepare Dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html)
+- [Inference with existing models](https://mmclassification.readthedocs.io/en/1.x/user_guides/inference.html)
+- [Train](https://mmclassification.readthedocs.io/en/pretrain/user_guides/train.html)
+- [Test](https://mmclassification.readthedocs.io/en/pretrain/user_guides/test.html)
+- [Downstream tasks](https://mmclassification.readthedocs.io/en/pretrain/user_guides/downstream.html)
+
+For more information, please refer to [our documentation](https://mmclassification.readthedocs.io/en/pretrain/).
 
 ## Model zoo
 
@@ -217,12 +216,12 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 
 ## Contributing
 
-We appreciate all contributions to improve MMPretrain.
-Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
+We appreciate all contributions to improve MMPreTrain.
+Please refer to [CONTRUBUTING documentation](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
 
 ## Acknowledgement
 
-MMPretrain is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
+MMPreTrain is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
 We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new classifiers.
 
 ## Citation
@@ -248,7 +247,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
 - [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
+- [MMPreTrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab visual pre-training toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
