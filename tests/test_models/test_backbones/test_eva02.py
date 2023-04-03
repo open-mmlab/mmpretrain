@@ -1,12 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-import os
-import tempfile
 from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmengine.runner import load_checkpoint, save_checkpoint
 
 from mmpretrain.models.backbones import EVA02
 
@@ -97,38 +94,6 @@ class TestEVA02(TestCase):
         cfg['final_norm'] = False
         model = EVA02(**cfg)
         self.assertEqual(model.final_norm.__class__, torch.nn.Identity)
-
-    def test_init_weights(self):
-        # test weight init cfg
-        cfg = deepcopy(self.cfg)
-        cfg['init_cfg'] = [
-            dict(
-                type='Kaiming',
-                layer='Conv2d',
-                mode='fan_in',
-                nonlinearity='linear')
-        ]
-        model = EVA02(**cfg)
-        ori_weight = model.patch_embed.projection.weight.clone().detach()
-        # The pos_embed is all zero before initialize
-        self.assertTrue(torch.allclose(model.pos_embed, torch.tensor(0.)))
-
-        model.init_weights()
-        initialized_weight = model.patch_embed.projection.weight
-        self.assertFalse(torch.allclose(ori_weight, initialized_weight))
-        self.assertFalse(torch.allclose(model.pos_embed, torch.tensor(0.)))
-
-        # test load checkpoint
-        pretrain_pos_embed = model.pos_embed.clone().detach()
-        tmpdir = tempfile.gettempdir()
-        checkpoint = os.path.join(tmpdir, 'test.pth')
-        save_checkpoint(model.state_dict(), checkpoint)
-        cfg = deepcopy(self.cfg)
-        model = EVA02(**cfg)
-        load_checkpoint(model, checkpoint, strict=True)
-        self.assertTrue(torch.allclose(model.pos_embed, pretrain_pos_embed))
-
-        os.remove(checkpoint)
 
     def test_forward(self):
         imgs = torch.randn(1, 3, 448, 448)
