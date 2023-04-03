@@ -33,6 +33,10 @@
 [🆕 更新日志](https://mmclassification.readthedocs.io/zh_CN/1.x/notes/changelog.html) |
 [🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
+🌟 **MMPreTrain 源自 MMClassification 和 MMSelfSup** 🌟
+
+[English](/README.md) | 简体中文
+
 </div>
 
 <div align="center">
@@ -56,8 +60,6 @@
 </div>
 
 ## Introduction
-
-[English](/README.md) | 简体中文
 
 MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 

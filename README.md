@@ -1,9 +1,6 @@
 <div align="center">
 
 <img src="resources/mmpt-logo.png" width="600"/>
-<div align="center">
-<b><font size="10">Originates from MMClassification and MMSelfSup</font></b>
-</div>
   <div>&nbsp;</div>
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
@@ -36,6 +33,11 @@
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
+
+🌟 **MMPreTrain originates from MMClassification and MMSelfSup** 🌟
+
+English | [简体中文](/README_zh-CN.md)
+
 </div>
 
 </div>
@@ -61,8 +63,6 @@
 </div>
 
 ## Introduction
-
-English | [简体中文](/README_zh-CN.md)
 
 MMPreTrain is an open source visual pre-training toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
