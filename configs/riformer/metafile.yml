@@ -8,11 +8,11 @@ Collections:
         - LayerScale
     Paper:
       URL: https://arxiv.org/abs/xxxx.xxxxx
-      Title: RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer
+      Title: "RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer"
     README: configs/riformer/README.md
     Code:
       Version: v1.0.rc6
-      URL: 
+      URL:
 
 Models:
   - Name: riformer-s12_in1k
@@ -26,11 +26,11 @@ Models:
           Top 1 Accuracy: 76.90
           Top 5 Accuracy: 93.06
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s12_32xb128_in1k.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-s24_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -43,11 +43,11 @@ Models:
           Top 1 Accuracy: 80.28
           Top 5 Accuracy: 94.80
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s24_32xb128_in1k.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-s36_in1k
     Metadata:
       FLOPs: 5003000000
@@ -59,11 +59,11 @@ Models:
           Top 1 Accuracy: 81.29
           Top 5 Accuracy: 95.41
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s36_32xb128_in1k.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-m36_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -76,11 +76,11 @@ Models:
           Top 1 Accuracy: 82.57
           Top 5 Accuracy: 95.99
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-m36_32xb128_in1k.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-m48_in1k
     Metadata:
       FLOPs: 11590000000
@@ -92,11 +92,11 @@ Models:
           Top 1 Accuracy: 82.75
           Top 5 Accuracy: 96.11
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-m48_32xb128_in1k.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-s12_384_in1k
     Metadata:
       FLOPs: 5355000000
@@ -108,11 +108,11 @@ Models:
           Top 1 Accuracy: 78.29
           Top 5 Accuracy: 93.93
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s12_32xb128_in1k_384.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-s24_384_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -125,11 +125,11 @@ Models:
           Top 1 Accuracy: 81.36
           Top 5 Accuracy: 95.40
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s24_32xb128_in1k_384.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-s36_384_in1k
     Metadata:
       FLOPs: 14702000000
@@ -141,11 +141,11 @@ Models:
           Top 1 Accuracy: 82.22
           Top 5 Accuracy: 95.95
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-s36_32xb128_in1k_384.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-m36_384_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -158,11 +158,11 @@ Models:
           Top 1 Accuracy: 83.39
           Top 5 Accuracy: 96.40
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-m36_32xb128_in1k_384.py
     Converted From:
-      Weights: 
-      Code: 
+      Weights:
+      Code:
   - Name: riformer-m48_384_in1k
     Metadata:
       FLOPs: 34060000000
@@ -174,10 +174,8 @@ Models:
           Top 1 Accuracy: 83.70
           Top 5 Accuracy: 96.60
         Task: Image Classification
-    Weights: 
+    Weights:
     Config: configs/riformer/riformer-m48_32xb128_in1k_384.py
     Converted From:
-      Weights: 
-      Code: 
-
-
+      Weights:
+      Code:

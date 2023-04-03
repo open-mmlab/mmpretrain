@@ -3,7 +3,6 @@ import argparse
 from pathlib import Path
 
 import torch
-
 from mmcls.apis import init_model
 from mmcls.models.classifiers import ImageClassifier
 

@@ -122,7 +122,6 @@ class TestRIFormer(TestCase):
             torch.allclose(feats[i], feats_deploy[i])
         torch.allclose(pred, pred_deploy)
 
-
     def test_structure(self):
         # test drop_path_rate decay
         cfg = deepcopy(self.cfg)
