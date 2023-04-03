@@ -1,12 +1,56 @@
 Welcome to MMPretrain's documentation!
 ============================================
 
+MMPretrain is a newly upgraded open-source framework for visual pre-training.
+It has set out to provide multiple powerful pre-trained backbones and
+support different pre-training strategies. MMPretrain originated from the
+famous open-source projects
+`MMClassification <https://github.com/open-mmlab/mmclassification/tree/1.x>`_
+and `MMSelfSup <https://github.com/open-mmlab/mmselfsup>`_, and is developed
+with many exiciting new features. The pre-training stage is essential for
+vision recognition currently. With the rich and strong pre-trained models,
+we are currently capable of improving various downstream vision tasks.
+
+Our primary objective for the codebase is to become an easily accessible and
+user-friendly library and to streamline research and engineering. We
+detail the properties and design of MMPretrain across different sections.
+
+Hands-on Roadmap of MMPretrain
+-------------------------------
+
+To help users quickly utilize MMPretrain, we recommend following the hands-on
+roadmap we have created for the library:
+
+   - For users who want to try MMPretrain, we suggest reading the GetStarted_
+     section for the environment setup.
+
+   - For basic usage, we refer users to UserGuides_ for utilizing various
+     algorithms to obtain the pre-trained models and evaluate their performance
+     in downstream tasks.
+
+   - For those who wish to customize their own algorithms, we provide
+     AdvancedGuides_ that include hints and rules for modifying code.
+
+   - To find your desired pre-trained models, users could check the ModelZoo_,
+     which features a summary of various backbones and pre-training methods and
+     introfuction of different algorithms.
+
+   - Additionally, we provide Analysis_ and Visualization_ tools to help
+     diagnose algorithms.
+
+   - Besides, if you have any other questions or concerns, please refer to the
+     Notes_ section for potential answers.
+
+We always welcome *PRs* and *Issues* for the betterment of MMPretrain.
+
+.. _GetStarted:
 .. toctree::
    :maxdepth: 1
    :caption: Get Started
 
    get_started.md
 
+.. _UserGuides:
 .. toctree::
    :maxdepth: 1
    :caption: User Guides
@@ -18,6 +62,7 @@ Welcome to MMPretrain's documentation!
    user_guides/test.md
    user_guides/downstream.md
 
+.. _AdvancedGuides:
 .. toctree::
    :maxdepth: 1
    :caption: Advanced Guides
@@ -30,6 +75,7 @@ Welcome to MMPretrain's documentation!
    advanced_guides/evaluation.md
    advanced_guides/convention.md
 
+.. _ModelZoo:
 .. toctree::
    :maxdepth: 1
    :caption: Model Zoo
@@ -38,6 +84,7 @@ Welcome to MMPretrain's documentation!
    modelzoo_statistics.md
    papers/*
 
+.. _Visualization:
 .. toctree::
    :maxdepth: 1
    :caption: Visualization
@@ -46,6 +93,7 @@ Welcome to MMPretrain's documentation!
    useful_tools/scheduler_visualization.md
    useful_tools/cam_visualization.md
 
+.. _Analysis:
 .. toctree::
    :maxdepth: 1
    :caption: Analysis Tools
@@ -81,6 +129,7 @@ Welcome to MMPretrain's documentation!
    mmpretrain.evaluation <api/evaluation>
    mmpretrain.utils <api/utils>
 
+.. _Notes:
 .. toctree::
    :maxdepth: 1
    :caption: Notes
