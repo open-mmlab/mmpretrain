@@ -132,10 +132,11 @@ def main():
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
+        rank = 0
     else:
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
-        _, world_size = get_dist_info()
+        rank, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
 
     # create work_dir
@@ -173,7 +174,8 @@ def main():
     meta['seed'] = seed
 
     model = build_classifier(cfg.model)
-    model.init_weights()
+    if rank==0:
+      model.init_weights()
 
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
