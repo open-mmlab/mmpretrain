@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# import math
 from copy import deepcopy
 from unittest import TestCase
 
@@ -153,19 +152,3 @@ class TestEVA02(TestCase):
         self.assertEqual(len(outs), 3)
         for out in outs:
             self.assertEqual(out.shape, (1, 192))
-
-        # Test forward with dynamic input size
-        # imgs1 = torch.randn(1, 3, 224, 224)
-        # imgs2 = torch.randn(1, 3, 256, 256)
-        # imgs3 = torch.randn(1, 3, 256, 309)
-        # cfg = deepcopy(self.cfg)
-        # cfg['out_type'] = 'featmap'
-        # model = EVA02(**cfg)
-        # for imgs in [imgs1, imgs2, imgs3]:
-        #     outs = model(imgs)
-        #     self.assertIsInstance(outs, tuple)
-        #     self.assertEqual(len(outs), 1)
-        #     patch_token = outs[-1]
-        #     expect_feat_shape = (math.ceil(imgs.shape[2] / 14),
-        #                          math.ceil(imgs.shape[3] / 14))
-        #     self.assertEqual(patch_token.shape, (1, 192, *expect_feat_shape))
