@@ -132,7 +132,7 @@ mim install -e .
         <b>自监督学习</b>
       </td>
       <td>
-        <b>图像检索</b>
+        <b>其它</b>
       </td>
     </tr>
     <tr valign="top">
@@ -204,8 +204,17 @@ mim install -e .
         </ul>
       </td>
       <td>
+      图像检索任务：
         <ul>
         <li><a href="configs/arcface">ArcFace (CVPR'2019)</a></li>
+        </ul>
+      训练和测试 Tips:
+        <ul>
+        <li><a href="https://arxiv.org/abs/1909.13719">RandAug</a></li>
+        <li><a href="https://arxiv.org/abs/1805.09501">AutoAug</a></li>
+        <li><a href="mmpretrain/datasets/samplers/repeat_aug.py">RepeatAugSamper</a></li>
+        <li><a href="mmpretrain/models/tta/score_tta.py">TTA</a></li>
+        <li>...</li>
         </ul>
       </td>
   </tbody>

@@ -135,7 +135,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
         <b>Self-supervised Learning</b>
       </td>
       <td>
-        <b>Image Retrieval</b>
+        <b>Others</b>
       </td>
     </tr>
     <tr valign="top">
@@ -207,8 +207,17 @@ Results and models are available in the [model zoo](https://mmclassification.rea
         </ul>
       </td>
       <td>
+      Image Retrieval Task:
         <ul>
         <li><a href="configs/arcface">ArcFace (CVPR'2019)</a></li>
+        </ul>
+      Training&Test Tips:
+        <ul>
+        <li><a href="https://arxiv.org/abs/1909.13719">RandAug</a></li>
+        <li><a href="https://arxiv.org/abs/1805.09501">AutoAug</a></li>
+        <li><a href="mmpretrain/datasets/samplers/repeat_aug.py">RepeatAugSamper</a></li>
+        <li><a href="mmpretrain/models/tta/score_tta.py">TTA</a></li>
+        <li>...</li>
         </ul>
       </td>
   </tbody>
