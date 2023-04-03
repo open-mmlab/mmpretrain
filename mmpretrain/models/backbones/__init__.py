@@ -26,6 +26,7 @@ from .mobileone import MobileOne
 from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
+from .riformer import RIFormer
 from .regnet import RegNet
 from .replknet import RepLKNet
 from .repmlp import RepMLPNet
@@ -95,6 +96,7 @@ __all__ = [
     'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
+    'RIFormer',
     'DenseNet',
     'VAN',
     'InceptionV3',

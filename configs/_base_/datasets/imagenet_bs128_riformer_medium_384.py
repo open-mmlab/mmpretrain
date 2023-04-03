@@ -16,7 +16,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        scale=224,
+        scale=384,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
@@ -44,11 +44,11 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=236,
+        scale=404,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=224),
+    dict(type='CenterCrop', crop_size=384),
     dict(type='PackInputs'),
 ]
 
@@ -65,7 +65,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=128,
+    batch_size=16,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
