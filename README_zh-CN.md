@@ -84,7 +84,7 @@ MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [Open
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmclassification.readthedocs.io/zh_CN/1.x/) 进行试用。
 
 同时，新版本中存在一些与旧版本不兼容的修改。请查看 [迁移文档](https://mmclassification.readthedocs.io/zh_CN/1.x/migration.html) 来详细了解这些变动。
- 
+
 发布历史和更新细节请参考 [更新日志](https://mmclassification.readthedocs.io/zh_CN/1.x/notes/changelog.html)。
 
 ## 安装
