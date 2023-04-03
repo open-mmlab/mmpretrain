@@ -1,8 +1,8 @@
 <div align="center">
 
 <img src="resources/mmpt-logo.png" width="600"/>
+<b><font size="10">Originates from MMClassification and MMSelfSup</font></b>
   <div>&nbsp;</div>
-  <b><font size="7">Originates from MMClassification and MMSelfSup</font></b>
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
     <sup>
