@@ -4,6 +4,7 @@ model = dict(
         type='EVA02',
         arch='b',
         img_size=224,
+        patch_size=14,
         sub_ln=True,
         final_norm=False,
         out_type='avg_featmap'),

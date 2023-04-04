@@ -12,10 +12,14 @@ def convert_eva02(ckpt):
 
     new_ckpt = OrderedDict()
     qkv_proj = {}
+    qkv_bias = {}
 
     banned = {
-        'mask_token', 'lm_head.weight', 'lm_head.bias', 'norm.weight',
-        'norm.bias'
+        'mask_token',
+        'lm_head.weight',
+        'lm_head.bias',
+        'norm.weight',
+        'norm.bias',
     }
 
     for k, v in list(ckpt.items()):
@@ -26,13 +30,14 @@ def convert_eva02(ckpt):
         if k.startswith('head'):
             new_k = k.replace('head.', 'head.fc.')
             new_ckpt[new_k] = v
+
         else:
             if k.startswith('patch_embed'):
                 new_k = k.replace('proj.', 'projection.')
 
             elif k.startswith('fc_norm') or k.startswith('norm'):
-                new_k = k.replace('norm.', 'final_norm.')
-                new_k = k.replace('fc_norm.', 'final_norm.')
+                new_k = k.replace('norm.', 'ln1.')
+                new_k = k.replace('fc_norm.', 'ln1.')
 
             elif k.startswith('blocks'):
                 new_k = k.replace('blocks.', 'layers.')
@@ -59,6 +64,7 @@ def convert_eva02(ckpt):
                         new_k = new_k.replace('ffn_ln.', 'norm.')
 
                 elif 'attn' in new_k:
+
                     if 'q_proj.weight' in new_k or \
                             'k_proj.weight' in new_k or \
                             'v_proj.weight' in new_k:
@@ -69,6 +75,15 @@ def convert_eva02(ckpt):
                         if idx not in qkv_proj:
                             qkv_proj[idx] = {}
                         qkv_proj[idx][s[-2]] = v
+                        continue
+
+                    if 'q_bias' in new_k or 'v_bias' in new_k:
+                        # k_bias is 0
+                        s = new_k.split('.')
+                        idx = s[1]
+                        if idx not in qkv_bias:
+                            qkv_bias[idx] = {}
+                        qkv_bias[idx][s[-1]] = v
                         continue
 
             else:
@@ -83,6 +98,14 @@ def convert_eva02(ckpt):
         v_proj = qkv_proj[idx]['v_proj']
         weight = torch.cat((q_proj, k_proj, v_proj))
         new_k = f'backbone.layers.{idx}.attn.qkv.weight'
+        new_ckpt[new_k] = weight
+
+    for idx in qkv_bias:
+        q_bias = qkv_bias[idx]['q_bias']
+        k_bias = torch.zeros_like(q_bias)
+        v_bias = qkv_bias[idx]['v_bias']
+        weight = torch.cat((q_bias, k_bias, v_bias))
+        new_k = f'backbone.layers.{idx}.attn.qkv.bias'
         new_ckpt[new_k] = weight
 
     return new_ckpt
