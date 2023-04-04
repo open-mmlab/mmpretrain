@@ -35,7 +35,7 @@ class TestImageDemo(TestCase):
             '--device',
             'cpu',
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('sea snake', out.decode())
 
@@ -55,9 +55,9 @@ class TestAnalyzeLogs(TestCase):
             'python',
             'tools/analysis_tools/analyze_logs.py',
             'cal_train_time',
-            self.log_file,
+            str(self.log_file),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('slowest epoch 2, average time is 0.0219', out.decode())
 
@@ -65,13 +65,13 @@ class TestAnalyzeLogs(TestCase):
             'python',
             'tools/analysis_tools/analyze_logs.py',
             'plot_curve',
-            self.log_file,
+            str(self.log_file),
             '--keys',
             'accuracy/top1',
             '--out',
             str(self.out_file),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn(str(self.log_file), out.decode())
         self.assertIn(str(self.out_file), out.decode())
@@ -113,12 +113,12 @@ class TestAnalyzeResults(TestCase):
         command = [
             'python',
             'tools/analysis_tools/analyze_results.py',
-            self.config_file,
-            self.result_file,
+            str(self.config_file),
+            str(self.result_file),
             '--out-dir',
-            self.tmpdir.name,
+            str(self.tmpdir.name),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         p.communicate()
         self.assertTrue((self.dir / 'success/2.jpeg.png').exists())
         self.assertTrue((self.dir / 'fail/1.JPG.png').exists())
@@ -137,9 +137,9 @@ class TestPrintConfig(TestCase):
         command = [
             'python',
             'tools/misc/print_config.py',
-            self.config_file,
+            str(self.config_file),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         out = out.decode().strip().replace('\r\n', '\n')
         self.assertEqual(out,
@@ -170,11 +170,11 @@ class TestVerifyDataset(TestCase):
         command = [
             'python',
             'tools/misc/verify_dataset.py',
-            self.config_file,
+            str(self.config_file),
             '--out-path',
-            self.dir / 'log.log',
+            str(self.dir / 'log.log'),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn(
             f"{ASSETS_ROOT/'dataset/a/2.JPG'} cannot be read correctly",
@@ -204,12 +204,12 @@ class TestEvalMetric(TestCase):
         command = [
             'python',
             'tools/analysis_tools/eval_metric.py',
-            self.result_file,
+            str(self.result_file),
             '--metric',
             'type=Accuracy',
             'topk=1,2',
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('accuracy/top1', out.decode())
         self.assertIn('accuracy/top2', out.decode())
@@ -244,14 +244,14 @@ class TestVisScheduler(TestCase):
         command = [
             'python',
             'tools/visualization/vis_scheduler.py',
-            self.config_file,
+            str(self.config_file),
             '--dataset-size',
             '100',
             '--not-show',
             '--save-path',
             str(self.dir / 'out.png'),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         p.communicate()
         self.assertTrue((self.dir / 'out.png').exists())
 
@@ -280,13 +280,13 @@ class TestPublishModel(TestCase):
         command = [
             'python',
             'tools/model_converters/publish_model.py',
-            self.ckpt_file,
-            self.ckpt_file,
+            str(self.ckpt_file),
+            str(self.ckpt_file),
             '--dataset-type',
             'ImageNet',
             '--no-ema',
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('and drop the EMA weights.', out.decode())
         self.assertIn('Successfully generated', out.decode())
@@ -318,13 +318,13 @@ class TestVisCam(TestCase):
         command = [
             'python',
             'tools/visualization/vis_cam.py',
-            ASSETS_ROOT / 'color.jpg',
-            self.config_file,
-            self.ckpt_file,
+            str(ASSETS_ROOT / 'color.jpg'),
+            str(self.config_file),
+            str(self.ckpt_file),
             '--save-path',
-            self.dir / 'cam.jpg',
+            str(self.dir / 'cam.jpg'),
         ]
-        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
+        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('backbone.conv_1x1_exp.bn', out.decode())
         self.assertTrue((self.dir / 'cam.jpg').exists())
@@ -354,10 +354,10 @@ class TestConfusionMatrix(TestCase):
         command = [
             'python',
             'tools/analysis_tools/confusion_matrix.py',
-            self.config_file,
-            self.result_file,
+            str(self.config_file),
+            str(self.result_file),
             '--out',
-            self.dir / 'result.pkl',
+            str(self.dir / 'result.pkl'),
         ]
         Popen(command, cwd=MMPRE_ROOT, stdout=PIPE).wait()
         result = mmengine.load(self.dir / 'result.pkl')
@@ -396,9 +396,9 @@ class TestVisTsne(TestCase):
         command = [
             'python',
             'tools/visualization/vis_tsne.py',
-            self.config_file,
+            str(self.config_file),
             '--work-dir',
-            self.dir,
+            str(self.dir),
             '--perplexity',
             '2',
         ]
