@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 
 import torch
+
 from mmpretrain.apis import init_model
 from mmpretrain.models.classifiers import ImageClassifier
 

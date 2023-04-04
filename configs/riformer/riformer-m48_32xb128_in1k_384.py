@@ -27,7 +27,6 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     ))
 
-
 # schedule settings
 optim_wrapper = dict(
     optimizer=dict(lr=4e-3),
