@@ -70,9 +70,13 @@ __all__ = [
     'VideoDataPreprocessor',
     'CosineEMA',
     'ResLayerExtraNorm',
+<<<<<<< dacb6d42cee2379ac015161fee80822e17879122
 <<<<<<< 5f658720334921b61eb5f157024348727a52bb7f
     'SwiGLUFFN',
     'SwiGLUFFNFused',
+=======
+    'RotaryEmbeddingFast',
+>>>>>>> feat: add eva02 backbone
 =======
     'RotaryEmbeddingFast',
 >>>>>>> feat: add eva02 backbone

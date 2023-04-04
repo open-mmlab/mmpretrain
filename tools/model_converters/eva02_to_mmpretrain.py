@@ -30,6 +30,7 @@ def convert_eva02(ckpt):
         if k.startswith('head'):
             new_k = k.replace('head.', 'head.fc.')
             new_ckpt[new_k] = v
+
         else:
             if k.startswith('patch_embed'):
                 new_k = k.replace('proj.', 'projection.')
@@ -63,6 +64,7 @@ def convert_eva02(ckpt):
                         new_k = new_k.replace('ffn_ln.', 'norm.')
 
                 elif 'attn' in new_k:
+
                     if 'q_proj.weight' in new_k or \
                             'k_proj.weight' in new_k or \
                             'v_proj.weight' in new_k:
