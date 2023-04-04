@@ -39,7 +39,7 @@ jobs:
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install -U openmim
-          mim install 'mmcv >= 2.0.0rc1'
+          mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
         run: pip install -e .
@@ -85,7 +85,7 @@ jobs:
         run: |
           pip install -U openmim
           mim install mmengine
-          mim install 'mmcv >= 2.0.0rc1'
+          mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
         run: pip install -e . -v
