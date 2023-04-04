@@ -188,7 +188,7 @@ class Accuracy(BaseMetric):
                     pred_label['score'][
                         ..., self.index_candidates] = pred_label['score'][
                             ..., self.index_candidates] + 1.0
-                result['pred_score'] = pred_label['score']
+                result['pred_score'] = pred_label['score'].cpu()
             else:
                 result['pred_label'] = pred_label['label'].cpu()
             result['gt_label'] = gt_label['label'].cpu()
