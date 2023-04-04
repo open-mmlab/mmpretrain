@@ -73,7 +73,7 @@ jobs:
       - name: Upgrade pip
         run: python -m pip install pip --upgrade
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+${{matrix.platform}} torchvision==${{matrix.torchvision}}+${{matrix.platform}} -f https://download.pytorch.org/whl/${{matrix.platform}}/torch_stable.html
+        run: pip install torch==1.8.2+${{matrix.platform}} torchvision==0.9.2+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
       - name: Install mmpretrain dependencies
         run: |
           pip install -U openmim
