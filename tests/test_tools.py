@@ -35,7 +35,7 @@ class TestImageDemo(TestCase):
             '--device',
             'cpu',
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('sea snake', out.decode())
 
@@ -57,7 +57,7 @@ class TestAnalyzeLogs(TestCase):
             'cal_train_time',
             self.log_file,
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('slowest epoch 2, average time is 0.0219', out.decode())
 
@@ -71,7 +71,7 @@ class TestAnalyzeLogs(TestCase):
             '--out',
             str(self.out_file),
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn(str(self.log_file), out.decode())
         self.assertIn(str(self.out_file), out.decode())
@@ -118,7 +118,7 @@ class TestAnalyzeResults(TestCase):
             '--out-dir',
             self.tmpdir.name,
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         p.communicate()
         self.assertTrue((self.dir / 'success/2.jpeg.png').exists())
         self.assertTrue((self.dir / 'fail/1.JPG.png').exists())
@@ -139,7 +139,7 @@ class TestPrintConfig(TestCase):
             'tools/misc/print_config.py',
             self.config_file,
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         out = out.decode().strip().replace('\r\n', '\n')
         self.assertEqual(out,
@@ -174,7 +174,7 @@ class TestVerifyDataset(TestCase):
             '--out-path',
             self.dir / 'log.log',
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn(
             f"{ASSETS_ROOT/'dataset/a/2.JPG'} cannot be read correctly",
@@ -209,7 +209,7 @@ class TestEvalMetric(TestCase):
             'type=Accuracy',
             'topk=1,2',
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('accuracy/top1', out.decode())
         self.assertIn('accuracy/top2', out.decode())
@@ -251,7 +251,7 @@ class TestVisScheduler(TestCase):
             '--save-path',
             str(self.dir / 'out.png'),
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         p.communicate()
         self.assertTrue((self.dir / 'out.png').exists())
 
@@ -286,7 +286,7 @@ class TestPublishModel(TestCase):
             'ImageNet',
             '--no-ema',
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('and drop the EMA weights.', out.decode())
         self.assertIn('Successfully generated', out.decode())
@@ -324,7 +324,7 @@ class TestVisCam(TestCase):
             '--save-path',
             self.dir / 'cam.jpg',
         ]
-        p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
+        p = Popen(command, cwd=str(MMPRE_ROOT), stdout=PIPE)
         out, _ = p.communicate()
         self.assertIn('backbone.conv_1x1_exp.bn', out.decode())
         self.assertTrue((self.dir / 'cam.jpg').exists())
