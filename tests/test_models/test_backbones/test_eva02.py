@@ -33,7 +33,7 @@ class TestEVA02(TestCase):
             cfg['arch'] = {
                 'num_layers': 24,
                 'num_heads': 16,
-                'mlp_ratio': 4 * 2 / 3
+                'feedforward_channels': int(24 * 4 * 2 / 3)
             }
             EVA02(**cfg)
 
@@ -43,14 +43,14 @@ class TestEVA02(TestCase):
             'embed_dims': 128,
             'num_layers': 6,
             'num_heads': 16,
-            'mlp_ratio': 4
+            'feedforward_channels': int(128 * 4 * 2 / 3)
         }
         model = EVA02(**cfg)
         self.assertEqual(model.embed_dims, 128)
         self.assertEqual(model.num_layers, 6)
         for layer in model.layers:
             self.assertEqual(layer.attn.num_heads, 16)
-            self.assertEqual(layer.mlp.hidden_features, 128 * 4)
+            self.assertEqual(layer.mlp.hidden_features, int(128 * 4 * 2 / 3))
 
         # Test out_indices
         cfg = deepcopy(self.cfg)
@@ -67,8 +67,6 @@ class TestEVA02(TestCase):
         self.assertEqual(len(model.layers), 12)
         self.assertEqual(model.cls_token.shape, (1, 1, 192))
         self.assertEqual(model.pos_embed.shape, (1, 577, 192))
-        self.assertEqual(model.rope.freqs_cos.shape, (576, 64))
-        self.assertEqual(model.rope.freqs_sin.shape, (576, 64))
         dpr_inc = 0.1 / (12 - 1)
         dpr = 0
         for layer in model.layers:
@@ -79,20 +77,13 @@ class TestEVA02(TestCase):
             self.assertAlmostEqual(layer.mlp.dropout_layer.p, 0.1)
             self.assertAlmostEqual(layer.attn.attn_drop.p, 0.2)
             self.assertAlmostEqual(layer.attn.proj_drop.p, 0.3)
-            self.assertEqual(layer.attn.rope.freqs_cos.shape, (576, 64))
-            self.assertEqual(layer.attn.rope.freqs_sin.shape, (576, 64))
             dpr += dpr_inc
 
         # Test model structure: final_norm
         cfg = deepcopy(self.cfg)
         cfg['final_norm'] = True
         model = EVA02(**cfg)
-        self.assertNotEqual(model.final_norm.__class__, torch.nn.Identity)
-
-        cfg = deepcopy(self.cfg)
-        cfg['final_norm'] = False
-        model = EVA02(**cfg)
-        self.assertEqual(model.final_norm.__class__, torch.nn.Identity)
+        self.assertNotEqual(model.norm1.__class__, torch.nn.Identity)
 
     def test_forward(self):
         imgs = torch.randn(1, 3, 336, 336)

@@ -8,6 +8,8 @@ import torch.nn as nn
 from mmengine.model import BaseModule
 from mmengine.utils import digit_version
 
+from ..utils import to_2tuple
+
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
 # refers to https://github.com/pytorch/pytorch/issues/50276
@@ -170,3 +172,76 @@ def build_2d_sincos_position_embedding(
         pos_emb = torch.cat([cls_token_pe, pos_emb], dim=1)
 
     return pos_emb
+
+
+class RotaryEmbeddingFast(BaseModule):
+    """Implements 2D rotary embedding (RoPE) for image tokens. Position
+    encoding is implemented with sin and cos functions,
+
+        .. math::
+            Pos_{cos} = cos(\frac{t}{\theta^{\frac{2i}{d}}} \\
+            Pos_{sin} = sin(\frac{t}{\theta^{\frac{2i}{d}}}
+    Args:
+        embed_dims (int): The feature dimension for each head.
+        patch_resolution (int | tuple): The resolution of the
+            image, in format (H, W).
+        theta (float): The hyperparameter for position coding.
+            Defaults to 10000.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 embed_dims,
+                 patch_resolution,
+                 theta=10000.,
+                 init_cfg=None):
+        super(RotaryEmbeddingFast, self).__init__(init_cfg=init_cfg)
+
+        self.half_dim = embed_dims // 2
+        self.patch_resolution = to_2tuple(patch_resolution)
+        self.theta = theta
+
+        freqs_cos, freqs_sin = self.compute_position_embedding()
+        self.register_buffer('freqs_cos', freqs_cos)
+        self.register_buffer('freqs_sin', freqs_sin)
+
+    def compute_position_embedding(self):
+        frequency = self.theta**(
+            torch.arange(0, self.half_dim, 2).float() / self.half_dim)
+        frequency = 1. / frequency
+
+        h, w = self.patch_resolution
+        th = torch.arange(h) / h * self.half_dim
+        tw = torch.arange(w) / w * self.half_dim
+
+        position_h = (th[:, None] @ frequency[None, :]).repeat(1, 2)
+        position_w = (tw[:, None] @ frequency[None, :]).repeat(1, 2)
+
+        height = position_h[:, None, :].expand(h, w, self.half_dim)
+        width = position_w[None, :, :].expand(h, w, self.half_dim)
+        position = torch.cat((height, width), dim=-1)
+
+        freqs_cos = position.cos().view(-1, position.shape[-1])
+        freqs_sin = position.sin().view(-1, position.shape[-1])
+
+        return freqs_cos, freqs_sin
+
+    def forward(self, x, patch_resolution):
+        # Check whether the patch resolution is the predefined size
+        patch_resolution = to_2tuple(patch_resolution)
+        if patch_resolution != self.patch_resolution:
+            self.patch_resolution = patch_resolution
+            freqs_cos, freqs_sin = self.compute_position_embedding()
+            self.register_buffer('freqs_cos', freqs_cos.to(x.device))
+            self.register_buffer('freqs_sin', freqs_sin.to(x.device))
+
+        batch, num_heads, num_patches, dim = x.shape
+
+        inputs = x
+        x = x.reshape(batch, num_heads, num_patches, -1, 2)
+        x1, x2 = x.unbind(dim=-1)
+        x = torch.stack((-x2, x1), dim=-1)
+        x = x.reshape(batch, num_heads, num_patches, dim)
+
+        return inputs * self.freqs_cos + x * self.freqs_sin
