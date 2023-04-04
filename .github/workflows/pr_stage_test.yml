@@ -83,7 +83,7 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-get update
-          apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
+          apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc6
       - name: Install mmpretrain dependencies
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
@@ -97,7 +97,6 @@ jobs:
           coverage run --branch --source mmpretrain -m pytest tests/
           coverage xml
           coverage report -m
-      # Upload coverage report for python3.7 && pytorch1.8.1 cpu
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1.0.14
         with:
