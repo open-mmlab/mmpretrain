@@ -11,7 +11,7 @@ Collections:
     README: configs/convnext/README.md
     Code:
       Version: v0.20.1
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/convnext.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.20.1/mmcls/models/backbones/convnext.py
 
 Models:
   - Name: convnext-tiny_32xb128_in1k

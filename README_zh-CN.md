@@ -20,18 +20,18 @@
   <div>&nbsp;</div>
 
 [![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
-[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/zh_CN/1.x/)
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/1.x/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmpretrain.readthedocs.io/zh_CN/latest/)
+[![Build Status](https://github.com/open-mmlab/mmpretrain/workflows/build/badge.svg)](https://github.com/open-mmlab/mmpretrain/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmpretrain/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmpretrain)
+[![license](https://img.shields.io/github/license/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
 
-[📘 中文文档](https://mmclassification.readthedocs.io/zh_CN/1.x/) |
-[🛠️ 安装教程](https://mmclassification.readthedocs.io/zh_CN/1.x/get_started.html) |
-[👀 模型库](https://mmclassification.readthedocs.io/zh_CN/1.x/modelzoo_statistics.html) |
-[🆕 更新日志](https://mmclassification.readthedocs.io/zh_CN/1.x/notes/changelog.html) |
-[🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[📘 中文文档](https://mmpretrain.readthedocs.io/zh_CN/latest/) |
+[🛠️ 安装教程](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) |
+[👀 模型库](https://mmpretrain.readthedocs.io/zh_CN/latest/modelzoo_statistics.html) |
+[🆕 更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html) |
+[🤔 报告问题](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 
 <img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
 
@@ -89,14 +89,14 @@ MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是
 - 支持混淆矩阵计算和画图。
 - 支持了 **多任务** 训练和测试。
 - 支持了测试时增强（TTA）。
-- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。
+- 更新了主要 API 接口，用以方便地获取 MMPreTrain 中预定义的模型。
 - 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
-这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmclassification.readthedocs.io/zh_CN/1.x/) 进行试用。
+这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmpretrain.readthedocs.io/zh_CN/latest/) 进行试用。
 
-同时，新版本中存在一些与旧版本不兼容的修改。请查看 [迁移文档](https://mmclassification.readthedocs.io/zh_CN/1.x/migration.html) 来详细了解这些变动。
+同时，新版本中存在一些与旧版本不兼容的修改。请查看 [迁移文档](https://mmpretrain.readthedocs.io/zh_CN/latest/migration.html) 来详细了解这些变动。
 
-发布历史和更新细节请参考 [更新日志](https://mmclassification.readthedocs.io/zh_CN/1.x/notes/changelog.html)。
+发布历史和更新细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
 
 ## 安装
 
@@ -111,24 +111,24 @@ cd mmpretrain
 mim install -e .
 ```
 
-更详细的步骤请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/1.x/get_started.html) 进行安装。
+更详细的步骤请参考 [安装指南](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) 进行安装。
 
 ## 基础教程
 
 我们为新用户提供了一系列基础教程：
 
-- [学习配置文件](https://mmclassification.readthedocs.io/zh_CN/1.x/user_guides/config.html)
-- [准备数据集](https://mmclassification.readthedocs.io/zh_CN/1.x/user_guides/dataset_prepare.html)
-- [使用现有模型推理](https://mmclassification.readthedocs.io/zh_CN/1.x/user_guides/inference.html)
-- [训练](https://mmclassification.readthedocs.io/zh_CN/pretrain/user_guides/train.html)
-- [测试](https://mmclassification.readthedocs.io/zh_CN/pretrain/user_guides/test.html)
-- [下游任务](https://mmclassification.readthedocs.io/zh_CN/pretrain/user_guides/downstream.html)
+- [学习配置文件](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/config.html)
+- [准备数据集](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/dataset_prepare.html)
+- [使用现有模型推理](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/inference.html)
+- [训练](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/train.html)
+- [测试](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/test.html)
+- [下游任务](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/downstream.html)
 
-关于更多的信息，请查阅我们的 [相关文档](https://mmclassification.readthedocs.io/zh_CN/pretrain/)。
+关于更多的信息，请查阅我们的 [相关文档](https://mmpretrain.readthedocs.io/zh_CN/pretrain/)。
 
 ## 模型库
 
-相关结果和模型可在 [模型库](https://mmclassification.readthedocs.io/zh_CN/1.x/modelzoo_statistics.html) 中获得。
+相关结果和模型可在 [模型库](https://mmpretrain.readthedocs.io/zh_CN/latest/modelzoo_statistics.html) 中获得。
 
 <div align="center">
   <b>概览</b>
@@ -237,7 +237,7 @@ mim install -e .
 
 ## 参与贡献
 
-我们非常欢迎任何有助于提升 MMPreTrain 的贡献，请参考 [贡献指南](https://mmclassification.readthedocs.io/zh_CN/1.x/notes/contribution_guide.html) 来了解如何参与贡献。
+我们非常欢迎任何有助于提升 MMPreTrain 的贡献，请参考 [贡献指南](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/contribution_guide.html) 来了解如何参与贡献。
 
 ## 致谢
 
@@ -249,11 +249,11 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMPreTrain。
 
 ```BibTeX
-@misc{2020mmclassification,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
-    year={2020}
+@misc{2023mmpretrain,
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
+    year={2023}
 }
 ```
 

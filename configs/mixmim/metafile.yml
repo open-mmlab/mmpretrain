@@ -17,7 +17,7 @@ Collections:
       URL: https://arxiv.org/abs/2205.13137
     README: configs/mixmim/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/mixmim.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/mixmim.py
       Version: v1.0.0rc4
 
 Models:

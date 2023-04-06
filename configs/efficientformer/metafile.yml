@@ -13,7 +13,7 @@ Collections:
     README: configs/efficientformer/README.md
     Code:
       Version: v1.0.0rc1
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc1/configs/efficientformer/metafile.yml
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc1/configs/efficientformer/metafile.yml
 
 Models:
   - Name: efficientformer-l1_3rdparty_8xb128_in1k

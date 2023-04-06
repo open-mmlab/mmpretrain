@@ -20,18 +20,18 @@
   <div>&nbsp;</div>
 
 [![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
-[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/1.x/)
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/1.x/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmpretrain.readthedocs.io/en/latest/)
+[![Build Status](https://github.com/open-mmlab/mmpretrain/workflows/build/badge.svg)](https://github.com/open-mmlab/mmpretrain/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmpretrain/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmpretrain)
+[![license](https://img.shields.io/github/license/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
 
-[📘 Documentation](https://mmclassification.readthedocs.io/en/1.x/) |
-[🛠️ Installation](https://mmclassification.readthedocs.io/en/dev-1.x/get_started.html#installation) |
-[👀 Model Zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html) |
-[🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
-[🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[📘 Documentation](https://mmpretrain.readthedocs.io/en/latest/) |
+[🛠️ Installation](https://mmpretrain.readthedocs.io/en/latest/get_started.html#installation) |
+[👀 Model Zoo](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html) |
+[🆕 Update News](https://mmpretrain.readthedocs.io/en/latest/notes/changelog.html) |
+[🤔 Reporting Issues](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 
 <img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
 
@@ -91,15 +91,15 @@ Previous version update
 - Support confusion matrix calculation and plot.
 - Support **multi-task** training and testing.
 - Support Test-time Augmentation.
-- Upgrade API to get pre-defined models of MMClassification.
+- Upgrade API to get pre-defined models of MMPreTrain.
 - Refactor BEiT backbone and support v1/v2 inference.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
-to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).
+to try according to [the documentation](https://mmpretrain.readthedocs.io/en/latest/).
 
-And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html).
+And there are some BC-breaking changes. Please check [the migration tutorial](https://mmpretrain.readthedocs.io/en/latest/migration.html).
 
-Please refer to [changelog](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) for more details and other release history.
+Please refer to [changelog](https://mmpretrain.readthedocs.io/en/latest/notes/changelog.html) for more details and other release history.
 
 ## Installation
 
@@ -114,24 +114,24 @@ cd mmpretrain
 mim install -e .
 ```
 
-Please refer to [installation documentation](https://mmclassification.readthedocs.io/en/1.x/get_started.html) for more detailed installation and dataset preparation.
+Please refer to [installation documentation](https://mmpretrain.readthedocs.io/en/latest/get_started.html) for more detailed installation and dataset preparation.
 
 ## User Guides
 
 We provided a series of tutorials about the basic usage of MMPreTrain for new users:
 
-- [Learn about Configs](https://mmclassification.readthedocs.io/en/1.x/user_guides/config.html)
-- [Prepare Dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html)
-- [Inference with existing models](https://mmclassification.readthedocs.io/en/1.x/user_guides/inference.html)
-- [Train](https://mmclassification.readthedocs.io/en/pretrain/user_guides/train.html)
-- [Test](https://mmclassification.readthedocs.io/en/pretrain/user_guides/test.html)
-- [Downstream tasks](https://mmclassification.readthedocs.io/en/pretrain/user_guides/downstream.html)
+- [Learn about Configs](https://mmpretrain.readthedocs.io/en/latest/user_guides/config.html)
+- [Prepare Dataset](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html)
+- [Inference with existing models](https://mmpretrain.readthedocs.io/en/latest/user_guides/inference.html)
+- [Train](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/train.html)
+- [Test](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/test.html)
+- [Downstream tasks](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/downstream.html)
 
-For more information, please refer to [our documentation](https://mmclassification.readthedocs.io/en/pretrain/).
+For more information, please refer to [our documentation](https://mmpretrain.readthedocs.io/en/pretrain/).
 
 ## Model zoo
 
-Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html).
+Results and models are available in the [model zoo](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html).
 
 <div align="center">
   <b>Overview</b>
@@ -242,7 +242,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 ## Contributing
 
 We appreciate all contributions to improve MMPreTrain.
-Please refer to [CONTRUBUTING](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
+Please refer to [CONTRUBUTING](https://mmpretrain.readthedocs.io/en/latest/notes/contribution_guide.html) for the contributing guideline.
 
 ## Acknowledgement
 
@@ -254,11 +254,11 @@ We wish that the toolbox and benchmark could serve the growing research communit
 If you find this project useful in your research, please consider cite:
 
 ```BibTeX
-@misc{2020mmclassification,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
-    year={2020}
+@misc{2023mmpretrain,
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
+    year={2023}
 }
 ```
 

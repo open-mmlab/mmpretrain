@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 
 contact_links:
-  - name: MMClassification Documentation
-    url: https://mmclassification.readthedocs.io/en/latest/
+  - name: MMPreTrain Documentation
+    url: https://mmpretrain.readthedocs.io/en/latest/
     about: Check if your question is answered in docs

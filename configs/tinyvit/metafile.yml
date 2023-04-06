@@ -11,7 +11,7 @@ Collections:
     README: configs/tinyvit/README.md
     Code:
       Version: v1.0.0rc1
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.23.2/mmcls/models/backbones/tinyvit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.23.2/mmcls/models/backbones/tinyvit.py
 
 Models:
   - Name: tinyvit-5m_3rdparty_in1k

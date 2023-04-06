@@ -12,7 +12,7 @@ from mmengine.runner import Runner
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='MMCLS test (and eval) a model')
+        description='MMPreTrain test (and eval) a model')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument(

@@ -2,7 +2,7 @@
 
 我们在这里列出了一些常见问题及其相应的解决方案。如果您发现任何常见问题并有方法
 帮助解决，欢迎随时丰富列表。如果这里的内容没有涵盖您的问题，请按照
-[提问模板](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[提问模板](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 在 GitHub 上提出问题，并补充模板中需要的信息。
 
 ## 安装

@@ -11,7 +11,7 @@ Collections:
       Title: "Conformer: Local Features Coupling Global Representations for Visual Recognition"
     README: configs/conformer/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.19.0/mmcls/models/backbones/conformer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.19.0/mmcls/models/backbones/conformer.py
       Version: v0.19.0
 
 Models:

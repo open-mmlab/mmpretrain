@@ -12,7 +12,7 @@ Collections:
     README: configs/poolformer/README.md
     Code:
       Version: v0.22.1
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.22.1/mmcls/models/backbones/poolformer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.22.1/mmcls/models/backbones/poolformer.py
 
 Models:
   - Name: poolformer-s12_3rdparty_32xb128_in1k

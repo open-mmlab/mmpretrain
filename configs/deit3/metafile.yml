@@ -16,7 +16,7 @@ Collections:
       Title: 'DeiT III: Revenge of the ViT'
     README: configs/deit3/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc2/mmcls/models/backbones/deit3.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc2/mmcls/models/backbones/deit3.py
       Version: v1.0.0rc2
 
 Models:

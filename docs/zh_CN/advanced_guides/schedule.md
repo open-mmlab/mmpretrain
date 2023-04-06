@@ -1,6 +1,6 @@
 # 自定义训练优化策略
 
-在我们的算法库中，已经提供了通用数据集（如ImageNet，CIFAR）的[默认训练策略配置](https://github.com/open-mmlab/mmclassification/blob/pretrain/configs/_base_/schedules)。如果想要在这些数据集上继续提升模型性能，或者在不同数据集和方法上进行新的尝试，我们通常需要修改这些默认的策略。
+在我们的算法库中，已经提供了通用数据集（如ImageNet，CIFAR）的[默认训练策略配置](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/schedules)。如果想要在这些数据集上继续提升模型性能，或者在不同数据集和方法上进行新的尝试，我们通常需要修改这些默认的策略。
 
 在本教程中，我们将介绍如何在运行自定义训练时，通过修改配置文件进行构造优化器、参数化精细配置、梯度裁剪、梯度累计以及定制动量调整策略等。同时也会通过模板简单介绍如何自定义开发优化器和构造器。
 

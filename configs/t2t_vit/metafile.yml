@@ -13,7 +13,7 @@ Collections:
       Title: "Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet"
     README: configs/t2t_vit/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/t2t_vit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.17.0/mmcls/models/backbones/t2t_vit.py
       Version: v0.17.0
 
 Models:

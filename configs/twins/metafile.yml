@@ -12,7 +12,7 @@ Collections:
       Title: "Twins: Revisiting the Design of Spatial Attention in Vision Transformers"
     README: configs/twins/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/twins.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.20.1/mmcls/models/backbones/twins.py
       Version: v0.20.1
 
 Models:

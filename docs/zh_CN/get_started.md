@@ -53,7 +53,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 这种情况下，从源码按如下方式安装 mmpretrain：
 
 ```shell
-git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
+git clone https://github.com/open-mmlab/mmpretrain.git
 cd mmpretrain
 pip install -U openmim && mim install -e .
 ```
@@ -67,7 +67,7 @@ pip install -U openmim && mim install -e .
 直接使用 mim 安装即可。
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0rc5"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc6"
 ```
 
 ```{note}
@@ -130,7 +130,7 @@ MMPretrain 可以仅在 CPU 环境中安装，在 CPU 模式下，你可以完�
 
 ### 通过 Docker 使用 MMPretrain
 
-MMPretrain 提供 [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/pretrain/docker/Dockerfile)
+MMPretrain 提供 [Dockerfile](https://github.com/open-mmlab/mmpretrain/blob/main/docker/Dockerfile)
 用于构建镜像。请确保你的 [Docker 版本](https://docs.docker.com/engine/install/) >=19.03。
 
 ```shell
@@ -148,4 +148,4 @@ docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmpretrain/data mmpretrai
 ## 故障解决
 
 如果你在安装过程中遇到了什么问题，请先查阅[常见问题](./notes/faq.md)。如果没有找到解决方法，可以在 GitHub
-上[提出 issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)。
+上[提出 issue](https://github.com/open-mmlab/mmpretrain/issues/new/choose)。

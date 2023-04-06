@@ -12,7 +12,7 @@ Collections:
       Title: 'An Improved One millisecond Mobile Backbone'
     README: configs/mobileone/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc1/configs/mobileone/metafile.yml
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc1/configs/mobileone/metafile.yml
       Version: v1.0.0rc1
 
 Models:

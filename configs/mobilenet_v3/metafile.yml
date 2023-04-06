@@ -15,7 +15,7 @@ Collections:
       Title: Searching for MobileNetV3
     README: configs/mobilenet_v3/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/mobilenet_v3.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.15.0/mmcls/models/backbones/mobilenet_v3.py
       Version: v0.15.0
 
 Models:

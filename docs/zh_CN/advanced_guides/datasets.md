@@ -1,6 +1,6 @@
 # 添加新数据集
 
-用户可以编写一个继承自 [BasesDataset](https://mmclassification.readthedocs.io/zh_CN/latest/_modules/mmpretrain/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/imagenet.py)。
+用户可以编写一个继承自 [BasesDataset](https://mmpretrain.readthedocs.io/zh_CN/latest/_modules/mmpretrain/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/imagenet.py)。
 
 通常，此方法返回一个包含所有样本的列表，其中的每个样本都是一个字典。字典中包含了必要的数据信息，例如 `img` 和 `gt_label`。
 
@@ -66,7 +66,7 @@ train_dataloader = dict(
 )
 ```
 
-所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`。
+所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`。
 
 ```{note}
 如果数据样本时获取的字典中，只包含了 'img_path' 不包含 'img'， 则在 pipeline 中必须包含 'LoadImgFromFile'。
