@@ -33,7 +33,7 @@
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
-🌟 **MMPreTrain originates from MMClassification and MMSelfSup** 🌟
+<img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
 
 English | [简体中文](/README_zh-CN.md)
 
@@ -77,7 +77,7 @@ The `main` branch works with **PyTorch 1.8+**.
 
 ## What's new
 
-v1.0.0rc6 was released in 06/04/2023
+🌟 v1.0.0rc6 was released in 06/04/2023
 
 - Integrated Self-supervised leanrning algorithms from **MMSelfSup**, such as `MAE`, `BEiT`, `MILAN`, etc.
 - Add t-SNE visualization.
