@@ -94,7 +94,7 @@ jobs:
         run: pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmpretrain -m pytest tests/ --ignore tests/tests/test_tools.py
+          coverage run --branch --source mmpretrain -m pytest tests/ --ignore tests/test_tools.py
           coverage xml
           coverage report -m
       - name: Upload coverage to Codecov
