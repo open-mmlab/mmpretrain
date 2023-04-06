@@ -15,7 +15,7 @@ MMPretrain 为图像推理提供高级 Python API：
 下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推理给定图像。
 
 ```{note}
-可以运行 `wget https://github.com/open-mmlab/mmpretrain/raw/master/demo/demo.JPEG` 下载样例图片，或使用其他图片。
+可以运行 `wget https://github.com/open-mmlab/mmpretrain/raw/main/demo/demo.JPEG` 下载样例图片，或使用其他图片。
 ```
 
 ```python
