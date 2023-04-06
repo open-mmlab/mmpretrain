@@ -43,7 +43,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -63,8 +63,8 @@ python tools/test.py configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py https
 
 ### Image Classification on ImageNet-1k
 
-| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   |                                     Download                                     |
-| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :------------------------------------------------------------------------------: |
+| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   |                                                                                                                              Download                                                                                                                               |
+| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | `shufflenet-v1-1x_16xb64_in1k` | From scratch |    1.87    |   0.15    |   68.13   |   87.81   | [config](shufflenet-v1-1x_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.json) |
 
 ## Citation

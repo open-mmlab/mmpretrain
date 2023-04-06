@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,14 +57,14 @@ python tools/test.py configs/tinyvit/tinyvit-5m_8xb256_in1k.py https://download.
 
 ### Image Classification on ImageNet-1k
 
-| Model                                          |       Pretrain       | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                     Config                      |                      Download                      |
-| :--------------------------------------------- | :------------------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------------: | :------------------------------------------------: |
-| `tinyvit-5m_3rdparty_in1k`\*                   |     From scratch     |    5.39    |   1.29    |   79.02   |   94.74   |       [config](tinyvit-5m_8xb256_in1k.py)       | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_3rdparty_in1k_20221021-62cb5abf.pth) |
-| `tinyvit-5m_in21k-distill-pre_3rdparty_in1k`\* | ImageNet-21k DISTILL |    5.39    |   1.29    |   80.71   |   95.57   |   [config](tinyvit-5m-distill_8xb256_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_in21k-distill-pre_3rdparty_in1k_20221021-d4b010a8.pth) |
-| `tinyvit-11m_3rdparty_in1k`\*                  |     From scratch     |   11.00    |   2.05    |   81.44   |   95.79   |      [config](tinyvit-11m_8xb256_in1k.py)       | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_3rdparty_in1k_20221021-11ccef16.pth) |
-| `tinyvit-11m_in21k-distill-pre_3rdparty_in1k`\* | ImageNet-21k DISTILL |   11.00    |   2.05    |   83.19   |   96.53   |  [config](tinyvit-11m-distill_8xb256_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_in21k-distill-pre_3rdparty_in1k_20221021-5d3bc0dc.pth) |
-| `tinyvit-21m_3rdparty_in1k`\*                  |     From scratch     |   21.20    |   4.30    |   83.08   |   96.58   |      [config](tinyvit-21m_8xb256_in1k.py)       | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_3rdparty_in1k_20221021-5346ba34.pth) |
-| `tinyvit-21m_in21k-distill-pre_3rdparty_in1k`\* | ImageNet-21k DISTILL |   21.20    |   4.30    |   84.85   |   97.27   |  [config](tinyvit-21m-distill_8xb256_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k_20221021-3d9b30a2.pth) |
+| Model                                                 |       Pretrain       | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                       Config                       |                                                                  Download                                                                   |
+| :---------------------------------------------------- | :------------------: | :--------: | :-------: | :-------: | :-------: | :------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------: |
+| `tinyvit-5m_3rdparty_in1k`\*                          |     From scratch     |    5.39    |   1.29    |   79.02   |   94.74   |        [config](tinyvit-5m_8xb256_in1k.py)         |             [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_3rdparty_in1k_20221021-62cb5abf.pth)              |
+| `tinyvit-5m_in21k-distill-pre_3rdparty_in1k`\*        | ImageNet-21k DISTILL |    5.39    |   1.29    |   80.71   |   95.57   |    [config](tinyvit-5m-distill_8xb256_in1k.py)     |    [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_in21k-distill-pre_3rdparty_in1k_20221021-d4b010a8.pth)     |
+| `tinyvit-11m_3rdparty_in1k`\*                         |     From scratch     |   11.00    |   2.05    |   81.44   |   95.79   |        [config](tinyvit-11m_8xb256_in1k.py)        |             [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_3rdparty_in1k_20221021-11ccef16.pth)             |
+| `tinyvit-11m_in21k-distill-pre_3rdparty_in1k`\*       | ImageNet-21k DISTILL |   11.00    |   2.05    |   83.19   |   96.53   |    [config](tinyvit-11m-distill_8xb256_in1k.py)    |    [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_in21k-distill-pre_3rdparty_in1k_20221021-5d3bc0dc.pth)    |
+| `tinyvit-21m_3rdparty_in1k`\*                         |     From scratch     |   21.20    |   4.30    |   83.08   |   96.58   |        [config](tinyvit-21m_8xb256_in1k.py)        |             [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_3rdparty_in1k_20221021-5346ba34.pth)             |
+| `tinyvit-21m_in21k-distill-pre_3rdparty_in1k`\*       | ImageNet-21k DISTILL |   21.20    |   4.30    |   84.85   |   97.27   |    [config](tinyvit-21m-distill_8xb256_in1k.py)    |    [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k_20221021-3d9b30a2.pth)    |
 | `tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px`\* | ImageNet-21k DISTILL |   21.23    |   13.85   |   86.21   |   97.77   | [config](tinyvit-21m-distill_8xb256_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px_20221021-65be6b3f.pth) |
 | `tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px`\* | ImageNet-21k DISTILL |   21.27    |   27.15   |   86.44   |   97.89   | [config](tinyvit-21m-distill_8xb256_in1k-512px.py) | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px_20221021-e42a9bea.pth) |
 

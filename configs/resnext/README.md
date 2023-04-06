@@ -43,7 +43,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -63,9 +63,9 @@ python tools/test.py configs/resnext/resnext50-32x4d_8xb32_in1k.py https://downl
 
 ### Image Classification on ImageNet-1k
 
-| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                                      Download                                      |
-| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :--------------------------------------------------------------------------------: |
-| `resnext50-32x4d_8xb32_in1k`  | From scratch |   25.03    |   4.27    |   77.90   |   93.66   | [config](resnext50-32x4d_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.json) |
+| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                                                                                                                       Download                                                                                                                        |
+| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| `resnext50-32x4d_8xb32_in1k`  | From scratch |   25.03    |   4.27    |   77.90   |   93.66   | [config](resnext50-32x4d_8xb32_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.json)  |
 | `resnext101-32x4d_8xb32_in1k` | From scratch |   44.18    |   8.03    |   78.61   |   94.17   | [config](resnext101-32x4d_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x4d_b32x8_imagenet_20210506-e0fa3dd5.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x4d_b32x8_imagenet_20210506-e0fa3dd5.json) |
 | `resnext101-32x8d_8xb32_in1k` | From scratch |   88.79    |   16.50   |   79.27   |   94.58   | [config](resnext101-32x8d_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x8d_b32x8_imagenet_20210506-23a247d5.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x8d_b32x8_imagenet_20210506-23a247d5.json) |
 | `resnext152-32x4d_8xb32_in1k` | From scratch |   59.95    |   11.80   |   78.88   |   94.33   | [config](resnext152-32x4d_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnext/resnext152_32x4d_b32x8_imagenet_20210524-927787be.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnext/resnext152_32x4d_b32x8_imagenet_20210524-927787be.json) |

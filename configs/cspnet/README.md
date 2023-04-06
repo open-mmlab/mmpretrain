@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,10 +57,10 @@ python tools/test.py configs/cspnet/cspdarknet50_8xb32_in1k.py https://download.
 
 ### Image Classification on ImageNet-1k
 
-| Model                                |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                    Download                                     |
-| :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :-----------------------------------------------------------------------------: |
+| Model                                |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                                         Download                                                          |
+| :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :-----------------------------------------------------------------------------------------------------------------------: |
 | `cspdarknet50_3rdparty_8xb32_in1k`\* | From scratch |   27.64    |   5.04    |   80.05   |   95.07   | [config](cspdarknet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220329-bd275287.pth) |
-| `cspresnet50_3rdparty_8xb32_in1k`\*  | From scratch |   21.62    |   3.48    |   79.55   |   94.68   | [config](cspresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth) |
+| `cspresnet50_3rdparty_8xb32_in1k`\*  | From scratch |   21.62    |   3.48    |   79.55   |   94.68   | [config](cspresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth)  |
 | `cspresnext50_3rdparty_8xb32_in1k`\* | From scratch |   20.57    |   3.11    |   79.96   |   94.96   | [config](cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We haven't reprodcue the training results.*

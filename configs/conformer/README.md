@@ -43,7 +43,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -63,12 +63,12 @@ python tools/test.py configs/conformer/conformer-tiny-p16_8xb128_in1k.py https:/
 
 ### Image Classification on ImageNet-1k
 
-| Model                                 |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                    Config                    |                                Download                                |
-| :------------------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :------------------------------------------: | :--------------------------------------------------------------------: |
-| `conformer-tiny-p16_3rdparty_in1k`\*  | From scratch |   23.52    |   4.90    |   81.31   |   95.60   | [config](conformer-tiny-p16_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-tiny-p16_3rdparty_8xb128_in1k_20211206-f6860372.pth) |
+| Model                                 |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                    Config                    |                                                               Download                                                               |
+| :------------------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------: |
+| `conformer-tiny-p16_3rdparty_in1k`\*  | From scratch |   23.52    |   4.90    |   81.31   |   95.60   | [config](conformer-tiny-p16_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-tiny-p16_3rdparty_8xb128_in1k_20211206-f6860372.pth)  |
 | `conformer-small-p16_3rdparty_in1k`\* | From scratch |   37.67    |   10.31   |   83.32   |   96.46   | [config](conformer-small-p16_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p16_3rdparty_8xb128_in1k_20211206-3065dcf5.pth) |
-| `conformer-small-p32_8xb128_in1k`     | From scratch |   38.85    |   7.09    |   81.96   |   96.02   | [config](conformer-small-p32_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p32_8xb128_in1k_20211206-947a0816.pth) |
-| `conformer-base-p16_3rdparty_in1k`\*  | From scratch |   83.29    |   22.89   |   83.82   |   96.59   | [config](conformer-base-p16_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-base-p16_3rdparty_8xb128_in1k_20211206-bfdf8637.pth) |
+| `conformer-small-p32_8xb128_in1k`     | From scratch |   38.85    |   7.09    |   81.96   |   96.02   | [config](conformer-small-p32_8xb128_in1k.py) |     [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p32_8xb128_in1k_20211206-947a0816.pth)      |
+| `conformer-base-p16_3rdparty_in1k`\*  | From scratch |   83.29    |   22.89   |   83.82   |   96.59   | [config](conformer-base-p16_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-base-p16_3rdparty_8xb128_in1k_20211206-bfdf8637.pth)  |
 
 *Models with * are converted from the [official repo](https://github.com/pengzhiliang/Conformer/blob/main/models.py#L89). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

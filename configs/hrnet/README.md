@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,15 +57,15 @@ python tools/test.py configs/hrnet/hrnet-w18_4xb32_in1k.py https://download.open
 
 ### Image Classification on ImageNet-1k
 
-| Model                                  |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |              Config               |                                     Download                                     |
-| :------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-------------------------------: | :------------------------------------------------------------------------------: |
-| `hrnet-w18_3rdparty_8xb32_in1k`\*      | From scratch |   21.30    |   4.33    |   76.75   |   93.44   | [config](hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth) |
-| `hrnet-w30_3rdparty_8xb32_in1k`\*      | From scratch |   37.71    |   8.17    |   78.19   |   94.22   | [config](hrnet-w30_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth) |
-| `hrnet-w32_3rdparty_8xb32_in1k`\*      | From scratch |   41.23    |   8.99    |   78.44   |   94.19   | [config](hrnet-w32_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth) |
-| `hrnet-w40_3rdparty_8xb32_in1k`\*      | From scratch |   57.55    |   12.77   |   78.94   |   94.47   | [config](hrnet-w40_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth) |
-| `hrnet-w44_3rdparty_8xb32_in1k`\*      | From scratch |   67.06    |   14.96   |   78.88   |   94.37   | [config](hrnet-w44_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth) |
-| `hrnet-w48_3rdparty_8xb32_in1k`\*      | From scratch |   77.47    |   17.36   |   79.32   |   94.52   | [config](hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth) |
-| `hrnet-w64_3rdparty_8xb32_in1k`\*      | From scratch |   128.06   |   29.00   |   79.46   |   94.65   | [config](hrnet-w64_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth) |
+| Model                                  |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |              Config               |                                                          Download                                                          |
+| :------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-------------------------------: | :------------------------------------------------------------------------------------------------------------------------: |
+| `hrnet-w18_3rdparty_8xb32_in1k`\*      | From scratch |   21.30    |   4.33    |   76.75   |   93.44   | [config](hrnet-w18_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth)    |
+| `hrnet-w30_3rdparty_8xb32_in1k`\*      | From scratch |   37.71    |   8.17    |   78.19   |   94.22   | [config](hrnet-w30_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth)    |
+| `hrnet-w32_3rdparty_8xb32_in1k`\*      | From scratch |   41.23    |   8.99    |   78.44   |   94.19   | [config](hrnet-w32_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth)    |
+| `hrnet-w40_3rdparty_8xb32_in1k`\*      | From scratch |   57.55    |   12.77   |   78.94   |   94.47   | [config](hrnet-w40_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth)    |
+| `hrnet-w44_3rdparty_8xb32_in1k`\*      | From scratch |   67.06    |   14.96   |   78.88   |   94.37   | [config](hrnet-w44_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth)    |
+| `hrnet-w48_3rdparty_8xb32_in1k`\*      | From scratch |   77.47    |   17.36   |   79.32   |   94.52   | [config](hrnet-w48_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth)    |
+| `hrnet-w64_3rdparty_8xb32_in1k`\*      | From scratch |   128.06   |   29.00   |   79.46   |   94.65   | [config](hrnet-w64_4xb32_in1k.py) |   [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth)    |
 | `hrnet-w18_3rdparty_8xb32-ssld_in1k`\* | From scratch |   21.30    |   4.33    |   81.06   |   95.70   | [config](hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth) |
 | `hrnet-w48_3rdparty_8xb32-ssld_in1k`\* | From scratch |   77.47    |   17.36   |   83.63   |   96.79   | [config](hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth) |
 

@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,14 +57,14 @@ python tools/test.py configs/hornet/hornet-tiny_8xb128_in1k.py https://download.
 
 ### Image Classification on ImageNet-1k
 
-| Model                             |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                    Download                                     |
-| :-------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-------------------------------------: | :-----------------------------------------------------------------------------: |
-| `hornet-tiny_3rdparty_in1k`\*     | From scratch |   22.41    |   3.98    |   82.84   |   96.24   |  [config](hornet-tiny_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth) |
-| `hornet-tiny-gf_3rdparty_in1k`\*  | From scratch |   22.99    |   3.90    |   82.98   |   96.38   | [config](hornet-tiny-gf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth) |
-| `hornet-small_3rdparty_in1k`\*    | From scratch |   49.53    |   8.83    |   83.79   |   96.75   |  [config](hornet-small_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth) |
+| Model                             |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                                        Download                                                        |
+| :-------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: |
+| `hornet-tiny_3rdparty_in1k`\*     | From scratch |   22.41    |   3.98    |   82.84   |   96.24   |  [config](hornet-tiny_8xb128_in1k.py)   |   [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth)   |
+| `hornet-tiny-gf_3rdparty_in1k`\*  | From scratch |   22.99    |   3.90    |   82.98   |   96.38   | [config](hornet-tiny-gf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth)  |
+| `hornet-small_3rdparty_in1k`\*    | From scratch |   49.53    |   8.83    |   83.79   |   96.75   |  [config](hornet-small_8xb64_in1k.py)   |  [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth)   |
 | `hornet-small-gf_3rdparty_in1k`\* | From scratch |   50.40    |   8.71    |   83.98   |   96.77   | [config](hornet-small-gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth) |
-| `hornet-base_3rdparty_in1k`\*     | From scratch |   87.26    |   15.58   |   84.24   |   96.94   |   [config](hornet-base_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth) |
-| `hornet-base-gf_3rdparty_in1k`\*  | From scratch |   88.42    |   15.42   |   84.32   |   96.95   | [config](hornet-base-gf_8xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth) |
+| `hornet-base_3rdparty_in1k`\*     | From scratch |   87.26    |   15.58   |   84.24   |   96.94   |   [config](hornet-base_8xb64_in1k.py)   |   [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth)   |
+| `hornet-base-gf_3rdparty_in1k`\*  | From scratch |   88.42    |   15.42   |   84.32   |   96.95   | [config](hornet-base-gf_8xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth)  |
 
 *Models with * are converted from the [official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

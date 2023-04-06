@@ -43,7 +43,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -63,14 +63,14 @@ python tools/test.py configs/byol/benchmarks/resnet50_8xb512-linear-coslr-90e_in
 
 ### Pretrained models
 
-| Model                                   | Params (M) | Flops (G) |                       Config                       |                                           Download                                           |
-| :-------------------------------------- | :--------: | :-------: | :------------------------------------------------: | :------------------------------------------------------------------------------------------: |
+| Model                                   | Params (M) | Flops (G) |                       Config                       |                                                                                                                                                          Download                                                                                                                                                           |
+| :-------------------------------------- | :--------: | :-------: | :------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | `byol_resnet50_16xb256-coslr-200e_in1k` |   68.02    |   4.11    | [config](byol_resnet50_16xb256-coslr-200e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/byol_resnet50_16xb256-coslr-200e_in1k_20220825-de817331.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/byol_resnet50_16xb256-coslr-200e_in1k_20220825-de817331.json) |
 
 ### Image Classification on ImageNet-1k
 
-| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
-| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| Model                                            |                                                                          Pretrain                                                                           | Params (M) | Flops (G) | Top-1 (%) |                            Config                             |                                                                                                                                                                                                Download                                                                                                                                                                                                 |
+| :----------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-------: | :-------: | :-----------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | `resnet50_byol-pre_8xb512-linear-coslr-90e_in1k` | [BYOL](https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/byol_resnet50_16xb256-coslr-200e_in1k_20220825-de817331.pth) |   25.56    |   4.11    |   71.80   | [config](benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-7596c6f5.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-7596c6f5.json) |
 
 ## Citation

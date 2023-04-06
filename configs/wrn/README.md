@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,10 +57,10 @@ python tools/test.py configs/wrn/wide-resnet50_8xb32_in1k.py https://download.op
 
 ### Image Classification on ImageNet-1k
 
-| Model                                      |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                              Download                               |
-| :----------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :-----------------------------------------------------------------: |
-| `wide-resnet50_3rdparty_8xb32_in1k`\*      | From scratch |   68.88    |   11.44   |   78.48   |   94.08   |   [config](wide-resnet50_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth) |
-| `wide-resnet101_3rdparty_8xb32_in1k`\*     | From scratch |   126.89   |   22.81   |   78.84   |   94.28   |   [config](wide-resnet101_8xb32_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
+| Model                                      |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                                           Download                                                           |
+| :----------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------: |
+| `wide-resnet50_3rdparty_8xb32_in1k`\*      | From scratch |   68.88    |   11.44   |   78.48   |   94.08   |   [config](wide-resnet50_8xb32_in1k.py)    |   [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth)    |
+| `wide-resnet101_3rdparty_8xb32_in1k`\*     | From scratch |   126.89   |   22.81   |   78.84   |   94.28   |   [config](wide-resnet101_8xb32_in1k.py)   |   [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth)   |
 | `wide-resnet50_3rdparty-timm_8xb32_in1k`\* | From scratch |   68.88    |   11.44   |   81.45   |   95.53   | [config](wide-resnet50_timm_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth) |
 
 *Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*

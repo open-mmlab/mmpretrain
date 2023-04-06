@@ -107,12 +107,12 @@ html_theme_options = {
         {
             'name': 'Version',
             'children': [
-                {'name': 'MMPretrain 0.x',
+                {'name': 'MMPreTrain 0.x',
+                 'url': 'https://mmpretrain.readthedocs.io/en/0.x/',
+                 'description': '0.x branch'},
+                {'name': 'MMPreTrain 1.x',
                  'url': 'https://mmpretrain.readthedocs.io/en/latest/',
-                 'description': 'master branch'},
-                {'name': 'MMPretrain 1.x',
-                 'url': 'https://mmpretrain.readthedocs.io/en/dev-1.x/',
-                 'description': '1.x branch'},
+                 'description': 'Main branch'},
             ],
         }
     ],

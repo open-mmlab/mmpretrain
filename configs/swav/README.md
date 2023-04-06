@@ -43,7 +43,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -63,14 +63,14 @@ python tools/test.py configs/swav/benchmarks/resnet50_8xb512-linear-coslr-90e_in
 
 ### Pretrained models
 
-| Model                                                  | Params (M) | Flops (G) |                             Config                             |                             Download                              |
-| :----------------------------------------------------- | :--------: | :-------: | :------------------------------------------------------------: | :---------------------------------------------------------------: |
+| Model                                                  | Params (M) | Flops (G) |                              Config                               |                                                                                                                                                                                        Download                                                                                                                                                                                         |
+| :----------------------------------------------------- | :--------: | :-------: | :---------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | `swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px` |   28.35    |   4.11    | [config](swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96_20220825-5b3fc7fc.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96_20220825-5b3fc7fc.json) |
 
 ### Image Classification on ImageNet-1k
 
-| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
-| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| Model                                            |                                                                                         Pretrain                                                                                          | Params (M) | Flops (G) | Top-1 (%) |                            Config                             |                                                                                                                                                                                                               Download                                                                                                                                                                                                                |
+| :----------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-------: | :-------: | :-----------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | `resnet50_swav-pre_8xb32-linear-coslr-100e_in1k` | [SWAV](https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96_20220825-5b3fc7fc.pth) |   25.56    |   4.11    |   70.50   | [config](benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/resnet50_linear-8xb32-coslr-100e_in1k/resnet50_linear-8xb32-coslr-100e_in1k_20220825-80341e08.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96/resnet50_linear-8xb32-coslr-100e_in1k/resnet50_linear-8xb32-coslr-100e_in1k_20220825-80341e08.json) |
 
 ## Citation

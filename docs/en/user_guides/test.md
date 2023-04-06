@@ -20,21 +20,21 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 ```
 ````
 
-| ARGS                                  | Description                                                                                                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONFIG_FILE`                         | The path to the config file.                                                                                                                                        |
-| `CHECKPOINT_FILE`                     | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)). |
-| `--work-dir WORK_DIR`                 | The directory to save the file containing evaluation metrics.                                                                                                       |
-| `--out OUT`                           | The path to save the file containing test results.                                                                                                                  |
-| `--out-item OUT_ITEM`                 | To specify the content of the test results file, and it can be "pred" or "metrics". If "pred", save the outputs of the model for offline evaluation. If "metrics", save the evaluation metrics. Defaults to "pred". |
+| ARGS                                  | Description                                                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONFIG_FILE`                         | The path to the config file.                                                                                                                                                                                                                                                                                                                                                                 |
+| `CHECKPOINT_FILE`                     | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)).                                                                                                                                                                                                                            |
+| `--work-dir WORK_DIR`                 | The directory to save the file containing evaluation metrics.                                                                                                                                                                                                                                                                                                                                |
+| `--out OUT`                           | The path to save the file containing test results.                                                                                                                                                                                                                                                                                                                                           |
+| `--out-item OUT_ITEM`                 | To specify the content of the test results file, and it can be "pred" or "metrics". If "pred", save the outputs of the model for offline evaluation. If "metrics", save the evaluation metrics. Defaults to "pred".                                                                                                                                                                          |
 | `--cfg-options CFG_OPTIONS`           | Override some settings in the used config, the key-value pair in xxx=yyy format will be merged into the config file. If the value to be overwritten is a list, it should be of the form of either `key="[a,b]"` or `key=a,b`. The argument also allows nested list/tuple values, e.g. `key="[(a,b),(c,d)]"`. Note that the quotation marks are necessary and that no white space is allowed. |
-| `--show-dir SHOW_DIR`                 | The directory to save the result visualization images.                                                                                                              |
-| `--show`                              | Visualize the prediction result in a window.                                                                                                                        |
-| `--interval INTERVAL`                 | The interval of samples to visualize.                                                                                                                               |
-| `--wait-time WAIT_TIME`               | The display time of every window (in seconds). Defaults to 1.                                                                                                       |
-| `--no-pin-memory`                     | Whether to disable the `pin_memory` option in dataloaders.                                                                                                          |
-| `--tta`                               | Whether to enable the Test-Time-Aug (TTA). If the config file has `tta_pipeline` and `tta_model` fields, use them to determine the TTA transforms and how to merge the TTA results. Otherwise, use flip TTA by averaging classification score. |
-| `--launcher {none,pytorch,slurm,mpi}` | Options for job launcher.                                                                                                                                           |
+| `--show-dir SHOW_DIR`                 | The directory to save the result visualization images.                                                                                                                                                                                                                                                                                                                                       |
+| `--show`                              | Visualize the prediction result in a window.                                                                                                                                                                                                                                                                                                                                                 |
+| `--interval INTERVAL`                 | The interval of samples to visualize.                                                                                                                                                                                                                                                                                                                                                        |
+| `--wait-time WAIT_TIME`               | The display time of every window (in seconds). Defaults to 1.                                                                                                                                                                                                                                                                                                                                |
+| `--no-pin-memory`                     | Whether to disable the `pin_memory` option in dataloaders.                                                                                                                                                                                                                                                                                                                                   |
+| `--tta`                               | Whether to enable the Test-Time-Aug (TTA). If the config file has `tta_pipeline` and `tta_model` fields, use them to determine the TTA transforms and how to merge the TTA results. Otherwise, use flip TTA by averaging classification score.                                                                                                                                               |
+| `--launcher {none,pytorch,slurm,mpi}` | Options for job launcher.                                                                                                                                                                                                                                                                                                                                                                    |
 
 ## Test with multiple GPUs
 
@@ -44,12 +44,12 @@ We provide a shell script to start a multi-GPUs task with `torch.distributed.lau
 bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [PY_ARGS]
 ```
 
-| ARGS              | Description                                                                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONFIG_FILE`     | The path to the config file.                                                                                                                                           |
-| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)). |
-| `GPU_NUM`         | The number of GPUs to be used.                                                                                                                                         |
-| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
+| ARGS              | Description                                                                                                                                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONFIG_FILE`     | The path to the config file.                                                                                                                                      |
+| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)). |
+| `GPU_NUM`         | The number of GPUs to be used.                                                                                                                                    |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                  |
 
 You can also specify extra arguments of the launcher by environment variables. For example, change the
 communication port of the launcher to 29666 by the below command:
@@ -105,13 +105,13 @@ If you run MMPretrain on a cluster managed with [slurm](https://slurm.schedmd.co
 
 Here are the arguments description of the script.
 
-| ARGS              | Description                                                                                                                                                            |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PARTITION`       | The partition to use in your cluster.                                                                                                                                  |
-| `JOB_NAME`        | The name of your job, you can name it as you like.                                                                                                                     |
-| `CONFIG_FILE`     | The path to the config file.                                                                                                                                           |
-| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)). |
-| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
+| ARGS              | Description                                                                                                                                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PARTITION`       | The partition to use in your cluster.                                                                                                                             |
+| `JOB_NAME`        | The name of your job, you can name it as you like.                                                                                                                |
+| `CONFIG_FILE`     | The path to the config file.                                                                                                                                      |
+| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)). |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                  |
 
 Here are the environment variables can be used to configure the slurm job.
 

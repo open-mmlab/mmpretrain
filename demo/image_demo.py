@@ -32,7 +32,7 @@ def main():
         raise ValueError(
             f'Unavailable model "{args.model}", you can specify find a model '
             'name or a config file or find a model name from '
-            'https://mmpretrain.readthedocs.io/en/1.x/modelzoo_statistics.html#all-checkpoints'  # noqa: E501
+            'https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html#all-checkpoints'  # noqa: E501
         )
     result = inferencer(args.img, show=args.show, show_dir=args.show_dir)[0]
     # show the results

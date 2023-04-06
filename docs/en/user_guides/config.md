@@ -83,7 +83,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # The type of the backbone module.
         # All fields except `type` come from the __init__ method of class `ResNet`
-        # and you can find them from https://mmclassification.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.backbones.ResNet.html
+        # and you can find them from https://mmpretrain.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.backbones.ResNet.html
         depth=50,
         num_stages=4,
         out_indices=(3, ),
@@ -93,7 +93,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',     # The type of the classification head module.
         # All fields except `type` come from the __init__ method of class `LinearClsHead`
-        # and you can find them from https://mmclassification.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.heads.LinearClsHead.html
+        # and you can find them from https://mmpretrain.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.heads.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
@@ -113,7 +113,7 @@ This primitive config file includes information to construct the dataloader and 
   - `persistent_workers`: Whether to persistent workers after finishing one epoch.
   - `dataset`: The settings of the dataset.
     - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](mmpretrain.datasets).
-    - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmpretrain.readthedocs.io/en/1.x/tutorials/data_pipeline.html).
+    - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmpretrain.readthedocs.io/en/main/tutorials/data_pipeline.html).
 
 Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/datasets/imagenet_bs32.py)：
 

@@ -45,7 +45,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -84,11 +84,11 @@ backbone.switch_to_deploy()
 
 ### Image Classification on ImageNet-1k
 
-| Model                                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                            Download                            |
-| :--------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :------------------------------------------------------------: |
-| `replknet-31B_3rdparty_in1k`\*                 | From scratch |   79.86    |   15.64   |   83.48   |   96.57   |    [config](replknet-31B_32xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth) |
-| `replknet-31B_3rdparty_in1k-384px`\*           | From scratch |   79.86    |   45.95   |   84.84   |   97.34   | [config](replknet-31B_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth) |
-| `replknet-31B_in21k-pre_3rdparty_in1k`\*       | ImageNet-21k |   79.86    |   15.64   |   85.20   |   97.56   |    [config](replknet-31B_32xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth) |
+| Model                                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                                                               Download                                                                |
+| :--------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
+| `replknet-31B_3rdparty_in1k`\*                 | From scratch |   79.86    |   15.64   |   83.48   |   96.57   |    [config](replknet-31B_32xb64_in1k.py)    |         [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth)         |
+| `replknet-31B_3rdparty_in1k-384px`\*           | From scratch |   79.86    |   45.95   |   84.84   |   97.34   | [config](replknet-31B_32xb64_in1k-384px.py) |      [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth)      |
+| `replknet-31B_in21k-pre_3rdparty_in1k`\*       | ImageNet-21k |   79.86    |   15.64   |   85.20   |   97.56   |    [config](replknet-31B_32xb64_in1k.py)    |    [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth)    |
 | `replknet-31B_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   79.86    |   45.95   |   85.99   |   97.75   | [config](replknet-31B_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k-384px_20221118-76c92b24.pth) |
 | `replknet-31L_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   172.67   |   97.24   |   86.63   |   98.00   | [config](replknet-31L_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth) |
 | `replknet-XL_meg73m-pre_3rdparty_in1k-320px`\* |    MEG73M    |   335.44   |  129.57   |   87.57   |   98.39   | [config](replknet-XL_32xb64_in1k-320px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth) |

@@ -130,8 +130,8 @@ MMPretrain 上手路线
 .. toctree::
    :caption: 切换语言
 
-   English <https://mmclassification.readthedocs.io/en/1.x/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/1.x/>
+   English <https://mmpretrain.readthedocs.io/en/main/>
+   简体中文 <https://mmpretrain.readthedocs.io/zh_CN/main/>
 
 
 索引与表格

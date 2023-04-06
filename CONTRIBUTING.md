@@ -1,13 +1,13 @@
-# Contributing to MMClassification
+# Contributing to MMPreTrain
 
-- [Contributing to MMClassification](#contributing-to-mmclassification)
+- [Contributing to MMPreTrain](#contributing-to-mmpretrain)
   - [Workflow](#workflow)
   - [Code style](#code-style)
     - [Python](#python)
     - [C++ and CUDA](#c-and-cuda)
   - [Pre-commit Hook](#pre-commit-hook)
 
-Thanks for your interest in contributing to MMClassification! All kinds of contributions are welcome, including but not limited to the following.
+Thanks for your interest in contributing to MMPreTrain! All kinds of contributions are welcome, including but not limited to the following.
 
 - Fix typo or bugs
 - Add documentation or translate the documentation into other languages
@@ -17,7 +17,7 @@ Thanks for your interest in contributing to MMClassification! All kinds of contr
 
 We recommend the potential contributors follow this workflow for contribution.
 
-1. Fork and pull the latest MMClassification repository, follow [get started](https://mmclassification.readthedocs.io/en/1.x/get_started.html) to setup the environment.
+1. Fork and pull the latest MMPreTrain repository, follow [get started](https://mmpretrain.readthedocs.io/en/main/get_started.html) to setup the environment.
 2. Checkout a new branch (**do not use the master or dev branch** for PRs)
 
 ```bash

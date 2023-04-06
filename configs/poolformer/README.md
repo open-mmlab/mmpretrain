@@ -43,7 +43,7 @@ print(type(feats))
 
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -57,8 +57,8 @@ python tools/test.py configs/poolformer/poolformer-s12_32xb128_in1k.py https://d
 
 ### Image Classification on ImageNet-1k
 
-| Model                                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                                Download                                 |
-| :--------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :---------------------------------------------------------------------: |
+| Model                                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                                                             Download                                                              |
+| :--------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: |
 | `poolformer-s12_3rdparty_32xb128_in1k`\* | From scratch |   11.92    |   1.87    |   77.24   |   93.51   | [config](poolformer-s12_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s12_3rdparty_32xb128_in1k_20220414-f8d83051.pth) |
 | `poolformer-s24_3rdparty_32xb128_in1k`\* | From scratch |   21.39    |   3.51    |   80.33   |   95.05   | [config](poolformer-s24_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s24_3rdparty_32xb128_in1k_20220414-d7055904.pth) |
 | `poolformer-s36_3rdparty_32xb128_in1k`\* | From scratch |   30.86    |   5.15    |   81.43   |   95.45   | [config](poolformer-s36_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s36_3rdparty_32xb128_in1k_20220414-d78ff3e8.pth) |

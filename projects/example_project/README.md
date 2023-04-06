@@ -8,7 +8,7 @@ according to your project.
 
 ### Setup Environment
 
-Please refer to [Get Started](https://mmclassification.readthedocs.io/en/1.x/get_started.html) to install
+Please refer to [Get Started](https://mmpretrain.readthedocs.io/en/main/get_started.html) to install
 MMClassification.
 
 At first, add the current folder to `PYTHONPATH`, so that Python can find your code. Run command in the current directory to add it.
@@ -21,7 +21,7 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 ### Data Preparation
 
-Prepare the ImageNet-2012 dataset according to the [instruction](https://mmclassification.readthedocs.io/en/dev-1.x/user_guides/dataset_prepare.html#imagenet).
+Prepare the ImageNet-2012 dataset according to the [instruction](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#imagenet).
 
 ### Training commands
 

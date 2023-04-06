@@ -55,7 +55,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -75,14 +75,14 @@ python tools/test.py configs/mobilenet_v3/mobilenet-v3-small-050_8xb128_in1k.py 
 
 ### Image Classification on ImageNet-1k
 
-| Model                                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                     Config                      |                             Download                             |
-| :--------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------------: | :--------------------------------------------------------------: |
-| `mobilenet-v3-small-050_3rdparty_in1k`\* | From scratch |    1.59    |   0.02    |   57.91   |   80.19   | [config](mobilenet-v3-small-050_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-050_3rdparty_in1k_20221114-e0b86be1.pth) |
-| `mobilenet-v3-small-075_3rdparty_in1k`\* | From scratch |    2.04    |   0.04    |   65.23   |   85.44   | [config](mobilenet-v3-small-075_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-075_3rdparty_in1k_20221114-2011fa76.pth) |
+| Model                                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                     Config                      |                                                                                                                           Download                                                                                                                            |
+| :--------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| `mobilenet-v3-small-050_3rdparty_in1k`\* | From scratch |    1.59    |   0.02    |   57.91   |   80.19   | [config](mobilenet-v3-small-050_8xb128_in1k.py) |                                                              [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-050_3rdparty_in1k_20221114-e0b86be1.pth)                                                              |
+| `mobilenet-v3-small-075_3rdparty_in1k`\* | From scratch |    2.04    |   0.04    |   65.23   |   85.44   | [config](mobilenet-v3-small-075_8xb128_in1k.py) |                                                              [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-075_3rdparty_in1k_20221114-2011fa76.pth)                                                              |
 | `mobilenet-v3-small_8xb128_in1k`         | From scratch |    2.54    |   0.06    |   66.68   |   86.74   |   [config](mobilenet-v3-small_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.json) |
-| `mobilenet-v3-small_3rdparty_in1k`\*     | From scratch |    2.54    |   0.06    |   67.66   |   87.41   |   [config](mobilenet-v3-small_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
+| `mobilenet-v3-small_3rdparty_in1k`\*     | From scratch |    2.54    |   0.06    |   67.66   |   87.41   |   [config](mobilenet-v3-small_8xb128_in1k.py)   |                                                                       [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth)                                                                        |
 | `mobilenet-v3-large_8xb128_in1k`         | From scratch |    5.48    |   0.23    |   73.49   |   91.31   |   [config](mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.json) |
-| `mobilenet-v3-large_3rdparty_in1k`\*     | From scratch |    5.48    |   0.23    |   74.04   |   91.34   |   [config](mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
+| `mobilenet-v3-large_3rdparty_in1k`\*     | From scratch |    5.48    |   0.23    |   74.04   |   91.34   |   [config](mobilenet-v3-large_8xb128_in1k.py)   |                                                                       [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth)                                                                        |
 
 *Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv3.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
