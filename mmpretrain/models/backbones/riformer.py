@@ -110,10 +110,6 @@ class RIFormerBlock(BaseModule):
         beta_affn = token_mixer.affine.bias
         gamma_ln = norm.weight
         beta_ln = norm.bias
-        print('gamma_affn:', gamma_affn.shape)
-        print('beta_affn:', beta_affn.shape)
-        print('gamma_ln:', gamma_ln.shape)
-        print('beta_ln:', beta_ln.shape)
         return (gamma_ln * gamma_affn), (beta_ln * gamma_affn + beta_affn)
 
     def get_equivalent_scale_bias(self):

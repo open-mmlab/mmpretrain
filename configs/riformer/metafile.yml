@@ -12,7 +12,7 @@ Collections:
     README: configs/riformer/README.md
     Code:
       Version: v1.0.rc6
-      URL:
+      URL: null
 
 Models:
   - Name: riformer-s12_in1k
@@ -28,15 +28,12 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k_20230406-6741ce71.pth
     Config: configs/riformer/riformer-s12_8xb128_in1k.py
-    Converted From:
-      Weights:
-      Code:
   - Name: riformer-s24_in1k
     Metadata:
       Training Data: ImageNet-1k
       FLOPs: 3412000000
       Parameters: 21389000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -45,14 +42,11 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k_20230406-fdab072a.pth
     Config: configs/riformer/riformer-s24_8xb128_in1k.py
-    Converted From:
-      Weights:
-      Code:
   - Name: riformer-s36_in1k
     Metadata:
       FLOPs: 5003000000
       Parameters: 30863000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -61,15 +55,12 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k_20230406-fdfcd3b0.pth
     Config: configs/riformer/riformer-s36_8xb128_in1k.py
-    Converted From:
-      Weights:
-      Code:
   - Name: riformer-m36_in1k
     Metadata:
       Training Data: ImageNet-1k
       FLOPs: 8801000000
       Parameters: 56173000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -78,14 +69,11 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k_20230406-2fcb9d9b.pth
     Config: configs/riformer/riformer-m36_8xb128_in1k.py
-    Converted From:
-      Weights:
-      Code:
   - Name: riformer-m48_in1k
     Metadata:
       FLOPs: 11590000000
       Parameters: 73473000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -94,9 +82,6 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k_20230406-2b9d1abf.pth
     Config: configs/riformer/riformer-m48_8xb64_in1k.py
-    Converted From:
-      Weights:
-      Code:
   - Name: riformer-s12_384_in1k
     Metadata:
       FLOPs: 5355000000
@@ -109,16 +94,13 @@ Models:
           Top 5 Accuracy: 93.93
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k-384px_20230406-145eda4c.pth
-    Config: configs/riformer/riformer-s12_8xb128_in1k_384.py
-    Converted From:
-      Weights:
-      Code:
+    Config: configs/riformer/riformer-s12_8xb128_in1k_384px.py
   - Name: riformer-s24_384_in1k
     Metadata:
       Training Data: ImageNet-1k
       FLOPs: 10028000000
       Parameters: 21389000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -126,15 +108,12 @@ Models:
           Top 5 Accuracy: 95.40
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k-384px_20230406-bafae7ab.pth
-    Config: configs/riformer/riformer-s24_8xb128_in1k_384.py
-    Converted From:
-      Weights:
-      Code:
+    Config: configs/riformer/riformer-s24_8xb128_in1k_384px.py
   - Name: riformer-s36_384_in1k
     Metadata:
       FLOPs: 14702000000
       Parameters: 30863000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -142,16 +121,13 @@ Models:
           Top 5 Accuracy: 95.95
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k-384px_20230406-017ed3c4.pth
-    Config: configs/riformer/riformer-s36_8xb64_in1k_384.py
-    Converted From:
-      Weights:
-      Code:
+    Config: configs/riformer/riformer-s36_8xb64_in1k_384px.py
   - Name: riformer-m36_384_in1k
     Metadata:
       Training Data: ImageNet-1k
       FLOPs: 25865000000
       Parameters: 56173000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -159,15 +135,12 @@ Models:
           Top 5 Accuracy: 96.40
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k-384px_20230406-66a6f764.pth
-    Config: configs/riformer/riformer-m36_8xb64_in1k_384.py
-    Converted From:
-      Weights:
-      Code:
+    Config: configs/riformer/riformer-m36_8xb64_in1k_384px.py
   - Name: riformer-m48_384_in1k
     Metadata:
       FLOPs: 34060000000
       Parameters: 73473000
-    In Collection: PoolFormer
+    In Collection: RIFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -175,7 +148,4 @@ Models:
           Top 5 Accuracy: 96.60
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k-384px_20230406-2e874826.pth
-    Config: configs/riformer/riformer-m48_8xb64_in1k_384.py
-    Converted From:
-      Weights:
-      Code:
+    Config: configs/riformer/riformer-m48_8xb64_in1k_384px.py
