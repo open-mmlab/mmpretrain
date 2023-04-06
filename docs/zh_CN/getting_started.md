@@ -87,7 +87,7 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 
 例子：
 
-在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
+在 CIFAR10 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
 ```shell
 python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
