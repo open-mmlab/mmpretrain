@@ -81,9 +81,20 @@ The `main` branch works with **PyTorch 1.8+**.
 
 ## What's new
 
-v1.0.0rc0 was released in 30/12/2022
+v1.0.0rc6 was released in 30/12/2022
 
-- Integrated Self-supervised leanrning algorithms from **MMSelfSup**
+- Integrated Self-supervised leanrning algorithms from **MMSelfSup**.
+- Add t-SNE visualization.
+- Refactor dataset pipeline visualization.
+
+Previous version update
+
+- Support **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
+- Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
+- Support **multi-task** training and testing.
+- Support Test-time Augmentation.
+- Upgrade API to get pre-defined models of MMClassification.
+- Refactor BEiT backbone and support v1/v2 inference.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
 to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).

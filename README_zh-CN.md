@@ -79,9 +79,20 @@ MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [Open
 
 ## 更新日志
 
-2022/12/30 发布了 v1.0.0rc0 版本
+2023/4/6 发布了 v1.0.0rc6 版本
 
 - 整和来自 MMSelfSup 的自监督学习算法
+- 支持 t-SNE 可视化
+- 重构数据管道可视化
+
+之前版本更新内容
+
+- 支持了**EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
+- 复现了 ConvNeXt 和 RepVGG 的训练精度。
+- 支持了 **多任务** 训练和测试。
+- 支持了测试时增强（TTA）。
+- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。
+- 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmclassification.readthedocs.io/zh_CN/1.x/) 进行试用。
 
