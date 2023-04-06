@@ -84,8 +84,9 @@ MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是
 
 之前版本更新内容
 
-- 支持了**EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
+- 支持了 **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
 - 复现了 ConvNeXt 和 RepVGG 的训练精度。
+- 支持混淆矩阵计算和画图。
 - 支持了 **多任务** 训练和测试。
 - 支持了测试时增强（TTA）。
 - 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。
@@ -130,7 +131,7 @@ mim install -e .
 相关结果和模型可在 [模型库](https://mmclassification.readthedocs.io/zh_CN/1.x/modelzoo_statistics.html) 中获得。
 
 <div align="center">
-  <b>主要架构</b>
+  <b>概览</b>
 </div>
 <table align="center">
   <tbody>
@@ -188,7 +189,11 @@ mim install -e .
         <li><a href="configs/replknet">RepLKNet</a></li>
         <li><a href="configs/beit">BEiT</a></li>
         <li><a href="configs/mixmim">MixMIM</a></li>
-        <li><a href="configs/efficientnet_v2">EfficientNet V2</a></li>
+        <li><a href="configs/revvit">RevViT</a></li>
+        <li><a href="configs/convnext_v2">ConvNeXt V2</a></li>
+        <li><a href="configs/vig">ViG</a></li>
+        <li><a href="configs/xcit">XCiT</a></li>
+        <li><a href="configs/levit">LeViT</a></li>
         </ul>
       </td>
       <td>

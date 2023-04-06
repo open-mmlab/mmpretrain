@@ -86,8 +86,9 @@ The `main` branch works with **PyTorch 1.8+**.
 
 Previous version update
 
-- Support **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
+- Support **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
 - Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
+- Support confusion matrix calculation and plot.
 - Support **multi-task** training and testing.
 - Support Test-time Augmentation.
 - Upgrade API to get pre-defined models of MMClassification.
@@ -133,7 +134,7 @@ For more information, please refer to [our documentation](https://mmclassificati
 Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html).
 
 <div align="center">
-  <b>Architectures</b>
+  <b>Overview</b>
 </div>
 <table align="center">
   <tbody>
@@ -192,6 +193,11 @@ Results and models are available in the [model zoo](https://mmclassification.rea
         <li><a href="configs/beit">BEiT</a></li>
         <li><a href="configs/mixmim">MixMIM</a></li>
         <li><a href="configs/efficientnet_v2">EfficientNet V2</a></li>
+        <li><a href="configs/revvit">RevViT</a></li>
+        <li><a href="configs/convnext_v2">ConvNeXt V2</a></li>
+        <li><a href="configs/vig">ViG</a></li>
+        <li><a href="configs/xcit">XCiT</a></li>
+        <li><a href="configs/levit">LeViT</a></li>
         </ul>
       </td>
       <td>
