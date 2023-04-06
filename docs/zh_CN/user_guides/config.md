@@ -80,7 +80,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # 主干网络类型
         # 除了 `type` 之外的所有字段都来自 `ResNet` 类的 __init__ 方法
-        # 可查阅 https://mmpretrain.readthedocs.io/zh_CN/pretrain/api/generated/mmpretrain.models.backbones.ResNet.html
+        # 可查阅 https://mmpretrain.readthedocs.io/zh_CN/latest/api/generated/mmpretrain.models.backbones.ResNet.html
         depth=50,
         num_stages=4,           # 主干网络状态(stages)的数目，这些状态产生的特征图作为后续的 head 的输入。
         out_indices=(3, ),      # 输出的特征图输出索引。
@@ -90,7 +90,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',         # 分类颈网络类型
         # 除了 `type` 之外的所有字段都来自 `LinearClsHead` 类的 __init__ 方法
-        # 可查阅 https://mmpretrain.readthedocs.io/zh_CN/pretrain/api/generated/mmpretrain.models.heads.LinearClsHead.html
+        # 可查阅 https://mmpretrain.readthedocs.io/zh_CN/latest/api/generated/mmpretrain.models.heads.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # 损失函数配置信息

@@ -83,7 +83,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # The type of the backbone module.
         # All fields except `type` come from the __init__ method of class `ResNet`
-        # and you can find them from https://mmpretrain.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.backbones.ResNet.html
+        # and you can find them from https://mmpretrain.readthedocs.io/en/latest/api/generated/mmpretrain.models.backbones.ResNet.html
         depth=50,
         num_stages=4,
         out_indices=(3, ),
@@ -93,7 +93,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',     # The type of the classification head module.
         # All fields except `type` come from the __init__ method of class `LinearClsHead`
-        # and you can find them from https://mmpretrain.readthedocs.io/en/pretrain/api/generated/mmpretrain.models.heads.LinearClsHead.html
+        # and you can find them from https://mmpretrain.readthedocs.io/en/latest/api/generated/mmpretrain.models.heads.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
