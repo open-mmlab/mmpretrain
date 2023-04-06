@@ -61,17 +61,18 @@
 
 ## Introduction
 
-MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
+MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 
 `主分支`代码目前支持 PyTorch 1.8 以上的版本。
 
 ### 主要特性
 
 - 支持多样的主干网络与预训练模型
-- 支持配置多种训练策略和技巧
+- 支持多种训练策略（有监督学习，无监督学习等）
+- 提供多种训练技巧
 - 大量的训练配置文件
 - 高效率和高可扩展性
-- 功能强大的工具箱
+- 功能强大的工具箱，有助于模型分析和实验
 
 ## 更新日志
 
@@ -261,7 +262,7 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMEval](https://github.com/open-mmlab/mmeval): 统一开放的跨框架算法评测库
-- [MMPreTrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab 视觉预训练工具箱
+- [MMPreTrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab 深度学习预训练工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab 旋转框检测工具箱与测试基准
