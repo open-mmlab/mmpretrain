@@ -176,7 +176,7 @@ MMClassification 1.0.0rc0 is the first version of MMClassification 1.x, a part o
 
 Built upon the new [training engine](https://github.com/open-mmlab/mmengine), MMClassification 1.x unifies the interfaces of dataset, models, evaluation, and visualization.
 
-And there are some BC-breaking changes. Please check [the migration tutorial](https://mmpretrain.readthedocs.io/en/main/migration.html) for more details.
+And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html) for more details.
 
 ## v0.23.1(2/6/2022)
 
@@ -210,7 +210,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 
 ### Docs Update
 
-- New style API reference, and easier to use! Welcome [view it](https://mmpretrain.readthedocs.io/en/master/api/models.html). ([#774](https://github.com/open-mmlab/mmclassification/pull/774))
+- New style API reference, and easier to use! Welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html). ([#774](https://github.com/open-mmlab/mmclassification/pull/774))
 
 ## v0.22.1(15/4/2022)
 
@@ -344,7 +344,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 - Provide the high-acc ResNet-50 training settings from [*ResNet strikes back*](https://arxiv.org/abs/2110.00476).
 - Reproduce the training accuracy of T2T-ViT & RegNetX, and provide self-training checkpoints.
 - Support DeiT & Conformer backbone and checkpoints.
-- Provide a CAM visualization tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmpretrain.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
+- Provide a CAM visualization tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
 
 ### New Features
 
@@ -389,7 +389,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 ### Highlights
 
 - Support MLP-Mixer backbone and provide pre-trained checkpoints.
-- Add a tool to visualize the learning rate curve of the training phase. Welcome to use with the [tutorial](https://mmpretrain.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
+- Add a tool to visualize the learning rate curve of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
 
 ### New Features
 
@@ -433,7 +433,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 
 - Support Tokens-to-Token ViT backbone and Res2Net backbone. Welcome to use!
 - Support ImageNet21k dataset.
-- Add a pipeline visualization tool. Try it with the [tutorials](https://mmpretrain.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+- Add a pipeline visualization tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
 
 ### New Features
 
