@@ -221,7 +221,7 @@ mim install -e .
         <ul>
         <li><a href="https://arxiv.org/abs/1909.13719">RandAug</a></li>
         <li><a href="https://arxiv.org/abs/1805.09501">AutoAug</a></li>
-        <li><a href="mmpretrain/datasets/samplers/repeat_aug.py">RepeatAugSamper</a></li>
+        <li><a href="mmpretrain/datasets/samplers/repeat_aug.py">RepeatAugSampler</a></li>
         <li><a href="mmpretrain/models/tta/score_tta.py">TTA</a></li>
         <li>...</li>
         </ul>
