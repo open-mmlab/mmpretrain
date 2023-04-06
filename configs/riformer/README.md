@@ -38,7 +38,7 @@ Use `classifier.backbone.switch_to_deploy()` interface to switch the RIFormer mo
 >>> import torch
 >>> from mmcls.apis import init_model, inference_model
 >>>
->>> model = init_model('configs/riformer/riformer-s12_32xb128_in1k.py', '/home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar')
+>>> model = init_model('configs/riformer/riformer-s12_8xb128_in1k.py', '/home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar')
 >>> results = inference_model(model, 'demo/demo.JPEG')
 >>> print( (results['pred_class'], results['pred_score']) )
 ('sea snake' 0.7827475666999817)
@@ -55,7 +55,7 @@ Use `classifier.backbone.switch_to_deploy()` interface to switch the RIFormer mo
 ```python
 >>> import torch
 >>>
->>> model = init_model('configs/riformer/riformer-s12_32xb128_in1k.py', '/home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar')
+>>> model = init_model('configs/riformer/riformer-s12_8xb128_in1k.py', '/home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar')
 >>> model.eval()
 >>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
 >>> # To get classification scores.
@@ -90,19 +90,19 @@ wget /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repi
 Test use unfused model:
 
 ```shell
-python tools/test.py configs/riformer/riformer-s12_32xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar
+python tools/test.py configs/riformer/riformer-s12_8xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar
 ```
 
 Reparameterize checkpoint:
 
 ```shell
-python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_32xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
+python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_8xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
 ```
 
 Test use fused model:
 
 ```shell
-python tools/test.py configs/riformer/deploy/riformer-s12-deploy_32xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
+python tools/test.py configs/riformer/deploy/riformer-s12-deploy_8xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
 ```
 
 *384×384*
@@ -116,19 +116,19 @@ wget /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/384/repi
 Test use unfused model:
 
 ```shell
-python tools/test.py configs/riformer/riformer-s12_32xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/384/repidentityformer-s12.pth.tar
+python tools/test.py configs/riformer/riformer-s12_8xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/384/repidentityformer-s12.pth.tar
 ```
 
 Reparameterize checkpoint:
 
 ```shell
-python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_32xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/384/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/384/repidentityformer-s12.pth.tar
+python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_8xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/384/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/384/repidentityformer-s12.pth.tar
 ```
 
 Test use fused model:
 
 ```shell
-python tools/test.py configs/riformer/deploy/riformer-s12-deploy_32xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/384/repidentityformer-s12.pth.tar
+python tools/test.py configs/riformer/deploy/riformer-s12-deploy_8xb128_in1k_384.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/384/repidentityformer-s12.pth.tar
 ```
 
 <!-- [TABS-END] -->
@@ -156,20 +156,20 @@ For example:
 wget /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar
 
 # reparameterize unfused weight to fused weight
-python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_32xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
+python tools/model_converters/reparameterize_model.py configs/riformer/riformer-s12_8xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained/224/repidentityformer-s12.pth.tar /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
 ```
 
-To use reparameterized weights, you can use the deploy model config file such as the [s12_deploy example](./riformer-s12-deploy_32xb128_in1k.py):
+To use reparameterized weights, you can use the deploy model config file such as the [s12_deploy example](./riformer-s12-deploy_8xb128_in1k.py):
 
 ```text
-# in riformer-s12-deploy_32xb128_in1k.py
-_base_ = '../riformer-s12-deploy_32xb128_in1k.py'  # basic s12 config
+# in riformer-s12-deploy_8xb128_in1k.py
+_base_ = '../riformer-s12-deploy_8xb128_in1k.py'  # basic s12 config
 
 model = dict(backbone=dict(deploy=True))  # switch model into deploy mode
 ```
 
 ```shell
-python tools/test.py configs/riformer/deploy/riformer-s12-deploy_32xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
+python tools/test.py configs/riformer/deploy/riformer-s12-deploy_8xb128_in1k.py /home/PJLAB/wangjiahao/project/RepIndentityFormer/mmcls_pretrained_deploy/224/repidentityformer-s12.pth.tar
 ```
 
 </br>
@@ -182,16 +182,16 @@ python tools/test.py configs/riformer/deploy/riformer-s12-deploy_32xb128_in1k.py
 
 |    Model     | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                    |                                              Download                                               |
 | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------: | :-------------------------------------------------------------------------------------------------: |
-| RIFormer-S12 |  224x224   |   11.92   |   1.82   |   76.90   |   93.06   |   [config](./riformer-s12_32xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s12_3rdparty_32xb128_in1k_20220414-f8d83051.pth) |
-| RIFormer-S24 |  224x224   |   21.39   |   3.41   |   80.28   |   94.80   |   [config](./riformer-s24_32xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s24_3rdparty_32xb128_in1k_20220414-d7055904.pth) |
-| RIFormer-S36 |  224x224   |   30.86   |   5.00   |   81.29   |   95.41   |   [config](./riformer-s36_32xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s36_3rdparty_32xb128_in1k_20220414-d78ff3e8.pth) |
-| RIFormer-M36 |  224x224   |   56.17   |   8.80   |   82.57   |   95.99   |   [config](./riformer-m36_32xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m36_3rdparty_32xb128_in1k_20220414-c55e0949.pth) |
-| RIFormer-M48 |  224x224   |   73.47   |  11.59   |   82.75   |   96.11   |   [config](./riformer-m48_32xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m48_3rdparty_32xb128_in1k_20220414-9378f3eb.pth) |
-| RIFormer-S12 |  384x384   |   11.92   |   5.36   |   78.29   |   93.93   | [config](./riformer-s12_32xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s12_3rdparty_32xb128_in1k_20220414-f8d83051.pth) |
-| RIFormer-S24 |  384x384   |   21.39   |  10.03   |   81.36   |   95.40   | [config](./riformer-s24_32xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s24_3rdparty_32xb128_in1k_20220414-d7055904.pth) |
-| RIFormer-S36 |  384x384   |   30.86   |  14.70   |   82.22   |   95.95   | [config](./riformer-s36_32xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s36_3rdparty_32xb128_in1k_20220414-d78ff3e8.pth) |
-| RIFormer-M36 |  384x384   |   56.17   |  25.87   |   83.39   |   96.40   | [config](./riformer-m36_32xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m36_3rdparty_32xb128_in1k_20220414-c55e0949.pth) |
-| RIFormer-M48 |  384x384   |   73.47   |  34.06   |   83.70   |   96.60   | [config](./riformer-m48_32xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m48_3rdparty_32xb128_in1k_20220414-9378f3eb.pth) |
+| RIFormer-S12 |  224x224   |   11.92   |   1.82   |   76.90   |   93.06   |   [config](./riformer-s12_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_8xb128_in1k_20230406-6741ce71.pth) |
+| RIFormer-S24 |  224x224   |   21.39   |   3.41   |   80.28   |   94.80   |   [config](./riformer-s24_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_8xb128_in1k_20230406-fdab072a.pth) |
+| RIFormer-S36 |  224x224   |   30.86   |   5.00   |   81.29   |   95.41   |   [config](./riformer-s36_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_8xb128_in1k_20230406-fdfcd3b0.pth) |
+| RIFormer-M36 |  224x224   |   56.17   |   8.80   |   82.57   |   95.99   |   [config](./riformer-m36_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_8xb128_in1k_20230406-2fcb9d9b.pth) |
+| RIFormer-M48 |  224x224   |   73.47   |  11.59   |   82.75   |   96.11   |   [config](./riformer-m48_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_8xb128_in1k_20230406-2b9d1abf.pth) |
+| RIFormer-S12 |  384x384   |   11.92   |   5.36   |   78.29   |   93.93   | [config](./riformer-s12_8xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_8xb128_in1k-384px_20230406-145eda4c.pth) |
+| RIFormer-S24 |  384x384   |   21.39   |  10.03   |   81.36   |   95.40   | [config](./riformer-s24_8xb128_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_8xb128_in1k-384px_20230406-bafae7ab.pth) |
+| RIFormer-S36 |  384x384   |   30.86   |  14.70   |   82.22   |   95.95   | [config](./riformer-s36_8xb64_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_8xb128_in1k-384px_20230406-017ed3c4.pth) |
+| RIFormer-M36 |  384x384   |   56.17   |  25.87   |   83.39   |   96.40   | [config](./riformer-m36_8xb64_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_8xb128_in1k-384px_20230406-66a6f764.pth) |
+| RIFormer-M48 |  384x384   |   73.47   |  34.06   |   83.70   |   96.60   | [config](./riformer-m48_8xb64_in1k_384.py) | [model](https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_8xb128_in1k-384px_20230406-2e874826.pth) |
 
 The config files of these models are only for inference.
 
