@@ -111,7 +111,7 @@ html_theme_options = {
                  'url': 'https://mmpretrain.readthedocs.io/zh_CN/0.x/',
                  'description': '0.x branch'},
                 {'name': 'MMPretrain 1.x',
-                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/main/',
+                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/latest/',
                  'description': 'Main branch'},
             ],
         }

@@ -78,7 +78,7 @@ those provided by the official website of the competition.
 
 ### Start pre-training
 
-First, you should install all these requirements, following this [page](https://mmpretrain.readthedocs.io/en/main/get_started.html).
+First, you should install all these requirements, following this [page](https://mmpretrain.readthedocs.io/en/latest/get_started.html).
 Then change your current directory to the root of MMPretrain
 
 ```shell

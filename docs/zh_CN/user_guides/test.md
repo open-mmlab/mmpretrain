@@ -21,7 +21,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | 参数                                  | 描述                                                                                                                                                                |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONFIG_FILE`                         | 配置文件的路径。                                                                                                                                                    |
-| `CHECKPOINT_FILE`                     | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)寻找需要的权重文件）。                              |
+| `CHECKPOINT_FILE`                     | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)寻找需要的权重文件）。                            |
 | `--work-dir WORK_DIR`                 | 用来保存测试指标结果的文件夹。                                                                                                                                      |
 | `--out OUT`                           | 用来保存测试输出的文件。                                                                                                                                            |
 | `--out-item OUT_ITEM`                 | 指定测试输出文件的内容，可以为 "pred" 或 "metrics"，其中 "pred" 表示保存所有模型输出，这些数据可以用于离线测评；"metrics" 表示输出测试指标。默认为 "pred"。         |
@@ -42,12 +42,12 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [PY_ARGS]
 ```
 
-| 参数              | 描述                                                                                                                                   |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONFIG_FILE`     | 配置文件的路径。                                                                                                                       |
-| `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)寻找需要的权重文件）。 |
-| `GPU_NUM`         | 使用的 GPU 数量。                                                                                                                      |
-| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                        |
+| 参数              | 描述                                                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONFIG_FILE`     | 配置文件的路径。                                                                                                                         |
+| `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)寻找需要的权重文件）。 |
+| `GPU_NUM`         | 使用的 GPU 数量。                                                                                                                        |
+| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                          |
 
 你还可以使用环境变量来指定启动器的额外参数，比如用如下命令将启动器的通讯端口变更为 29666：
 
@@ -99,13 +99,13 @@ NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR bash tools/dist_
 
 这里是该脚本的一些参数：
 
-| 参数              | 描述                                                                                                                                   |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `PARTITION`       | 使用的集群分区。                                                                                                                       |
-| `JOB_NAME`        | 任务的名称，你可以随意起一个名字。                                                                                                     |
-| `CONFIG_FILE`     | 配置文件路径。                                                                                                                         |
-| `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)寻找需要的权重文件）。 |
-| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                        |
+| 参数              | 描述                                                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `PARTITION`       | 使用的集群分区。                                                                                                                         |
+| `JOB_NAME`        | 任务的名称，你可以随意起一个名字。                                                                                                       |
+| `CONFIG_FILE`     | 配置文件路径。                                                                                                                           |
+| `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)寻找需要的权重文件）。 |
+| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                          |
 
 这里是一些你可以用来配置 slurm 任务的环境变量：
 

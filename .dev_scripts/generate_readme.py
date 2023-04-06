@@ -61,7 +61,7 @@ print(type(feats))
 TRAIN_TEST_TEMPLATE = """\
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -79,7 +79,7 @@ python tools/test.py {test_config} {test_weights}
 TEST_ONLY_TEMPLATE = """\
 **Test Command**
 
-Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/main/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 

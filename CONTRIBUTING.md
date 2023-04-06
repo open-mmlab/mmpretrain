@@ -17,7 +17,7 @@ Thanks for your interest in contributing to MMPreTrain! All kinds of contributio
 
 We recommend the potential contributors follow this workflow for contribution.
 
-1. Fork and pull the latest MMPreTrain repository, follow [get started](https://mmpretrain.readthedocs.io/en/main/get_started.html) to setup the environment.
+1. Fork and pull the latest MMPreTrain repository, follow [get started](https://mmpretrain.readthedocs.io/en/latest/get_started.html) to setup the environment.
 2. Checkout a new branch (**do not use the master or dev branch** for PRs)
 
 ```bash

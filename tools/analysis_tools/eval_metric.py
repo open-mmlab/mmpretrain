@@ -9,7 +9,7 @@ from mmengine.evaluator import Evaluator
 from mmpretrain.registry import METRICS
 
 HELP_URL = (
-    'https://mmpretrain.readthedocs.io/en/main/useful_tools/'
+    'https://mmpretrain.readthedocs.io/en/latest/useful_tools/'
     'log_result_analysis.html#how-to-conduct-offline-metric-evaluation')
 
 prog_description = f"""\

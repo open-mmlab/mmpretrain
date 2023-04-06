@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | ARGS                                  | Description                                                                                                                                                         |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONFIG_FILE`                         | The path to the config file.                                                                                                                                        |
-| `CHECKPOINT_FILE`                     | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)).   |
+| `CHECKPOINT_FILE`                     | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)). |
 | `--work-dir WORK_DIR`                 | The directory to save the file containing evaluation metrics.                                                                                                       |
 | `--out OUT`                           | The path to save the file containing test results.                                                                                                                  |
 | `--out-item OUT_ITEM`                 | To specify the content of the test results file, and it can be "pred" or "metrics". If "pred", save the outputs of the model for offline evaluation. If "metrics", save the evaluation metrics. Defaults to "pred". |
@@ -44,12 +44,12 @@ We provide a shell script to start a multi-GPUs task with `torch.distributed.lau
 bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [PY_ARGS]
 ```
 
-| ARGS              | Description                                                                                                                                                       |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONFIG_FILE`     | The path to the config file.                                                                                                                                      |
-| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)). |
-| `GPU_NUM`         | The number of GPUs to be used.                                                                                                                                    |
-| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                  |
+| ARGS              | Description                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONFIG_FILE`     | The path to the config file.                                                                                                                                        |
+| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)). |
+| `GPU_NUM`         | The number of GPUs to be used.                                                                                                                                      |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                    |
 
 You can also specify extra arguments of the launcher by environment variables. For example, change the
 communication port of the launcher to 29666 by the below command:
@@ -105,13 +105,13 @@ If you run MMPretrain on a cluster managed with [slurm](https://slurm.schedmd.co
 
 Here are the arguments description of the script.
 
-| ARGS              | Description                                                                                                                                                       |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PARTITION`       | The partition to use in your cluster.                                                                                                                             |
-| `JOB_NAME`        | The name of your job, you can name it as you like.                                                                                                                |
-| `CONFIG_FILE`     | The path to the config file.                                                                                                                                      |
-| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html)). |
-| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                  |
+| ARGS              | Description                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PARTITION`       | The partition to use in your cluster.                                                                                                                               |
+| `JOB_NAME`        | The name of your job, you can name it as you like.                                                                                                                  |
+| `CONFIG_FILE`     | The path to the config file.                                                                                                                                        |
+| `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html)). |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                    |
 
 Here are the environment variables can be used to configure the slurm job.
 

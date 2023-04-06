@@ -113,7 +113,7 @@ This primitive config file includes information to construct the dataloader and 
   - `persistent_workers`: Whether to persistent workers after finishing one epoch.
   - `dataset`: The settings of the dataset.
     - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](mmpretrain.datasets).
-    - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmpretrain.readthedocs.io/en/main/tutorials/data_pipeline.html).
+    - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmpretrain.readthedocs.io/en/latest/tutorials/data_pipeline.html).
 
 Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/datasets/imagenet_bs32.py)：
 
