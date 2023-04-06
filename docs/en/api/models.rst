@@ -13,7 +13,7 @@ The ``models`` package contains several sub-packages for addressing the differen
 - :mod:`~mmpretrain.models.retrievers`: The top-level module which defines the whole process of a retrieval model.
 - :mod:`~mmpretrain.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
-- :mod:`~mmpretrain.models.heads`: The component for specific tasks. In MMPreTrain, we provides heads for classification.
+- :mod:`~mmpretrain.models.heads`: The component for specific tasks.
 - :mod:`~mmpretrain.models.losses`: Loss functions.
 - :mod:`~mmpretrain.models.utils`: Some helper functions and common components used in various networks.
 
