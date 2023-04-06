@@ -67,7 +67,7 @@ jobs:
           command: |
             pip install git+https://github.com/open-mmlab/mmengine.git@main
             pip install -U openmim
-            mim install 'mmcv >= 2.0.0rc1'
+            mim install 'mmcv >= 2.0.0rc4'
             pip install timm
             pip install transformers
             pip install -r requirements.txt
@@ -118,7 +118,7 @@ jobs:
           command: |
             pip install git+https://github.com/open-mmlab/mmengine.git@main
             pip install -U openmim
-            mim install 'mmcv >= 2.0.0rc1'
+            mim install 'mmcv >= 2.0.0rc4'
             pip install -r requirements.txt
             python -c 'import mmcv; print(mmcv.__version__)'
       - run:
@@ -141,7 +141,7 @@ jobs:
         type: string
       cuda:
         type: enum
-        enum: ["11.1"]
+        enum: ["11.1", "11.7"]
       cudnn:
         type: integer
         default: 8
@@ -162,7 +162,7 @@ jobs:
           command: |
             docker exec mmpretrain pip install -e /mmengine
             docker exec mmpretrain pip install -U openmim
-            docker exec mmpretrain mim install 'mmcv >= 2.0.0rc1'
+            docker exec mmpretrain mim install 'mmcv >= 2.0.0rc4'
             docker exec mmpretrain pip install -r requirements.txt
             docker exec mmpretrain python -c 'import mmcv; print(mmcv.__version__)'
       - run:
@@ -208,7 +208,7 @@ workflows:
       - build_cpu_with_3rdparty:
           name: maximum_version_cpu
           torch: 2.0.0
-          torchvision: 0.15.0
+          torchvision: 0.15.1
           python: 3.10.0
           requires:
             - minimum_version_cpu
@@ -222,6 +222,13 @@ workflows:
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
           cuda: "11.1"
+          requires:
+            - hold
+      - build_cuda:
+          name: maximum_version_gpu
+          torch: 2.0.0
+          cuda: "11.7"
+          cudnn: 8
           requires:
             - hold
   merge_stage_test:

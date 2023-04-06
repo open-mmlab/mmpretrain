@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -26,9 +26,9 @@ jobs:
           - torch: 1.8.1
             torchvision: 0.9.1
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
@@ -39,7 +39,7 @@ jobs:
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install -U openmim
-          mim install 'mmcv >= 2.0.0rc1'
+          mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
         run: pip install -e .
@@ -58,16 +58,64 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
+  build_cu117:
+    runs-on: ubuntu-22.04
+    container:
+      image: pytorch/pytorch:2.0.0-cuda11.7-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.9]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Upgrade pip
+        run: pip install pip --upgrade
+      - name: Fetch GPG keys
+        run: |
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+          apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+      - name: Install Python-dev
+        run: apt-get update && apt-get install -y python${{matrix.python-version}}-dev
+        if: ${{matrix.python-version != 3.9}}
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc6 libc6-dev
+      - name: Install mmpretrain dependencies
+        run: |
+          pip install git+https://github.com/open-mmlab/mmengine.git@main
+          pip install -U openmim
+          mim install 'mmcv >= 2.0.0rc4'
+          pip install -r requirements.txt
+      - name: Build and install
+        run: pip install -e .
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmpretrain -m pytest tests/ --ignore tests/test_tools.py
+          coverage xml
+          coverage report -m
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.0.14
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
   build_windows:
     runs-on: windows-2022
     strategy:
       matrix:
-        python: [3.7]
+        python-version: [3.7]
         platform: [cpu]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
@@ -78,10 +126,10 @@ jobs:
         run: |
           pip install -U openmim
           mim install mmengine
-          mim install 'mmcv >= 2.0.0rc1'
+          mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
-        run: pip install -e .
+        run: pip install -e . -v
       - name: Run unittests
         run: |
           pytest tests/ --ignore tests/test_models/test_backbones
