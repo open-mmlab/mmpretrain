@@ -7,9 +7,9 @@ FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub 32
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
-ARG MMENGINE="0.3.2"
-ARG MMCV="2.0.0rc1"
-ARG MMCLS="1.0.0rc4"
+ARG MMENGINE="0.7.1"
+ARG MMCV="2.0.0"
+ARG MMCLS="1.0.0rc6"
 
 ENV PYTHONUNBUFFERED TRUE
 
