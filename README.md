@@ -67,10 +67,6 @@ MMPreTrain is an open source visual pre-training toolbox based on PyTorch. It is
 
 The `main` branch works with **PyTorch 1.8+**.
 
-<div align="center">
-  <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
-</div>
-
 ### Major features
 
 - Various backbones and pretrained models

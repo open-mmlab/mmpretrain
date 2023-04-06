@@ -65,10 +65,6 @@ MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [Open
 
 `主分支`代码目前支持 PyTorch 1.8 以上的版本。
 
-<div align="center">
-  <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
-</div>
-
 ### 主要特性
 
 - 支持多样的主干网络与预训练模型
