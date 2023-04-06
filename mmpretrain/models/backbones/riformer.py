@@ -139,7 +139,7 @@ def basic_blocks(dim,
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-5,
                  deploy=False):
-    """generate RIFormer blocks for a stage"""
+    """generate RIFormer blocks for a stage."""
     blocks = []
     for block_idx in range(layers[index]):
         block_dpr = drop_path_rate * (block_idx + sum(layers[:index])) / (
