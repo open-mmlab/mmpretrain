@@ -15,7 +15,7 @@ Collections:
       Title: "Squeeze-and-Excitation Networks"
     README: configs/seresnet/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/seresnet.py#L58
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.15.0/mmcls/models/backbones/seresnet.py#L58
       Version: v0.15.0
 
 Models:

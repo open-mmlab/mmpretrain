@@ -129,7 +129,7 @@ See [the Colab tutorial](https://colab.research.google.com/github/mzr1996/mmclas
 
 ### Using MMPretrain with Docker
 
-We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/pretrain/docker/Dockerfile)
+We provide a [Dockerfile](https://github.com/open-mmlab/mmpretrain/blob/main/docker/Dockerfile)
 to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
 
 ```shell

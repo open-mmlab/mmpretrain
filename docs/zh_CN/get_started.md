@@ -130,7 +130,7 @@ MMPretrain 可以仅在 CPU 环境中安装，在 CPU 模式下，你可以完�
 
 ### 通过 Docker 使用 MMPretrain
 
-MMPretrain 提供 [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/pretrain/docker/Dockerfile)
+MMPretrain 提供 [Dockerfile](https://github.com/open-mmlab/mmpretrain/blob/main/docker/Dockerfile)
 用于构建镜像。请确保你的 [Docker 版本](https://docs.docker.com/engine/install/) >=19.03。
 
 ```shell

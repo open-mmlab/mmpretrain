@@ -23,7 +23,7 @@
 [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/zh_CN/1.x/)
 [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/1.x/LICENSE)
+[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
 [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 

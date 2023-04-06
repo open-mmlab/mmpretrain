@@ -11,7 +11,7 @@ Collections:
       Title: 'DaViT: Dual Attention Vision Transformers'
     README: configs/davit/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/backbones/davit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc3/mmcls/models/backbones/davit.py
       Version: v1.0.0rc3
 
 Models:

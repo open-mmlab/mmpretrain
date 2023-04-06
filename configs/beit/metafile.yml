@@ -16,7 +16,7 @@ Collections:
       URL: https://arxiv.org/abs/2106.08254
     README: configs/beit/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/beit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/beit.py
       Version: v1.0.0rc4
 
 Models:

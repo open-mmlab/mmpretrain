@@ -14,7 +14,7 @@ Collections:
       Title: 'MViTv2: Improved Multiscale Vision Transformers for Classification and Detection'
     README: configs/mvit/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.24.0/mmcls/models/backbones/mvit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.24.0/mmcls/models/backbones/mvit.py
       Version: v0.24.0
 
 Models:

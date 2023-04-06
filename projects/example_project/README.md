@@ -117,7 +117,7 @@ to MMClassification projects.
 
   - [ ] Unit tests
 
-    <!-- Unit tests for the major module are required. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/tests/test_models/test_backbones/test_vision_transformer.py) -->
+    <!-- Unit tests for the major module are required. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/tests/test_models/test_backbones/test_vision_transformer.py) -->
 
   - [ ] Code style
 
@@ -125,4 +125,4 @@ to MMClassification projects.
 
   - [ ] `metafile.yml` and `README.md`
 
-    <!-- It will used for MMClassification to acquire your models. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/swin_transformer/README.md) -->
+    <!-- It will used for MMClassification to acquire your models. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/swin_transformer/README.md) -->

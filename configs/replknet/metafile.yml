@@ -10,7 +10,7 @@ Collections:
       Title: 'Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs'
     README: configs/replknet/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/backbones/replknet.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc3/mmcls/models/backbones/replknet.py
       Version: v1.0.0rc3
 
 Models:
