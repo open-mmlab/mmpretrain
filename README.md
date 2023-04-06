@@ -21,17 +21,17 @@
 
 [![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
 [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmpretrain.readthedocs.io/en/main/)
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![Build Status](https://github.com/open-mmlab/mmpretrain/workflows/build/badge.svg)](https://github.com/open-mmlab/mmpretrain/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmpretrain/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmpretrain)
+[![license](https://img.shields.io/github/license/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
 
 [📘 Documentation](https://mmpretrain.readthedocs.io/en/main/) |
 [🛠️ Installation](https://mmpretrain.readthedocs.io/en/main/get_started.html#installation) |
 [👀 Model Zoo](https://mmpretrain.readthedocs.io/en/main/modelzoo_statistics.html) |
 [🆕 Update News](https://mmpretrain.readthedocs.io/en/main/notes/changelog.html) |
-[🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[🤔 Reporting Issues](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 
 <img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
 
@@ -91,7 +91,7 @@ Previous version update
 - Support confusion matrix calculation and plot.
 - Support **multi-task** training and testing.
 - Support Test-time Augmentation.
-- Upgrade API to get pre-defined models of MMClassification.
+- Upgrade API to get pre-defined models of MMPreTrain.
 - Refactor BEiT backbone and support v1/v2 inference.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome

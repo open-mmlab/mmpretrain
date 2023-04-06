@@ -6,7 +6,7 @@
 
 ## Introduction
 
-**Swin Transformer V2** is a work on the scale up visual model based on [Swin Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer). In the visual field, We can not increase the performance by just simply scaling up the visual model like NLP models. The possible reasons mentioned in the article are:
+**Swin Transformer V2** is a work on the scale up visual model based on [Swin Transformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/swin_transformer). In the visual field, We can not increase the performance by just simply scaling up the visual model like NLP models. The possible reasons mentioned in the article are:
 
 - Training instability when increasing the vision model
 - Migrating the model trained at low resolution to a larger scale resolution task

@@ -9,7 +9,7 @@ according to your project.
 ### Setup Environment
 
 Please refer to [Get Started](https://mmpretrain.readthedocs.io/en/main/get_started.html) to install
-MMClassification.
+MMPreTrain.
 
 At first, add the current folder to `PYTHONPATH`, so that Python can find your code. Run command in the current directory to add it.
 
@@ -82,8 +82,8 @@ mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
 ```bibtex
 @misc{2020mmclassification,
     title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
     year={2020}
 }
 ```
@@ -91,7 +91,7 @@ mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
 ## Checklist
 
 Here is a checklist of this project's progress. And you can ignore this part if you don't plan to contribute
-to MMClassification projects.
+to MMPreTrain projects.
 
 - [ ] Milestone 1: PR-ready, and acceptable to be one of the `projects/`.
 
@@ -125,4 +125,4 @@ to MMClassification projects.
 
   - [ ] `metafile.yml` and `README.md`
 
-    <!-- It will used for MMClassification to acquire your models. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/swin_transformer/README.md) -->
+    <!-- It will used for MMPreTrain to acquire your models. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/swin_transformer/README.md) -->

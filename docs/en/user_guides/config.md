@@ -4,7 +4,7 @@ To manage various configurations in a deep-learning experiment, we use a kind of
 these configurations. This config system has a modular and inheritance design, and more details can be found in
 {external+mmengine:doc}`the tutorial in MMEngine <advanced_tutorials/config>`.
 
-Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs) folder, and the directory structure is as follows:
+Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmpretrain/tree/main/configs) folder, and the directory structure is as follows:
 
 ```text
 MMPretrain/
@@ -32,9 +32,9 @@ This article mainly explains the structure of configuration files, and how to mo
 
 There are four kinds of basic component files in the `configs/_base_` folders, namely：
 
-- [models](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/models)
-- [datasets](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/datasets)
-- [schedules](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/schedules)
+- [models](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/models)
+- [datasets](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/datasets)
+- [schedules](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/schedules)
 - [runtime](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/default_runtime.py)
 
 We call all the config files in the `_base_` folder as _primitive_ config files. You can easily build your training config file by inheriting some primitive config files.

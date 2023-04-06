@@ -8,7 +8,7 @@
 
 ## 工作流程
 
-1. fork 并 pull 最新的 OpenMMLab 仓库 (MMClassification)
+1. fork 并 pull 最新的 OpenMMLab 仓库 (MMPreTrain)
 2. 签出到一个新分支（不要使用 master 分支提交 PR）
 3. 进行修改并提交至 fork 出的自己的远程仓库
 4. 在我们的仓库中创建一个 PR

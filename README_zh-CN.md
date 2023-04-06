@@ -21,17 +21,17 @@
 
 [![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
 [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmpretrain.readthedocs.io/zh_CN/main/)
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![Build Status](https://github.com/open-mmlab/mmpretrain/workflows/build/badge.svg)](https://github.com/open-mmlab/mmpretrain/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmpretrain/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmpretrain)
+[![license](https://img.shields.io/github/license/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
 
 [📘 中文文档](https://mmpretrain.readthedocs.io/zh_CN/main/) |
 [🛠️ 安装教程](https://mmpretrain.readthedocs.io/zh_CN/main/get_started.html) |
 [👀 模型库](https://mmpretrain.readthedocs.io/zh_CN/main/modelzoo_statistics.html) |
 [🆕 更新日志](https://mmpretrain.readthedocs.io/zh_CN/main/notes/changelog.html) |
-[🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[🤔 报告问题](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 
 <img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
 
@@ -89,7 +89,7 @@ MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是
 - 支持混淆矩阵计算和画图。
 - 支持了 **多任务** 训练和测试。
 - 支持了测试时增强（TTA）。
-- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。
+- 更新了主要 API 接口，用以方便地获取 MMPreTrain 中预定义的模型。
 - 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmpretrain.readthedocs.io/zh_CN/main/) 进行试用。
@@ -249,10 +249,10 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMPreTrain。
 
 ```BibTeX
-@misc{2020mmclassification,
+@misc{2023mmpretrain,
     title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
     year={2020}
 }
 ```

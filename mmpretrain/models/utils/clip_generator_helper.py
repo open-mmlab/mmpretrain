@@ -30,8 +30,8 @@ class QuickGELU(nn.Module):
 class ResidualAttentionBlock(nn.Module):
     """Residual Attention Block (RAB).
 
-    This module implements the same function as the MultiheadAttention in
-    MMClassification, but with a different interface, which is mainly used
+    This module implements the same function as the MultiheadAttention,
+    but with a different interface, which is mainly used
     in CLIP.
 
     Args:

@@ -2,7 +2,7 @@
 
 为了管理深度学习实验的各种设置，我们使用配置文件来记录所有这些配置。这种配置文件系统具有模块化和继承特性，更多细节可以在{external+mmengine:doc}`MMEngine 中的教程 <advanced_tutorials/config>`。
 
-MMPretrain 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs) 文件夹下，目录结构如下所示：
+MMPretrain 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmpretrain/tree/main/configs) 文件夹下，目录结构如下所示：
 
 ```text
 MMPretrain/
@@ -30,9 +30,9 @@ MMPretrain/
 
 在 `configs/_base_` 文件夹下有 4 个基本组件类型，分别是：
 
-- [模型(model)](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/models)
-- [数据(data)](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/datasets)
-- [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/pretrain/configs/_base_/schedules)
+- [模型(model)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/models)
+- [数据(data)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/datasets)
+- [训练策略(schedule)](https://github.com/open-mmlab/mmpretrain/tree/main/configs/_base_/schedules)
 - [运行设置(runtime)](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/default_runtime.py)
 
 你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。我们称这些被继承的配置文件为 _原始配置文件_，如 `_base_` 文件夹中的文件一般仅作为原始配置文件。

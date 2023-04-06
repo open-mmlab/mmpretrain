@@ -49,7 +49,7 @@ According to your needs, we support two install modes:
 In this case, install mmpretrain from source:
 
 ```shell
-git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
+git clone https://github.com/open-mmlab/mmpretrain.git
 cd mmpretrain
 pip install -U openmim && mim install -e .
 ```
@@ -147,5 +147,5 @@ docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmpretrain/data mmpretrai
 ## Trouble shooting
 
 If you have some issues during the installation, please first view the [FAQ](./notes/faq.md) page.
-You may [open an issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+You may [open an issue](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 on GitHub if no solution is found.

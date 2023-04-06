@@ -53,7 +53,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 这种情况下，从源码按如下方式安装 mmpretrain：
 
 ```shell
-git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
+git clone -b pretrain https://github.com/open-mmlab/mmpretrain.git mmpretrain
 cd mmpretrain
 pip install -U openmim && mim install -e .
 ```
@@ -148,4 +148,4 @@ docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmpretrain/data mmpretrai
 ## 故障解决
 
 如果你在安装过程中遇到了什么问题，请先查阅[常见问题](./notes/faq.md)。如果没有找到解决方法，可以在 GitHub
-上[提出 issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)。
+上[提出 issue](https://github.com/open-mmlab/mmpretrain/issues/new/choose)。

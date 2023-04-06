@@ -35,7 +35,7 @@ class ImageClassificationInferencer(BaseInferencer):
             the device of the input model. Defaults to None.
 
     Example:
-        1. Use a pre-trained model in MMClassification to inference an image.
+        1. Use a pre-trained model in MMPreTrain to inference an image.
 
            >>> from mmpretrain import ImageClassificationInferencer
            >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')

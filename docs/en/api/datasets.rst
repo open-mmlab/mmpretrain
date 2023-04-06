@@ -71,7 +71,7 @@ Dataset Wrappers
 
 .. autoclass:: KFoldDataset
 
-The dataset wrappers in the MMEngine can be directly used in MMClassification.
+The dataset wrappers in the MMEngine can be directly used in MMPreTrain.
 
 .. list-table::
 

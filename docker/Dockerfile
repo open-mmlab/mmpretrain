@@ -21,6 +21,6 @@ RUN pip install openmim
 
 # Install MMPretrain
 RUN conda clean --all
-RUN git clone -b pretrain https://github.com/open-mmlab/mmclassification.git mmpretrain
+RUN git clone -b pretrain https://github.com/open-mmlab/mmpretrain.git mmpretrain
 WORKDIR ./mmpretrain
 RUN mim install --no-cache-dir -e .

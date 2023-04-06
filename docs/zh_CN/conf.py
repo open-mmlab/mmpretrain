@@ -93,7 +93,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmclassification/tree/pretrain'
+            'url': 'https://github.com/open-mmlab/mmpretrain'
         },
         {
             'name': 'Colab 教程',
