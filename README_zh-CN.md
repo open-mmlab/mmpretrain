@@ -81,7 +81,7 @@ MMPreTrain 是一款基于 PyTorch 的开源视觉预训练工具箱，是 [Open
 
 2023/4/6 发布了 v1.0.0rc6 版本
 
-- 整和来自 MMSelfSup 的自监督学习算法
+- 整和来自 MMSelfSup 的自监督学习算法，例如 `MAE`, `BEiT`, `MILAN` 等
 - 支持 t-SNE 可视化
 - 重构数据管道可视化
 
