@@ -33,7 +33,6 @@
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
-
 🌟 **MMPreTrain originates from MMClassification and MMSelfSup** 🌟
 
 English | [简体中文](/README_zh-CN.md)
