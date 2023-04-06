@@ -76,10 +76,10 @@ python tools/test.py configs/mobilevit/mobilevit-small_8xb128_in1k.py https://do
 
 ### Image Classification on ImageNet-1k
 
-| Model                               |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                                          Download                                                           |
-| :---------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
-| `mobilevit-small_3rdparty_in1k`\*   | From scratch |    5.58    |   2.03    |   78.25   |   94.09   |  [config](mobilevit-small_8xb128_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth)  |
-| `mobilevit-xsmall_3rdparty_in1k`\*  | From scratch |    2.32    |   1.05    |   74.75   |   92.32   | [config](mobilevit-xsmall_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth)  |
+| Model                               |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                  Download                                  |
+| :---------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :------------------------------------------------------------------------: |
+| `mobilevit-small_3rdparty_in1k`\*   | From scratch |    5.58    |   2.03    |   78.25   |   94.09   |  [config](mobilevit-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth) |
+| `mobilevit-xsmall_3rdparty_in1k`\*  | From scratch |    2.32    |   1.05    |   74.75   |   92.32   | [config](mobilevit-xsmall_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth) |
 | `mobilevit-xxsmall_3rdparty_in1k`\* | From scratch |    1.27    |   0.42    |   69.02   |   88.91   | [config](mobilevit-xxsmall_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/apple/ml-cvnets). The config files of these models are only for inference. We haven't reprodcue the training results.*

@@ -64,11 +64,11 @@ python tools/test.py configs/mvit/mvitv2-tiny_8xb256_in1k.py https://download.op
 
 ### Image Classification on ImageNet-1k
 
-| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                 |                                                     Download                                                      |
-| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------: | :---------------------------------------------------------------------------------------------------------------: |
-| `mvitv2-tiny_3rdparty_in1k`\*  | From scratch |   24.17    |   4.70    |   82.33   |   96.15   | [config](mvitv2-tiny_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth)  |
+| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                 |                                       Download                                       |
+| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------: | :----------------------------------------------------------------------------------: |
+| `mvitv2-tiny_3rdparty_in1k`\*  | From scratch |   24.17    |   4.70    |   82.33   |   96.15   | [config](mvitv2-tiny_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth) |
 | `mvitv2-small_3rdparty_in1k`\* | From scratch |   34.87    |   7.00    |   83.63   |   96.51   | [config](mvitv2-small_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-small_3rdparty_in1k_20220722-986bd741.pth) |
-| `mvitv2-base_3rdparty_in1k`\*  | From scratch |   51.47    |   10.16   |   84.34   |   96.86   | [config](mvitv2-base_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth)  |
+| `mvitv2-base_3rdparty_in1k`\*  | From scratch |   51.47    |   10.16   |   84.34   |   96.86   | [config](mvitv2-base_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth) |
 | `mvitv2-large_3rdparty_in1k`\* | From scratch |   217.99   |   43.87   |   85.25   |   97.14   | [config](mvitv2-large_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-large_3rdparty_in1k_20220722-2b57b983.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/facebookresearch/mvit). The config files of these models are only for inference. We haven't reprodcue the training results.*

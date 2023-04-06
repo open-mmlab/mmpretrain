@@ -63,8 +63,8 @@ python tools/test.py configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py https
 
 ### Image Classification on ImageNet-1k
 
-| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   |                                                                                                                              Download                                                                                                                               |
-| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   |                                     Download                                     |
+| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :------------------------------------------------------------------------------: |
 | `shufflenet-v2-1x_16xb64_in1k` | From scratch |    2.28    |   0.15    |   69.55   |   88.92   | [config](shufflenet-v2-1x_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/shufflenet_v2/shufflenet_v2_batch1024_imagenet_20200812-5bf4721e.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/shufflenet_v2/shufflenet_v2_batch1024_imagenet_20200812-5bf4721e.json) |
 
 ## Citation

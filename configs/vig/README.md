@@ -57,15 +57,15 @@ python tools/test.py configs/vig/vig-tiny_8xb128_in1k.py https://download.openmm
 
 ### Image Classification on ImageNet-1k
 
-| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                                    Download                                                     |
-| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------: |
-| `vig-tiny_3rdparty_in1k`\*    | From scratch |    7.18    |   1.31    |   74.40   |   92.34   |  [config](vig-tiny_8xb128_in1k.py)   |  [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-tiny_3rdparty_in1k_20230117-6414c684.pth)   |
-| `vig-small_3rdparty_in1k`\*   | From scratch |   22.75    |   4.54    |   80.61   |   95.28   |  [config](vig-small_8xb128_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-small_3rdparty_in1k_20230117-5338bf3b.pth)  |
-| `vig-base_3rdparty_in1k`\*    | From scratch |   20.68    |   17.68   |   82.62   |   96.04   |  [config](vig-base_8xb128_in1k.py)   |  [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-base_3rdparty_in1k_20230117-92f6f12f.pth)   |
-| `pvig-tiny_3rdparty_in1k`\*   | From scratch |    9.46    |   1.71    |   78.38   |   94.38   |  [config](pvig-tiny_8xb128_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-tiny_3rdparty_in1k_20230117-eb77347d.pth)  |
-| `pvig-small_3rdparty_in1k`\*  | From scratch |   29.02    |   4.57    |   82.00   |   95.97   | [config](pvig-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-small_3rdparty_in1k_20230117-9433dc96.pth)  |
+| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                        Download                                        |
+| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :------------------------------------------------------------------------------------: |
+| `vig-tiny_3rdparty_in1k`\*    | From scratch |    7.18    |   1.31    |   74.40   |   92.34   |  [config](vig-tiny_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-tiny_3rdparty_in1k_20230117-6414c684.pth) |
+| `vig-small_3rdparty_in1k`\*   | From scratch |   22.75    |   4.54    |   80.61   |   95.28   |  [config](vig-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-small_3rdparty_in1k_20230117-5338bf3b.pth) |
+| `vig-base_3rdparty_in1k`\*    | From scratch |   20.68    |   17.68   |   82.62   |   96.04   |  [config](vig-base_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/vig/vig-base_3rdparty_in1k_20230117-92f6f12f.pth) |
+| `pvig-tiny_3rdparty_in1k`\*   | From scratch |    9.46    |   1.71    |   78.38   |   94.38   |  [config](pvig-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-tiny_3rdparty_in1k_20230117-eb77347d.pth) |
+| `pvig-small_3rdparty_in1k`\*  | From scratch |   29.02    |   4.57    |   82.00   |   95.97   | [config](pvig-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-small_3rdparty_in1k_20230117-9433dc96.pth) |
 | `pvig-medium_3rdparty_in1k`\* | From scratch |   51.68    |   8.89    |   83.12   |   96.35   | [config](pvig-medium_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-medium_3rdparty_in1k_20230117-21057a6d.pth) |
-| `pvig-base_3rdparty_in1k`\*   | From scratch |   95.21    |   16.86   |   83.59   |   96.52   |  [config](pvig-base_8xb128_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-base_3rdparty_in1k_20230117-dbab3c85.pth)  |
+| `pvig-base_3rdparty_in1k`\*   | From scratch |   95.21    |   16.86   |   83.59   |   96.52   |  [config](pvig-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-base_3rdparty_in1k_20230117-dbab3c85.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

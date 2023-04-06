@@ -57,14 +57,14 @@ python tools/test.py configs/edgenext/edgenext-xxsmall_8xb256_in1k.py https://do
 
 ### Image Classification on ImageNet-1k
 
-| Model                                |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                                                          Download                                                           |
-| :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------: |
-| `edgenext-xxsmall_3rdparty_in1k`\*   | From scratch |    1.33    |   0.26    |   71.20   |   89.91   |  [config](edgenext-xxsmall_8xb256_in1k.py)  |  [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xxsmall_3rdparty_in1k_20220801-7ca8a81d.pth)  |
-| `edgenext-xsmall_3rdparty_in1k`\*    | From scratch |    2.34    |   0.53    |   74.86   |   92.31   |  [config](edgenext-xsmall_8xb256_in1k.py)   |  [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xsmall_3rdparty_in1k_20220801-974f9fe7.pth)   |
-| `edgenext-small_3rdparty_in1k`\*     | From scratch |    5.59    |   1.25    |   79.41   |   94.53   |   [config](edgenext-small_8xb256_in1k.py)   |   [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-small_3rdparty_in1k_20220801-d00db5f8.pth)   |
+| Model                                |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                                 Download                                 |
+| :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :----------------------------------------------------------------------: |
+| `edgenext-xxsmall_3rdparty_in1k`\*   | From scratch |    1.33    |   0.26    |   71.20   |   89.91   |  [config](edgenext-xxsmall_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xxsmall_3rdparty_in1k_20220801-7ca8a81d.pth) |
+| `edgenext-xsmall_3rdparty_in1k`\*    | From scratch |    2.34    |   0.53    |   74.86   |   92.31   |  [config](edgenext-xsmall_8xb256_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xsmall_3rdparty_in1k_20220801-974f9fe7.pth) |
+| `edgenext-small_3rdparty_in1k`\*     | From scratch |    5.59    |   1.25    |   79.41   |   94.53   |   [config](edgenext-small_8xb256_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-small_3rdparty_in1k_20220801-d00db5f8.pth) |
 | `edgenext-small-usi_3rdparty_in1k`\* | From scratch |    5.59    |   1.25    |   81.06   |   95.34   | [config](edgenext-small_8xb256-usi_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-small_3rdparty-usi_in1k_20220801-ae6d8dd3.pth) |
-| `edgenext-base_3rdparty_in1k`\*      | From scratch |   18.51    |   3.81    |   82.48   |   96.20   |   [config](edgenext-base_8xb256_in1k.py)    |   [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty_in1k_20220801-9ade408b.pth)    |
-| `edgenext-base_3rdparty-usi_in1k`\*  | From scratch |   18.51    |   3.81    |   83.67   |   96.70   | [config](edgenext-base_8xb256-usi_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty-usi_in1k_20220801-909e8939.pth)  |
+| `edgenext-base_3rdparty_in1k`\*      | From scratch |   18.51    |   3.81    |   82.48   |   96.20   |   [config](edgenext-base_8xb256_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty_in1k_20220801-9ade408b.pth) |
+| `edgenext-base_3rdparty-usi_in1k`\*  | From scratch |   18.51    |   3.81    |   83.67   |   96.70   | [config](edgenext-base_8xb256-usi_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty-usi_in1k_20220801-909e8939.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/mmaaz60/EdgeNeXt). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

@@ -57,8 +57,8 @@ python tools/test.py configs/densenet/densenet121_4xb256_in1k.py https://downloa
 
 ### Image Classification on ImageNet-1k
 
-| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                                      Download                                                      |
-| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :----------------------------------------------------------------------------------------------------------------: |
+| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                        Download                                        |
+| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :------------------------------------------------------------------------------------: |
 | `densenet121_3rdparty_in1k`\* | From scratch |    7.98    |   2.88    |   74.96   |   92.21   | [config](densenet121_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth) |
 | `densenet169_3rdparty_in1k`\* | From scratch |   14.15    |   3.42    |   76.08   |   93.11   | [config](densenet169_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220426-a2889902.pth) |
 | `densenet201_3rdparty_in1k`\* | From scratch |   20.01    |   4.37    |   77.32   |   93.64   | [config](densenet201_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth) |

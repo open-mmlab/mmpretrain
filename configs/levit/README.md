@@ -57,13 +57,13 @@ python tools/test.py configs/levit/levit-128s_8xb256_in1k.py https://download.op
 
 ### Image Classification on ImageNet-1k
 
-| Model                        |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config                |                                                     Download                                                     |
-| :--------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
+| Model                        |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config                |                                         Download                                         |
+| :--------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------: | :--------------------------------------------------------------------------------------: |
 | `levit-128s_3rdparty_in1k`\* | From scratch |    7.39    |   0.31    |   76.51   |   92.90   | [config](levit-128s_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth) |
-| `levit-128_3rdparty_in1k`\*  | From scratch |    8.83    |   0.41    |   78.58   |   93.95   | [config](levit-128_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth)  |
-| `levit-192_3rdparty_in1k`\*  | From scratch |   10.56    |   0.67    |   79.86   |   94.75   | [config](levit-192_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth)  |
-| `levit-256_3rdparty_in1k`\*  | From scratch |   18.38    |   1.14    |   81.59   |   95.46   | [config](levit-256_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth)  |
-| `levit-384_3rdparty_in1k`\*  | From scratch |   38.36    |   2.37    |   82.59   |   95.95   | [config](levit-384_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth)  |
+| `levit-128_3rdparty_in1k`\*  | From scratch |    8.83    |   0.41    |   78.58   |   93.95   | [config](levit-128_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth) |
+| `levit-192_3rdparty_in1k`\*  | From scratch |   10.56    |   0.67    |   79.86   |   94.75   | [config](levit-192_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth) |
+| `levit-256_3rdparty_in1k`\*  | From scratch |   18.38    |   1.14    |   81.59   |   95.46   | [config](levit-256_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth) |
+| `levit-384_3rdparty_in1k`\*  | From scratch |   38.36    |   2.37    |   82.59   |   95.95   | [config](levit-384_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

@@ -57,8 +57,8 @@ python tools/test.py configs/efficientformer/efficientformer-l1_8xb128_in1k.py h
 
 ### Image Classification on ImageNet-1k
 
-| Model                                       |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                                                              Download                                                              |
-| :------------------------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------: |
+| Model                                       |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                             Download                              |
+| :------------------------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :---------------------------------------------------------------: |
 | `efficientformer-l1_3rdparty_8xb128_in1k`\* | From scratch |   12.28    |   1.30    |   80.46   |   94.99   | [config](efficientformer-l1_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220915-cc3e1ac6.pth) |
 | `efficientformer-l3_3rdparty_8xb128_in1k`\* | From scratch |   31.41    |   3.74    |   82.45   |   96.18   | [config](efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220915-466793d6.pth) |
 | `efficientformer-l7_3rdparty_8xb128_in1k`\* | From scratch |   82.23    |   10.16   |   83.40   |   96.60   | [config](efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220915-185e30af.pth) |

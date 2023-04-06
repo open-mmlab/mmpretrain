@@ -53,8 +53,8 @@ python tools/test.py configs/csra/resnet101-csra_1xb16_voc07-448px.py https://do
 
 ### Multi-Label Classification on PASCAL VOC 2007
 
-| Model                              |   Pretrain   | Params (M) | Flops (G) |  CF1  |  OF1  |  mAP  |                    Config                     |                                                                                                                     Download                                                                                                                      |
-| :--------------------------------- | :----------: | :--------: | :-------: | :---: | :---: | :---: | :-------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| Model                              |   Pretrain   | Params (M) | Flops (G) |  CF1  |  OF1  |  mAP  |                    Config                     |                                  Download                                   |
+| :--------------------------------- | :----------: | :--------: | :-------: | :---: | :---: | :---: | :-------------------------------------------: | :-------------------------------------------------------------------------: |
 | `resnet101-csra_1xb16_voc07-448px` | From scratch |   23.55    |   4.12    | 89.16 | 90.80 | 94.98 | [config](resnet101-csra_1xb16_voc07-448px.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.json) |
 
 ## Citation

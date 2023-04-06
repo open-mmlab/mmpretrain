@@ -57,9 +57,9 @@ python tools/test.py configs/convmixer/convmixer-768-32_10xb64_in1k.py https://d
 
 ### Image Classification on ImageNet-1k
 
-| Model                               |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                                              Download                                                              |
-| :---------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------: |
-| `convmixer-768-32_3rdparty_in1k`\*  | From scratch |   21.11    |   19.62   |   80.16   |   95.08   | [config](convmixer-768-32_10xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-768-32_3rdparty_10xb64_in1k_20220323-bca1f7b8.pth)  |
+| Model                               |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                  Download                                  |
+| :---------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :------------------------------------------------------------------------: |
+| `convmixer-768-32_3rdparty_in1k`\*  | From scratch |   21.11    |   19.62   |   80.16   |   95.08   | [config](convmixer-768-32_10xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-768-32_3rdparty_10xb64_in1k_20220323-bca1f7b8.pth) |
 | `convmixer-1024-20_3rdparty_in1k`\* | From scratch |   24.38    |   5.55    |   76.94   |   93.36   | [config](convmixer-1024-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1024-20_3rdparty_10xb64_in1k_20220323-48f8aeba.pth) |
 | `convmixer-1536-20_3rdparty_in1k`\* | From scratch |   51.63    |   48.71   |   81.37   |   95.61   | [config](convmixer-1536-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1536_20_3rdparty_10xb64_in1k_20220323-ea5786f3.pth) |
 
