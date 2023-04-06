@@ -26,7 +26,7 @@ Models:
           Top 1 Accuracy: 76.90
           Top 5 Accuracy: 93.06
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k_20230406-6741ce71.pth
     Config: configs/riformer/riformer-s12_32xb128_in1k.py
     Converted From:
       Weights:
@@ -43,7 +43,7 @@ Models:
           Top 1 Accuracy: 80.28
           Top 5 Accuracy: 94.80
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k_20230406-fdab072a.pth
     Config: configs/riformer/riformer-s24_32xb128_in1k.py
     Converted From:
       Weights:
@@ -59,7 +59,7 @@ Models:
           Top 1 Accuracy: 81.29
           Top 5 Accuracy: 95.41
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k_20230406-fdfcd3b0.pth
     Config: configs/riformer/riformer-s36_32xb128_in1k.py
     Converted From:
       Weights:
@@ -76,7 +76,7 @@ Models:
           Top 1 Accuracy: 82.57
           Top 5 Accuracy: 95.99
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k_20230406-2fcb9d9b.pth
     Config: configs/riformer/riformer-m36_32xb128_in1k.py
     Converted From:
       Weights:
@@ -92,7 +92,7 @@ Models:
           Top 1 Accuracy: 82.75
           Top 5 Accuracy: 96.11
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k_20230406-2b9d1abf.pth
     Config: configs/riformer/riformer-m48_32xb128_in1k.py
     Converted From:
       Weights:
@@ -108,7 +108,7 @@ Models:
           Top 1 Accuracy: 78.29
           Top 5 Accuracy: 93.93
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k-384px_20230406-145eda4c.pth
     Config: configs/riformer/riformer-s12_32xb128_in1k_384.py
     Converted From:
       Weights:
@@ -125,7 +125,7 @@ Models:
           Top 1 Accuracy: 81.36
           Top 5 Accuracy: 95.40
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k-384px_20230406-bafae7ab.pth
     Config: configs/riformer/riformer-s24_32xb128_in1k_384.py
     Converted From:
       Weights:
@@ -141,7 +141,7 @@ Models:
           Top 1 Accuracy: 82.22
           Top 5 Accuracy: 95.95
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k-384px_20230406-017ed3c4.pth
     Config: configs/riformer/riformer-s36_32xb128_in1k_384.py
     Converted From:
       Weights:
@@ -158,7 +158,7 @@ Models:
           Top 1 Accuracy: 83.39
           Top 5 Accuracy: 96.40
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k-384px_20230406-66a6f764.pth
     Config: configs/riformer/riformer-m36_32xb128_in1k_384.py
     Converted From:
       Weights:
@@ -174,7 +174,7 @@ Models:
           Top 1 Accuracy: 83.70
           Top 5 Accuracy: 96.60
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k-384px_20230406-2e874826.pth
     Config: configs/riformer/riformer-m48_32xb128_in1k_384.py
     Converted From:
       Weights:

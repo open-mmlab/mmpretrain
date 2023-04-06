@@ -70,7 +70,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/imagenet',
-        # ann_file='meta/val.txt',
+        ann_file='meta/val.txt',
         data_prefix='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
