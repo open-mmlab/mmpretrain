@@ -8,7 +8,7 @@ data_preprocessor = dict(
     # convert image from BGR to RGB
     to_rgb=True,
 )
-image_size = 448
+image_size = 336
 
 bgr_mean = data_preprocessor['mean'][::-1]
 bgr_std = data_preprocessor['std'][::-1]
