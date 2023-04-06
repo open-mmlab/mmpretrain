@@ -250,10 +250,10 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 
 ```BibTeX
 @misc{2023mmpretrain,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
     author={MMPreTrain Contributors},
     howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
-    year={2020}
+    year={2023}
 }
 ```
 

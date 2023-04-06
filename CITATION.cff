@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
-title: "OpenMMLab's Image Classification Toolbox and Benchmark"
+title: "OpenMMLab's Pre-training Toolbox and Benchmark"
 authors:
   - name: "MMPreTrain Contributors"
 version: 0.15.0

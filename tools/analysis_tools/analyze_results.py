@@ -15,7 +15,7 @@ from mmpretrain.visualization import UniversalVisualizer
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='MMCls evaluate prediction success/fail')
+        description='MMPreTrain evaluate prediction success/fail')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('result', help='test result json/pkl file')
     parser.add_argument(

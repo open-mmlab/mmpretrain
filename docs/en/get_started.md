@@ -63,7 +63,7 @@ pip install -U openmim && mim install -e .
 Just install with mim.
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0.0rc5"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc6"
 ```
 
 ```{note}

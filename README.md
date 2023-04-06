@@ -258,7 +258,7 @@ If you find this project useful in your research, please consider cite:
     title={OpenMMLab's Pre-training Toolbox and Benchmark},
     author={MMPreTrain Contributors},
     howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
-    year={2020}
+    year={2023}
 }
 ```
 

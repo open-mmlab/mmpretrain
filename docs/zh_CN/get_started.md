@@ -53,7 +53,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 这种情况下，从源码按如下方式安装 mmpretrain：
 
 ```shell
-git clone -b pretrain https://github.com/open-mmlab/mmpretrain.git mmpretrain
+git clone https://github.com/open-mmlab/mmpretrain.git
 cd mmpretrain
 pip install -U openmim && mim install -e .
 ```
@@ -67,7 +67,7 @@ pip install -U openmim && mim install -e .
 直接使用 mim 安装即可。
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0rc5"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc6"
 ```
 
 ```{note}

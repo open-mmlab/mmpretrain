@@ -28,19 +28,19 @@ Prepare the ImageNet-2012 dataset according to the [instruction](https://mmpretr
 **To train with single GPU:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py
+mim train mmpretrain configs/examplenet_8xb32_in1k.py
 ```
 
 **To train with multiple GPUs:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py --launcher pytorch --gpus 8
+mim train mmpretrain configs/examplenet_8xb32_in1k.py --launcher pytorch --gpus 8
 ```
 
 **To train with multiple GPUs by slurm:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py --launcher slurm \
+mim train mmpretrain configs/examplenet_8xb32_in1k.py --launcher slurm \
     --gpus 16 --gpus-per-node 8 --partition $PARTITION
 ```
 
@@ -49,19 +49,19 @@ mim train mmcls configs/examplenet_8xb32_in1k.py --launcher slurm \
 **To test with single GPU:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT
 ```
 
 **To test with multiple GPUs:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher pytorch --gpus 8
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher pytorch --gpus 8
 ```
 
 **To test with multiple GPUs by slurm:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
     --gpus 16 --gpus-per-node 8 --partition $PARTITION
 ```
 
@@ -79,12 +79,12 @@ mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
 
 <!-- Replace to the citation of the paper your project refers to. -->
 
-```bibtex
-@misc{2020mmclassification,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
+```BibTeX
+@misc{2023mmpretrain,
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
     author={MMPreTrain Contributors},
     howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
-    year={2020}
+    year={2023}
 }
 ```
 
@@ -97,7 +97,7 @@ to MMPreTrain projects.
 
   - [ ] Finish the code
 
-    <!-- The code's design shall follow existing interfaces and convention. For example, each model component should be registered into `mmcls.registry.MODELS` and configurable via a config file. -->
+    <!-- The code's design shall follow existing interfaces and convention. For example, each model component should be registered into `mmpretrain.registry.MODELS` and configurable via a config file. -->
 
   - [ ] Basic docstrings & proper citation
 
