@@ -15,10 +15,10 @@ class Affine(nn.Module):
     """Affine Transformation module.
 
     Args:
-        in_features (int): Input dimension. Defaults to None.
+        in_features (int): Input dimension.
     """
 
-    def __init__(self, in_features=None):
+    def __init__(self, in_features):
         super().__init__()
         self.affine = nn.Conv2d(
             in_features,
@@ -139,10 +139,7 @@ def basic_blocks(dim,
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-5,
                  deploy=False):
-    """
-    generate RIFormer blocks for a stage
-    return: RIFormer blocks
-    """
+    """generate RIFormer blocks for a stage"""
     blocks = []
     for block_idx in range(layers[index]):
         block_dpr = drop_path_rate * (block_idx + sum(layers[:index])) / (
@@ -169,9 +166,6 @@ class RIFormer(BaseBackbone):
 
     A PyTorch implementation of RIFormer introduced by:
     `RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer <https://arxiv.org/abs/xxxx.xxxxx>`_
-
-    Modified from the `official repo
-    <https://github.com/techmonsterwang/RIFormer.py>`.
 
     Args:
         arch (str | dict): The model's architecture. If string, it should be
@@ -253,6 +247,7 @@ class RIFormer(BaseBackbone):
 
     def __init__(self,
                  arch='s12',
+                 in_channels=3,
                  norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
                  in_patch_size=7,
@@ -291,7 +286,7 @@ class RIFormer(BaseBackbone):
             patch_size=in_patch_size,
             stride=in_stride,
             padding=in_pad,
-            in_chans=3,
+            in_chans=in_channels,
             embed_dim=embed_dims[0])
 
         # set the main block in network
@@ -386,17 +381,10 @@ class RIFormer(BaseBackbone):
     def train(self, mode=True):
         super(RIFormer, self).train(mode)
         self._freeze_stages()
+        return self
 
     def switch_to_deploy(self):
         for m in self.modules():
             if isinstance(m, RIFormerBlock):
                 m.switch_to_deploy()
         self.deploy = True
-
-
-if __name__ == '__main__':
-    model = RIFormer(arch='s12', deploy=False)
-    model.eval()
-    print('------------------- training-time model -------------')
-    for i in model.state_dict().keys():
-        print(i)
