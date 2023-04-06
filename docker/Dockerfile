@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build 
 
 # Install MMCV
 RUN pip install openmim
-RUN mim install mmengine "mmcv>=2.0rc0"
+RUN mim install mmengine "mmcv>=2.0.0"
 
 # Install MMClassification
 RUN conda clean --all

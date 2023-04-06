@@ -1,5 +1,50 @@
 # Changelog
 
+## v1.0.0rc6(06/04/2023)
+
+### Highlights
+
+- Support OOD datasets.
+- Support confusion matrix calculation and plot.
+- Support LeViT, XCiT, ViG and ConvNeXt-V2 backbone.
+
+### New Features
+
+- Support Out-of-Distribution datasets like ImageNet-A,R,S,C. ([#1342](https://github.com/open-mmlab/mmclassification/pull/1342))
+- Support XCiT Backbone. ([#1305](https://github.com/open-mmlab/mmclassification/pull/1305))
+- Support calculate confusion matrix and plot it. ([#1287](https://github.com/open-mmlab/mmclassification/pull/1287))
+- Support RetrieverRecall metric & Add ArcFace config ([#1316](https://github.com/open-mmlab/mmclassification/pull/1316))
+- Add `ImageClassificationInferencer`. ([#1261](https://github.com/open-mmlab/mmclassification/pull/1261))
+- Support InShop Dataset (Image Retrieval). ([#1019](https://github.com/open-mmlab/mmclassification/pull/1019))
+- Support LeViT backbone. ([#1238](https://github.com/open-mmlab/mmclassification/pull/1238))
+- Support VIG Backbone. ([#1304](https://github.com/open-mmlab/mmclassification/pull/1304))
+- Support ConvNeXt-V2 backbone. ([#1294](https://github.com/open-mmlab/mmclassification/pull/1294))
+
+### Improvements
+
+- [Enhance] Add stochastic depth decay rule in resnet. ([#1363](https://github.com/open-mmlab/mmclassification/pull/1363))
+- [Refactor] Update analysis tools and documentations. ([#1359](https://github.com/open-mmlab/mmclassification/pull/1359))
+- [Refactor] Unify the `--out` and `--dump` in `tools/test.py`. ([#1307](https://github.com/open-mmlab/mmclassification/pull/1307))
+- [Enhance] Enable to toggle whether Gem Pooling is trainable or not. ([#1246](https://github.com/open-mmlab/mmclassification/pull/1246))
+- [Improve] Update registries of mmcls. ([#1306](https://github.com/open-mmlab/mmclassification/pull/1306))
+- [Tool] Add metafile fill and validation tools. ([#1297](https://github.com/open-mmlab/mmclassification/pull/1297))
+- [Improve] Remove useless EfficientnetV2 config files. ([#1300](https://github.com/open-mmlab/mmclassification/pull/1300))
+
+### Bug Fixes
+
+- Fix precise bn hook ([#1386](https://github.com/open-mmlab/mmclassification/pull/1386))
+- Fix acc evalustion wait for long ([#1430](https://github.com/open-mmlab/mmclassification/pull/1430))
+- Fix retrieval multi gpu bug ([#1319](https://github.com/open-mmlab/mmclassification/pull/1319))
+- Fix error repvgg-deploy base config path. ([#1357](https://github.com/open-mmlab/mmclassification/pull/1357))
+- Fix bug in test tools. ([#1309](https://github.com/open-mmlab/mmclassification/pull/1309))
+
+### Docs Update
+
+- Update Readme ([#1442](https://github.com/open-mmlab/mmclassification/pull/1442))
+- Add NPU support page. ([#1437](https://github.com/open-mmlab/mmclassification/pull/1437))
+- Translate some tools tutorials to Chinese. ([#1321](https://github.com/open-mmlab/mmclassification/pull/1321))
+- Add Chinese translation for runtime.md.  ([#1313](https://github.com/open-mmlab/mmclassification/pull/1313))
+
 ## v1.0.0rc5(30/12/2022)
 
 ### Highlights
