@@ -81,7 +81,7 @@ The `main` branch works with **PyTorch 1.8+**.
 
 ## What's new
 
-v1.0.0rc6 was released in 30/12/2022
+v1.0.0rc6 was released in 6/4/2023
 
 - Integrated Self-supervised leanrning algorithms from **MMSelfSup**.
 - Add t-SNE visualization.
