@@ -185,8 +185,8 @@ workflows:
           filters:
             branches:
               ignore:
-                - dev-1.x
-                - 1.x
+                - dev
+                - main
   pr_stage_test:
     when:
       not:
@@ -197,7 +197,7 @@ workflows:
           filters:
             branches:
               ignore:
-                - dev-1.x
+                - dev
       - build_cpu:
           name: minimum_version_cpu
           torch: 1.8.0
