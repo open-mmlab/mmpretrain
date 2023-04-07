@@ -52,7 +52,7 @@ body:
     attributes:
       label: Environment
       description: |
-        Please run `python -c "import mmcls.utils;import pprint;pprint.pp(dict(mmcls.utils.collect_env()))"` to collect necessary environment information and paste it here.
+        Please run `python -c "import mmpretrain.utils;import pprint;pprint.pp(dict(mmpretrain.utils.collect_env()))"` to collect necessary environment information and paste it here.
       placeholder: |
         ```python
         # The output the above command
