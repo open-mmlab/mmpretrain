@@ -11,7 +11,7 @@ Collections:
       Title: "RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer"
     README: configs/riformer/README.md
     Code:
-      Version: v1.0.0rc6
+      Version: v1.0.0rc7
       URL: null
 
 Models:

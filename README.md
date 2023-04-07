@@ -78,13 +78,14 @@ The `main` branch works with **PyTorch 1.8+**.
 
 ## What's new
 
-🌟 v1.0.0rc6 was released in 06/04/2023
+🌟 v1.0.0rc7 was released in 07/04/2023
 
-- Integrated Self-supervised leanrning algorithms from **MMSelfSup**, such as `MAE`, `BEiT`, `MILAN`, etc.
+- Integrated Self-supervised learning algorithms from **MMSelfSup**, such as **MAE**, **BEiT**, etc.
+- Support **RIFormer**, a simple but effective vision backbone by removing token mixer.
 - Add t-SNE visualization.
 - Refactor dataset pipeline visualization.
 
-Previous version update
+Update of previous versions
 
 - Support **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
 - Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
@@ -198,6 +199,7 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/vig">ViG</a></li>
         <li><a href="configs/xcit">XCiT</a></li>
         <li><a href="configs/levit">LeViT</a></li>
+        <li><a href="configs/riformer">RIFormer</a></li>
         </ul>
       </td>
       <td>

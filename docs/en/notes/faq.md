@@ -16,7 +16,7 @@ and make sure you fill in all required information in the template.
 
   | MMPretrain version | MMEngine version  |   MMCV version   |
   | :----------------: | :---------------: | :--------------: |
-  |  1.0.0rc0 (main)   | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  |  1.0.0rc7 (main)   | mmengine >= 0.5.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
   Since the `dev` branch is under frequent development, the MMEngine and MMCV
