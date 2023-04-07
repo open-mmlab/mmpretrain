@@ -13,7 +13,8 @@
 
   | MMPretrain 版本 |   MMEngine 版本   |    MMCV 版本     |
   | :-------------: | :---------------: | :--------------: |
-  | 1.0.0rc0 (main) | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  | 1.0.0rc6 (main) | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  |    1.0.0rc5     | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
   由于 `dev` 分支处于频繁开发中，MMEngine 和 MMCV 版本依赖可能不准确。如果您在使用

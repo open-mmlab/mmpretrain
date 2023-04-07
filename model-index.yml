@@ -67,3 +67,4 @@ Import:
   - configs/cae/metafile.yml
   - configs/maskfeat/metafile.yml
   - configs/milan/metafile.yml
+  - configs/riformer/metafile.yml
