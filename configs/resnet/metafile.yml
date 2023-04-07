@@ -337,7 +337,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1c152_8xb32_in1k_20220214-c013291f.pth
     Config: configs/resnet/resnetv1c152_8xb32_in1k.py
-  - Name: resnet50_8xb8_cub
+  - Name: resnet50_cub
     Metadata:
       FLOPs: 16480000000
       Parameters: 23920000
@@ -350,3 +350,15 @@ Models:
     Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth
     Config: configs/resnet/resnet50_8xb8_cub.py
+  - Name: resnet50_coco17
+    Metadata:
+      FLOPs: 4109000000
+      Parameters: 23670000
+    In Collection: ResNet
+    Results:
+      - Dataset: COCO
+        Metrics:
+          mAP: 80.72
+        Task: Multi-Label Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb128_coco17_20230228-e392c7e4.pth
+    Config: configs/resnet/resnet50_8xb128_coco17.py

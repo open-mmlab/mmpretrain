@@ -146,9 +146,15 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 ### CUB-200-2011
 
-|   Model   |                           Pretrain                            | resolution | Params(M) | Flops(G) | Top-1 (%) |              Config              |                            Download                            |
-| :-------: | :-----------------------------------------------------------: | :--------: | :-------: | :------: | :-------: | :------------------------------: | :------------------------------------------------------------: |
-| ResNet-50 | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |  448x448   |   23.92   |  16.48   |   88.45   | [config](./resnet50_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.log.json) |
+|     Model      |                          Pretrain                           | resolution | Params(M) | Flops(G) | Top-1 (%) |              Config              |                          Download                           |
+| :------------: | :---------------------------------------------------------: | :--------: | :-------: | :------: | :-------: | :------------------------------: | :---------------------------------------------------------: |
+| `resnet50_cub` | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |  448x448   |   23.92   |   4.11   |   88.45   | [config](./resnet50_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.log.json) |
+
+### COCO
+
+|       Model       |                         Pretrain                          | resolution | Params(M) | Flops(G) |  mAp  |                Config                 |                         Download                          |
+| :---------------: | :-------------------------------------------------------: | :--------: | :-------: | :------: | :---: | :-----------------------------------: | :-------------------------------------------------------: |
+| `resnet50_coco17` | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |  448x448   |   23.67   |   4.11   | 80.72 | [config](./resnet50_8xb128_coco17.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb128_coco17_20230228-e392c7e4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb128_coco17_20230228-e392c7e4.log.json) |
 
 ## Citation
 
