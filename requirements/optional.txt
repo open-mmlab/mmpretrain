@@ -1,4 +1,5 @@
 albumentations>=0.3.2 --no-binary qudida,albumentations    # For Albumentations data transform
 grad-cam >= 1.3.7   # For CAM visualization
+mat4py              # For parsing datasets with .mat annotations
 requests            # For torchserve
 scikit-learn        # For t-SNE visualization and unit tests.
