@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All right reserved.
 import re
-from collections import OrderedDict
 from typing import List, Optional
 
 import torch
@@ -190,12 +189,17 @@ class TimmClassifier(BaseClassifier):
         return data_samples
 
     @staticmethod
-    def _remove_state_dict_prefix(self, state_dict, prefix, local_metadata):
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
+    def _remove_state_dict_prefix(module, state_dict, prefix, local_metadata):
+        for k in list(state_dict.keys()):
             new_key = re.sub(f'^{prefix}model.', prefix, k)
-            new_state_dict[new_key] = v
-        return new_state_dict
+            # Only delete the key that different from its new_key.
+            if new_key != k:
+                # Modify the `state_dict` directly to avoid invalid changes
+                # when recursively calling the `state_dict` function in
+                # `torch.nn.module`.
+                state_dict[new_key] = state_dict[k]
+                del state_dict[k]
+        return state_dict
 
     @staticmethod
     def _add_state_dict_prefix(state_dict, prefix, local_metadata, strict,
@@ -203,5 +207,7 @@ class TimmClassifier(BaseClassifier):
         new_prefix = prefix + 'model.'
         for k in list(state_dict.keys()):
             new_key = re.sub(f'^{prefix}', new_prefix, k)
-            state_dict[new_key] = state_dict[k]
-            del state_dict[k]
+            # Only delete the key that different from its new_key.
+            if new_key != k:
+                state_dict[new_key] = state_dict[k]
+                del state_dict[k]
