@@ -8,5 +8,5 @@ import mmpretrain
 def collect_env():
     """Collect the information of the running environments."""
     env_info = collect_base_env()
-    env_info['MMPpretrain'] = mmpretrain.__version__ + '+' + get_git_hash()[:7]
+    env_info['MMPreTrain'] = mmpretrain.__version__ + '+' + get_git_hash()[:7]
     return env_info
