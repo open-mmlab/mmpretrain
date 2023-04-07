@@ -78,7 +78,7 @@ The `main` branch works with **PyTorch 1.8+**.
 
 ## What's new
 
-🌟 v1.0.0rc6 was released in 07/04/2023
+🌟 v1.0.0rc7 was released in 07/04/2023
 
 - Integrated Self-supervised learning algorithms from **MMSelfSup**, such as **MAE**, **BEiT**, etc.
 - Support **RIFormer**, a simple but effective vision backbone by removing token mixer.
