@@ -51,6 +51,7 @@ from .van import VAN
 from .vgg import VGG
 from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
+from .vit_adapter import BEiTAdapter, VitAdapter
 from .xcit import XCiT
 
 __all__ = [
@@ -105,9 +106,11 @@ __all__ = [
     'DeiT3',
     'HorNet',
     'MobileViT',
+    'VitAdapter',
     'DaViT',
     'BEiT',
     'RevVisionTransformer',
+    'BEiTAdapter',
     'MixMIMTransformer',
     'TinyViT',
     'LeViT',

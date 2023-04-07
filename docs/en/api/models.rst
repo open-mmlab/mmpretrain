@@ -57,6 +57,7 @@ Backbones
 
    AlexNet
    BEiT
+   BEiTAdapter
    CSPDarkNet
    CSPNet
    CSPResNeXt
@@ -112,6 +113,7 @@ Backbones
    VGG
    Vig
    VisionTransformer
+   VitAdapter
    XCiT
 
 .. module:: mmcls.models.necks

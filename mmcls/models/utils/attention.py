@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+import warnings
 
 import numpy as np
 import torch
@@ -499,6 +500,12 @@ class MultiheadAttention(BaseModule):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        layer_scale_init_value (float): Initial value of scale factor in
+            ``LayerScale``. Defaults to 0.0, means not using ``LayerScale``.
+            Use an initial value greater than 0.0 to enable ``LayerScale``.
+        use_layer_scale (bool): Deprecated, Whether to use layer_scale.
+            Please use ``layer_scale_init_value`` as an alternative.
+            Defaults to False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -514,6 +521,7 @@ class MultiheadAttention(BaseModule):
                  qk_scale=None,
                  proj_bias=True,
                  v_shortcut=False,
+                 layer_scale_init_value=0.,
                  use_layer_scale=False,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
@@ -533,12 +541,17 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        if use_layer_scale:
+        if layer_scale_init_value > 0:
+            self.gamma1 = LayerScale(embed_dims, scale=layer_scale_init_value)
+        elif use_layer_scale:
+            warnings.warn(
+                '`use_layer_scale` will be deprecated in future, Please use'
+                '`layer_scale_init_value={INIT_VLAUE}` as an alternative.')
             self.gamma1 = LayerScale(embed_dims)
         else:
             self.gamma1 = nn.Identity()
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         B, N, _ = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
                                   self.head_dims).permute(2, 0, 3, 1, 4)
@@ -578,6 +591,8 @@ class BEiTAttention(BaseModule):
         attn_drop_rate (float): Dropout ratio of attention weight.
             Default: 0.0
         proj_drop_rate (float): Dropout ratio of output. Default: 0.
+        with_cls_token (bool): To indicate the backbone has cls_token or not.
+            Defaults to True.
         init_cfg (dict | None, optional): The Config for initialization.
             Default: None.
     """
@@ -591,6 +606,7 @@ class BEiTAttention(BaseModule):
                  qk_scale=None,
                  attn_drop_rate=0.,
                  proj_drop_rate=0.,
+                 with_cls_token: bool = True,
                  init_cfg=None,
                  **kwargs):
         super().__init__(init_cfg=init_cfg)
@@ -599,6 +615,7 @@ class BEiTAttention(BaseModule):
         head_embed_dims = embed_dims // num_heads
         self.bias = bias
         self.scale = qk_scale or head_embed_dims**-0.5
+        self.with_cls_token = with_cls_token
 
         qkv_bias = bias
         if bias == 'qv_bias':
@@ -621,8 +638,13 @@ class BEiTAttention(BaseModule):
     def _init_rel_pos_embedding(self):
         if self.use_rel_pos_bias:
             Wh, Ww = self.window_size
-            # cls to token & token 2 cls & cls to cls
-            self.num_relative_distance = (2 * Wh - 1) * (2 * Ww - 1) + 3
+            if self.with_cls_token:
+                # cls to token & token 2 cls & cls to cls
+                num_extra_tokens = 3
+            else:
+                num_extra_tokens = 0
+            self.num_relative_distance = (2 * Wh - 1) * (2 * Ww -
+                                                         1) + num_extra_tokens
             # relative_position_bias_table shape is (2*Wh-1 * 2*Ww-1 + 3, nH)
             self.relative_position_bias_table = nn.Parameter(
                 torch.zeros(self.num_relative_distance, self.num_heads))
@@ -643,13 +665,19 @@ class BEiTAttention(BaseModule):
             relative_coords[:, :, 0] += Wh - 1
             relative_coords[:, :, 1] += Ww - 1
             relative_coords[:, :, 0] *= 2 * Ww - 1
-            relative_position_index = torch.zeros(
-                size=(Wh * Ww + 1, ) * 2, dtype=relative_coords.dtype)
-            # relative_position_index shape is (Wh*Ww, Wh*Ww)
-            relative_position_index[1:, 1:] = relative_coords.sum(-1)
-            relative_position_index[0, 0:] = self.num_relative_distance - 3
-            relative_position_index[0:, 0] = self.num_relative_distance - 2
-            relative_position_index[0, 0] = self.num_relative_distance - 1
+            if self.with_cls_token:
+                relative_position_index = torch.zeros(
+                    size=(Wh * Ww + 1, ) * 2, dtype=relative_coords.dtype)
+                # relative_position_index shape is (Wh*Ww, Wh*Ww)
+                relative_position_index[1:, 1:] = relative_coords.sum(-1)
+                relative_position_index[0, 0:] = self.num_relative_distance - 3
+                relative_position_index[0:, 0] = self.num_relative_distance - 2
+                relative_position_index[0, 0] = self.num_relative_distance - 1
+            else:
+                relative_position_index = torch.zeros(
+                    size=(Wh * Ww, ) * 2, dtype=relative_coords.dtype)
+                relative_position_index = relative_coords.sum(
+                    -1)  # Wh*Ww, Wh*Ww
 
             self.register_buffer('relative_position_index',
                                  relative_position_index)
@@ -663,7 +691,7 @@ class BEiTAttention(BaseModule):
         if self.use_rel_pos_bias:
             trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x, rel_pos_bias=None):
+    def forward(self, x, rel_pos_bias=None, **kwargs):
         """
         Args:
             x (tensor): input features with shape of (num_windows*B, N, C).
@@ -686,9 +714,14 @@ class BEiTAttention(BaseModule):
         if self.relative_position_bias_table is not None:
             Wh = self.window_size[0]
             Ww = self.window_size[1]
-            relative_position_bias = self.relative_position_bias_table[
-                self.relative_position_index.view(-1)].view(
-                    Wh * Ww + 1, Wh * Ww + 1, -1)
+            if self.with_cls_token:
+                relative_position_bias = self.relative_position_bias_table[
+                    self.relative_position_index.view(-1)].view(
+                        Wh * Ww + 1, Wh * Ww + 1, -1)
+            else:
+                relative_position_bias = self.relative_position_bias_table[
+                    self.relative_position_index.view(-1)].view(
+                        Wh * Ww, Wh * Ww, -1)
             relative_position_bias = relative_position_bias.permute(
                 2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
             attn = attn + relative_position_bias.unsqueeze(0)

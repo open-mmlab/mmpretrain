@@ -3,11 +3,13 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmengine import ConfigDict
+from mmengine import ConfigDict, init_default_scope
 
 from mmcls.models import AverageClsScoreTTA, ImageClassifier
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
+
+init_default_scope('mmcls')
 
 
 class TestAverageClsScoreTTA(TestCase):

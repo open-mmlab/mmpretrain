@@ -122,10 +122,14 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='LN').
-        attn_cfg (dict): The configuration for the attention layer.
-            Defaults to an empty dict.
+        attn_module (Callable): To build an attention module.
+            Defaults to :class:`BEiTAttention`.
+        attn_cfg (dict, optional): The extra config to build an attention
+            module. Defaults to ``dict()``.
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to ``dict(add_identity=False)``.
+        with_cls_token (bool): To indicate the backbone has cls_token or not.
+            Defaults to True.
         init_cfg (dict or List[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -144,8 +148,10 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  bias: Union[str, bool] = 'qv_bias',
                  act_cfg: dict = dict(type='GELU'),
                  norm_cfg: dict = dict(type='LN'),
+                 attn_module=BEiTAttention,
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
+                 with_cls_token: bool = True,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(
             embed_dims=embed_dims,
@@ -169,9 +175,11 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             'attn_drop': attn_drop_rate,
             'proj_drop': drop_rate,
             'bias': bias,
+            'with_cls_token': with_cls_token,
             **attn_cfg,
         }
-        self.attn = BEiTAttention(**attn_cfg)
+
+        self.attn = attn_module(**attn_cfg)
 
         ffn_cfg = {
             'embed_dims': embed_dims,
@@ -200,15 +208,15 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         else:
             self.gamma_1, self.gamma_2 = None, None
 
-    def forward(self, x: torch.Tensor,
-                rel_pos_bias: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, rel_pos_bias: torch.Tensor,
+                **kwargs) -> torch.Tensor:
         if self.gamma_1 is None:
             x = x + self.drop_path(
-                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
+                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
             x = x + self.drop_path(self.ffn(self.norm2(x)))
         else:
             x = x + self.drop_path(self.gamma_1 * self.attn(
-                self.norm1(x), rel_pos_bias=rel_pos_bias))
+                self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
             x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         return x
 
@@ -360,7 +368,8 @@ class BEiT(VisionTransformer):
         if use_shared_rel_pos_bias:
             self.rel_pos_bias = RelativePositionBias(
                 window_size=self.patch_resolution,
-                num_heads=self.arch_settings['num_heads'])
+                num_heads=self.arch_settings['num_heads'],
+                with_cls_token=with_cls_token)
         else:
             self.rel_pos_bias = None
         self._register_load_state_dict_pre_hook(
@@ -378,26 +387,14 @@ class BEiT(VisionTransformer):
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
-        # stochastic depth decay rule
-        dpr = np.linspace(0, drop_path_rate, self.num_layers)
-
-        self.layers = ModuleList()
-        if isinstance(layer_cfgs, dict):
-            layer_cfgs = [layer_cfgs] * self.num_layers
-        for i in range(self.num_layers):
-            _layer_cfg = dict(
-                embed_dims=self.embed_dims,
-                num_heads=self.arch_settings['num_heads'],
-                feedforward_channels=self.
-                arch_settings['feedforward_channels'],
-                layer_scale_init_value=layer_scale_init_value,
-                window_size=self.patch_resolution,
-                use_rel_pos_bias=use_rel_pos_bias,
-                drop_rate=drop_rate,
-                drop_path_rate=dpr[i],
-                norm_cfg=norm_cfg)
-            _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
+        self._build_layers(
+            drop_rate,
+            drop_path_rate,
+            norm_cfg,
+            layer_scale_init_value,
+            layer_cfgs,
+            use_rel_pos_bias,
+        )
 
         self.frozen_stages = frozen_stages
         self.final_norm = final_norm
@@ -415,6 +412,37 @@ class BEiT(VisionTransformer):
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
+
+    def _build_layers(
+        self,
+        drop_rate,
+        drop_path_rate,
+        norm_cfg,
+        layer_scale_init_value,
+        layer_cfgs,
+        use_rel_pos_bias,
+    ):
+        # stochastic depth decay rule
+        dpr = np.linspace(0, drop_path_rate, self.num_layers)
+
+        self.layers = ModuleList()
+        if isinstance(layer_cfgs, dict):
+            layer_cfgs = [layer_cfgs] * self.num_layers
+        for i in range(self.num_layers):
+            _layer_cfg = dict(
+                embed_dims=self.embed_dims,
+                num_heads=self.arch_settings['num_heads'],
+                feedforward_channels=self.
+                arch_settings['feedforward_channels'],
+                layer_scale_init_value=layer_scale_init_value,
+                window_size=self.patch_resolution,
+                use_rel_pos_bias=use_rel_pos_bias,
+                drop_rate=drop_rate,
+                drop_path_rate=dpr[i],
+                norm_cfg=norm_cfg,
+                with_cls_token=self.with_cls_token)
+            _layer_cfg.update(layer_cfgs[i])
+            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
     def forward(self, x):
         B = x.shape[0]

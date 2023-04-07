@@ -29,10 +29,16 @@ class TransformerEncoderLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        layer_scale_init_value (float, optional): Initial value of scale
+             factor in LayerScale. Defaults to 0.0.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
+        attn_module (Callable): To build an attention module.
+            Defaults to :class:`MultiheadAttention`.
+        attn_cfg (dict, optional): The extra config to build an attention
+            module. Defaults to ``dict()``.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
@@ -46,8 +52,11 @@ class TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
+                 layer_scale_init_value=0.0,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
+                 attn_module=MultiheadAttention,
+                 attn_cfg=dict(),
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
@@ -57,13 +66,15 @@ class TransformerEncoderLayer(BaseModule):
             norm_cfg, self.embed_dims, postfix=1)
         self.add_module(self.norm1_name, norm1)
 
-        self.attn = MultiheadAttention(
+        self.attn = attn_module(
             embed_dims=embed_dims,
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            qkv_bias=qkv_bias)
+            qkv_bias=qkv_bias,
+            layer_scale_init_value=layer_scale_init_value,
+            **attn_cfg)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -75,6 +86,7 @@ class TransformerEncoderLayer(BaseModule):
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+            layer_scale_init_value=layer_scale_init_value,
             act_cfg=act_cfg)
 
     @property
@@ -92,8 +104,8 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
-    def forward(self, x):
-        x = x + self.attn(self.norm1(x))
+    def forward(self, x, hw_shape=None):
+        x = x + self.attn(self.norm1(x), hw_shape=hw_shape)
         x = self.ffn(self.norm2(x), identity=x)
         return x
 
@@ -145,6 +157,8 @@ class VisionTransformer(BaseBackbone):
             ``with_cls_token`` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Defaults to 0.0.
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
@@ -233,6 +247,7 @@ class VisionTransformer(BaseBackbone):
                  avg_token=False,
                  frozen_stages=-1,
                  output_cls_token=True,
+                 layer_scale_init_value=0.,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -301,24 +316,8 @@ class VisionTransformer(BaseBackbone):
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
-        # stochastic depth decay rule
-        dpr = np.linspace(0, drop_path_rate, self.num_layers)
-
-        self.layers = ModuleList()
-        if isinstance(layer_cfgs, dict):
-            layer_cfgs = [layer_cfgs] * self.num_layers
-        for i in range(self.num_layers):
-            _layer_cfg = dict(
-                embed_dims=self.embed_dims,
-                num_heads=self.arch_settings['num_heads'],
-                feedforward_channels=self.
-                arch_settings['feedforward_channels'],
-                drop_rate=drop_rate,
-                drop_path_rate=dpr[i],
-                qkv_bias=qkv_bias,
-                norm_cfg=norm_cfg)
-            _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(TransformerEncoderLayer(**_layer_cfg))
+        self._build_layers(drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                           layer_scale_init_value, layer_cfgs)
 
         self.frozen_stages = frozen_stages
         if pre_norm:
@@ -342,6 +341,28 @@ class VisionTransformer(BaseBackbone):
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
+
+    def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                      layer_scale_init_value, layer_cfgs):
+        # stochastic depth decay rule
+        dpr = np.linspace(0, drop_path_rate, self.num_layers)
+
+        self.layers = ModuleList()
+        if isinstance(layer_cfgs, dict):
+            layer_cfgs = [layer_cfgs] * self.num_layers
+        for i in range(self.num_layers):
+            _layer_cfg = dict(
+                embed_dims=self.embed_dims,
+                num_heads=self.arch_settings['num_heads'],
+                feedforward_channels=self.
+                arch_settings['feedforward_channels'],
+                drop_rate=drop_rate,
+                drop_path_rate=dpr[i],
+                qkv_bias=qkv_bias,
+                norm_cfg=norm_cfg,
+                layer_scale_init_value=layer_scale_init_value)
+            _layer_cfg.update(layer_cfgs[i])
+            self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
     @property
     def norm1(self):
