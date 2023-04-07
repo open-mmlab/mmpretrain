@@ -1,0 +1,82 @@
+Collections:
+  - Name: EfficientFormerV2
+    Metadata:
+      Architecture:
+        - Attention4D
+        - LGQuery
+        - Attention4DDownsample
+        - ConvMlp
+    Paper:
+      Title: 'Rethinking Vision Transformers for MobileNet Size and Speed'
+      URL: https://arxiv.org/abs/2212.08059
+    README: configs/efficientformer_v2/README.md
+
+Models:
+  - Name: efficientformerv2-s0_3rdparty_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+      Training Data: ImageNet-1k
+    In Collection: EfficientFormerV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/efficientformer_v2/efficientformerv2-s0_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/snap-research/EfficientFormer
+      Weights: https://drive.google.com/file/d/1PXb7b9pv9ZB4cfkRkYEdwgWuVwvEiazq/view
+  - Name: efficientformerv2-s1_3rdparty_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+      Training Data: ImageNet-1k
+    In Collection: EfficientFormerV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/efficientformer_v2/efficientformerv2-s1_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/snap-research/EfficientFormer
+      Weights: https://drive.google.com/file/d/1EKe1vt-3mG7iceVIMaET_DyISzVTJMn8/view
+  - Name: efficientformerv2-s2_3rdparty_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+      Training Data: ImageNet-1k
+    In Collection: EfficientFormerV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/efficientformer_v2/efficientformerv2-s2_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/snap-research/EfficientFormer
+      Weights: https://drive.google.com/file/d/1gjbFyB5T_yAkmzHNuXEljqScYVQZafMQ/view
+  - Name: efficientformerv2-l_3rdparty_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+      Training Data: ImageNet-1k
+    In Collection: EfficientFormerV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/efficientformer_v2/efficientformerv2-l_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/snap-research/EfficientFormer
+      Weights: https://drive.google.com/file/d/1sRXNBHl_ewHBMwwYZVsOJo1k6JpcNJn-/view

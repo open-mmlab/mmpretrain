@@ -11,6 +11,7 @@ from .deit3 import DeiT3
 from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
+from .efficientformer_v2 import EfficientFormerV2
 from .efficientnet import EfficientNet
 from .efficientnet_v2 import EfficientNetV2
 from .hornet import HorNet
@@ -100,6 +101,7 @@ __all__ = [
     'InceptionV3',
     'MobileOne',
     'EfficientFormer',
+    'EfficientFormerV2',
     'SwinTransformerV2',
     'MViT',
     'DeiT3',
