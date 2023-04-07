@@ -93,3 +93,45 @@ Models:
       Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_L_in1k.pyth
       Code: https://github.com/facebookresearch/mvit
     Config: configs/mvit/mvitv2-large_8xb256_in1k.py
+
+  - Name: mvitv2-base_3rdparty_in21k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 10157926768
+      Parameters: 50703744
+      Training Data:
+        - ImageNet-21k
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_B_in21k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-base_headless.py
+
+  - Name: mvitv2-large_3rdparty_in21k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 43868094964
+      Parameters: 216839952
+      Training Data:
+        - ImageNet-21k
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_L_in21k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-large_headless.py
+
+  - Name: mvitv2-huge_3rdparty_in21k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 119920561904
+      Parameters: 665342720
+      Training Data:
+        - ImageNet-21k
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_H_in21k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-huge_headless.py

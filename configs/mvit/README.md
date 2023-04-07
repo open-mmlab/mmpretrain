@@ -21,6 +21,16 @@ well as 86.1% on Kinetics-400 video classification.
 
 ## Results and models
 
+### ImageNet-21k
+
+The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
+
+|     Model      | resolution | Params(M) | Flops(G) |  Download   |
+| :------------: | :--------: | :-------: | :------: | :---------: |
+| MViTv2-base\*  |  224x224   |   51.47   |  10.20   | [model](<>) |
+| MViTv2-large\* |  224x224   |  217.99   |  42.10   | [model](<>) |
+| MViTv2-huge\*  |  224x224   |  665.34   |  119.92  | [model](<>) |
+
 ### ImageNet-1k
 
 |     Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                               Download                                               |

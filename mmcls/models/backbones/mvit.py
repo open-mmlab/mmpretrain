@@ -5,12 +5,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.utils.checkpoint as cp
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
-from mmengine.utils import to_2tuple
+from mmengine.utils import digit_version, to_2tuple
 
 from ..builder import BACKBONES
 from ..utils import resize_pos_embed
@@ -324,6 +325,7 @@ class MultiScaleBlock(BaseModule):
             if enable the ``rel_pos_spatial``. Defaults to None.
         rel_pos_zero_init (bool): If True, zero initialize relative
             positional parameters. Defaults to False.
+        with_cp (bool): If True, use activation checkpointing.
         init_cfg (dict, optional): The config of weight initialization.
             Defaults to None.
     """
@@ -346,6 +348,7 @@ class MultiScaleBlock(BaseModule):
         dim_mul_in_attention=True,
         input_size=None,
         rel_pos_zero_init=False,
+        with_cp=False,
         init_cfg=None,
     ):
         super().__init__(init_cfg=init_cfg)
@@ -353,6 +356,7 @@ class MultiScaleBlock(BaseModule):
         self.out_dims = out_dims
         self.norm1 = build_norm_layer(norm_cfg, in_dims)[1]
         self.dim_mul_in_attention = dim_mul_in_attention
+        self.with_cp = with_cp
 
         attn_dims = out_dims if dim_mul_in_attention else in_dims
         self.attn = MultiScaleAttention(
@@ -401,27 +405,35 @@ class MultiScaleBlock(BaseModule):
             self.init_out_size = input_size
 
     def forward(self, x, in_size):
-        x_norm = self.norm1(x)
-        x_attn, out_size = self.attn(x_norm, in_size)
 
-        if self.dim_mul_in_attention and self.proj is not None:
-            skip = self.proj(x_norm)
+        def _inner_forward(x):
+            x_norm = self.norm1(x)
+            x_attn, out_size = self.attn(x_norm, in_size)
+
+            if self.dim_mul_in_attention and self.proj is not None:
+                skip = self.proj(x_norm)
+            else:
+                skip = x
+
+            if self.pool_skip is not None:
+                skip, _ = attention_pool(skip, self.pool_skip, in_size)
+
+            x = skip + self.drop_path(x_attn)
+            x_norm = self.norm2(x)
+            x_mlp = self.mlp(x_norm)
+
+            if not self.dim_mul_in_attention and self.proj is not None:
+                skip = self.proj(x_norm)
+            else:
+                skip = x
+
+            x = skip + self.drop_path(x_mlp)
+            return x, out_size
+
+        if self.with_cp and x.requires_grad:
+            x, out_size = cp.checkpoint(_inner_forward, x)
         else:
-            skip = x
-
-        if self.pool_skip is not None:
-            skip, _ = attention_pool(skip, self.pool_skip, in_size)
-
-        x = skip + self.drop_path(x_attn)
-        x_norm = self.norm2(x)
-        x_mlp = self.mlp(x_norm)
-
-        if not self.dim_mul_in_attention and self.proj is not None:
-            skip = self.proj(x_norm)
-        else:
-            skip = x
-
-        x = skip + self.drop_path(x_mlp)
+            x, out_size = _inner_forward(x)
 
         return x, out_size
 
@@ -484,6 +496,7 @@ class MViT(BaseBackbone):
             features. Defaults to ``dict(type='LN', eps=1e-6)``.
         patch_cfg (dict): Config dict for the patch embedding layer.
             Defaults to ``dict(kernel_size=7, stride=4, padding=3)``.
+        with_cp (bool): If True, use activation checkpointing.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
@@ -527,6 +540,12 @@ class MViT(BaseBackbone):
             'num_heads': 2,
             'downscale_indices': [2, 8, 44]
         },
+        'huge': {
+            'embed_dims': 192,
+            'num_layers': 80,
+            'num_heads': 3,
+            'downscale_indices': [4, 12, 72]
+        },
     }
     num_extra_tokens = 0
 
@@ -550,6 +569,7 @@ class MViT(BaseBackbone):
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  patch_cfg=dict(kernel_size=7, stride=4, padding=3),
+                 with_cp=False,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -578,6 +598,12 @@ class MViT(BaseBackbone):
         self.stage_indices[self.num_layers - 1] = self.num_scales - 1
         self.use_abs_pos_embed = use_abs_pos_embed
         self.interpolate_mode = interpolate_mode
+        self.with_cp = with_cp
+        if with_cp:
+            assert digit_version(
+                torch.__version__) >= digit_version('1.9.0'), \
+                'torch.utils.checkpoint does not support no tensor output'  \
+                'before 1.9.0.'
 
         if isinstance(out_scales, int):
             out_scales = [out_scales]
@@ -649,7 +675,8 @@ class MViT(BaseBackbone):
                 residual_pooling=residual_pooling,
                 dim_mul_in_attention=dim_mul_in_attention,
                 input_size=input_size,
-                rel_pos_zero_init=rel_pos_zero_init)
+                rel_pos_zero_init=rel_pos_zero_init,
+                with_cp=with_cp)
             self.blocks.append(attention_block)
 
             input_size = attention_block.init_out_size
