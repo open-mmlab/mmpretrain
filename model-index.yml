@@ -39,6 +39,7 @@ Import:
   - configs/hornet/metafile.yml
   - configs/mobilevit/metafile.yml
   - configs/davit/metafile.yml
+  - configs/focalnet/metafile.yml
   - configs/replknet/metafile.yml
   - configs/csra/metafile.yml
   - configs/beit/metafile.yml

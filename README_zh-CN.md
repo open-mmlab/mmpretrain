@@ -161,6 +161,7 @@ mim install -e .
 - [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
+- [x] [FocalNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/focalnet)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 - [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)

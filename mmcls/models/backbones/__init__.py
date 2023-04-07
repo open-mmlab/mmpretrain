@@ -13,6 +13,7 @@ from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .efficientnet_v2 import EfficientNetV2
+from .focalnet import FocalNet
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -106,6 +107,7 @@ __all__ = [
     'HorNet',
     'MobileViT',
     'DaViT',
+    'FocalNet',
     'BEiT',
     'RevVisionTransformer',
     'MixMIMTransformer',
