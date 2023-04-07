@@ -123,11 +123,11 @@ We provided a series of tutorials about the basic usage of MMPreTrain for new us
 - [Learn about Configs](https://mmpretrain.readthedocs.io/en/latest/user_guides/config.html)
 - [Prepare Dataset](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html)
 - [Inference with existing models](https://mmpretrain.readthedocs.io/en/latest/user_guides/inference.html)
-- [Train](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/train.html)
-- [Test](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/test.html)
-- [Downstream tasks](https://mmpretrain.readthedocs.io/en/pretrain/user_guides/downstream.html)
+- [Train](https://mmpretrain.readthedocs.io/en/latest/user_guides/train.html)
+- [Test](https://mmpretrain.readthedocs.io/en/latest/user_guides/test.html)
+- [Downstream tasks](https://mmpretrain.readthedocs.io/en/latest/user_guides/downstream.html)
 
-For more information, please refer to [our documentation](https://mmpretrain.readthedocs.io/en/pretrain/).
+For more information, please refer to [our documentation](https://mmpretrain.readthedocs.io/en/latest/).
 
 ## Model zoo
 

@@ -120,11 +120,11 @@ mim install -e .
 - [学习配置文件](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/config.html)
 - [准备数据集](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/dataset_prepare.html)
 - [使用现有模型推理](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/inference.html)
-- [训练](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/train.html)
-- [测试](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/test.html)
-- [下游任务](https://mmpretrain.readthedocs.io/zh_CN/pretrain/user_guides/downstream.html)
+- [训练](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/train.html)
+- [测试](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/test.html)
+- [下游任务](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/downstream.html)
 
-关于更多的信息，请查阅我们的 [相关文档](https://mmpretrain.readthedocs.io/zh_CN/pretrain/)。
+关于更多的信息，请查阅我们的 [相关文档](https://mmpretrain.readthedocs.io/zh_CN/latest/)。
 
 ## 模型库
 
