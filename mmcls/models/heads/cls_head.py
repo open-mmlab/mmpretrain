@@ -25,14 +25,18 @@ class ClsHead(BaseHead):
             Defaults to False.
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to None.
+        skip_init_weights (bool): Whether to skip init_weights. When using Lazy
+            modules, it should be skipped. Defaults to False.
     """
 
     def __init__(self,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  topk: Union[int, Tuple[int]] = (1, ),
                  cal_acc: bool = False,
-                 init_cfg: Optional[dict] = None):
-        super(ClsHead, self).__init__(init_cfg=init_cfg)
+                 init_cfg: Optional[dict] = None,
+                 skip_init_weights: bool = False):
+        super(ClsHead, self).__init__(
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg)
 
         self.topk = topk
         if not isinstance(loss, nn.Module):

@@ -21,7 +21,10 @@ class DeiTClsHead(VisionTransformerClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyLinear, init_cfg is
+            ignored and in_channels is calculated automatically.
+            Defaults to None.
         hidden_dim (int, optional): Number of the dimensions for hidden layer.
             Defaults to None, which means no extra hidden layer.
         act_cfg (dict): The activation config. Only available during
@@ -34,7 +37,7 @@ class DeiTClsHead(VisionTransformerClsHead):
         """"Init extra hidden linear layer to handle dist token if exists."""
         super(DeiTClsHead, self)._init_layers()
         if self.hidden_dim is None:
-            head_dist = nn.Linear(self.in_channels, self.num_classes)
+            head_dist = self._create_linear(self.in_channels, self.num_classes)
         else:
             head_dist = nn.Linear(self.hidden_dim, self.num_classes)
         self.layers.add_module('head_dist', head_dist)

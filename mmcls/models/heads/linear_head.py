@@ -2,7 +2,6 @@
 from typing import Optional, Tuple
 
 import torch
-import torch.nn as nn
 
 from mmcls.registry import MODELS
 from .cls_head import ClsHead
@@ -15,7 +14,10 @@ class LinearClsHead(ClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyLinear, init_cfg is
+            ignored and in_channels is calculated automatically.
+            Defaults to None.
         loss (dict): Config of classification loss. Defaults to
             ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
         topk (int | Tuple[int]): Top-k accuracy. Defaults to ``(1, )``.
@@ -29,11 +31,13 @@ class LinearClsHead(ClsHead):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int] = None,
                  init_cfg: Optional[dict] = dict(
                      type='Normal', layer='Linear', std=0.01),
                  **kwargs):
-        super(LinearClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
+        skip_init_weights = in_channels is None
+        super(LinearClsHead, self).__init__(
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -42,7 +46,7 @@ class LinearClsHead(ClsHead):
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        self.fc = self._create_linear(self.in_channels, self.num_classes)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.

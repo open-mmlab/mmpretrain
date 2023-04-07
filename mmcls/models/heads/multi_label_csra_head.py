@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Modified from https://github.com/Kevinz-code/CSRA
-from typing import Tuple
+import warnings
+from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
 from mmengine.model import BaseModule, ModuleList
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .multi_label_cls_head import MultiLabelClsHead
@@ -20,7 +22,9 @@ class CSRAClsHead(MultiLabelClsHead):
 
     Args:
         num_classes (int): Number of categories.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyConv2d, init_cfg is
+            ignored and in_channels is calculated automatically.
         num_heads (int): Number of residual at tensor heads.
         loss (dict): Config of classification loss.
         lam (float): Lambda that combines global average and max pooling
@@ -38,7 +42,7 @@ class CSRAClsHead(MultiLabelClsHead):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int],
                  num_heads: int,
                  lam: float,
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01),
@@ -46,7 +50,9 @@ class CSRAClsHead(MultiLabelClsHead):
         assert num_heads in self.temperature_settings.keys(
         ), 'The num of heads is not in temperature setting.'
         assert lam > 0, 'Lambda should be between 0 and 1.'
-        super(CSRAClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
+        skip_init_weights = in_channels is None
+        super(CSRAClsHead, self).__init__(
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg, **kwargs)
         self.temp_list = self.temperature_settings[num_heads]
         self.csra_heads = ModuleList([
             CSRAModule(num_classes, in_channels, self.temp_list[i], lam)
@@ -76,7 +82,9 @@ class CSRAModule(BaseModule):
 
     Args:
         num_classes (int): Number of categories.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyConv2d, init_cfg is
+            ignored and in_channels is calculated automatically.
         T (int): Temperature setting.
         lam (float): Lambda that combines global average and max pooling
             scores.
@@ -86,7 +94,7 @@ class CSRAModule(BaseModule):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int],
                  T: int,
                  lam: float,
                  init_cfg=None):
@@ -94,7 +102,17 @@ class CSRAModule(BaseModule):
         super(CSRAModule, self).__init__(init_cfg=init_cfg)
         self.T = T  # temperature
         self.lam = lam  # Lambda
-        self.head = nn.Conv2d(in_channels, num_classes, 1, bias=False)
+        if in_channels is None:
+            if digit_version(torch.__version__) >= digit_version('1.8.0'):
+                warnings.warn('Head with in_channels is None, it uses  '
+                              'LazyConv2d init_cfg is ignored and '
+                              'in_channels is calculated automatically.')
+                self.head = nn.LazyConv2d(num_classes, 1, bias=False)
+            else:
+                raise RuntimeError(
+                    'torch.nn.LazyConv2d is not available before 1.8.0')
+        else:
+            self.head = nn.Conv2d(in_channels, num_classes, 1, bias=False)
         self.softmax = nn.Softmax(dim=2)
 
     def forward(self, x):

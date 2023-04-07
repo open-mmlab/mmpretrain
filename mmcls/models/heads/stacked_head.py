@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
 from typing import Dict, Optional, Sequence, Tuple
 
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmengine.model import BaseModule, ModuleList
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .cls_head import ClsHead
@@ -14,14 +16,25 @@ class LinearBlock(BaseModule):
     """Linear block for StackedLinearClsHead."""
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 dropout_rate=0.,
-                 norm_cfg=None,
-                 act_cfg=None,
-                 init_cfg=None):
+                 in_channels: Optional[int],
+                 out_channels: int,
+                 dropout_rate: float = 0.,
+                 norm_cfg: Optional[dict] = None,
+                 act_cfg: Optional[dict] = None,
+                 init_cfg: Optional[dict] = None):
         super().__init__(init_cfg=init_cfg)
-        self.fc = nn.Linear(in_channels, out_channels)
+        if in_channels is None:
+            if digit_version(torch.__version__) >= digit_version('1.8.0'):
+                warnings.warn(
+                    'Head with in_channels is None, it uses LazyLinear '
+                    'init_cfg is ignored and in_channels '
+                    'is calculated automatically.')
+                self.fc = nn.LazyLinear(out_channels)
+            else:
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
+        else:
+            self.fc = nn.Linear(in_channels, out_channels)
 
         self.norm = None
         self.act = None
@@ -52,7 +65,9 @@ class StackedLinearClsHead(ClsHead):
 
     Args:
         num_classes (int): Number of categories.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyLinear, init_cfg is
+            ignored and in_channels is calculated automatically.
         mid_channels (Sequence[int]): Number of channels in the hidden fc
             layers.
         dropout_rate (float): Dropout rate after each hidden fc layer,
@@ -65,13 +80,15 @@ class StackedLinearClsHead(ClsHead):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int],
                  mid_channels: Sequence[int],
                  dropout_rate: float = 0.,
                  norm_cfg: Optional[Dict] = None,
                  act_cfg: Optional[Dict] = dict(type='ReLU'),
                  **kwargs):
-        super(StackedLinearClsHead, self).__init__(**kwargs)
+        skip_init_weights = in_channels is None
+        super(StackedLinearClsHead, self).__init__(
+            skip_init_weights=skip_init_weights, **kwargs)
         self.num_classes = num_classes
         self.in_channels = in_channels
         if self.num_classes <= 0:

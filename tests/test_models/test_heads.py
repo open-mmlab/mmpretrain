@@ -8,6 +8,7 @@ from unittest import TestCase
 import numpy as np
 import torch
 from mmengine import is_seq_of
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
@@ -117,6 +118,17 @@ class TestLinearClsHead(TestCase):
         outs = head(feats)
         self.assertEqual(outs.shape, (4, 5))
 
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            feats = (torch.rand(4, 10), torch.rand(4, 10))
+            outs = head(feats)
+            self.assertEqual(outs.shape, (4, 5))
+
 
 class TestVisionTransformerClsHead(TestCase):
     DEFAULT_ARGS = dict(
@@ -168,6 +180,16 @@ class TestVisionTransformerClsHead(TestCase):
         outs = head(self.fake_feats)
         self.assertEqual(outs.shape, (4, 5))
 
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            outs = head(self.fake_feats)
+            self.assertEqual(outs.shape, (4, 5))
+
 
 class TestDeiTClsHead(TestVisionTransformerClsHead):
     DEFAULT_ARGS = dict(type='DeiTClsHead', in_channels=10, num_classes=5)
@@ -189,6 +211,17 @@ class TestDeiTClsHead(TestVisionTransformerClsHead):
         cls_token, dist_token = head.pre_logits(self.fake_feats)
         self.assertEqual(cls_token.shape, (4, 30))
         self.assertEqual(dist_token.shape, (4, 30))
+
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            cls_token, dist_token = head.pre_logits(self.fake_feats)
+            self.assertIs(cls_token, self.fake_feats[-1][1])
+            self.assertIs(dist_token, self.fake_feats[-1][2])
 
 
 class TestConformerHead(TestCase):
@@ -222,6 +255,17 @@ class TestConformerHead(TestCase):
         outs = head(self.fake_feats)
         self.assertEqual(outs[0].shape, (4, 5))
         self.assertEqual(outs[1].shape, (4, 5))
+
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            outs = head(self.fake_feats)
+            self.assertEqual(outs[0].shape, (4, 5))
+            self.assertEqual(outs[1].shape, (4, 5))
 
     def test_loss(self):
         data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
@@ -315,6 +359,16 @@ class TestStackedLinearClsHead(TestCase):
         })
         outs = head(self.fake_feats)
         self.assertEqual(outs.shape, (4, 5))
+
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build({**cfg, 'mid_channels': [20, 30]})
+            head.init_weights()
+
+            outs = head(self.fake_feats)
+            self.assertEqual(outs.shape, (4, 5))
 
 
 class TestMultiLabelClsHead(TestCase):
@@ -452,6 +506,18 @@ class EfficientFormerClsHead(TestClsHead):
         outs = head(feats)
         self.assertEqual(outs.shape, (4, 10))
 
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            cfg['distillation'] = True
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            feats = (torch.rand(4, 10), torch.rand(4, 10))
+            outs = head(feats)
+            self.assertEqual(outs.shape, (4, 10))
+
     def test_loss(self):
         feats = (torch.rand(4, 10), )
         data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
@@ -479,6 +545,16 @@ class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):
         # return the last item (same as pre_logits)
         feats = (torch.rand(4, 10), torch.rand(4, 10))
         head(feats)
+
+        if digit_version(torch.__version__) >= digit_version('1.8.0'):
+            # test in_channels is None
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['in_channels'] = None
+            head = MODELS.build(cfg)
+            head.init_weights()
+
+            feats = (torch.rand(4, 10), torch.rand(4, 10))
+            head(feats)
 
 
 class TestMultiTaskHead(TestCase):
