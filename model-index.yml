@@ -29,7 +29,6 @@ Import:
   - configs/convmixer/metafile.yml
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
-  - configs/riformer/metafile.yml
   - configs/inception_v3/metafile.yml
   - configs/mvit/metafile.yml
   - configs/edgenext/metafile.yml
