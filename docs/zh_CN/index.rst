@@ -16,6 +16,7 @@
    user_guides/train_test.md
    user_guides/config.md
    user_guides/finetune.md
+   user_guides/deploy.md
 
 .. toctree::
    :maxdepth: 1
