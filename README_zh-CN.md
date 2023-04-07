@@ -165,6 +165,9 @@ mim install -e .
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 - [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
 - [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
+- [x] [EfficientNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet_v2)
+- [x] [XCiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/xcit)
+- [x] [MaxViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/maxvit)
 
 </details>
 

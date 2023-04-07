@@ -1,0 +1,334 @@
+Collections:
+  - Name: MaxViT
+    Metadata:
+      Training Data:
+        - ImageNet-1k
+        - ImageNet-21k
+      Architecture:
+        - Window Partition Attention
+        - Grid Partition Attention
+        - MBConv
+    Paper:
+      Title: 'MaxViT: Multi-Axis Vision Transformer'
+      URL: https://arxiv.org/abs/2204.01697
+    README: configs/maxvit/README.md
+
+Models:
+  - Name: maxvit-tiny_3rdparty_in1k-224px
+    Metadata:
+      FLOPs: 5601478176
+      Parameters: 30916528
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-tiny_8xb64_in1k-224px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-tiny_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 17539531656
+      Parameters: 30977008
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-tiny_8xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-tiny_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 33511184680
+      Parameters: 31049584
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-tiny_8xb64_in1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-small_3rdparty_in1k-224px
+    Metadata:
+      FLOPs: 11661981360
+      Parameters: 68927956
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-small_8xb64_in1k-224px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-small_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 35886050400
+      Parameters: 69018676
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-small_8xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-small_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 67290893504
+      Parameters: 69127540
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-small_8xb64_in1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-base_3rdparty_in1k-224px
+    Metadata:
+      FLOPs: 24048908688
+      Parameters: 119467708
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-base_8xb64_in1k-224px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-base_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 73826990528
+      Parameters: 119653468
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-base_8xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-base_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 138075551872
+      Parameters: 119876380
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-base_8xb64_in1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-base_in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 73826990528
+      Parameters: 119653468
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-base_8xb64_in21ft1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-base_in21k-pre_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 138075551872
+      Parameters: 119876380
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-base_8xb64_in21ft1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-large_3rdparty_in1k-224px
+    Metadata:
+      FLOPs: 43690671764
+      Parameters: 211785560
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-large_8xb64_in1k-224px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-large_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 132594005584
+      Parameters: 212033240
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-large_8xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-large_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 244823569456
+      Parameters: 212330456
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-large_8xb64_in1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-large_in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 132594005584
+      Parameters: 212033240
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-large_8xb64_in21ft1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-large_in21k-pre_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 244823569456
+      Parameters: 212330456
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-large_8xb64_in21ft1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-xlarge_in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 292838840072
+      Parameters: 475323472
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-xlarge_8xb64_in21ft1k-384px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:
+  - Name: maxvit-xlarge_in21k-pre_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 534245885408
+      Parameters: 475769296
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-xlarge_8xb64_in21ft1k-512px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:

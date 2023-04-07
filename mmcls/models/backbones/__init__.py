@@ -18,6 +18,7 @@ from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
 from .levit import LeViT
+from .maxvit import MaxViT
 from .mixmim import MixMIMTransformer
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
@@ -114,4 +115,5 @@ __all__ = [
     'Vig',
     'PyramidVig',
     'XCiT',
+    'MaxViT',
 ]
