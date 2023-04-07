@@ -85,7 +85,7 @@ The `main` branch works with **PyTorch 1.8+**.
 - Add t-SNE visualization.
 - Refactor dataset pipeline visualization.
 
-Previous version update
+Update of previous versions
 
 - Support **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
 - Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
