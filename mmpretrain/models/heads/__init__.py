@@ -19,6 +19,7 @@ from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
 from .multi_task_head import MultiTaskHead
+from .seq_gen_head import SeqGenerationHead
 from .simmim_head import SimMIMHead
 from .stacked_head import StackedLinearClsHead
 from .swav_head import SwAVHead
@@ -52,4 +53,5 @@ __all__ = [
     'MoCoV3Head',
     'MIMHead',
     'SimMIMHead',
+    'SeqGenerationHead',
 ]

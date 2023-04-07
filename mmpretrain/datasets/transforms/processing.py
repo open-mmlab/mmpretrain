@@ -1533,3 +1533,48 @@ class RandomResizedCropAndInterpolationWithTwoPic(BaseTransform):
         repr_str += f'scale={self.scale}, '
         repr_str += f'ratio={self.ratio})'
         return repr_str
+
+
+@TRANSFORMS.register_module()
+class PreCaption(BaseTransform):
+    """Perform text cleaning before tokenizer. Adopted by BLIP.
+
+    **Required Keys:**
+
+    - text
+
+    **Modified Keys:**
+
+    - text
+    """
+
+    def _pre_caption(self, caption):
+        """Perform text cleaning before tokenizer."""
+        import re
+        caption = re.sub(
+            r"([.!\"()*#:;~])",
+            ' ',
+            caption.lower(),
+        )
+        caption = re.sub(
+            r'\s{2,}',
+            ' ',
+            caption,
+        )
+        caption = caption.rstrip('\n')
+        caption = caption.strip(' ')
+        return caption
+
+    def pre_caption(self, caption):
+        """Perform text cleaning before tokenizer."""
+        if isinstance(caption, list):
+            return [self._pre_caption(c) for c in caption]
+        elif isinstance(caption, str):
+            return self._pre_caption(caption)
+        else:
+            raise TypeError('text must be a string or a list of strings')
+
+    def transform(self, results: dict) -> dict:
+        """Method to clean the input text data."""
+        results['text'] = self.pre_caption(results['text'])
+        return results
