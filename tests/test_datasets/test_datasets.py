@@ -7,6 +7,7 @@ import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
 
+import mat4py
 import numpy as np
 from mmengine.logging import MMLogger
 
@@ -1101,6 +1102,700 @@ class TestInShop(TestBaseDataset):
             data_info['img_path'],
             os.path.join(self.root, 'Img', 'img', '12_3_back.jpg'))
         self.assertEqual(data_info['sample_idx'], 0)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestOxford102Flowers(TestBaseDataset):
+    DATASET_TYPE = 'Oxford102Flowers'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, mode='train')
+        cls.ann_file = osp.join(cls.root, 'imagelabels.mat')
+        cls.train_test_split_file = osp.join(cls.root, 'setid.mat')
+
+        mat4py.savemat(cls.ann_file,
+                       {'labels': [1, 1, 2, 2, 2, 3, 3, 4, 4, 5]})
+        mat4py.savemat(cls.train_test_split_file, {
+            'trnid': [1, 3, 5],
+            'valid': [7, 9],
+            'tstid': [2, 4, 6, 8, 10],
+        })
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test invalid mode
+        with self.assertRaisesRegex(AssertionError, 'not in default modes'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['mode'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid modes
+        modes = ['train', 'val', 'trainval', 'test']
+        for mode in modes:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['mode'] = mode
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.mode, mode)
+            self.assertEqual(dataset.data_root, self.root)
+            self.assertEqual(dataset.ann_file, self.ann_file)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'jpg', 'image_00001.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with mode=val
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'val'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'jpg', 'image_00007.jpg'))
+        self.assertEqual(data_info['gt_label'], 2)
+
+        # Test with mode=trainval
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'trainval'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 5)
+        data_info = dataset[2]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'jpg', 'image_00005.jpg'))
+        self.assertEqual(data_info['gt_label'], 1)
+
+        # Test with mode=test
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 5)
+        data_info = dataset[2]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'jpg', 'image_00006.jpg'))
+        self.assertEqual(data_info['gt_label'], 2)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestOxfordIIITPet(TestBaseDataset):
+    DATASET_TYPE = 'Oxford_IIIT_Pets'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.ann_file = 'trainval.txt'
+        cls.image_folder = 'images'
+        cls.test_file = 'test.txt'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.image_folder,
+            ann_file=cls.ann_file)
+
+        with open(osp.join(cls.root, cls.ann_file), 'w') as f:
+            f.write('\n'.join([
+                'Abyssinian_100 1 1 1',
+                'american_bulldog_100 2 2 1',
+                'basset_hound_126 4 2 3',
+            ]))
+
+        with open(osp.join(cls.root, cls.test_file), 'w') as f:
+            f.write('\n'.join([
+                'Abyssinian_204 1 1 1',
+                'american_bulldog_208 2 2 1',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.image_folder, 'Abyssinian_100.jpg'))
+        self.assertEqual(data_info['gt_label'], 1 - 1)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        cfg['ann_file'] = self.test_file
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.image_folder, 'Abyssinian_204.jpg'))
+        self.assertEqual(data_info['gt_label'], 1 - 1)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestDescribableTexture(TestBaseDataset):
+    DATASET_TYPE = 'DescribableTexture'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root, mode='train', ann_file='imdb.mat')
+        cls.ann_file = osp.join(cls.root, 'imdb.mat')
+
+        mat4py.savemat(
+            cls.ann_file, {
+                'images': {
+                    'name': [
+                        '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg', '6.jpg',
+                        '7.jpg', '8.jpg', '9.jpg', '10.jpg'
+                    ],
+                    'class': [1, 1, 2, 2, 2, 3, 3, 4, 4, 5],
+                    'set': [1, 2, 3, 1, 2, 3, 1, 2, 3, 1]
+                }
+            })
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test invalid mode
+        with self.assertRaisesRegex(AssertionError, 'not in default modes'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['mode'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid modes
+        modes = ['train', 'val', 'trainval', 'test']
+        for mode in modes:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['mode'] = mode
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.mode, mode)
+            self.assertEqual(dataset.data_root, self.root)
+            self.assertEqual(dataset.ann_file, self.ann_file)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'images', '1.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with mode=val
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'val'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'images', '2.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with mode=trainval
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'trainval'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 7)
+        data_info = dataset[2]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'images', '4.jpg'))
+        self.assertEqual(data_info['gt_label'], 1)
+
+        # Test with mode=test
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'images', '3.jpg'))
+        self.assertEqual(data_info['gt_label'], 1)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestFGVCAircraft(TestBaseDataset):
+    DATASET_TYPE = 'FGVC_Aircraft'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.ann_file = 'trainval.txt'
+        cls.image_folder = 'images'
+        cls.test_file = 'test.txt'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.image_folder,
+            ann_file=cls.ann_file)
+
+        with open(osp.join(cls.root, cls.ann_file), 'w') as f:
+            f.write('\n'.join([
+                '1025794 707-320',
+                '1019011 727-200',
+                '0209554 737-200',
+            ]))
+
+        with open(osp.join(cls.root, cls.test_file), 'w') as f:
+            f.write('\n'.join([
+                '1514522 707-320',
+                '0116175 727-200',
+                '0713752 737-200',
+                '2126017 737-300',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '1025794.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        cfg['ann_file'] = self.test_file
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '1514522.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestStanfordCars(TestBaseDataset):
+    DATASET_TYPE = 'StanfordCars'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.ann_file = osp.join(cls.root, 'cars_annos.mat')
+        cls.train_ann_file = osp.join(cls.root, 'cars_train_annos.mat')
+        cls.test_ann_file = osp.join(cls.root,
+                                     'cars_test_annos_withlabels.mat')
+        cls.train_folder = 'cars_train'
+        cls.test_folder = 'cars_test'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix='',
+            ann_file=cls.ann_file)
+
+        mat4py.savemat(
+            cls.ann_file, {
+                'annotations': {
+                    'relative_im_path':
+                    ['car_ims/001.jpg', 'car_ims/002.jpg', 'car_ims/003.jpg'],
+                    'class': [1, 2, 3],
+                    'test': [0, 0, 1]
+                }
+            })
+
+        mat4py.savemat(
+            cls.train_ann_file, {
+                'annotations': {
+                    'fname': ['001.jpg', '002.jpg', '012.jpg'],
+                    'class': [10, 15, 150],
+                }
+            })
+
+        mat4py.savemat(
+            cls.test_ann_file, {
+                'annotations': {
+                    'fname': ['025.jpg', '111.jpg', '222.jpg'],
+                    'class': [150, 1, 15],
+                }
+            })
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test first way
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'car_ims/001.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 1)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'car_ims/003.jpg'))
+        self.assertEqual(data_info['gt_label'], 2)
+
+        # Test second way
+        # Test test_mode=False
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_prefix': self.train_folder,
+            'ann_file': self.train_ann_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.train_folder, '001.jpg'))
+        self.assertEqual(data_info['gt_label'], 9)
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'data_prefix': self.test_folder,
+            'ann_file': self.test_ann_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.test_folder, '025.jpg'))
+        self.assertEqual(data_info['gt_label'], 149)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestCaltech101(TestBaseDataset):
+    DATASET_TYPE = 'Caltech101'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.image_folder = '101_ObjectCategories'
+        cls.train_file = 'train.txt'
+        cls.test_file = 'test.txt'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.image_folder,
+            ann_file=cls.train_file)
+
+        with open(osp.join(cls.root, cls.train_file), 'w') as f:
+            f.write('\n'.join([
+                '1.jpg 0',
+                '2.jpg 1',
+                '3.jpg 2',
+            ]))
+
+        with open(osp.join(cls.root, cls.test_file), 'w') as f:
+            f.write('\n'.join([
+                '100.jpg 99',
+                '101.jpg 100',
+                '102.jpg 101',
+                '103.jpg 101',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '1.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '100.jpg'))
+        self.assertEqual(data_info['gt_label'], 99)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestFood101(TestBaseDataset):
+    DATASET_TYPE = 'Food101'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.image_folder = 'images'
+        cls.train_file = 'train.txt'
+        cls.test_file = 'test.txt'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.image_folder,
+            ann_file=cls.train_file)
+
+        with open(osp.join(cls.root, cls.train_file), 'w') as f:
+            f.write('\n'.join([
+                'apple_pie/0001',
+                'baby_back_ribs/0002',
+                'baklava/0003',
+            ]))
+
+        with open(osp.join(cls.root, cls.test_file), 'w') as f:
+            f.write('\n'.join([
+                'beef_carpaccio/0004',
+                'beef_tartare/0005',
+                'beet_salad/0006',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.image_folder, 'apple_pie/0001.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.image_folder, 'beef_carpaccio/0004.jpg'))
+        self.assertEqual(data_info['gt_label'], 3)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestSUN397(TestBaseDataset):
+    DATASET_TYPE = 'SUN397'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.train_file = 'Training_01.txt'
+        cls.test_file = 'Testing_01.txt'
+        cls.invalid_file = 'invalid.txt'
+        cls.data_prefix = 'SUN397'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.data_prefix,
+            ann_file=cls.train_file,
+            invalid=cls.invalid_file)
+
+        with open(osp.join(cls.root, cls.train_file), 'w') as f:
+            f.write('\n'.join([
+                '/a/abbey/sun_aqswjsnjlrfzzhiz.jpg',
+                '/a/airplane_cabin/sun_blczihbhbntqccux.jpg',
+                '/a/airport_terminal/sun_aieubuwceahatwug.jpg',
+            ]))
+
+        with open(osp.join(cls.root, cls.test_file), 'w') as f:
+            f.write('\n'.join([
+                '/a/abbey/sun_ajkqrqitspwywirx.jpg',
+                '/a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg',
+                '/a/airport_terminal/sun_awypniiblpimkhvb.jpg',
+                '/y/youth_hostel/sun_aryrnilsvqzvzkew.jpg',
+            ]))
+
+        with open(osp.join(cls.root, cls.invalid_file), 'w') as f:
+            f.write('\n'.join([
+                '/a/airport_terminal/sun_aieubuwceahatwug.jpg',
+                '/a/airport_terminal/sun_awypniiblpimkhvb.jpg',
+                '/y/youth_hostel/sun_aryrnilsvqzvzkew.jpg',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3 - 1)
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.data_prefix,
+                     'a/abbey/sun_aqswjsnjlrfzzhiz.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4 - 2)
+        data_info = dataset[-1]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.data_prefix,
+                     'a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg'))
+        self.assertEqual(data_info['gt_label'], 1)
+
+        # Test invalid=None
+        cfg = {**self.DEFAULT_ARGS, 'invalid': None}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.data_prefix,
+                     'a/abbey/sun_aqswjsnjlrfzzhiz.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_file,
+            'invalid': None
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4)
+        data_info = dataset[-1]
+        self.assertEqual(
+            data_info['img_path'],
+            osp.join(self.root, self.data_prefix,
+                     'y/youth_hostel/sun_aryrnilsvqzvzkew.jpg'))
+        self.assertEqual(data_info['gt_label'], 396)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
