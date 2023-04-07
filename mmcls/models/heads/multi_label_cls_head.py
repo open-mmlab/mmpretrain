@@ -105,8 +105,7 @@ class MultiLabelClsHead(BaseHead):
 
         # compute loss
         losses = dict()
-        loss = self.loss_module(
-            cls_score, target, avg_factor=cls_score.size(0), **kwargs)
+        loss = self.loss_module(cls_score, target, **kwargs)
         losses['loss'] = loss
 
         return losses

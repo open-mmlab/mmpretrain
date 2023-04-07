@@ -158,6 +158,7 @@ Losses
    :nosignatures:
 
    CrossEntropyLoss
+   BinaryCrossEntropyLoss
    LabelSmoothLoss
    FocalLoss
    AsymmetricLoss

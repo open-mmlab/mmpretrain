@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from functools import partial
 from typing import Sequence
 
 import numpy as np
@@ -7,7 +8,7 @@ from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmengine.model import BaseModule, ModuleList, Sequential
-from mmengine.utils import deprecated_api_warning
+from mmengine.model.weight_init import trunc_normal_
 from torch import nn
 
 from mmcls.registry import MODELS
@@ -36,18 +37,12 @@ class DeiT3FFN(BaseModule):
             identity connection. Default: `True`.
         dropout_layer (obj:`ConfigDict`): The dropout_layer used
             when adding the shortcut.
-        use_layer_scale (bool): Whether to use layer_scale in
-            DeiT3FFN. Defaults to True.
+        layer_scale (callable, optional): The layer scale module.
+            Defaults to None.
         init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
             Default: None.
     """
 
-    @deprecated_api_warning(
-        {
-            'dropout': 'ffn_drop',
-            'add_residual': 'add_identity'
-        },
-        cls_name='FFN')
     def __init__(self,
                  embed_dims=256,
                  feedforward_channels=1024,
@@ -56,9 +51,8 @@ class DeiT3FFN(BaseModule):
                  ffn_drop=0.,
                  dropout_layer=None,
                  add_identity=True,
-                 use_layer_scale=True,
-                 init_cfg=None,
-                 **kwargs):
+                 layer_scale=None,
+                 init_cfg=None):
         super().__init__(init_cfg)
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -83,12 +77,11 @@ class DeiT3FFN(BaseModule):
             dropout_layer) if dropout_layer else torch.nn.Identity()
         self.add_identity = add_identity
 
-        if use_layer_scale:
-            self.gamma2 = LayerScale(embed_dims)
+        if layer_scale is not None:
+            self.gamma2 = layer_scale(embed_dims)
         else:
             self.gamma2 = nn.Identity()
 
-    @deprecated_api_warning({'residual': 'identity'}, cls_name='FFN')
     def forward(self, x, identity=None):
         """Forward function for `FFN`.
 
@@ -124,6 +117,9 @@ class DeiT3TransformerEncoderLayer(BaseModule):
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         use_layer_scale (bool): Whether to use layer_scale in
             DeiT3TransformerEncoderLayer. Defaults to True.
+        layer_scale (callable, optional): The layer scale module.
+            Defaults to a :class:`~mmcls.models.utils.LayerScale` module
+            with ``init_values=1e-4``.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
@@ -141,7 +137,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
-                 use_layer_scale=True,
+                 layer_scale=partial(LayerScale, init_values=1e-4),
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
@@ -160,7 +156,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias,
-            use_layer_scale=use_layer_scale)
+            layer_scale=layer_scale)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -173,7 +169,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg,
-            use_layer_scale=use_layer_scale)
+            layer_scale=layer_scale)
 
     @property
     def norm1(self):
@@ -182,13 +178,6 @@ class DeiT3TransformerEncoderLayer(BaseModule):
     @property
     def norm2(self):
         return getattr(self, self.norm2_name)
-
-    def init_weights(self):
-        super(DeiT3TransformerEncoderLayer, self).init_weights()
-        for m in self.ffn.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform_(m.weight)
-                nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
         x = x + self.attn(self.norm1(x))
@@ -306,6 +295,7 @@ class DeiT3(VisionTransformer):
                  with_cls_token=True,
                  output_cls_token=True,
                  use_layer_scale=True,
+                 layer_scale_init_value=1e-4,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -378,6 +368,11 @@ class DeiT3(VisionTransformer):
         if isinstance(layer_cfgs, dict):
             layer_cfgs = [layer_cfgs] * self.num_layers
         for i in range(self.num_layers):
+            if use_layer_scale:
+                layer_scale = partial(
+                    LayerScale, init_values=layer_scale_init_value)
+            else:
+                layer_scale = nn.Identity
             _layer_cfg = dict(
                 embed_dims=self.embed_dims,
                 num_heads=self.arch_settings['num_heads'],
@@ -387,7 +382,7 @@ class DeiT3(VisionTransformer):
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg,
-                use_layer_scale=use_layer_scale)
+                layer_scale=layer_scale)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(DeiT3TransformerEncoderLayer(**_layer_cfg))
 
@@ -441,3 +436,11 @@ class DeiT3(VisionTransformer):
                 outs.append(out)
 
         return tuple(outs)
+
+    def init_weights(self):
+        super().init_weights()
+
+        if not (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            trunc_normal_(self.pos_embed, std=0.02)
+            trunc_normal_(self.cls_token, std=0.02)

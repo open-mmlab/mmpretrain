@@ -1,6 +1,7 @@
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=0.003, weight_decay=0.3),
+    optimizer=dict(
+        type='Lamb', lr=0.003, weight_decay=0.05, max_grad_norm=1.0, eps=1e-8),
     # specific to vit pretrain
     paramwise_cfg=dict(
         norm_decay_mult=0.0,
@@ -8,7 +9,7 @@ optim_wrapper = dict(
         flat_decay_mult=0.0,
         custom_keys={
             '.cls_token': dict(decay_mult=0.0),
-            '.pos_embed': dict(decay_mult=0.0)
+            '.pos_embed': dict(decay_mult=0.0),
         }),
 )
 
@@ -17,24 +18,21 @@ param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=1e-4,
+        start_factor=1e-6 / 0.003,
         by_epoch=True,
-        end=30,
+        begin=0,
+        end=5,
         # update by iter
-        convert_to_iter_based=True),
+        convert_to_iter_based=False),
     # main learning rate scheduler
-    dict(
-        type='CosineAnnealingLR',
-        by_epoch=True,
-        begin=30,
-    )
+    dict(type='CosineAnnealingLR', by_epoch=True, begin=5)
 ]
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=300, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=800, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=4096)
+auto_scale_lr = dict(base_batch_size=2048)

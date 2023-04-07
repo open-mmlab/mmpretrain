@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -30,6 +32,8 @@ def cross_entropy(pred,
     """
     # element-wise losses
     loss = F.cross_entropy(pred, label, weight=class_weight, reduction='none')
+
+    avg_factor = avg_factor or pred.size(0)
 
     # apply weights and do the reduction
     if weight is not None:
@@ -68,6 +72,8 @@ def soft_cross_entropy(pred,
     if class_weight is not None:
         loss *= class_weight
     loss = loss.sum(dim=-1)
+
+    avg_factor = avg_factor or pred.size(0)
 
     # apply weights and do the reduction
     if weight is not None:
@@ -147,6 +153,10 @@ class CrossEntropyLoss(nn.Module):
         pos_weight (List[float], optional): The positive weight for each
             class with shape (C), C is the number of classes. Only enabled in
             BCE loss when ``use_sigmoid`` is True. Default None.
+
+    .. warning::
+        The ``use_sigmoid`` option is deprecated. Please use
+        :class:`BinaryCrossEntropyLoss` instead.
     """
 
     def __init__(self,
@@ -162,6 +172,18 @@ class CrossEntropyLoss(nn.Module):
         assert not (
             self.use_soft and self.use_sigmoid
         ), 'use_sigmoid and use_soft could not be set simultaneously'
+
+        if self.use_sigmoid:
+            warnings.warn(
+                'The `sigmoid=True` option of `CrossEntropyLoss` is '
+                'deprecated. Please use `BinaryCrossEntropyLoss` instead',
+                DeprecationWarning)
+
+        accept_reduction = {'none', 'mean', 'sum'}
+        assert reduction in accept_reduction, \
+            f'LabelSmoothLoss supports reduction {accept_reduction}, ' \
+            f'but gets {reduction}.'
+        self.reduction = reduction
 
         self.reduction = reduction
         self.loss_weight = loss_weight
@@ -207,3 +229,72 @@ class CrossEntropyLoss(nn.Module):
             avg_factor=avg_factor,
             **kwargs)
         return loss_cls
+
+
+@MODELS.register_module()
+class BinaryCrossEntropyLoss(nn.Module):
+    """Binary Cross Entropy loss.
+
+    Args:
+        reduction (str): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". Defaults to 'mean'.
+        loss_weight (float):  Weight of the loss. Defaults to 1.0.
+        class_weight (List[float], optional): The weight for each class with
+            shape (C), C is the number of classes. Default None.
+        pos_weight (List[float], optional): The positive weight for each
+            class with shape (C), C is the number of classes.
+            Defaults to None.
+        target_threshold (float | None): If a float, the ground truth labels
+            with score higher than the threshold will be set as 1. and lower
+            than the threshold will be set as 0. If None, not do binarization.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 reduction='mean',
+                 loss_weight=1.0,
+                 class_weight=None,
+                 pos_weight=None,
+                 target_threshold=None):
+        super().__init__()
+        self.reduction = reduction
+        self.loss_weight = loss_weight
+        self.class_weight = class_weight
+        self.pos_weight = pos_weight
+        self.target_threshold = target_threshold
+
+        self.cls_criterion = binary_cross_entropy
+
+    def forward(self,
+                cls_score,
+                label,
+                weight=None,
+                avg_factor=None,
+                reduction_override=None,
+                **kwargs):
+        reduction = reduction_override or self.reduction
+        assert reduction in (None, 'none', 'mean', 'sum')
+
+        if self.class_weight is not None:
+            class_weight = cls_score.new_tensor(self.class_weight)
+        else:
+            class_weight = None
+
+        if self.pos_weight is not None:
+            pos_weight = cls_score.new_tensor(self.pos_weight)
+        else:
+            pos_weight = None
+
+        if self.target_threshold is not None:
+            label = label.gt(self.target_threshold).to(label.dtype)
+
+        loss = self.loss_weight * self.cls_criterion(
+            cls_score,
+            label,
+            weight,
+            class_weight=class_weight,
+            reduction=reduction,
+            avg_factor=avg_factor,
+            pos_weight=pos_weight,
+            **kwargs)
+        return loss

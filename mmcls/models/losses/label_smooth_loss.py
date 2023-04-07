@@ -3,13 +3,13 @@ import torch
 import torch.nn as nn
 
 from mmcls.registry import MODELS
-from .cross_entropy_loss import CrossEntropyLoss
+from .cross_entropy_loss import BinaryCrossEntropyLoss, CrossEntropyLoss
 from .utils import convert_to_one_hot
 
 
 @MODELS.register_module()
 class LabelSmoothLoss(nn.Module):
-    r"""Initializer for the label smoothed cross entropy loss.
+    r"""Label smoothed (binary) cross entropy loss.
 
     Refers to `Rethinking the Inception Architecture for Computer Vision
     <https://arxiv.org/abs/1512.00567>`_
@@ -25,12 +25,13 @@ class LabelSmoothLoss(nn.Module):
         num_classes (int, optional): Number of classes. Defaults to None.
         mode (str): Refers to notes, Options are 'original', 'classy_vision',
             'multi_label'. Defaults to 'original'.
-        use_sigmoid (bool, optional): Whether the prediction uses sigmoid of
-            softmax. Defaults to None, which means to use sigmoid in
-            "multi_label" mode and not use in other modes.
-        reduction (str): The method used to reduce the loss.
-            Options are "none", "mean" and "sum". Defaults to 'mean'.
-        loss_weight (float):  Weight of the loss. Defaults to 1.0.
+        use_sigmoid (bool, optional): If True, do sigmoid before calculating
+            cross entropy (i.e. BCE). If False, do softmax before calculating
+            cross entropy. Defaults to None, means True for 'multi_label' mode,
+            and False for other mode.
+        **kwargs: If ``use_sigmoid=False``, accepts other keyword arguments
+            of :class:`CrossEntropyLoss`. If ``use_sigmoid=True``, accepts
+            other keyword arguments of :class:`BinaryCrossEntropyLoss`.
 
     Notes:
         - if the mode is **"original"**, this will use the same label smooth
@@ -61,23 +62,15 @@ class LabelSmoothLoss(nn.Module):
                  num_classes=None,
                  use_sigmoid=None,
                  mode='original',
-                 reduction='mean',
-                 loss_weight=1.0):
+                 **kwargs):
         super().__init__()
         self.num_classes = num_classes
-        self.loss_weight = loss_weight
 
         assert (isinstance(label_smooth_val, float)
                 and 0 <= label_smooth_val < 1), \
             f'LabelSmoothLoss accepts a float label_smooth_val ' \
             f'over [0, 1), but gets {label_smooth_val}'
         self.label_smooth_val = label_smooth_val
-
-        accept_reduction = {'none', 'mean', 'sum'}
-        assert reduction in accept_reduction, \
-            f'LabelSmoothLoss supports reduction {accept_reduction}, ' \
-            f'but gets {mode}.'
-        self.reduction = reduction
 
         accept_mode = {'original', 'classy_vision', 'multi_label'}
         assert mode in accept_mode, \
@@ -89,19 +82,16 @@ class LabelSmoothLoss(nn.Module):
             self._eps = label_smooth_val / (1 + label_smooth_val)
 
         if mode == 'multi_label':
-            if not use_sigmoid:
-                from mmengine.logging import MMLogger
-                MMLogger.get_current_instance().warning(
-                    'For multi-label tasks, please set `use_sigmoid=True` '
-                    'to use binary cross entropy.')
             self.smooth_label = self.multilabel_smooth_label
             use_sigmoid = True if use_sigmoid is None else use_sigmoid
         else:
             self.smooth_label = self.original_smooth_label
             use_sigmoid = False if use_sigmoid is None else use_sigmoid
 
-        self.ce = CrossEntropyLoss(
-            use_sigmoid=use_sigmoid, use_soft=not use_sigmoid)
+        if use_sigmoid:
+            self.ce = BinaryCrossEntropyLoss(**kwargs)
+        else:
+            self.ce = CrossEntropyLoss(use_soft=True, **kwargs)
 
     def generate_one_hot_like_label(self, label):
         """This function takes one-hot or index label vectors and computes one-
@@ -123,26 +113,17 @@ class LabelSmoothLoss(nn.Module):
         smooth_label.masked_fill_(one_hot_like_label > 0, 1 - self._eps)
         return smooth_label
 
-    def forward(self,
-                cls_score,
-                label,
-                weight=None,
-                avg_factor=None,
-                reduction_override=None,
-                **kwargs):
-        r"""Label smooth loss.
+    def forward(self, cls_score, label, **kwargs):
+        r"""Forward label smooth loss.
 
         Args:
-            pred (torch.Tensor): The prediction with shape (N, \*).
+            cls_score (torch.Tensor): The prediction with shape (N, \*).
             label (torch.Tensor): The ground truth label of the prediction
                 with shape (N, \*).
-            weight (torch.Tensor, optional): Sample-wise loss weight with shape
-                (N, \*). Defaults to None.
-            avg_factor (int, optional): Average factor that is used to average
-                the loss. Defaults to None.
-            reduction_override (str, optional): The method used to reduce the
-                loss into a scalar. Options are "none", "mean" and "sum".
-                Defaults to None.
+            **kwargs: If ``self.use_sigmoid=False``, accepts other keyword
+                arguments of :meth:`CrossEntropyLoss.forward`. If
+                ``self.use_sigmoid=True``, accepts other keyword arguments of
+                :meth:`BinaryCrossEntropyLoss.forward`.
 
         Returns:
             torch.Tensor: Loss.
@@ -162,10 +143,4 @@ class LabelSmoothLoss(nn.Module):
             f'and target.shape: {one_hot_like_label.shape}'
 
         smoothed_label = self.smooth_label(one_hot_like_label)
-        return self.loss_weight * self.ce.forward(
-            cls_score,
-            smoothed_label,
-            weight=weight,
-            avg_factor=avg_factor,
-            reduction_override=reduction_override,
-            **kwargs)
+        return self.ce.forward(cls_score, smoothed_label, **kwargs)

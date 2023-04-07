@@ -10,6 +10,7 @@ import numpy as np
 from mmcv.transforms import BaseTransform, Compose, RandomChoice
 from mmcv.transforms.utils import cache_randomness
 from mmengine.utils import is_list_of, is_seq_of
+from PIL import Image, ImageFilter
 
 from mmcls.registry import TRANSFORMS
 
@@ -1119,6 +1120,53 @@ class Cutout(BaseAugTransform):
         return repr_str
 
 
+@TRANSFORMS.register_module()
+class GaussianBlur(BaseAugTransform):
+    """Gaussian blur images.
+
+    Args:
+        radius (int, float, optional): The blur radius. If None, generate from
+            ``magnitude_range``, see :class:`BaseAugTransform`.
+            Defaults to None.
+        prob (float): The probability for posterizing therefore should be in
+            range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
+    """
+
+    def __init__(self,
+                 radius: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (radius is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `radius` and `magnitude_range`.'
+
+        self.radius = radius
+
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
+            return results
+
+        if self.radius is not None:
+            radius = self.radius
+        else:
+            radius = self.random_magnitude()
+
+        img = results['img']
+        pil_img = Image.fromarray(img)
+        pil_img.filter(ImageFilter.GaussianBlur(radius=radius))
+        results['img'] = np.array(pil_img, dtype=img.dtype)
+
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(radius={self.radius}, '
+        repr_str += f'prob={self.prob}{self.extra_repr()})'
+        return repr_str
+
+
 # yapf: disable
 # flake8: noqa
 AUTOAUG_POLICIES = {
@@ -1151,6 +1199,13 @@ AUTOAUG_POLICIES = {
         [dict(type='ColorTransform', magnitude=0.4, prob=0.6), dict(type='Contrast', magnitude=0.8, prob=1.)],
         [dict(type='Equalize', prob=0.8),                      dict(type='Equalize', prob=0.6)],
     ],
+    # Policy for DeiT-3, refers to https://arxiv.org/pdf/2204.07118.pdf
+    '3-Augment': [
+        # The channel weights is in BGR format.
+        [dict(type='RandomGrayscale', prob=1., keep_channels=True, channel_weights=[0.114, 0.587, 0.2989])],
+        [dict(type='Solarize', prob=1., thr=128)],
+        [dict(type='GaussianBlur', prob=1., magnitude_range=(0.1, 2), magnitude_std='inf')]
+    ]
 }
 
 RANDAUG_POLICIES = {

@@ -169,7 +169,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                     'Cannot generate one-hot format labels because not set ' \
                     '`num_classes` in `data_preprocessor`.'
                 batch_score = batch_label_to_onehot(batch_label, label_indices,
-                                                    num_classes)
+                                                    num_classes).float()
 
             # ----- Batch Augmentations ----
             if training and self.batch_augments is not None:
