@@ -54,6 +54,15 @@ Retrieval
 
 .. autoclass:: InShop
 
+LongTailDataSet
+---
+
+.. autoclass:: LongTailCIFAR10
+
+.. autoclass:: LongTailCIFAR100
+
+.. autoclass:: LongTailImageNet
+
 Base classes
 ------------
 

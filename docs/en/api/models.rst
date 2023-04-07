@@ -147,6 +147,7 @@ Heads
    MultiLabelClsHead
    MultiLabelLinearClsHead
    CSRAClsHead
+   LogitAdjustLinearClsHead
 
 .. module:: mmcls.models.losses
 

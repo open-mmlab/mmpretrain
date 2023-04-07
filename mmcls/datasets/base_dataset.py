@@ -140,6 +140,18 @@ class BaseDataset(_BaseDataset):
             [self.get_data_info(i)['gt_label'] for i in range(len(self))])
         return gt_labels
 
+    def get_img_paths(self):
+        """Get all image paths.
+
+        Returns:
+            List[str]: paths for all images.
+        """
+
+        img_paths = [
+            self.get_data_info(i)['img_path'] for i in range(len(self))
+        ]
+        return img_paths
+
     def get_cat_ids(self, idx: int) -> List[int]:
         """Get category id by index.
 

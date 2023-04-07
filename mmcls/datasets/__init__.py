@@ -7,6 +7,7 @@ from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
 from .imagenet import ImageNet, ImageNet21k
 from .inshop import InShop
+from .long_tail import LongTailCIFAR10, LongTailCIFAR100, LongTailImageNet
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .multi_task import MultiTaskDataset
@@ -17,5 +18,6 @@ from .voc import VOC
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
-    'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop'
+    'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
+    'LongTailCIFAR100', 'LongTailCIFAR10', 'LongTailImageNet'
 ]

@@ -33,6 +33,7 @@ Hooks
    PrepareProtoBeforeValLoopHook
    SetAdaptiveMarginsHook
    EMAHook
+   PushDataInfoToMessageHubHook
 
 .. module:: mmcls.engine.optimizers
 
