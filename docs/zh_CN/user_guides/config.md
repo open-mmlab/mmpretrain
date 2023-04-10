@@ -69,7 +69,6 @@ _base_ = [                                    # 此配置文件将继承所有 `
 - `head`： 头网络设置，头网络主要是与具体任务关联的部件，如图像分类、自监督训练等，更多可用选项请参考 [API 文档](mmpretrain.models.heads)。
   - `loss`： 损失函数设置， 支持 `CrossEntropyLoss`, `LabelSmoothLoss`, `PixelReconstructionLoss` 等，更多可用选项参考 [API 文档](mmpretrain.models.losses)。
 - `data_preprocessor`: 图像输入的预处理模块，输入在进入模型前的预处理操作，例如 `ClsDataPreprocessor`, 有关详细信息，请参阅 [API 文档](mmpretrain.models.utils.data_preprocessor)。
-- `train_cfg`：训练模型时的额外设置。在 MMCLS 中，我们主要使用它来配置批量增强，例如 `Mixup` 和 `CutMix`。有关详细信息，请参阅 [文档](mmpretrain.models.utils.batch_augments)。
 - `train_cfg`: `ImageClassifier` 的额外训练配置。在 `ImageClassifier` 中，我们使用这一参数指定批数据增强设置，比如 `Mixup` 和 `CutMix`。详见[文档](mmpretrain.models.utils.batch_augments)。
 
 以下是 ResNet50 的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmpretrain/blob/main/configs/_base_/models/resnet50.py)：
