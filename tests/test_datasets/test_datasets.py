@@ -12,6 +12,11 @@ from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS, TRANSFORMS
 
+try:
+    from dsdl.dataset import DSDLDataset
+except ImportError:
+    DSDLDataset = None
+
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
 
@@ -1039,3 +1044,22 @@ class TestInShop(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestDSDLClsDataset(TestCase):
+
+    DATASET_TYPE = 'DSDLClsDataset'
+
+    def test_dsdlcls_init(self):
+        if DSDLDataset is not None:
+            dataset_class = DATASETS.get(self.DATASET_TYPE)
+            dataset = dataset_class(
+                data_root='tests/data/dsdl_cls',
+                ann_file='set-train/train.yaml')
+            dataset.full_init()
+
+            self.assertEqual(len(dataset), 5)
+            self.assertEqual(len(dataset.metainfo['classes']), 10)
+            self.assertEqual(dataset.get_cat_ids(0), [6])
+        else:
+            ImportWarning('Package `dsdl` is not installed.')
