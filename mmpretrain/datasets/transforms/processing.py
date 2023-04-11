@@ -25,13 +25,15 @@ except ImportError:
 
 
 def _str_to_torch_dtype(t: str):
+    """mapping str format dtype to torch.dtype."""
     import torch  # noqa: F401,F403
     return eval(f'torch.{t}')
 
 
 def _interpolation_modes_from_str(t: str):
+    """mapping str format to Interpolation."""
     t = t.lower()
-    if digit_version(torchvision.__version__) >= digit_version('0.8.0'):
+    if digit_version(torchvision.__version__) > digit_version('0.8.0'):
         from torchvision.transforms.transforms import InterpolationMode
         inverse_modes_mapping = {
             'nearest': InterpolationMode.NEAREST,
