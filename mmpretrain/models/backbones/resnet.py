@@ -535,9 +535,6 @@ class ResNet(BaseBackbone):
         dpr = [
             x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
         ]
-        # net_num_blocks = sum(stage_blocks)
-        # dpr = np.linspace(0, drop_path_rate, net_num_blocks)
-        # block_id = 0
 
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
