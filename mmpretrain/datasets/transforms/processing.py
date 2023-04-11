@@ -2,6 +2,9 @@
 import inspect
 import math
 import numbers
+import re
+import traceback
+from enum import EnumMeta
 from numbers import Number
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
@@ -10,6 +13,7 @@ import mmengine
 import numpy as np
 from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
+from torchvision.transforms.transforms import InterpolationMode
 
 from mmpretrain.registry import TRANSFORMS
 
@@ -17,6 +21,94 @@ try:
     import albumentations
 except ImportError:
     albumentations = None
+
+
+def _str_to_torch_dtype(t: str):
+    import torch  # noqa: F401,F403
+    return eval(f'torch.{t}')
+
+
+def _interpolation_modes_from_str(t: str) -> InterpolationMode:
+    t = t.lower()
+    inverse_modes_mapping = {
+        'nearest': InterpolationMode.NEAREST,
+        'bilinear': InterpolationMode.BILINEAR,
+        'bicubic': InterpolationMode.BICUBIC,
+        'box': InterpolationMode.BOX,
+        'hammimg': InterpolationMode.HAMMING,
+        'lanczos': InterpolationMode.LANCZOS,
+    }
+    return inverse_modes_mapping[t]
+
+
+def _warpper_vision_transform_cls(vision_transform_cls, new_name):
+    """build a transform warpper class for specific torchvison.transform to
+    handle the different input type between torchvison.transforms with
+    mmcls.datasets.transforms."""
+
+    def new_init(self, *args, **kwargs):
+        if 'interpolation' in kwargs and isinstance(kwargs['interpolation'],
+                                                    str):
+            kwargs['interpolation'] = _interpolation_modes_from_str(
+                kwargs['interpolation'])
+        if 'dtype' in kwargs and isinstance(kwargs['dtype'], str):
+            kwargs['dtype'] = _str_to_torch_dtype(kwargs['dtype'])
+
+        try:
+            self.t = vision_transform_cls(*args, **kwargs)
+        except TypeError as e:
+            traceback.print_exc()
+            raise TypeError(
+                f'Error when init the {vision_transform_cls}, please '
+                f'check the argmemnts of {args} and {kwargs}. \n{e}')
+
+    def new_call(self, input):
+        try:
+            input['img'] = self.t(input['img'])
+        except Exception as e:
+            traceback.print_exc()
+            raise Exception('Error when processing of transform(`torhcvison/'
+                            f'{vision_transform_cls.__name__}`). \n{e}')
+        return input
+
+    def new_str(self):
+        return str(self.t)
+
+    new_transforms_cls = type(
+        new_name, (),
+        dict(__init__=new_init, __call__=new_call, __str__=new_str))
+    return new_transforms_cls
+
+
+def register_vision_transforms() -> List[str]:
+    """Register transforms in ``torchvision.transforms`` to the ``TRANSFORMS``
+    registry.
+
+    Returns:
+        List[str]: A list of registered transforms' name.
+    """
+    try:
+        import torchvision.transforms
+    except ImportError:
+        raise ImportError('please install ``torchvision``.')
+
+    vision_transforms = []
+    for module_name in dir(torchvision.transforms):
+        if not re.match('[A-Z]', module_name):
+            # must startswith a capital letter
+            continue
+        _transform = getattr(torchvision.transforms, module_name)
+        if inspect.isclass(_transform) and callable(
+                _transform) and not isinstance(_transform, (EnumMeta)):
+            new_cls = _warpper_vision_transform_cls(
+                _transform, f'TorchVison{module_name}')
+            TRANSFORMS.register_module(
+                module=new_cls, name=f'torchvision/{module_name}')
+            vision_transforms.append(f'torchvision/{module_name}')
+    return vision_transforms
+
+
+VISION_transforms = register_vision_transforms()
 
 
 @TRANSFORMS.register_module()
