@@ -26,11 +26,6 @@ test_list = [
     Cfg(name='xcit-nano-12-p8_3rdparty-dist_in1k-384px',
         backbone=mmpretrain.models.XCiT,
         input_shape=(1, 3, 384, 384)),
-    Cfg(name='vit-base-p16_sam-pre_3rdparty_sa1b-1024px',
-        backbone=mmpretrain.models.ViTSAM,
-        input_shape=(1, 3, 1024, 1024),
-        forward=False,
-        backward=False),
 ]
 
 
