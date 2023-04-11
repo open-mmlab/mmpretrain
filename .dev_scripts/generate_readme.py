@@ -195,8 +195,12 @@ def add_usage(metafile):
     if train_model:
         template = TRAIN_TEST_TEMPLATE
         inputs['train_config'] = train_model[0].config
-    else:
+    elif len(filter_models_by_task(models, task='any')) > 0:
         template = TEST_ONLY_TEMPLATE
+    else:
+        content.append('\n<!-- [TABS-END] -->\n')
+        return '\n'.join(content)
+
     test_model = filter_models_by_task(models, task='any')[0]
     inputs['test_config'] = test_model.config
     inputs['test_weights'] = test_model.weights
