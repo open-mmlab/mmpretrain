@@ -61,8 +61,8 @@ Loading and Formatting
    LoadImageFromFile
    PackInputs
    PackMultiTaskInputs
-   ToNumpy
-   ToPIL
+   PILToNumpy
+   NumpyToPIL
    Transpose
    Collect
 

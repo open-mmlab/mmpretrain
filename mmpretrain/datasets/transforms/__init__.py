@@ -21,7 +21,7 @@ for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
     TRANSFORMS.register_module(module=t)
 
 __all__ = [
-    'ToPIL', 'ToNumpy', 'Transpose', 'Collect', 'RandomCrop',
+    'NumpyToPIL', 'PILToNumpy', 'Transpose', 'Collect', 'RandomCrop',
     'RandomResizedCrop', 'Shear', 'Translate', 'Rotate', 'Invert',
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
@@ -30,6 +30,5 @@ __all__ = [
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
-    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
-    'PILToNumpy', 'NumpyToPIL'
+    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView'
 ]
