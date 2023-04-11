@@ -1,11 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import defaultdict
 from collections.abc import Sequence
-<<<<<<< HEAD:mmpretrain/datasets/transforms/formatting.py
-=======
-from functools import partial
-from typing import Dict
->>>>>>> b4e24a1a... fix review:mmcls/datasets/transforms/formatting.py
 
 import cv2
 import numpy as np
@@ -107,7 +102,6 @@ class PackInputs(BaseTransform):
         self.algorithm_keys = algorithm_keys
         self.meta_keys = meta_keys
 
-<<<<<<< HEAD:mmpretrain/datasets/transforms/formatting.py
     @staticmethod
     def format_input(input_):
         if isinstance(input_, list):
@@ -134,9 +128,6 @@ class PackInputs(BaseTransform):
         return input_
 
     def transform(self, results: dict) -> dict:
-=======
-    def transform(self, results: Dict) -> Dict:
->>>>>>> b4e24a1a... fix review:mmcls/datasets/transforms/formatting.py
         """Method to pack the input data."""
         packed_results = dict()
         if self.input_key in results:

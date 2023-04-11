@@ -8,8 +8,8 @@ from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            Equalize, GaussianBlur, Invert, Posterize,
                            RandAugment, Rotate, Sharpness, Shear, Solarize,
                            SolarizeAdd, Translate)
-from .formatting import (Collect, PackInputs, PackMultiTaskInputs, ToNumpy,
-                         ToPIL, Transpose)
+from .formatting import (Collect, PackInputs, PackMultiTaskInputs, PILToNumpy,
+                         NumpyToPIL, Transpose)
 from .processing import (Albumentations, BEiTMaskGenerator, ColorJitter,
                          EfficientNetCenterCrop, EfficientNetRandomCrop,
                          Lighting, RandomCrop, RandomErasing,
@@ -30,5 +30,6 @@ __all__ = [
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
-    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView'
+    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
+    'PILToNumpy', 'NumpyToPIL'
 ]
