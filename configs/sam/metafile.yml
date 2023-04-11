@@ -50,7 +50,7 @@ Models:
     Metadata:
       FLOPs: 2982000000000
       Parameters: 637000000
-      Training Data: 
+      Training Data:
         - SA-1B
     In Collection: SAM
     Results: null
@@ -59,4 +59,3 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
       Code: https://github.com/facebookresearch/segment-anything/
-

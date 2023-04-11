@@ -1,5 +1,7 @@
 # SAM
+
 > [Segment Anything](https://arxiv.org/abs/2304.02643)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -21,7 +23,7 @@ import torch
 from mmpretrain import get_model
 
 model = get_model('vit-base-p16_sam-pre_3rdparty_sa1b-1024px', pretrained=True)
-inputs = torch.rand(1, 3, 224, 224)
+inputs = torch.rand(1, 3, 1024, 1024)
 out = model(inputs)
 print(type(out))
 # To extract features.
@@ -29,28 +31,27 @@ feats = model.extract_feat(inputs)
 print(type(feats))
 ```
 
-
 <!-- [TABS-END] -->
 
 ## Models and results
 
 ### Pretrained models
 
-| Model                                          | Params (M) | Flops (G) |                 Config                  |                                                               Download                                                               |
-| :--------------------------------------------- | :--------: | :-------: | :-------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------: |
-| `vit-base-p16_sam-pre_3rdparty_sa1b-1024px`\*  |   89.67    |  486.00   | [config](vit-base-p16_sam_headless.py)  | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-base-p16_sam-pre_3rdparty_sa1b-1024px_20230411-2320f9cc.pth)  |
+| Model                                          | Params (M) | Flops (G) |                 Config                  |                                             Download                                             |
+| :--------------------------------------------- | :--------: | :-------: | :-------------------------------------: | :----------------------------------------------------------------------------------------------: |
+| `vit-base-p16_sam-pre_3rdparty_sa1b-1024px`\*  |   89.67    |  486.00   | [config](vit-base-p16_sam_headless.py)  | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-base-p16_sam-pre_3rdparty_sa1b-1024px_20230411-2320f9cc.pth) |
 | `vit-large-p16_sam-pre_3rdparty_sa1b-1024px`\* |   308.00   |  1494.00  | [config](vit-large-p16_sam_headless.py) | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-large-p16_sam-pre_3rdparty_sa1b-1024px_20230411-595feafd.pth) |
-| `vit-huge-p16_sam-pre_3rdparty_sa1b-1024px`\*  |   637.00   |  2982.00  | [config](vit-huge-p16_sam_headless.py)  | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-huge-p16_sam-pre_3rdparty_sa1b-1024px_20230411-3f13c653.pth)  |
+| `vit-huge-p16_sam-pre_3rdparty_sa1b-1024px`\*  |   637.00   |  2982.00  | [config](vit-huge-p16_sam_headless.py)  | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-huge-p16_sam-pre_3rdparty_sa1b-1024px_20230411-3f13c653.pth) |
 
-*Models with \* are converted from the [official repo](https://github.com/facebookresearch/segment-anything/). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/segment-anything/). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
+
 ```bibtex
 @article{kirillov2023segany,
-  title={Segment Anything}, 
+  title={Segment Anything},
   author={Kirillov, Alexander and Mintun, Eric and Ravi, Nikhila and Mao, Hanzi and Rolland, Chloe and Gustafson, Laura and Xiao, Tete and Whitehead, Spencer and Berg, Alexander C. and Lo, Wan-Yen and Doll{\'a}r, Piotr and Girshick, Ross},
   journal={arXiv:2304.02643},
   year={2023}
 }
 ```
-

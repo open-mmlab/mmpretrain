@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence, Tuple, Optional
+from typing import Optional, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -10,14 +10,13 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import build_norm_layer, LayerNorm2d, to_2tuple
+from ..utils import LayerNorm2d, build_norm_layer, to_2tuple
 from .base_backbone import BaseBackbone
 
 
 def window_partition(x: torch.Tensor,
                      window_size: int) -> Tuple[torch.Tensor, Tuple[int, int]]:
-    """
-    Partition into non-overlapping windows with padding if needed.
+    """Partition into non-overlapping windows with padding if needed.
 
     Borrowed from https://github.com/facebookresearch/segment-anything/
 
@@ -50,8 +49,7 @@ def window_partition(x: torch.Tensor,
 def window_unpartition(windows: torch.Tensor, window_size: int,
                        pad_hw: Tuple[int, int],
                        hw: Tuple[int, int]) -> torch.Tensor:
-    """
-    Window unpartition into original sequences and removing padding.
+    """Window unpartition into original sequences and removing padding.
 
     Borrowed from https://github.com/facebookresearch/segment-anything/
 
@@ -79,9 +77,8 @@ def window_unpartition(windows: torch.Tensor, window_size: int,
 
 def get_rel_pos(q_size: int, k_size: int,
                 rel_pos: torch.Tensor) -> torch.Tensor:
-    """
-    Get relative positional embeddings according to the relative positions of
-    query and key sizes.
+    """Get relative positional embeddings according to the relative positions
+    of query and key sizes.
 
     Borrowed from https://github.com/facebookresearch/segment-anything/
 
@@ -101,7 +98,7 @@ def get_rel_pos(q_size: int, k_size: int,
         rel_pos_resized = F.interpolate(
             rel_pos.reshape(1, rel_pos.shape[0], -1).permute(0, 2, 1),
             size=max_rel_dist,
-            mode="linear",
+            mode='linear',
         )
         rel_pos_resized = rel_pos_resized.reshape(-1,
                                                   max_rel_dist).permute(1, 0)
@@ -125,8 +122,7 @@ def add_decomposed_rel_pos(
     q_size: Tuple[int, int],
     k_size: Tuple[int, int],
 ) -> torch.Tensor:
-    """
-    Borrowed from https://github.com/facebookresearch/segment-anything/
+    """Borrowed from https://github.com/facebookresearch/segment-anything/
 
     Calculate decomposed Relative Positional Embeddings from :paper:`mvitv2`.
     https://github.com/facebookresearch/mvit/blob/19786631e330df9f3622e5402b4a419a263a2c80/mvit/models/attention.py
@@ -152,8 +148,8 @@ def add_decomposed_rel_pos(
 
     B, _, dim = q.shape
     r_q = q.reshape(B, q_h, q_w, dim)
-    rel_h = torch.einsum("bhwc,hkc->bhwk", r_q, Rh)
-    rel_w = torch.einsum("bhwc,wkc->bhwk", r_q, Rw)
+    rel_h = torch.einsum('bhwc,hkc->bhwk', r_q, Rh)
+    rel_w = torch.einsum('bhwc,wkc->bhwk', r_q, Rw)
 
     attn = (attn.view(B, q_h, q_w, k_h, k_w) + rel_h[:, :, :, :, None] +
             rel_w[:, :, :, None, :]).view(B, q_h * q_w, k_h * k_w)
