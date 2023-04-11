@@ -16,13 +16,14 @@ from mmengine.utils import digit_version
 from PIL import Image
 from torchvision import transforms
 
-from mmpretrain.registry import TRANSFORMS
 from mmpretrain.datasets.transforms.processing import VISION_TRANSFORMS
+from mmpretrain.registry import TRANSFORMS
 
 try:
     import albumentations
 except ImportError:
     albumentations = None
+
 
 def construct_toy_data():
     img = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]],
@@ -872,6 +873,7 @@ class TestBEiTMaskGenerator(TestCase):
             'num_patches=196, num_masking_patches=75, min_num_patches=16, '
             f'max_num_patches=75, log_aspect_ratio={log_aspect_ratio})')
 
+
 class TestVisionTransformWrapper(TestCase):
 
     def test_register(self):
@@ -955,4 +957,3 @@ class TestVisionTransformWrapper(TestCase):
             dict(type='torchvision/RandomResizedCrop', size=224))
 
         self.assertEqual(str(vision_trans), str(mmcls_trans))
-
