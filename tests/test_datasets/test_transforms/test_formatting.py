@@ -116,7 +116,7 @@ class TestToPIL(unittest.TestCase):
     def test_repr(self):
         cfg = dict(type='ToPIL', to_rgb=True)
         transform = TRANSFORMS.build(cfg)
-        self.assertEqual(repr(transform), 'ToPIL(to_rgb=True)')
+        self.assertEqual(repr(transform), 'NumpyToPIL(to_rgb=True)')
 
 
 class TestToNumpy(unittest.TestCase):
@@ -143,7 +143,8 @@ class TestToNumpy(unittest.TestCase):
     def test_repr(self):
         cfg = dict(type='ToNumpy', to_rgb=True)
         transform = TRANSFORMS.build(cfg)
-        self.assertEqual(repr(transform), 'ToNumpy(to_rgb=True, dtype=None)')
+        self.assertEqual(
+            repr(transform), 'PILToNumpy(to_rgb=True, dtype=None)')
 
 
 class TestCollect(unittest.TestCase):

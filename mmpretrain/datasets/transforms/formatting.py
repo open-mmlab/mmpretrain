@@ -1,6 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import defaultdict
 from collections.abc import Sequence
+<<<<<<< HEAD:mmpretrain/datasets/transforms/formatting.py
+=======
+from functools import partial
+from typing import Dict
+>>>>>>> b4e24a1a... fix review:mmcls/datasets/transforms/formatting.py
 
 import cv2
 import numpy as np
@@ -102,6 +107,7 @@ class PackInputs(BaseTransform):
         self.algorithm_keys = algorithm_keys
         self.meta_keys = meta_keys
 
+<<<<<<< HEAD:mmpretrain/datasets/transforms/formatting.py
     @staticmethod
     def format_input(input_):
         if isinstance(input_, list):
@@ -128,6 +134,9 @@ class PackInputs(BaseTransform):
         return input_
 
     def transform(self, results: dict) -> dict:
+=======
+    def transform(self, results: Dict) -> Dict:
+>>>>>>> b4e24a1a... fix review:mmcls/datasets/transforms/formatting.py
         """Method to pack the input data."""
         packed_results = dict()
         if self.input_key in results:
@@ -257,8 +266,8 @@ class Transpose(BaseTransform):
             f'(keys={self.keys}, order={self.order})'
 
 
-@TRANSFORMS.register_module(('ImgToPIL', 'ToPIL'))
-class ToPIL(BaseTransform):
+@TRANSFORMS.register_module(('NumpyToPIL', 'ToPIL'))
+class NumpyToPIL(BaseTransform):
     """Convert the image from OpenCV format to :obj:`PIL.Image.Image`.
 
     **Required Keys:**
@@ -273,10 +282,10 @@ class ToPIL(BaseTransform):
         to_rgb (bool): Whether to convert img to rgb. Defaults to False.
     """
 
-    def __init__(self, to_rgb: bool = False):
+    def __init__(self, to_rgb: bool = False) -> None:
         self.to_rgb = to_rgb
 
-    def transform(self, results):
+    def transform(self, results: Dict) -> Dict:
         """Method to convert images to :obj:`PIL.Image.Image`."""
         img = results['img']
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) if self.to_rgb else img
@@ -284,12 +293,12 @@ class ToPIL(BaseTransform):
         results['img'] = Image.fromarray(img)
         return results
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__class__.__name__ + f'(to_rgb={self.to_rgb})'
 
 
-@TRANSFORMS.register_module(('ImgToNumpy', 'ToNumpy'))
-class ToNumpy(BaseTransform):
+@TRANSFORMS.register_module(('PILToNumpy', 'ToNumpy'))
+class PILToNumpy(BaseTransform):
     """Convert img to :obj:`numpy.ndarray`.
 
     **Required Keys:**
@@ -306,11 +315,11 @@ class ToNumpy(BaseTransform):
             Defaults to None.
     """
 
-    def __init__(self, to_rgb: bool = False, dtype=None):
+    def __init__(self, to_rgb: bool = False, dtype=None) -> None:
         self.to_rgb = to_rgb
         self.dtype = dtype
 
-    def transform(self, results):
+    def transform(self, results: Dict) -> Dict:
         """Method to convert img to :obj:`numpy.ndarray`."""
         img = np.array(results['img'], dtype=self.dtype)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) if self.to_rgb else img
@@ -318,7 +327,7 @@ class ToNumpy(BaseTransform):
         results['img'] = img
         return results
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__class__.__name__ + \
             f'(to_rgb={self.to_rgb}, dtype={self.dtype})'
 
