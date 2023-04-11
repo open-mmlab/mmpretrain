@@ -14,7 +14,7 @@ import numpy as np
 import torchvision
 from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
-from mmengine.utils import digit_version
+from torchvision.transforms.transforms import InterpolationMode
 
 from mmpretrain.registry import TRANSFORMS
 
@@ -33,26 +33,14 @@ def _str_to_torch_dtype(t: str):
 def _interpolation_modes_from_str(t: str):
     """mapping str format to Interpolation."""
     t = t.lower()
-    if digit_version(torchvision.__version__) > digit_version('0.8.0'):
-        from torchvision.transforms.transforms import InterpolationMode
-        inverse_modes_mapping = {
-            'nearest': InterpolationMode.NEAREST,
-            'bilinear': InterpolationMode.BILINEAR,
-            'bicubic': InterpolationMode.BICUBIC,
-            'box': InterpolationMode.BOX,
-            'hammimg': InterpolationMode.HAMMING,
-            'lanczos': InterpolationMode.LANCZOS,
-        }
-    else:
-        from PIL import Image
-        inverse_modes_mapping = {
-            'nearest': Image.NEAREST,
-            'bilinear': Image.BILINEAR,
-            'bicubic': Image.BICUBIC,
-            'box': Image.BOX,
-            'hammimg': Image.HAMMING,
-            'lanczos': Image.LANCZOS,
-        }
+    inverse_modes_mapping = {
+        'nearest': InterpolationMode.NEAREST,
+        'bilinear': InterpolationMode.BILINEAR,
+        'bicubic': InterpolationMode.BICUBIC,
+        'box': InterpolationMode.BOX,
+        'hammimg': InterpolationMode.HAMMING,
+        'lanczos': InterpolationMode.LANCZOS,
+    }
     return inverse_modes_mapping[t]
 
 
