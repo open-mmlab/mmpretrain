@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from pathlib import Path
 from typing import List
 
-from mmengine.fileio import join_path, load
+import mmengine
+from mmengine.fileio import get_file_backend
 
 from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -22,17 +24,18 @@ class COCOCaption(BaseDataset):
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
-        raw_anno_info = load(self.ann_file)
+        img_prefix = self.data_prefix['img_path']
+        annotations = mmengine.load(self.ann_file)
+        file_backend = get_file_backend(img_prefix)
 
         data_list = []
-        for idx, anno in enumerate(raw_anno_info):
+        for ann in annotations:
+            data_info = {
+                'image_id': Path(ann['image']).stem.split('_')[-1],
+                'img_path': file_backend.join_path(img_prefix, ann['image']),
+                'gt_caption': ann['caption'],
+            }
 
-            anno['img_path'] = join_path(self.img_prefix, anno['image'])
-            img_id = anno['image'].split('/')[-1].strip('.jpg').split('_')[-1]
-            anno['image_id'] = img_id
-            anno['instance_id'] = idx
-            anno['text'] = anno.pop('caption')
-
-            data_list.append(anno)
+            data_list.append(data_info)
 
         return data_list

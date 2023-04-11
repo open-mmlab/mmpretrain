@@ -13,14 +13,14 @@ from mmpretrain.registry import METRICS
 
 
 @METRICS.register_module()
-class CaptionEval(BaseMetric):
+class COCOCaption(BaseMetric):
     """Coco Caption evaluation wrapper.
 
     Save the generated captions and transform into coco format.
     Calling COCO API for caption metrics.
 
     Args:
-        annotation_file (str): the path for the COCO format caption GT
+        ann_file (str): the path for the COCO format caption ground truth
             json file, load for evaluations.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
@@ -32,13 +32,12 @@ class CaptionEval(BaseMetric):
             `retrieval_type` for unambiguous results. Defaults to TR.
     """
 
-    # TODO pass every thing from config
     def __init__(self,
-                 annotation_file: str,
+                 ann_file: str,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None):
         super().__init__(collect_device=collect_device, prefix=prefix)
-        self.annotation_file = annotation_file
+        self.ann_file = ann_file
 
     def process(self, data_batch, data_samples):
         """Process one batch of data samples.
@@ -50,11 +49,12 @@ class CaptionEval(BaseMetric):
             data_batch: A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
         """
+
         for data_sample in data_samples:
             result = dict()
 
-            result['caption'] = data_sample['pred_caption']
-            result['image_id'] = int(data_sample['image_id'])
+            result['caption'] = data_sample.get('pred_caption')
+            result['image_id'] = int(data_sample.get('image_id'))
 
             # Save the result to `self.results`.
             self.results.append(result)
@@ -80,8 +80,7 @@ class CaptionEval(BaseMetric):
                 remove_duplicate='image_id',
             )
 
-            coco_val = coco_caption_eval(
-                eval_result_file, self.annotation_file)  # dict for metrics
+            coco_val = coco_caption_eval(eval_result_file, self.ann_file)
 
         return coco_val
 
@@ -108,11 +107,11 @@ def save_result(result, result_dir, filename, remove_duplicate=''):
     return final_result_file_url
 
 
-def coco_caption_eval(results_file, annotation_file):
+def coco_caption_eval(results_file, ann_file):
     """Evaluation between gt json and prediction json files."""
 
     # create coco object and coco_result object
-    coco = COCO(annotation_file)
+    coco = COCO(ann_file)
     coco_result = coco.loadRes(results_file)
 
     # create coco_eval object by taking coco and coco_result

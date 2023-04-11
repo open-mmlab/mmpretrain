@@ -1,0 +1,35 @@
+Collections:
+  - Name: OFA
+    Metadata:
+      Architecture:
+        - ResNet
+        - Transformer
+    Paper:
+      Title: 'OFA: Unifying Architectures, Tasks, and Modalities Through a Simple
+        Sequence-to-Sequence Learning Framework'
+      URL: https://arxiv.org/abs/2202.03052
+    README: configs/ofa/README.md
+
+Models:
+  - Name: ofa-base_3rdparty_coco-caption
+    Metadata:
+      FLOPs: null
+      Parameters: 182238536
+      Training Data:
+        - CC12M
+        - CC3M
+        - SBU
+        - COCO
+        - VG
+        - VQAv2
+        - GQA
+        - RefCOCO
+        - OpenImages
+        - Object365
+        - YFCC100M
+        - ImageNet-21K
+        - Pile
+    In Collection: OFA
+    Results: null
+    Weights: null
+    Config: configs/ofa/ofa-base_eval_coco-caption.py

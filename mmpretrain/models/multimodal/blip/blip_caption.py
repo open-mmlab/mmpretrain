@@ -4,7 +4,8 @@ from typing import List, Optional
 import torch
 from mmengine.model import BaseModel
 
-from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
+from mmpretrain.registry import MODELS, TOKENIZER
 
 
 @MODELS.register_module()
@@ -59,8 +60,7 @@ class BLIPCaptioner(BaseModel):
             # Set batch augmentations by `train_cfg`
             data_preprocessor['batch_augments'] = train_cfg
 
-        #  SOMEHOW GET TOKENIZER FROM DATA PREPROCESSOR
-        self.tokenizer = MODELS.build(tokenizer)
+        self.tokenizer = TOKENIZER.build(tokenizer)
 
         self.visual_encoder = MODELS.build(vision_encoder)
 
@@ -118,8 +118,10 @@ class BLIPCaptioner(BaseModel):
         Returns:
             List[DataSample]: Return list of data samples.
         """
+        imgs = inputs['imgs']
+
         # prepare inputs for decoder generation.
-        image_embeds = self.visual_encoder(inputs)[0]
+        image_embeds = self.visual_encoder(imgs)[0]
         image_embeds = torch.repeat_interleave(image_embeds, self.num_captions,
                                                0)
 
@@ -140,13 +142,20 @@ class BLIPCaptioner(BaseModel):
             return_dict_in_generate=True,
         )
 
-        outputs = self.tokenizer.batch_decode(
+        decode_tokens = self.tokenizer.batch_decode(
             decoder_out.sequences, skip_special_tokens=True)
 
-        for output, data_sample in zip(outputs, data_samples):
-            data_sample.pred_caption = output[len(self.prompt):]
+        out_data_samples = []
+        if data_samples is None:
+            data_samples = [None for _ in range(len(decode_tokens))]
 
-        return data_samples
+        for data_sample, decode_token in zip(data_samples, decode_tokens):
+            if data_sample is None:
+                data_sample = DataSample()
+            data_sample.pred_caption = decode_token[len(self.prompt):]
+            out_data_samples.append(data_sample)
+
+        return out_data_samples
 
     def loss(self, inputs, data_samples):
         """Calculate losses from a batch of inputs and data samples.
@@ -160,9 +169,10 @@ class BLIPCaptioner(BaseModel):
         Returns:
             dict[str, Tensor]: a dictionary of loss components.
         """
+        imgs = inputs['imgs']
 
-        image_embeds = self.visual_encoder(inputs)[0]
-        raw_text = [self.prompt + ds.text for ds in data_samples]
+        image_embeds = self.visual_encoder(imgs)[0]
+        raw_text = [self.prompt + ds.gt_caption for ds in data_samples]
 
         text = self.tokenizer(
             raw_text,

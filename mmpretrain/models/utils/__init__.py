@@ -7,7 +7,9 @@ from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .batch_shuffle import batch_shuffle_ddp, batch_unshuffle_ddp
 from .channel_shuffle import channel_shuffle
 from .clip_generator_helper import build_clip_model
-from .data_preprocessor import (ClsDataPreprocessor, SelfSupDataPreprocessor,
+from .data_preprocessor import (ClsDataPreprocessor,
+                                MultiModalDataPreprocessor,
+                                SelfSupDataPreprocessor,
                                 TwoNormDataPreprocessor, VideoDataPreprocessor)
 from .ema import CosineEMA
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
@@ -22,7 +24,7 @@ from .position_encoding import (ConditionalPositionEncoding,
                                 build_2d_sincos_position_embedding)
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
-from .tokenizer import BLIPTokenizer
+from .tokenizer import BLIPTokenizer, OFATokenizer
 from .vector_quantizer import NormEMAVectorQuantizer
 
 __all__ = [
@@ -71,4 +73,6 @@ __all__ = [
     'CosineEMA',
     'ResLayerExtraNorm',
     'BLIPTokenizer',
+    'OFATokenizer',
+    'MultiModalDataPreprocessor',
 ]

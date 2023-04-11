@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import re
+import string
 import inspect
 import math
 import numbers
@@ -1536,45 +1538,75 @@ class RandomResizedCropAndInterpolationWithTwoPic(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class PreCaption(BaseTransform):
-    """Perform text cleaning before tokenizer. Adopted by BLIP.
+class CleanCaption(BaseTransform):
+    """Clean caption text.
+
+    Remove some useless punctuation for the caption task.
 
     **Required Keys:**
 
-    - text
+    - ``*keys``
 
     **Modified Keys:**
 
-    - text
+    - ``*keys``
+
+    Args:
+        keys (Sequence[str], optional): The keys of text to be cleaned.
+            Defaults to 'gt_caption'.
+        remove_chars (str): The characters to be removed. Defaults to
+            :py:attr:`string.punctuation`.
+        lowercase (bool): Whether to convert the text to lowercase.
+            Defaults to True.
+        remove_dup_space (bool): Whether to remove duplicated whitespaces.
+            Defaults to True.
+        strip (bool): Whether to remove leading and trailing whitespaces.
+            Defaults to True.
     """
 
-    def _pre_caption(self, caption):
-        """Perform text cleaning before tokenizer."""
-        import re
-        caption = re.sub(
-            r"([.!\"()*#:;~])",
-            ' ',
-            caption.lower(),
-        )
-        caption = re.sub(
-            r'\s{2,}',
-            ' ',
-            caption,
-        )
-        caption = caption.rstrip('\n')
-        caption = caption.strip(' ')
-        return caption
+    def __init__(
+        self,
+        keys='gt_caption',
+        remove_chars=string.punctuation,
+        lowercase=True,
+        remove_dup_space=True,
+        strip=True,
+    ):
+        if isinstance(keys, str):
+            keys = [keys]
+        self.keys = keys
+        self.transtab = str.maketrans({ch: None for ch in remove_chars})
+        self.lowercase = lowercase
+        self.remove_dup_space = remove_dup_space
+        self.strip = strip
 
-    def pre_caption(self, caption):
+    def _clean(self, text):
         """Perform text cleaning before tokenizer."""
-        if isinstance(caption, list):
-            return [self._pre_caption(c) for c in caption]
-        elif isinstance(caption, str):
-            return self._pre_caption(caption)
+
+        if self.strip:
+            text = text.strip()
+
+        text = text.translate(self.transtab)
+
+        if self.remove_dup_space:
+            text = re.sub(r'\s{2,}', ' ', text)
+
+        if self.lowercase:
+            text = text.lower()
+
+        return text
+
+    def clean(self, text):
+        """Perform text cleaning before tokenizer."""
+        if isinstance(text, (list, tuple)):
+            return [self._clean(item) for item in text]
+        elif isinstance(text, str):
+            return self._clean(text)
         else:
             raise TypeError('text must be a string or a list of strings')
 
     def transform(self, results: dict) -> dict:
         """Method to clean the input text data."""
-        results['text'] = self.pre_caption(results['text'])
+        for key in self.keys:
+            results[key] = self.clean(results[key])
         return results

@@ -1,4 +1,12 @@
-# dataset settings
+# data settings
+
+data_preprocessor = dict(
+    type='MultiModalDataPreprocessor',
+    mean=[122.770938, 116.7460125, 104.09373615],
+    std=[68.5005327, 66.6321579, 70.32316305],
+    to_rgb=True,
+)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -7,8 +15,12 @@ train_pipeline = [
         interpolation='bicubic',
         backend='pillow'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PreCaption'),
-    dict(type='PackInputs', algorithm_keys=('text', 'image_id')),
+    dict(type='CleanCaption', keys='gt_caption'),
+    dict(
+        type='PackInputs',
+        algorithm_keys=['gt_caption'],
+        meta_keys=['image_id'],
+    ),
 ]
 
 test_pipeline = [
@@ -18,18 +30,16 @@ test_pipeline = [
         scale=(384, 384),
         interpolation='bicubic',
         backend='pillow'),
-    dict(type='PreCaption'),
-    dict(type='PackInputs', algorithm_keys=('text', 'image_id')),
+    dict(type='PackInputs', meta_keys=['image_id']),
 ]
 
 train_dataloader = dict(
     batch_size=32,
-    num_workers=8,
+    num_workers=5,
     dataset=dict(
         type='COCOCaption',
         data_root='data/coco',
         ann_file='annotations/coco_karpathy_train.json',
-        data_prefix='images',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
@@ -38,12 +48,11 @@ train_dataloader = dict(
 
 val_dataloader = dict(
     batch_size=64,
-    num_workers=8,
+    num_workers=5,
     dataset=dict(
         type='COCOCaption',
         data_root='data/coco',
         ann_file='annotations/coco_karpathy_val.json',
-        data_prefix='images',
         pipeline=test_pipeline,
     ),
     sampler=dict(type='DefaultSampler', shuffle=False),
@@ -51,8 +60,9 @@ val_dataloader = dict(
 )
 
 val_evaluator = dict(
-    type='CaptionEval',
-    annotation_file='data/coco/annotations/coco_karpathy_val_gt.json')
+    type='COCOCaption',
+    ann_file='data/coco/annotations/coco_karpathy_val_gt.json',
+)
 
 # # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader

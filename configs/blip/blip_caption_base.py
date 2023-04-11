@@ -1,12 +1,49 @@
 _base_ = [
     '../_base_/datasets/coco_caption.py',
-    '../_base_/models/blip/caption_base.py',
     '../_base_/default_runtime.py',
 ]
 
-# optimizer
-optimizer = dict(type='AdamW', lr=1e-5, weight_decay=0.05)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+# model settings
+model = dict(
+    type='BLIPCaptioner',
+    vision_encoder=dict(
+        type='VisionTransformer',
+        arch='b',
+        img_size=384,
+        patch_size=16,
+        out_type='raw',
+    ),
+    tokenizer=dict(type='BLIPTokenizer', name_or_path='bert-base-uncased'),
+    decoder_head=dict(
+        type='SeqGenerationHead',
+        decoder=dict(
+            type='XBertLMHeadDecoder',
+            med_config=dict(
+                architectures=['BertModel'],
+                attention_probs_dropout_prob=0.1,
+                hidden_act='gelu',
+                hidden_dropout_prob=0.1,
+                hidden_size=768,
+                initializer_range=0.02,
+                intermediate_size=3072,
+                layer_norm_eps=1e-12,
+                max_position_embeddings=512,
+                model_type='bert',
+                num_attention_heads=12,
+                num_hidden_layers=12,
+                pad_token_id=0,
+                add_type_embeddings=False,
+                vocab_size=30524,
+                encoder_width=768,
+                add_cross_attention=True),
+        ),
+    ),
+    prompt='a picture of ',
+    max_txt_len=20,
+)
+
+# schedule settings
+optim_wrapper = dict(optimizer=dict(type='AdamW', lr=1e-5, weight_decay=0.05))
 
 param_scheduler = [
     dict(
@@ -17,7 +54,6 @@ param_scheduler = [
     )
 ]
 
-# runtime settings
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=10)
+train_cfg = dict(max_epochs=10)
 val_cfg = dict()
 test_cfg = dict()
