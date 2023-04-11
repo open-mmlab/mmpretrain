@@ -3,8 +3,8 @@ from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            Brightness, ColorTransform, Contrast, Cutout,
                            Equalize, Invert, Posterize, RandAugment, Rotate,
                            Sharpness, Shear, Solarize, SolarizeAdd, Translate)
-from .formatting import (Collect, NumpyToPIL, PackClsInputs, PILToNumpy,
-                         Transpose)
+from .formatting import (Collect, NumpyToPIL, PackClsInputs,
+                         PackMultiTaskInputs, PILToNumpy, Transpose)
 from .processing import (Albumentations, ColorJitter, EfficientNetCenterCrop,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
                          RandomErasing, RandomResizedCrop, ResizeEdge)
