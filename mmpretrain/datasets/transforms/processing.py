@@ -11,9 +11,10 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 import mmcv
 import mmengine
 import numpy as np
+import torchvision
 from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
-from torchvision.transforms.transforms import InterpolationMode
+from mmengine.utils import digit_version
 
 from mmpretrain.registry import TRANSFORMS
 
@@ -28,16 +29,28 @@ def _str_to_torch_dtype(t: str):
     return eval(f'torch.{t}')
 
 
-def _interpolation_modes_from_str(t: str) -> InterpolationMode:
+def _interpolation_modes_from_str(t: str):
     t = t.lower()
-    inverse_modes_mapping = {
-        'nearest': InterpolationMode.NEAREST,
-        'bilinear': InterpolationMode.BILINEAR,
-        'bicubic': InterpolationMode.BICUBIC,
-        'box': InterpolationMode.BOX,
-        'hammimg': InterpolationMode.HAMMING,
-        'lanczos': InterpolationMode.LANCZOS,
-    }
+    if digit_version(torchvision.__version__) >= digit_version('0.8.0'):
+        from torchvision.transforms.transforms import InterpolationMode
+        inverse_modes_mapping = {
+            'nearest': InterpolationMode.NEAREST,
+            'bilinear': InterpolationMode.BILINEAR,
+            'bicubic': InterpolationMode.BICUBIC,
+            'box': InterpolationMode.BOX,
+            'hammimg': InterpolationMode.HAMMING,
+            'lanczos': InterpolationMode.LANCZOS,
+        }
+    else:
+        from PIL import Image
+        inverse_modes_mapping = {
+            'nearest': Image.NEAREST,
+            'bilinear': Image.BILINEAR,
+            'bicubic': Image.BICUBIC,
+            'box': Image.BOX,
+            'hammimg': Image.HAMMING,
+            'lanczos': Image.LANCZOS,
+        }
     return inverse_modes_mapping[t]
 
 
@@ -87,11 +100,6 @@ def register_vision_transforms() -> List[str]:
     Returns:
         List[str]: A list of registered transforms' name.
     """
-    try:
-        import torchvision.transforms
-    except ImportError:
-        raise ImportError('please install ``torchvision``.')
-
     vision_transforms = []
     for module_name in dir(torchvision.transforms):
         if not re.match('[A-Z]', module_name):
@@ -108,7 +116,7 @@ def register_vision_transforms() -> List[str]:
     return vision_transforms
 
 
-VISION_transforms = register_vision_transforms()
+VISION_TRANSFORMS = register_vision_transforms()
 
 
 @TRANSFORMS.register_module()

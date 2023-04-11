@@ -257,7 +257,7 @@ class Transpose(BaseTransform):
             f'(keys={self.keys}, order={self.order})'
 
 
-@TRANSFORMS.register_module()
+@TRANSFORMS.register_module(('ImgToPIL', 'ToPIL'))
 class ToPIL(BaseTransform):
     """Convert the image from OpenCV format to :obj:`PIL.Image.Image`.
 
@@ -288,7 +288,7 @@ class ToPIL(BaseTransform):
         return self.__class__.__name__ + f'(to_rgb={self.to_rgb})'
 
 
-@TRANSFORMS.register_module()
+@TRANSFORMS.register_module(('ImgToNumpy', 'ToNumpy'))
 class ToNumpy(BaseTransform):
     """Convert img to :obj:`numpy.ndarray`.
 

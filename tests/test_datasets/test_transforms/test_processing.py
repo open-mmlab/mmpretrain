@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
+import os.path as osp
 import random
 from unittest import TestCase
 from unittest.mock import ANY, call, patch
@@ -8,14 +9,20 @@ from unittest.mock import ANY, call, patch
 import mmengine
 import numpy as np
 import pytest
+import torch
+import torchvision
+from mmcv.transforms import Compose
+from mmengine.utils import digit_version
+from PIL import Image
+from torchvision import transforms
 
 from mmpretrain.registry import TRANSFORMS
+from mmpretrain.datasets.transforms.processing import VISION_TRANSFORMS
 
 try:
     import albumentations
 except ImportError:
     albumentations = None
-
 
 def construct_toy_data():
     img = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]],
