@@ -151,7 +151,7 @@ Transform Wrapper
 TorchVision Transforms
 ^^^^^^^^^^^^^^^^^^^^^^
 
-We also provides all the transforms in TorchVision. You can use them like following examples:
+We also provide all the transforms in TorchVision. You can use them the like following examples:
 
 **1. Use some TorchVision Augs Surrounded by NumpyToPIL and PILToNumpy (Recommendation)**
 
@@ -178,7 +178,7 @@ Add TorchVision Augs surrounded by ``dict(type='NumpyToPIL', to_rgb=True),`` and
 
 **2. Use TorchVision Augs and ToTensor&Normalize**
 
-Make sure have converted to RGB-Numpy format before processing by TorchVision Augs.
+Make sure the 'img' has been converted to PIL format from BGR-Numpy format before being processed by TorchVision Augs.
 
 .. code:: python
 
@@ -207,7 +207,7 @@ Make sure have converted to RGB-Numpy format before processing by TorchVision Au
     data_preprocessor = dict(num_classes=1000, mean=None, std=None, to_rgb=False)  # Normalize in dataset pipeline
 
 
-**3. USe TorchVision Augs Except ToTensor&Normalize**
+**3. Use TorchVision Augs Except ToTensor&Normalize**
 
 .. code:: python
 
