@@ -263,11 +263,11 @@ class NumpyToPIL(BaseTransform):
 
     **Required Keys:**
 
-    - ``*img**``
+    - ``img``
 
     **Modified Keys:**
 
-    - ``*img**``
+    - ``img``
 
     Args:
         to_rgb (bool): Whether to convert img to rgb. Defaults to True.
@@ -294,11 +294,11 @@ class PILToNumpy(BaseTransform):
 
     **Required Keys:**
 
-    - ``*img**``
+    - ``img``
 
     **Modified Keys:**
 
-    - ``*img**``
+    - ``img``
 
     Args:
         to_bgr (bool): Whether to convert img to rgb. Defaults to True.
