@@ -1,5 +1,5 @@
 Collections:
-  - Name: GLIP
+  - Name: Grounded Language-Image Pre-training
     Metadata:
       Training Techniques:
         - AdamW
@@ -11,40 +11,11 @@ Collections:
       Title: "Grounded Language-Image Pre-training"
     README: configs/glip/README.md
     Code:
-      URL:
-      Version:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/vit.py
+      Version: v1.0.0rc8
 
 Models:
-  - Name: glip-t_3rdparty_o365
-    In Collection: GLIP
-    Metadata:
-      FLOPs: 4508464128
-      Parameters: 29056354
-      Training Data:
-        - O365
-    Results: null
-    Weights:
-    Converted From:
-      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365.pth
-      Code: https://github.com/microsoft/GLIP
-    Config: configs/glip/glip-t_headless.py
-
-  - Name: glip-t_3rdparty_o365_goldg
-    In Collection: GLIP
-    Metadata:
-      FLOPs: 4508464128
-      Parameters: 29056354
-      Training Data:
-        - O365
-        - GoldG
-    Results: null
-    Weights:
-    Converted From:
-      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365_goldg.pth
-      Code: https://github.com/microsoft/GLIP
-    Config: configs/glip/glip-t_headless.py
-
-  - Name: glip-t_3rdparty_merged
+  - Name: vit-t_glip-pre_3rdparty
     In Collection: GLIP
     Metadata:
       FLOPs: 4508464128
@@ -55,13 +26,12 @@ Models:
         - CC3M
         - SBU
     Results: null
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/glip/vit-t_glip-pre_3rdparty_merged_20230411-d85813b5.pth
     Converted From:
       Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365_goldg_cc_sbu.pth
       Code: https://github.com/microsoft/GLIP
     Config: configs/glip/glip-t_headless.py
-
-  - Name: glip-l_3rdparty_merged
+  - Name: vit-l_glip-pre_3rdparty_384px
     In Collection: GLIP
     Metadata:
       FLOPs: 104080343040
@@ -72,7 +42,7 @@ Models:
         - CC3M+12M
         - SBU
     Results: null
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v1/glip/vit-l_glip-pre_3rdparty_merged-384px_20230412-04b198e8.pth
     Converted From:
       Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_large_model.pth
       Code: https://github.com/microsoft/GLIP
