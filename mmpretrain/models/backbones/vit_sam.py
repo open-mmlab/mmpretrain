@@ -10,7 +10,7 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import LayerNorm2d, build_norm_layer, to_2tuple, resize_pos_embed
+from ..utils import LayerNorm2d, build_norm_layer, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
 
