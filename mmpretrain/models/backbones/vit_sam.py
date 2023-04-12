@@ -10,7 +10,7 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import LayerNorm2d, build_norm_layer, to_2tuple
+from ..utils import LayerNorm2d, build_norm_layer, to_2tuple, resize_pos_embed
 from .base_backbone import BaseBackbone
 
 
@@ -358,6 +358,8 @@ class ViTSAM(BaseBackbone):
             Defaults to ``dict(type='LN')``.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
+        interpolate_mode (str): Select the interpolate mode for position
+            embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
@@ -406,6 +408,7 @@ class ViTSAM(BaseBackbone):
                  window_size: int = 14,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  frozen_stages: int = -1,
+                 interpolate_mode: str = 'bicubic',
                  patch_cfg: dict = dict(),
                  layer_cfgs: dict = dict(),
                  init_cfg: Optional[dict] = None):
@@ -444,11 +447,11 @@ class ViTSAM(BaseBackbone):
         # num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         self.use_abs_pos = use_abs_pos
+        self.interpolate_mode = interpolate_mode
         if use_abs_pos:
             # Set position embedding
             self.pos_embed = nn.Parameter(
-                torch.zeros(1, self.patch_resolution[0],
-                            self.patch_resolution[1], self.embed_dims))
+                torch.zeros(1, *self.patch_resolution, self.embed_dims))
             self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
@@ -544,7 +547,14 @@ class ViTSAM(BaseBackbone):
                    self.embed_dims)
 
         if self.use_abs_pos:
-            x = x + self.pos_embed
+            resized_pos_embed = resize_pos_embed(
+                self.pos_embed.flatten(1, 2),
+                self.patch_resolution,
+                patch_resolution,
+                mode=self.interpolate_mode,
+                num_extra_tokens=0)
+            x = x + resized_pos_embed.view(1, *patch_resolution,
+                                           self.embed_dims)
             x = self.drop_after_pos(x)
 
         outs = []
