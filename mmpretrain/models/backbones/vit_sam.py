@@ -547,6 +547,9 @@ class ViTSAM(BaseBackbone):
                    self.embed_dims)
 
         if self.use_abs_pos:
+            # 'resize_pos_embed' only supports 'pos_embed' with ndim==3, but
+            # in ViTSAM, the 'pos_embed' has 4 dimensions (1, H, W, C), so it
+            # is flattened. Besides, ViTSAM doesn't have any extra token.
             resized_pos_embed = resize_pos_embed(
                 self.pos_embed.flatten(1, 2),
                 self.patch_resolution,
