@@ -200,6 +200,7 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/xcit">XCiT</a></li>
         <li><a href="configs/levit">LeViT</a></li>
         <li><a href="configs/riformer">RIFormer</a></li>
+        <li><a href="configs/glip">GLIP</a></li>
         </ul>
       </td>
       <td>

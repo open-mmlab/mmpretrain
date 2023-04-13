@@ -1,0 +1,79 @@
+Collections:
+  - Name: GLIP
+    Metadata:
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - Shift Window Multihead Self Attention
+    Paper:
+      URL: https://arxiv.org/abs/2112.03857
+      Title: "Grounded Language-Image Pre-training"
+    README: configs/glip/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: glip-t_3rdparty_o365
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 4508464128
+      Parameters: 29056354
+      Training Data:
+        - O365
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-t_headless.py
+
+  - Name: glip-t_3rdparty_o365_goldg
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 4508464128
+      Parameters: 29056354
+      Training Data:
+        - O365
+        - GoldG
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365_goldg.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-t_headless.py
+
+  - Name: glip-t_3rdparty_merged
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 4508464128
+      Parameters: 29056354
+      Training Data:
+        - O365
+        - GoldG
+        - CC3M
+        - SBU
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365_goldg_cc_sbu.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-t_headless.py
+
+  - Name: glip-l_3rdparty_merged
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 104080343040
+      Parameters: 196735516
+      Training Data:
+        - FourODs
+        - GoldG
+        - CC3M+12M
+        - SBU
+    Results: null
+    Weights:
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_large_model.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-l_headless.py

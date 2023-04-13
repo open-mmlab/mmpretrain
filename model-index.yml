@@ -68,3 +68,4 @@ Import:
   - configs/milan/metafile.yml
   - configs/riformer/metafile.yml
   - configs/sam/metafile.yml
+  - configs/glip/metafile.yml
