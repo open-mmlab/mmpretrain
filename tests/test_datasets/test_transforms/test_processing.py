@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
+import os.path as osp
 import random
 from unittest import TestCase
 from unittest.mock import ANY, call, patch
@@ -8,7 +9,14 @@ from unittest.mock import ANY, call, patch
 import mmengine
 import numpy as np
 import pytest
+import torch
+import torchvision
+from mmcv.transforms import Compose
+from mmengine.utils import digit_version
+from PIL import Image
+from torchvision import transforms
 
+from mmpretrain.datasets.transforms.processing import VISION_TRANSFORMS
 from mmpretrain.registry import TRANSFORMS
 
 try:
@@ -864,3 +872,88 @@ class TestBEiTMaskGenerator(TestCase):
             repr(transform), 'BEiTMaskGenerator(height=14, width=14, '
             'num_patches=196, num_masking_patches=75, min_num_patches=16, '
             f'max_num_patches=75, log_aspect_ratio={log_aspect_ratio})')
+
+
+class TestVisionTransformWrapper(TestCase):
+
+    def test_register(self):
+        for t in VISION_TRANSFORMS:
+            self.assertIn('torchvision/', t)
+            self.assertIn(t, TRANSFORMS)
+
+    def test_transform(self):
+        img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
+        data = {'img': Image.open(img_path)}
+
+        # test normal transform
+        vision_trans = transforms.RandomResizedCrop(224)
+        vision_transformed_img = vision_trans(data['img'])
+        mmcls_trans = TRANSFORMS.build(
+            dict(type='torchvision/RandomResizedCrop', size=224))
+        mmcls_transformed_img = mmcls_trans(data)['img']
+        np.equal(
+            np.array(vision_transformed_img), np.array(mmcls_transformed_img))
+
+        # test convert type dtype
+        data = {'img': torch.randn(3, 224, 224)}
+        vision_trans = transforms.ConvertImageDtype(torch.float)
+        vision_transformed_img = vision_trans(data['img'])
+        mmcls_trans = TRANSFORMS.build(
+            dict(type='torchvision/ConvertImageDtype', dtype='float'))
+        mmcls_transformed_img = mmcls_trans(data)['img']
+        np.equal(
+            np.array(vision_transformed_img), np.array(mmcls_transformed_img))
+
+        # test transform with interpolation
+        data = {'img': Image.open(img_path)}
+        if digit_version(torchvision.__version__) > digit_version('0.8.0'):
+            from torchvision.transforms import InterpolationMode
+            interpolation_t = InterpolationMode.NEAREST
+        else:
+            interpolation_t = Image.NEAREST
+        vision_trans = transforms.Resize(224, interpolation_t)
+        vision_transformed_img = vision_trans(data['img'])
+        mmcls_trans = TRANSFORMS.build(
+            dict(type='torchvision/Resize', size=224, interpolation='nearest'))
+        mmcls_transformed_img = mmcls_trans(data)['img']
+        np.equal(
+            np.array(vision_transformed_img), np.array(mmcls_transformed_img))
+
+        # test compose transforms
+        data = {'img': Image.open(img_path)}
+        vision_trans = transforms.Compose([
+            transforms.Resize(176),
+            transforms.RandomHorizontalFlip(),
+            transforms.PILToTensor(),
+            transforms.ConvertImageDtype(torch.float),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        vision_transformed_img = vision_trans(data['img'])
+
+        pipeline_cfg = [
+            dict(type='LoadImageFromFile'),
+            dict(type='NumpyToPIL', to_rgb=True),
+            dict(type='torchvision/Resize', size=176),
+            dict(type='torchvision/RandomHorizontalFlip'),
+            dict(type='torchvision/PILToTensor'),
+            dict(type='torchvision/ConvertImageDtype', dtype='float'),
+            dict(
+                type='torchvision/Normalize',
+                mean=(0.485, 0.456, 0.406),
+                std=(0.229, 0.224, 0.225),
+            )
+        ]
+        pipeline = [TRANSFORMS.build(t) for t in pipeline_cfg]
+        mmcls_trans = Compose(transforms=pipeline)
+        mmcls_data = {'img_path': img_path}
+        mmcls_transformed_img = mmcls_trans(mmcls_data)['img']
+        np.equal(
+            np.array(vision_transformed_img), np.array(mmcls_transformed_img))
+
+    def test_repr(self):
+        vision_trans = transforms.RandomResizedCrop(224)
+        mmcls_trans = TRANSFORMS.build(
+            dict(type='torchvision/RandomResizedCrop', size=224))
+
+        self.assertEqual(str(vision_trans), str(mmcls_trans))
