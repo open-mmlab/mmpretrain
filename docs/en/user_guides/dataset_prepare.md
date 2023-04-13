@@ -348,12 +348,12 @@ The following is an example of a JSON annotation file (in this example each raw 
         [
             {
                 'img_path': "xxx/xxx_0.jpg",
-                'img_label': 0,
+                'gt_label': 0,
                 ...
             },
             {
                 'img_path': "xxx/xxx_1.jpg",
-                'img_label': 1,
+                'gt_label': 1,
                 ...
             },
             ...
