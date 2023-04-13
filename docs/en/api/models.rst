@@ -187,6 +187,7 @@ Backbones
    VGG
    Vig
    VisionTransformer
+   ViTSAM
    XCiT
 
 .. module:: mmpretrain.models.necks

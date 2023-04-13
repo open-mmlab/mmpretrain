@@ -16,6 +16,7 @@ class Cfg:
     build: bool = True
     forward: bool = True
     backward: bool = True
+    extract_feat: bool = True
     input_shape: tuple = (1, 3, 224, 224)
 
 
@@ -25,6 +26,10 @@ test_list = [
     Cfg(name='xcit-nano-12-p8_3rdparty-dist_in1k-384px',
         backbone=mmpretrain.models.XCiT,
         input_shape=(1, 3, 384, 384)),
+    Cfg(name='vit-base-p16_sam-pre_3rdparty_sa1b-1024px',
+        backbone=mmpretrain.models.ViTSAM,
+        forward=False,
+        backward=False),
 ]
 
 
@@ -52,6 +57,14 @@ def test_forward(cfg: Cfg):
     outputs = model(inputs)
     assert outputs.shape == (1, cfg.num_classes)
 
+
+@pytest.mark.parametrize('cfg', test_list)
+def test_extract_feat(cfg: Cfg):
+    if not cfg.extract_feat:
+        return
+
+    model = get_model(cfg.name)
+    inputs = torch.rand(*cfg.input_shape)
     feats = model.extract_feat(inputs)
     assert isinstance(feats, tuple)
     assert len(feats) == 1

@@ -1,0 +1,61 @@
+Collections:
+  - Name: SAM
+    Metadata:
+      Architecture:
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      Title: 'Segment Anything'
+      URL: https://arxiv.org/abs/2304.02643
+    README: configs/sam/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: vit-base-p16_sam-pre_3rdparty_sa1b-1024px
+    Metadata:
+      FLOPs: 486000000000
+      Parameters: 89671000
+      Training Data:
+        - SA-1B
+    In Collection: SAM
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-base-p16_sam-pre_3rdparty_sa1b-1024px_20230411-2320f9cc.pth
+    Config: configs/sam/vit-base-p16_sam_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth
+      Code: https://github.com/facebookresearch/segment-anything/
+
+  - Name: vit-large-p16_sam-pre_3rdparty_sa1b-1024px
+    Metadata:
+      FLOPs: 1494000000000
+      Parameters: 308000000
+      Training Data:
+        - SA-1B
+    In Collection: SAM
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-large-p16_sam-pre_3rdparty_sa1b-1024px_20230411-595feafd.pth
+    Config: configs/sam/vit-large-p16_sam_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth
+      Code: https://github.com/facebookresearch/segment-anything/
+
+  - Name: vit-huge-p16_sam-pre_3rdparty_sa1b-1024px
+    Metadata:
+      FLOPs: 2982000000000
+      Parameters: 637000000
+      Training Data:
+        - SA-1B
+    In Collection: SAM
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-huge-p16_sam-pre_3rdparty_sa1b-1024px_20230411-3f13c653.pth
+    Config: configs/sam/vit-huge-p16_sam_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+      Code: https://github.com/facebookresearch/segment-anything/
