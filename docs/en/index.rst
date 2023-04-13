@@ -141,6 +141,12 @@ We always welcome *PRs* and *Issues* for the betterment of MMPretrain.
    notes/pretrain_custom_dataset.md
    notes/finetune_custom_dataset.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Device Support
+
+   device/npu.md
+
 Indices and tables
 ==================
 
