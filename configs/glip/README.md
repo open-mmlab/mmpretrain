@@ -21,7 +21,7 @@ This paper presents a grounded language-image pre-training (GLIP) model for lear
 ```python
 import torch
 from mmpretrain import get_model
-model = get_model('vit-t_glip-pre_3rdparty', pretrained=True)
+model = get_model('swin-t_glip-pre_3rdparty', pretrained=True)
 inputs = torch.rand(1, 3, 224, 224)
 out = model(inputs)
 print(type(out))
@@ -30,16 +30,18 @@ feats = model.extract_feat(inputs)
 print(type(feats))
 ```
 
+<!-- [TABS-END] -->
+
 ## Results and models
 
 ### Pre-trained models
 
 The pre-trained models are used to fine-tune, and therefore don't have evaluation results.
 
-| Model                                      |          Pretrain          | resolution |                                                          Download                                                          |
-| :----------------------------------------- | :------------------------: | :--------: | :------------------------------------------------------------------------------------------------------------------------: |
-| GLIP-T (`vit-t_glip-pre_3rdparty`)\*       |    O365,GoldG,CC3M,SBU     |  224x224   |   [model](https://download.openmmlab.com/mmclassification/v1/glip/vit-t_glip-pre_3rdparty_merged_20230411-d85813b5.pth)    |
-| GLIP-L (`vit-l_glip-pre_3rdparty_384px`)\* | FourODs,GoldG,CC3M+12M,SBU |  384x384   | [model](https://download.openmmlab.com/mmclassification/v1/glip/vit-l_glip-pre_3rdparty_merged-384px_20230412-04b198e8.pth) |
+| Model                                       |          Pretrain          | resolution |                                                       Download                                                        |
+| :------------------------------------------ | :------------------------: | :--------: | :-------------------------------------------------------------------------------------------------------------------: |
+| GLIP-T (`swin-t_glip-pre_3rdparty`)\*       |    O365,GoldG,CC3M,SBU     |  224x224   |    [model](https://download.openmmlab.com/mmclassification/v1/glip/swin-t_glip-pre_3rdparty_20230413-d85813b5.pth)    |
+| GLIP-L (`swin-l_glip-pre_3rdparty_384px`)\* | FourODs,GoldG,CC3M+12M,SBU |  384x384   | [model](https://download.openmmlab.com/mmclassification/v1/glip/swin-l_glip-pre_3rdparty_384px_20230413-04b198e8.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/microsoft/GLIP).*
 

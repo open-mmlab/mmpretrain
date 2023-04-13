@@ -1,6 +1,11 @@
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='SwinTransformer', arch='tiny', img_size=224),
+    backbone=dict(
+        type='SwinTransformer',
+        arch='tiny',
+        img_size=224,
+        out_indices=(1, 2, 3),  # original weight is for detection
+    ),
     neck=None,
     head=None)
 
