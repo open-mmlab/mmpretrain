@@ -1,5 +1,5 @@
 Collections:
-  - Name: Grounded Language-Image Pre-training
+  - Name: GLIP
     Metadata:
       Training Techniques:
         - AdamW
