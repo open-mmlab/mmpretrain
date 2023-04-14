@@ -3,4 +3,4 @@ importlib-metadata
 matplotlib
 modelindex
 numpy
-rich
+rich<13.0.0
