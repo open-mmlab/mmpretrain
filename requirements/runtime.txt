@@ -2,5 +2,6 @@ einops
 importlib-metadata
 matplotlib
 modelindex
-numpy
 rich<13.0.0
+numpy
+
