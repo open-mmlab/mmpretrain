@@ -5,9 +5,9 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
+from mmengine.runner import load_checkpoint, save_checkpoint
 
-from mmcls.models.backbones import RepMLPNet
+from mmpretrain.models.backbones import RepMLPNet
 
 
 class TestRepMLP(TestCase):
@@ -163,7 +163,7 @@ class TestRepMLP(TestCase):
         cfg['deploy'] = True
         model_deploy = RepMLPNet(**cfg)
         model_deploy.eval()
-        save_checkpoint(model, self.ckpt_path)
+        save_checkpoint(model.state_dict(), self.ckpt_path)
         load_checkpoint(model_deploy, self.ckpt_path, strict=True)
         feats__ = model_deploy(imgs)
 

@@ -5,11 +5,12 @@ from unittest import TestCase
 
 import torch
 from mmcv.cnn import ConvModule
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import CSPDarkNet, CSPResNet, CSPResNeXt
-from mmcls.models.backbones.cspnet import (CSPNet, DarknetBottleneck,
-                                           ResNetBottleneck, ResNeXtBottleneck)
+from mmpretrain.models.backbones import CSPDarkNet, CSPResNet, CSPResNeXt
+from mmpretrain.models.backbones.cspnet import (CSPNet, DarknetBottleneck,
+                                                ResNetBottleneck,
+                                                ResNeXtBottleneck)
 
 
 class TestCSPNet(TestCase):
@@ -71,7 +72,6 @@ class TestCSPDarkNet(TestCase):
     def test_forward(self):
         imgs = torch.randn(3, 3, 224, 224)
 
-        # test without output_cls_token
         cfg = deepcopy(self.cfg)
         model = self.class_name(**cfg)
         outs = model(imgs)

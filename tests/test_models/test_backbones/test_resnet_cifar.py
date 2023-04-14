@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import ResNet_CIFAR
+from mmpretrain.models.backbones import ResNet_CIFAR
 
 
 def check_norm_state(modules, train_state):

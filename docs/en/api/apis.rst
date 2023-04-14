@@ -1,37 +1,27 @@
 .. role:: hidden
     :class: hidden-section
 
-mmcls.apis
+.. module:: mmpretrain.apis
+
+mmpretrain.apis
 ===================================
 
 These are some high-level APIs for classification tasks.
 
-.. contents:: mmcls.apis
+.. contents:: mmpretrain.apis
    :depth: 2
    :local:
    :backlinks: top
 
-.. currentmodule:: mmcls.apis
-
-Train
+Model
 ------------------
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
-   init_random_seed
-   set_random_seed
-   train_model
-
-Test
-------------------
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   single_gpu_test
-   multi_gpu_test
+   list_models
+   get_model
 
 Inference
 ------------------
@@ -39,7 +29,14 @@ Inference
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: callable.rst
 
-   init_model
+   ImageClassificationInferencer
+   ImageRetrievalInferencer
+   FeatureExtractor
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
    inference_model
-   show_result_pyplot

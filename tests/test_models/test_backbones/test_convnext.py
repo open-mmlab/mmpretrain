@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import ConvNeXt
+from mmpretrain.models.backbones import ConvNeXt
 
 
 def test_assertion():
@@ -84,3 +84,23 @@ def test_convnext():
     for i in range(2, 4):
         assert model.downsample_layers[i].training
         assert model.stages[i].training
+
+    # Test Activation Checkpointing
+    model = ConvNeXt(arch='tiny', out_indices=-1, with_cp=True)
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 768])
+
+    # Test linear_pw_conv=False
+    model = ConvNeXt(arch='tiny', out_indices=-1, linear_pw_conv=False)
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 768])

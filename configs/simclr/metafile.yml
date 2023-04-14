@@ -1,0 +1,72 @@
+Collections:
+  - Name: SimCLR
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - LARS
+      Training Resources: 8x V100 GPUs (b256), 16x A100-80G GPUs (b4096)
+      Architecture:
+        - ResNet
+        - SimCLR
+    Paper:
+      Title: A simple framework for contrastive learning of visual representations
+      URL: https://arxiv.org/abs/2002.05709
+    README: configs/simclr/README.md
+
+Models:
+  - Name: simclr_resnet50_16xb256-coslr-200e_in1k
+    Metadata:
+      Epochs: 200
+      Batch Size: 4096
+      FLOPs: 4109364224
+      Parameters: 27968832
+      Training Data: ImageNet-1k
+    In Collection: SimCLR
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simclr/simclr_resnet50_16xb256-coslr-200e_in1k/simclr_resnet50_16xb256-coslr-200e_in1k_20220825-4d9cce50.pth
+    Config: configs/simclr/simclr_resnet50_16xb256-coslr-200e_in1k.py
+    Downstream:
+      - resnet50_simclr-200e-pre_8xb512-linear-coslr-90e_in1k
+  - Name: simclr_resnet50_16xb256-coslr-800e_in1k
+    Metadata:
+      Epochs: 200
+      Batch Size: 4096
+      FLOPs: 4109364224
+      Parameters: 27968832
+      Training Data: ImageNet-1k
+    In Collection: SimCLR
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simclr/simclr_resnet50_16xb256-coslr-800e_in1k/simclr_resnet50_16xb256-coslr-800e_in1k_20220825-85fcc4de.pth
+    Config: configs/simclr/simclr_resnet50_16xb256-coslr-800e_in1k.py
+    Downstream:
+      - resnet50_simclr-800e-pre_8xb512-linear-coslr-90e_in1k
+  - Name: resnet50_simclr-200e-pre_8xb512-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 4096
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: SimCLR
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 66.9
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simclr/simclr_resnet50_16xb256-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-f12c0457.pth
+    Config: configs/simclr/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py
+  - Name: resnet50_simclr-800e-pre_8xb512-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 4096
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: SimCLR
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 69.2
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simclr/simclr_resnet50_16xb256-coslr-800e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-b80ae1e5.pth
+    Config: configs/simclr/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py

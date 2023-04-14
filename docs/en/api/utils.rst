@@ -1,23 +1,19 @@
 .. role:: hidden
     :class: hidden-section
 
-mmcls.utils
+.. module:: mmpretrain.utils
+
+mmpretrain.utils
 ===================================
 
-These are some useful help function in the ``utils`` package.
-
-.. contents:: mmcls.utils
-   :depth: 1
-   :local:
-   :backlinks: top
-
-.. currentmodule:: mmcls.utils
+This package includes some useful helper functions for developing.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
 
    collect_env
-   get_root_logger
+   register_all_modules
    load_json_log
-   setup_multi_processes
+   track_on_main_process
+   get_ori_model

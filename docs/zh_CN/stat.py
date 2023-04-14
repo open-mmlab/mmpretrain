@@ -1,99 +1,246 @@
 #!/usr/bin/env python
-import functools as func
-import glob
-import os
 import re
+import warnings
+from collections import defaultdict
 from pathlib import Path
 
-import numpy as np
+from modelindex.load_model_index import load
+from modelindex.models.Result import Result
+from tabulate import tabulate
 
-MMCLS_ROOT = Path(__file__).absolute().parents[1]
-url_prefix = 'https://github.com/open-mmlab/mmclassification/blob/master/'
+MMPT_ROOT = Path(__file__).absolute().parents[2]
+PAPERS_ROOT = Path('papers')  # Path to save generated paper pages.
+GITHUB_PREFIX = 'https://github.com/open-mmlab/mmpretrain/blob/main/'
+MODELZOO_TEMPLATE = """\
+# 模型库统计
 
-papers_root = Path('papers')
-papers_root.mkdir(exist_ok=True)
-files = [Path(f) for f in sorted(glob.glob('../../configs/*/README.md'))]
+在本页面中，我们列举了我们支持的[所有算法](#所有已支持的算法)。你可以点击链接跳转至对应的模型详情页面。
 
-stats = []
-titles = []
-num_ckpts = 0
-num_configs = 0
+另外，我们还列出了我们提供的所有模型权重文件。你可以使用排序和搜索功能找到需要的模型权重，并使用链接跳转至模型详情页面。
 
-for f in files:
-    with open(f, 'r') as content_file:
-        content = content_file.read()
+## 所有已支持的算法
 
-    # Extract checkpoints
-    ckpts = set(x.lower().strip()
-                for x in re.findall(r'\[model\]\((https?.*)\)', content))
-    if len(ckpts) == 0:
-        continue
-    num_ckpts += len(ckpts)
+* 论文数量：{num_papers}
+{type_msg}
 
-    # Extract paper title
-    match_res = list(re.finditer(r'> \[(.*)\]\((.*)\)', content))
-    if len(match_res) > 0:
-        title, paperlink = match_res[0].groups()
-    else:
-        title = content.split('\n')[0].replace('# ', '').strip()
-        paperlink = None
-    titles.append(title)
+* 模型权重文件数量：{num_ckpts}
+{paper_msg}
 
-    # Replace paper link to a button
-    if paperlink is not None:
-        start = match_res[0].start()
-        end = match_res[0].end()
-        link_button = f'[{title}]({paperlink})'
-        content = content[:start] + link_button + content[end:]
+"""  # noqa: E501
 
-    # Extract paper type
-    _papertype = [x for x in re.findall(r'\[([A-Z]+)\]', content)]
-    assert len(_papertype) > 0
-    papertype = _papertype[0]
-    paper = set([(papertype, title)])
+METRIC_ALIAS = {
+    'Top 1 Accuracy': 'Top-1 (%)',
+    'Top 5 Accuracy': 'Top-5 (%)',
+}
+
+model_index = load(str(MMPT_ROOT / 'model-index.yml'))
+
+
+def build_collections(model_index):
+    col_by_name = {}
+    for col in model_index.collections:
+        setattr(col, 'models', [])
+        col_by_name[col.name] = col
+
+    for model in model_index.models:
+        col = col_by_name[model.in_collection]
+        col.models.append(model)
+        setattr(model, 'collection', col)
+        if model.results is None:
+            setattr(model, 'tasks', [])
+        else:
+            setattr(model, 'tasks', [result.task for result in model.results])
+
+
+build_collections(model_index)
+
+
+def count_papers(collections):
+    total_num_ckpts = 0
+    type_count = defaultdict(int)
+    paper_msgs = []
+
+    for collection in collections:
+        with open(MMPT_ROOT / collection.readme) as f:
+            readme = f.read()
+        ckpts = set(x.lower().strip()
+                    for x in re.findall(r'\[model\]\((https?.*)\)', readme))
+        total_num_ckpts += len(ckpts)
+        title = collection.paper['Title']
+        papertype = collection.data.get('type', 'Algorithm')
+        type_count[papertype] += 1
+
+        readme = PAPERS_ROOT / Path(
+            collection.filepath).parent.with_suffix('.md').name
+        paper_msgs.append(
+            f'\t- [{papertype}] [{title}]({readme}) ({len(ckpts)} ckpts)')
+
+    type_msg = '\n'.join(
+        [f'\t- {type_}: {count}' for type_, count in type_count.items()])
+    paper_msg = '\n'.join(paper_msgs)
+
+    modelzoo = MODELZOO_TEMPLATE.format(
+        num_papers=len(collections),
+        num_ckpts=total_num_ckpts,
+        type_msg=type_msg,
+        paper_msg=paper_msg,
+    )
+
+    with open('modelzoo_statistics.md', 'w') as f:
+        f.write(modelzoo)
+
+
+count_papers(model_index.collections)
+
+
+def generate_paper_page(collection):
+    PAPERS_ROOT.mkdir(exist_ok=True)
 
     # Write a copy of README
-    copy = papers_root / (f.parent.name + '.md')
-    if copy.exists():
-        os.remove(copy)
+    with open(MMPT_ROOT / collection.readme) as f:
+        readme = f.read()
+    folder = Path(collection.filepath).parent
+    copy = PAPERS_ROOT / folder.with_suffix('.md').name
 
     def replace_link(matchobj):
         # Replace relative link to GitHub link.
         name = matchobj.group(1)
         link = matchobj.group(2)
-        if not link.startswith('http') and (f.parent / link).exists():
-            rel_link = (f.parent / link).absolute().relative_to(MMCLS_ROOT)
-            link = url_prefix + str(rel_link)
+        if not link.startswith('http'):
+            assert (folder / link).exists(), \
+                f'Link not found:\n{collection.readme}: {link}'
+            rel_link = (folder / link).absolute().relative_to(MMPT_ROOT)
+            link = GITHUB_PREFIX + str(rel_link)
         return f'[{name}]({link})'
 
-    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, content)
+    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
+    content = f'---\ngithub_page: /{collection.readme}\n---\n' + content
+
+    def make_tabs(matchobj):
+        """modify the format from emphasis black symbol to tabs."""
+        content = matchobj.group()
+        content = content.replace('<!-- [TABS-BEGIN] -->', '')
+        content = content.replace('<!-- [TABS-END] -->', '')
+
+        # split the content by "**{Tab-Name}**""
+        splits = re.split(r'^\*\*(.*)\*\*$', content, flags=re.M)[1:]
+        tabs_list = []
+        for title, tab_content in zip(splits[::2], splits[1::2]):
+            title = ':::{tab} ' + title + '\n'
+            tab_content = tab_content.strip() + '\n:::\n'
+            tabs_list.append(title + tab_content)
+
+        return '::::{tabs}\n' + ''.join(tabs_list) + '::::'
+
+    if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
+        # Make TABS block a selctive tabs
+        try:
+            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*?)<!-- \[TABS-END\] -->'
+            content = re.sub(pattern, make_tabs, content)
+        except Exception as e:
+            warnings.warn(f'Can not parse the TABS, get an error : {e}')
 
     with open(copy, 'w') as copy_file:
         copy_file.write(content)
 
-    statsmsg = f"""
-\t* [{papertype}] [{title}]({copy}) ({len(ckpts)} ckpts)
-"""
-    stats.append(dict(paper=paper, ckpts=ckpts, statsmsg=statsmsg, copy=copy))
 
-allpapers = func.reduce(lambda a, b: a.union(b),
-                        [stat['paper'] for stat in stats])
-msglist = '\n'.join(stat['statsmsg'] for stat in stats)
+for collection in model_index.collections:
+    generate_paper_page(collection)
 
-papertypes, papercounts = np.unique([t for t, _ in allpapers],
-                                    return_counts=True)
-countstr = '\n'.join(
-    [f'   - {t}: {c}' for t, c in zip(papertypes, papercounts)])
 
-modelzoo = f"""
-# 模型库统计
+def scatter_results(models):
+    model_result_pairs = []
+    for model in models:
+        if model.results is None:
+            result = Result(task=None, dataset=None, metrics={})
+            model_result_pairs.append((model, result))
+        else:
+            for result in model.results:
+                model_result_pairs.append((model, result))
+    return model_result_pairs
 
-* 论文数量： {len(set(titles))}
-{countstr}
 
-* 模型权重文件数量： {num_ckpts}
-{msglist}
-"""
+def generate_summary_table(task, model_result_pairs, title=None):
+    metrics = set()
+    for model, result in model_result_pairs:
+        if result.task == task:
+            metrics = metrics.union(result.metrics.keys())
+    metrics = sorted(list(metrics))
 
-with open('modelzoo_statistics.md', 'w') as f:
-    f.write(modelzoo)
+    rows = []
+    for model, result in model_result_pairs:
+        if result.task != task:
+            continue
+        name = model.name
+        params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
+        flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
+        readme = Path(model.collection.filepath).parent.with_suffix('.md').name
+        page = f'[链接]({PAPERS_ROOT / readme})'
+        model_metrics = []
+        for metric in metrics:
+            model_metrics.append(str(result.metrics.get(metric, '')))
+
+        rows.append([name, params, flops, *model_metrics, page])
+
+    with open('modelzoo_statistics.md', 'a') as f:
+        if title is not None:
+            f.write(f'\n{title}')
+        f.write("""\n```{table}\n:class: model-summary\n""")
+        header = [
+            '模型',
+            '参数量 (M)',
+            'Flops (G)',
+            *[METRIC_ALIAS.get(metric, metric) for metric in metrics],
+            'Readme',
+        ]
+        table_cfg = dict(
+            tablefmt='pipe',
+            floatfmt='.2f',
+            numalign='right',
+            stralign='center')
+        f.write(tabulate(rows, header, **table_cfg))
+        f.write('\n```\n')
+
+
+def generate_dataset_wise_table(task, model_result_pairs, title=None):
+    dataset_rows = defaultdict(list)
+    for model, result in model_result_pairs:
+        if result.task == task:
+            dataset_rows[result.dataset].append((model, result))
+
+    if title is not None:
+        with open('modelzoo_statistics.md', 'a') as f:
+            f.write(f'\n{title}')
+    for dataset, pairs in dataset_rows.items():
+        generate_summary_table(task, pairs, title=f'### {dataset}')
+
+
+model_result_pairs = scatter_results(model_index.models)
+
+# Generate Pretrain Summary
+generate_summary_table(
+    task=None,
+    model_result_pairs=model_result_pairs,
+    title='## 预训练模型',
+)
+
+# Generate Image Classification Summary
+generate_dataset_wise_table(
+    task='Image Classification',
+    model_result_pairs=model_result_pairs,
+    title='## 图像分类',
+)
+
+# Generate Multi-Label Classification Summary
+generate_dataset_wise_table(
+    task='Multi-Label Classification',
+    model_result_pairs=model_result_pairs,
+    title='## 图像多标签分类',
+)
+
+# Generate Image Retrieval Summary
+generate_dataset_wise_table(
+    task='Image Retrieval',
+    model_result_pairs=model_result_pairs,
+    title='## 图像检索',
+)

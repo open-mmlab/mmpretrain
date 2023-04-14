@@ -5,6 +5,13 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-data = dict(samples_per_gpu=256)
+# dataset settings
+train_dataloader = dict(batch_size=256)
 
-runner = dict(type='EpochBasedRunner', max_epochs=90)
+# schedule settings
+train_cfg = dict(by_epoch=True, max_epochs=90)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (4 GPUs) x (256 samples per GPU)
+auto_scale_lr = dict(base_batch_size=1024)

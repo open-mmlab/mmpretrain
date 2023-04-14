@@ -13,7 +13,7 @@ def readme():
 
 
 def get_version():
-    version_file = 'mmcls/version.py'
+    version_file = 'mmpretrain/version.py'
     with open(version_file, 'r', encoding='utf-8') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
@@ -119,7 +119,7 @@ def add_mim_extension():
 
     filenames = ['tools', 'configs', 'model-index.yml']
     repo_path = osp.dirname(__file__)
-    mim_path = osp.join(repo_path, 'mmcls', '.mim')
+    mim_path = osp.join(repo_path, 'mmpretrain', '.mim')
     os.makedirs(mim_path, exist_ok=True)
 
     for filename in filenames:
@@ -161,27 +161,30 @@ def add_mim_extension():
 if __name__ == '__main__':
     add_mim_extension()
     setup(
-        name='mmcls',
+        name='mmpretrain',
         version=get_version(),
-        description='OpenMMLab Image Classification Toolbox and Benchmark',
+        description='OpenMMLab Model Pretraining Toolbox and Benchmark',
         long_description=readme(),
         long_description_content_type='text/markdown',
-        keywords='computer vision, image classification',
-        packages=find_packages(exclude=('configs', 'tools', 'demo')),
+        keywords='computer vision, image classification, '
+        'unsupervised learning, self-supervised learning',
+        packages=find_packages(exclude=('configs', 'tools', 'demo', 'tests')),
         include_package_data=True,
+        python_requires='>=3.7',
         classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: Apache Software License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
+            'Programming Language :: Python :: 3.10',
+            'Programming Language :: Python :: 3.11',
             'Topic :: Scientific/Engineering :: Artificial Intelligence',
         ],
-        url='https://github.com/open-mmlab/mmclassification',
-        author='MMClassification Contributors',
+        url='https://github.com/open-mmlab/mmpretrain',
+        author='MMPretrain Contributors',
         author_email='openmmlab@gmail.com',
         license='Apache License 2.0',
         install_requires=parse_requirements('requirements/runtime.txt'),
@@ -189,5 +192,6 @@ if __name__ == '__main__':
             'all': parse_requirements('requirements.txt'),
             'tests': parse_requirements('requirements/tests.txt'),
             'optional': parse_requirements('requirements/optional.txt'),
+            'mim': parse_requirements('requirements/mminstall.txt'),
         },
         zip_safe=False)

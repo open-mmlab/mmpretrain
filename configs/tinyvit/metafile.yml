@@ -1,0 +1,162 @@
+Collections:
+  - Name: TinyViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - MBConv
+        - Window Multi-head Self-Attention
+    Paper:
+      Title: 'TinyViT: Fast Pretraining Distillation for Small Vision Transformers'
+      URL: https://arxiv.org/abs/2207.10666
+    README: configs/tinyvit/README.md
+    Code:
+      Version: v1.0.0rc1
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.23.2/mmcls/models/backbones/tinyvit.py
+
+Models:
+  - Name: tinyvit-5m_3rdparty_in1k
+    Metadata:
+      FLOPs: 1286655360
+      Parameters: 5392764
+      Training Data: ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.02
+          Top 5 Accuracy: 94.74
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_3rdparty_in1k_20221021-62cb5abf.pth
+    Config: configs/tinyvit/tinyvit-5m_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_5m_1k.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-5m_in21k-distill-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 1286655360
+      Parameters: 5392764
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.71
+          Top 5 Accuracy: 95.57
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-5m_in21k-distill-pre_3rdparty_in1k_20221021-d4b010a8.pth
+    Config: configs/tinyvit/tinyvit-5m-distill_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_5m_22kto1k_distill.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-11m_3rdparty_in1k
+    Metadata:
+      FLOPs: 2050033664
+      Parameters: 10996972
+      Training Data: ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.44
+          Top 5 Accuracy: 95.79
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_3rdparty_in1k_20221021-11ccef16.pth
+    Config: configs/tinyvit/tinyvit-11m_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_11m_1k.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-11m_in21k-distill-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 2050033664
+      Parameters: 10996972
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.19
+          Top 5 Accuracy: 96.53
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-11m_in21k-distill-pre_3rdparty_in1k_20221021-5d3bc0dc.pth
+    Config: configs/tinyvit/tinyvit-11m-distill_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_11m_22kto1k_distill.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-21m_3rdparty_in1k
+    Metadata:
+      FLOPs: 4301124096
+      Parameters: 21198568
+      Training Data: ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.08
+          Top 5 Accuracy: 96.58
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_3rdparty_in1k_20221021-5346ba34.pth
+    Config: configs/tinyvit/tinyvit-21m_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_21m_1k.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-21m_in21k-distill-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 4301124096
+      Parameters: 21198568
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.85
+          Top 5 Accuracy: 97.27
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k_20221021-3d9b30a2.pth
+    Config: configs/tinyvit/tinyvit-21m-distill_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_21m_22kto1k_distill.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 13848250176
+      Parameters: 21230488
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.21
+          Top 5 Accuracy: 97.77
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px_20221021-65be6b3f.pth
+    Config: configs/tinyvit/tinyvit-21m-distill_8xb256_in1k-384px.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_21m_22kto1k_384_distill.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT
+  - Name: tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px
+    Metadata:
+      FLOPs: 27151420224
+      Parameters: 21268120
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: TinyViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.44
+          Top 5 Accuracy: 97.89
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px_20221021-e42a9bea.pth
+    Config: configs/tinyvit/tinyvit-21m-distill_8xb256_in1k-512px.py
+    Converted From:
+      Weights: https://github.com/wkcn/TinyViT-model-zoo/releases/download/checkpoints/tiny_vit_21m_22kto1k_512_distill.pth
+      Code: https://github.com/microsoft/Cream/tree/main/TinyViT

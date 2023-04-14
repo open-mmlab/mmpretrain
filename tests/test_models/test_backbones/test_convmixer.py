@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import ConvMixer
+from mmpretrain.models.backbones import ConvMixer
 
 
 def test_assertion():
@@ -18,6 +18,7 @@ def test_assertion():
         ConvMixer(out_indices=-100)
 
 
+@torch.no_grad()  # To save memory
 def test_convmixer():
 
     # Test forward

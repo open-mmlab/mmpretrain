@@ -8,4 +8,4 @@ _base_ = [
 model = dict(head=dict(num_classes=21843))
 
 # runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=90)
+train_cfg = dict(by_epoch=True, max_epochs=90)

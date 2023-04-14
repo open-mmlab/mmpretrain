@@ -1,0 +1,151 @@
+Collections:
+  - Name: RIFormer
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Affine
+        - 1x1 Convolution
+        - LayerScale
+    Paper:
+      URL: https://arxiv.org/abs/xxxx.xxxxx
+      Title: "RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer"
+    README: configs/riformer/README.md
+    Code:
+      Version: v1.0.0rc7
+      URL: null
+
+Models:
+  - Name: riformer-s12_in1k
+    Metadata:
+      FLOPs: 1822000000
+      Parameters: 11915000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.90
+          Top 5 Accuracy: 93.06
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k_20230406-6741ce71.pth
+    Config: configs/riformer/riformer-s12_8xb128_in1k.py
+  - Name: riformer-s24_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 3412000000
+      Parameters: 21389000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.28
+          Top 5 Accuracy: 94.80
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k_20230406-fdab072a.pth
+    Config: configs/riformer/riformer-s24_8xb128_in1k.py
+  - Name: riformer-s36_in1k
+    Metadata:
+      FLOPs: 5003000000
+      Parameters: 30863000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.29
+          Top 5 Accuracy: 95.41
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k_20230406-fdfcd3b0.pth
+    Config: configs/riformer/riformer-s36_8xb128_in1k.py
+  - Name: riformer-m36_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 8801000000
+      Parameters: 56173000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.57
+          Top 5 Accuracy: 95.99
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k_20230406-2fcb9d9b.pth
+    Config: configs/riformer/riformer-m36_8xb128_in1k.py
+  - Name: riformer-m48_in1k
+    Metadata:
+      FLOPs: 11590000000
+      Parameters: 73473000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.75
+          Top 5 Accuracy: 96.11
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k_20230406-2b9d1abf.pth
+    Config: configs/riformer/riformer-m48_8xb64_in1k.py
+  - Name: riformer-s12_in1k-384
+    Metadata:
+      FLOPs: 5355000000
+      Parameters: 11915000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.29
+          Top 5 Accuracy: 93.93
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s12_32xb128_in1k-384px_20230406-145eda4c.pth
+    Config: configs/riformer/riformer-s12_8xb128_in1k-384px.py
+  - Name: riformer-s24_in1k-384
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 10028000000
+      Parameters: 21389000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.36
+          Top 5 Accuracy: 95.40
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s24_32xb128_in1k-384px_20230406-bafae7ab.pth
+    Config: configs/riformer/riformer-s24_8xb128_in1k-384px.py
+  - Name: riformer-s36_in1k-384
+    Metadata:
+      FLOPs: 14702000000
+      Parameters: 30863000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.22
+          Top 5 Accuracy: 95.95
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-s36_32xb128_in1k-384px_20230406-017ed3c4.pth
+    Config: configs/riformer/riformer-s36_8xb64_in1k-384px.py
+  - Name: riformer-m36_in1k-384
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 25865000000
+      Parameters: 56173000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.39
+          Top 5 Accuracy: 96.40
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m36_32xb128_in1k-384px_20230406-66a6f764.pth
+    Config: configs/riformer/riformer-m36_8xb64_in1k-384px.py
+  - Name: riformer-m48_in1k-384
+    Metadata:
+      FLOPs: 34060000000
+      Parameters: 73473000
+    In Collection: RIFormer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.70
+          Top 5 Accuracy: 96.60
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v1/riformer/riformer-m48_32xb128_in1k-384px_20230406-2e874826.pth
+    Config: configs/riformer/riformer-m48_8xb64_in1k-384px.py

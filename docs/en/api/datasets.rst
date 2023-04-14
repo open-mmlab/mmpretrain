@@ -1,12 +1,17 @@
 .. role:: hidden
     :class: hidden-section
 
-mmcls.datasets
+.. module:: mmpretrain.datasets
+
+mmpretrain.datasets
 ===================================
 
 The ``datasets`` package contains several usual datasets for image classification tasks and some dataset wrappers.
 
-.. currentmodule:: mmcls.datasets
+.. contents:: mmpretrain.datasets
+   :depth: 2
+   :local:
+   :backlinks: top
 
 Custom Dataset
 --------------
@@ -39,6 +44,21 @@ VOC
 
 .. autoclass:: VOC
 
+CUB
+---
+
+.. autoclass:: CUB
+
+Places205
+---------
+
+.. autoclass:: Places205
+
+Retrieval
+---------
+
+.. autoclass:: InShop
+
 Base classes
 ------------
 
@@ -49,8 +69,15 @@ Base classes
 Dataset Wrappers
 ----------------
 
-.. autoclass:: ConcatDataset
+.. autoclass:: KFoldDataset
 
-.. autoclass:: RepeatDataset
+The dataset wrappers in the MMEngine can be directly used in MMPreTrain.
 
-.. autoclass:: ClassBalancedDataset
+.. list-table::
+
+   * - :class:`~mmengine.dataset.ConcatDataset`
+     - A wrapper of concatenated dataset.
+   * - :class:`~mmengine.dataset.RepeatDataset`
+     - A wrapper of repeated dataset.
+   * - :class:`~mmengine.dataset.ClassBalancedDataset`
+     - A wrapper of class balanced dataset.

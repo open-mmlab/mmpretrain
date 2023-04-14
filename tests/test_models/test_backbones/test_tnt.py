@@ -3,7 +3,7 @@ import pytest
 import torch
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import TNT
+from mmpretrain.models.backbones import TNT
 
 
 def check_norm_state(modules, train_state):

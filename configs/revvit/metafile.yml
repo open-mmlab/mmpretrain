@@ -1,0 +1,48 @@
+Collections:
+  - Name: RevViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Vision Transformer
+        - Reversible
+    Paper:
+      URL: https://openaccess.thecvf.com/content/CVPR2022/papers/Mangalam_Reversible_Vision_Transformers_CVPR_2022_paper.pdf
+      Title: Reversible Vision Transformers
+    README: configs/revvit/README.md
+    Code:
+      Version: v1.0.0rc5
+      URL: https://github.com/open-mmlab/mmpretrain/blob/1.0.0rc5/mmcls/models/backbones/revvit.py
+
+Models:
+  - Name: revvit-small_3rdparty_in1k
+    Metadata:
+      FLOPs: 4583427072
+      Parameters: 22435432
+    In Collection: RevViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.87
+          Top 5 Accuracy: 94.90
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-small_3rdparty_in1k_20221213-a3a34f5c.pth
+    Config: configs/revvit/revvit-small_8xb256_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/pyslowfast/rev/REV_VIT_S.pyth
+      Code: https://github.com/facebookresearch/SlowFast
+  - Name: revvit-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 17490450432
+      Parameters: 87337192
+    In Collection: RevViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.81
+          Top 5 Accuracy: 95.56
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/revvit/revvit-base_3rdparty_in1k_20221213-87a7b0a5.pth
+    Config: configs/revvit/revvit-base_8xb256_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/pyslowfast/rev/REV_VIT_B.pyth
+      Code: https://github.com/facebookresearch/SlowFast

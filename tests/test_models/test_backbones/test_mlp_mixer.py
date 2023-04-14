@@ -6,7 +6,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import MlpMixer
+from mmpretrain.models.backbones import MlpMixer
 
 
 def is_norm(modules):
@@ -90,7 +90,7 @@ class TestMLPMixer(TestCase):
         self.assertFalse(torch.allclose(ori_weight, initialized_weight))
 
     def test_forward(self):
-        imgs = torch.randn(3, 3, 224, 224)
+        imgs = torch.randn(1, 3, 224, 224)
 
         # test forward with single out indices
         cfg = deepcopy(self.cfg)
@@ -99,7 +99,7 @@ class TestMLPMixer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 768, 196))
+        self.assertEqual(feat.shape, (1, 768, 196))
 
         # test forward with multi out indices
         cfg = deepcopy(self.cfg)
@@ -109,10 +109,10 @@ class TestMLPMixer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 3)
         for feat in outs:
-            self.assertEqual(feat.shape, (3, 768, 196))
+            self.assertEqual(feat.shape, (1, 768, 196))
 
         # test with invalid input shape
-        imgs2 = torch.randn(3, 3, 256, 256)
+        imgs2 = torch.randn(1, 3, 256, 256)
         cfg = deepcopy(self.cfg)
         model = MlpMixer(**cfg)
         with self.assertRaisesRegex(AssertionError, 'dynamic input shape.'):

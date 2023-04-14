@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.11.5
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/mirrors-yapf
@@ -29,9 +29,9 @@ repos:
     rev: 0.7.9
     hooks:
       - id: mdformat
-        args: ["--number", "--table-width", "200"]
+        args: ["--number", "--table-width", "200", '--disable-escape', 'backslash', '--disable-escape', 'link-enclosure']
         additional_dependencies:
-          - mdformat-openmmlab
+          - "mdformat-openmmlab>=0.0.4"
           - mdformat_frontmatter
           - linkify-it-py
   - repo: https://github.com/codespell-project/codespell
@@ -44,10 +44,21 @@ repos:
       - id: docformatter
         args: ["--in-place", "--wrap-descriptions", "79"]
   - repo: https://github.com/open-mmlab/pre-commit-hooks
-    rev: v0.2.0
+    rev: v0.4.0
     hooks:
     -   id: check-copyright
-        args: ["mmcls", "tests", "demo", "tools"]
+        args: ["mmpretrain", "tests", "demo", "tools", "--excludes", "mmpretrain/.mim/", "--ignore-file-not-found-error"]
+  - repo: local
+    hooks:
+      - id: metafile
+        args: ['--skip', 'flops-param']
+        name: metafile
+        description: Check the format of metafile
+        entry: python .dev_scripts/check_metafile.py
+        language: python
+        files: (metafile)\.(yml)$
+        additional_dependencies:
+          - modelindex
   # - repo: local
   #   hooks:
   #     - id: clang-format

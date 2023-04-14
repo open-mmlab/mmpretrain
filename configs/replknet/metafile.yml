@@ -1,0 +1,129 @@
+Collections:
+  - Name: RepLKNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Large-Kernel Convolution
+        - VGG-style Neural Network
+    Paper:
+      URL: https://arxiv.org/abs/2203.06717
+      Title: 'Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs'
+    README: configs/replknet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc3/mmcls/models/backbones/replknet.py
+      Version: v1.0.0rc3
+
+Models:
+  - Name: replknet-31B_3rdparty_in1k
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-31B_32xb64_in1k.py
+    Metadata:
+      FLOPs: 15636547584
+      Parameters: 79864168
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.48
+        Top 5 Accuracy: 96.57
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1azQUiCxK9feYVkkrPqwVPBtNsTzDrX7S&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
+
+  - Name: replknet-31B_3rdparty_in1k-384px
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-31B_32xb64_in1k-384px.py
+    Metadata:
+      FLOPs: 45952303104
+      Parameters: 79864168
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.84
+        Top 5 Accuracy: 97.34
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1vo-P3XB6mRLUeDzmgv90dOu73uCeLfZN&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
+
+  - Name: replknet-31B_in21k-pre_3rdparty_in1k
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-31B_32xb64_in1k.py
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 15636547584
+      Parameters: 79864168
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.20
+        Top 5 Accuracy: 97.56
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1DslZ2voXZQR1QoFY9KnbsHAeF84hzS0s&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
+
+  - Name: replknet-31B_in21k-pre_3rdparty_in1k-384px
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-31B_32xb64_in1k-384px.py
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 45952303104
+      Parameters: 79864168
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.99
+        Top 5 Accuracy: 97.75
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k-384px_20221118-76c92b24.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1Sc46BWdXXm2fVP-K_hKKU_W8vAB-0duX&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
+
+  - Name: replknet-31L_in21k-pre_3rdparty_in1k-384px
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-31L_32xb64_in1k-384px.py
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 97240006656
+      Parameters: 172671016
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.63
+        Top 5 Accuracy: 98.00
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1JYXoNHuRvC33QV1pmpzMTKEni1hpWfBl&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
+
+  - Name: replknet-XL_meg73m-pre_3rdparty_in1k-320px
+    In Collection: RepLKNet
+    Config: configs/replknet/replknet-XL_32xb64_in1k-320px.py
+    Metadata:
+      Training Data:
+        - MegData-73M
+        - ImageNet-1k
+      FLOPs: 129570201600
+      Parameters: 335435752
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 87.57
+        Top 5 Accuracy: 98.39
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth
+    Converted From:
+      Weights: https://drive.google.com/u/0/uc?id=1tPC60El34GntXByIRHb-z-Apm4Y5LX1T&export=download
+      Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py

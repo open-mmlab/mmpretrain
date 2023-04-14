@@ -1,5 +1,6 @@
 Import:
   - configs/mobilenet_v2/metafile.yml
+  - configs/mobilenet_v3/metafile.yml
   - configs/resnet/metafile.yml
   - configs/res2net/metafile.yml
   - configs/resnext/metafile.yml
@@ -12,6 +13,7 @@ Import:
   - configs/tnt/metafile.yml
   - configs/vision_transformer/metafile.yml
   - configs/t2t_vit/metafile.yml
+  - configs/tinyvit/metafile.yml
   - configs/mlp_mixer/metafile.yml
   - configs/conformer/metafile.yml
   - configs/regnet/metafile.yml
@@ -27,3 +29,42 @@ Import:
   - configs/convmixer/metafile.yml
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
+  - configs/inception_v3/metafile.yml
+  - configs/mvit/metafile.yml
+  - configs/edgenext/metafile.yml
+  - configs/mobileone/metafile.yml
+  - configs/efficientformer/metafile.yml
+  - configs/swin_transformer_v2/metafile.yml
+  - configs/deit3/metafile.yml
+  - configs/hornet/metafile.yml
+  - configs/mobilevit/metafile.yml
+  - configs/davit/metafile.yml
+  - configs/replknet/metafile.yml
+  - configs/csra/metafile.yml
+  - configs/beit/metafile.yml
+  - configs/beitv2/metafile.yml
+  - configs/eva/metafile.yml
+  - configs/revvit/metafile.yml
+  - configs/clip/metafile.yml
+  - configs/mixmim/metafile.yml
+  - configs/efficientnet_v2/metafile.yml
+  - configs/convnext_v2/metafile.yml
+  - configs/levit/metafile.yml
+  - configs/vig/metafile.yml
+  - configs/arcface/metafile.yml
+  - configs/xcit/metafile.yml
+  - configs/byol/metafile.yml
+  - configs/densecl/metafile.yml
+  - configs/mocov2/metafile.yml
+  - configs/mocov3/metafile.yml
+  - configs/simclr/metafile.yml
+  - configs/simsiam/metafile.yml
+  - configs/swav/metafile.yml
+  - configs/mae/metafile.yml
+  - configs/simmim/metafile.yml
+  - configs/barlowtwins/metafile.yml
+  - configs/cae/metafile.yml
+  - configs/maskfeat/metafile.yml
+  - configs/milan/metafile.yml
+  - configs/riformer/metafile.yml
+  - configs/sam/metafile.yml

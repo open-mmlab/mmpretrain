@@ -1,0 +1,72 @@
+Collections:
+  - Name: SimSiam
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Architecture:
+        - ResNet
+    Paper:
+      Title: Exploring simple siamese representation learning
+      URL: https://arxiv.org/abs/2011.10566
+    README: configs/simsiam/README.md
+
+Models:
+  - Name: simsiam_resnet50_8xb32-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 256
+      FLOPs: 4109364224
+      Parameters: 38199360
+      Training Data: ImageNet-1k
+    In Collection: SimSiam
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simsiam/simsiam_resnet50_8xb32-coslr-100e_in1k/simsiam_resnet50_8xb32-coslr-100e_in1k_20220825-d07cb2e6.pth
+    Config: configs/simsiam/simsiam_resnet50_8xb32-coslr-100e_in1k.py
+    Downstream:
+      - resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
+  - Name: simsiam_resnet50_8xb32-coslr-200e_in1k
+    Metadata:
+      Epochs: 200
+      Batch Size: 256
+      FLOPs: 4109364224
+      Parameters: 38199360
+      Training Data: ImageNet-1k
+    In Collection: SimSiam
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simsiam/simsiam_resnet50_8xb32-coslr-200e_in1k/simsiam_resnet50_8xb32-coslr-200e_in1k_20220825-efe91299.pth
+    Config: configs/simsiam/simsiam_resnet50_8xb32-coslr-200e_in1k.py
+    Downstream:
+      - resnet50_simsiam-200e-pre_8xb512-linear-coslr-90e_in1k
+  - Name: resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 4096
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: SimSiam
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 68.3
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simsiam/simsiam_resnet50_8xb32-coslr-100e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-f53ba400.pth
+    Config: configs/simsiam/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py
+  - Name: resnet50_simsiam-200e-pre_8xb512-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 4096
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: SimSiam
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 69.8
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simsiam/simsiam_resnet50_8xb32-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-519b5135.pth
+    Config: configs/simsiam/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py

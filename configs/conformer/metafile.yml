@@ -11,11 +11,11 @@ Collections:
       Title: "Conformer: Local Features Coupling Global Representations for Visual Recognition"
     README: configs/conformer/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.19.0/mmcls/models/backbones/conformer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.19.0/mmcls/models/backbones/conformer.py
       Version: v0.19.0
 
 Models:
-  - Name: conformer-tiny-p16_3rdparty_8xb128_in1k
+  - Name: conformer-tiny-p16_3rdparty_in1k
     In Collection: Conformer
     Config: configs/conformer/conformer-tiny-p16_8xb128_in1k.py
     Metadata:
@@ -31,7 +31,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/file/d/19SxGhKcWOR5oQSxNUWUM2MGYiaWMrF1z/view?usp=sharing
       Code: https://github.com/pengzhiliang/Conformer/blob/main/models.py#L65
-  - Name: conformer-small-p16_3rdparty_8xb128_in1k
+  - Name: conformer-small-p16_3rdparty_in1k
     In Collection: Conformer
     Config: configs/conformer/conformer-small-p16_8xb128_in1k.py
     Metadata:
@@ -60,7 +60,7 @@ Models:
           Top 5 Accuracy: 96.02
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p32_8xb128_in1k_20211206-947a0816.pth
-  - Name: conformer-base-p16_3rdparty_8xb128_in1k
+  - Name: conformer-base-p16_3rdparty_in1k
     In Collection: Conformer
     Config: configs/conformer/conformer-base-p16_8xb128_in1k.py
     Metadata:

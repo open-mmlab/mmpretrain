@@ -36,6 +36,7 @@ model = dict(
         topk=(1, 5),
         init_cfg=dict(type='TruncNormal', layer='Linear', std=.02)),
     train_cfg=dict(augments=[
-        dict(type='BatchMixup', alpha=0.8, prob=0.5, num_classes=num_classes),
-        dict(type='BatchCutMix', alpha=1.0, prob=0.5, num_classes=num_classes),
-    ]))
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0),
+    ]),
+)

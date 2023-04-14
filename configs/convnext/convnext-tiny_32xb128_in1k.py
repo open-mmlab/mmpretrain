@@ -5,8 +5,19 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-data = dict(samples_per_gpu=128)
+# dataset setting
+train_dataloader = dict(batch_size=128)
 
-optimizer = dict(lr=4e-3)
+# schedule setting
+optim_wrapper = dict(
+    optimizer=dict(lr=4e-3),
+    clip_grad=None,
+)
 
-custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]
+# runtime setting
+custom_hooks = [dict(type='EMAHook', momentum=1e-4, priority='ABOVE_NORMAL')]
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (32 GPUs) x (128 samples per GPU)
+auto_scale_lr = dict(base_batch_size=4096)

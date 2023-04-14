@@ -4,8 +4,8 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import ShuffleNetV2
-from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
+from mmpretrain.models.backbones import ShuffleNetV2
+from mmpretrain.models.backbones.shufflenet_v2 import InvertedResidual
 
 
 def is_block(modules):

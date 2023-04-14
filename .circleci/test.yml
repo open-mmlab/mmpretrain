@@ -1,0 +1,248 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb
+parameters:
+  lint_only:
+    type: boolean
+    default: true
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  lint:
+    docker:
+      - image: cimg/python:3.7.4
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: Install pre-commit hook
+          command: |
+            pip install pre-commit
+            pre-commit install
+      - run:
+          name: Linting
+          command: pre-commit run --all-files
+      - run:
+          name: Check docstring coverage
+          command: |
+            pip install interrogate
+            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmpretrain
+  build_cpu_with_3rdparty:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+      torch:
+        type: string
+      torchvision:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Install Libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libjpeg8-dev zlib1g-dev
+      - run:
+          name: Configure Python & pip
+          command: |
+            pip install --upgrade pip
+            pip install wheel
+      - run:
+          name: Install PyTorch
+          command: |
+            python -V
+            pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install mmpretrain dependencies
+          command: |
+            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install -U openmim
+            mim install 'mmcv >= 2.0.0rc4'
+            pip install timm
+            pip install transformers
+            pip install -r requirements.txt
+            python -c 'import mmcv; print(mmcv.__version__)'
+      - run:
+          name: Build and install
+          command: |
+            pip install -e .
+      - run:
+          name: Run unittests
+          command: |
+            coverage run --branch --source mmpretrain -m pytest tests/
+            coverage xml
+            coverage report -m
+
+  build_cpu:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+      torch:
+        type: string
+      torchvision:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Install Libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libjpeg8-dev zlib1g-dev
+      - run:
+          name: Configure Python & pip
+          command: |
+            pip install --upgrade pip
+            pip install wheel
+      - run:
+          name: Install PyTorch
+          command: |
+            python -V
+            pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install mmpretrain dependencies
+          command: |
+            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install -U openmim
+            mim install 'mmcv >= 2.0.0rc4'
+            pip install -r requirements.txt
+            python -c 'import mmcv; print(mmcv.__version__)'
+      - run:
+          name: Build and install
+          command: |
+            pip install -e .
+      - run:
+          name: Run unittests
+          command: |
+            coverage run --branch --source mmpretrain -m pytest tests/
+            coverage xml
+            coverage report -m
+
+  build_cuda:
+    machine:
+      image: ubuntu-2004-cuda-11.4:202110-01
+    resource_class: gpu.nvidia.small
+    parameters:
+      torch:
+        type: string
+      cuda:
+        type: enum
+        enum: ["11.1", "11.7"]
+      cudnn:
+        type: integer
+        default: 8
+    steps:
+      - checkout
+      - run:
+          # Cloning repos in VM since Docker doesn't have access to the private key
+          name: Clone Repos
+          command: |
+            git clone -b main --depth 1 https://github.com/open-mmlab/mmengine.git /home/circleci/mmengine
+      - run:
+          name: Build Docker image
+          command: |
+            docker build .circleci/docker -t mmpretrain:gpu --build-arg PYTORCH=<< parameters.torch >> --build-arg CUDA=<< parameters.cuda >> --build-arg CUDNN=<< parameters.cudnn >>
+            docker run --gpus all -t -d -v /home/circleci/project:/mmpretrain -v /home/circleci/mmengine:/mmengine -w /mmpretrain --name mmpretrain mmpretrain:gpu
+      - run:
+          name: Install mmpretrain dependencies
+          command: |
+            docker exec mmpretrain pip install -e /mmengine
+            docker exec mmpretrain pip install -U openmim
+            docker exec mmpretrain mim install 'mmcv >= 2.0.0rc4'
+            docker exec mmpretrain pip install -r requirements.txt
+            docker exec mmpretrain python -c 'import mmcv; print(mmcv.__version__)'
+      - run:
+          name: Build and install
+          command: |
+            docker exec mmpretrain pip install -e .
+      - run:
+          name: Run unittests
+          command: |
+            docker exec mmpretrain python -m pytest tests/
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  pr_stage_lint:
+    when: << pipeline.parameters.lint_only >>
+    jobs:
+      - lint:
+          name: lint
+          filters:
+            branches:
+              ignore:
+                - dev
+                - main
+  pr_stage_test:
+    when:
+      not:
+        << pipeline.parameters.lint_only >>
+    jobs:
+      - lint:
+          name: lint
+          filters:
+            branches:
+              ignore:
+                - dev
+      - build_cpu:
+          name: minimum_version_cpu
+          torch: 1.8.0
+          torchvision: 0.9.0
+          python: 3.7.16
+          requires:
+            - lint
+      - build_cpu_with_3rdparty:
+          name: maximum_version_cpu
+          torch: 2.0.0
+          torchvision: 0.15.1
+          python: 3.10.0
+          requires:
+            - minimum_version_cpu
+      - hold:
+          type: approval
+          requires:
+            - maximum_version_cpu
+      - build_cuda:
+          name: mainstream_version_gpu
+          torch: 1.8.1
+          # Use double quotation mark to explicitly specify its type
+          # as string instead of number
+          cuda: "11.1"
+          requires:
+            - hold
+      - build_cuda:
+          name: maximum_version_gpu
+          torch: 2.0.0
+          cuda: "11.7"
+          cudnn: 8
+          requires:
+            - hold
+  merge_stage_test:
+    when:
+      not:
+        << pipeline.parameters.lint_only >>
+    jobs:
+      - build_cuda:
+          name: minimum_version_gpu
+          torch: 1.8.0
+          # Use double quotation mark to explicitly specify its type
+          # as string instead of number
+          cuda: "11.1"
+          filters:
+            branches:
+              only:
+                - pretrain

@@ -1,12 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import fcntl
+import multiprocessing
 import os
 from pathlib import Path
 
-from mmcv import Config, DictAction, track_parallel_progress, track_progress
+from mmengine import (Config, DictAction, track_parallel_progress,
+                      track_progress)
 
-from mmcls.datasets import PIPELINES, build_dataset
+from mmpretrain.datasets import build_dataset
+from mmpretrain.registry import TRANSFORMS
+
+file_lock = multiprocessing.Lock()
 
 
 def parse_args():
@@ -45,15 +49,14 @@ def parse_args():
 class DatasetValidator():
     """the dataset tool class to check if all file are broken."""
 
-    def __init__(self, dataset_cfg, log_file_path, phase):
+    def __init__(self, dataset_cfg, log_file_path):
         super(DatasetValidator, self).__init__()
         # keep only LoadImageFromFile pipeline
-        assert dataset_cfg.data[phase].pipeline[0][
-            'type'] == 'LoadImageFromFile', 'This tool is only for dataset ' \
-            'that needs to load image from files.'
-        self.pipeline = PIPELINES.build(dataset_cfg.data[phase].pipeline[0])
-        dataset_cfg.data[phase].pipeline = []
-        dataset = build_dataset(dataset_cfg.data[phase])
+        assert dataset_cfg.pipeline[0]['type'] == 'LoadImageFromFile', (
+            'This tool is only for datasets needs to load image from files.')
+        self.pipeline = TRANSFORMS.build(dataset_cfg.pipeline[0])
+        dataset_cfg.pipeline = []
+        dataset = build_dataset(dataset_cfg)
 
         self.dataset = dataset
         self.log_file_path = log_file_path
@@ -65,12 +68,11 @@ class DatasetValidator():
         except Exception:
             with open(self.log_file_path, 'a') as f:
                 # add file lock to prevent multi-process writing errors
-                fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                filepath = os.path.join(item['img_prefix'],
-                                        item['img_info']['filename'])
+                filepath = str(Path(item['img_path']))
+                file_lock.acquire()
                 f.write(filepath + '\n')
+                file_lock.release()
                 print(f'{filepath} cannot be read correctly, please check it.')
-                # Release files lock automatic using with
 
     def __len__(self):
         return len(self.dataset)
@@ -80,12 +82,12 @@ def print_info(log_file_path):
     """print some information and do extra action."""
     print()
     with open(log_file_path, 'r') as f:
-        context = f.read().strip()
-        if context == '':
+        content = f.read().strip()
+        if content == '':
             print('There is no broken file found.')
             os.remove(log_file_path)
         else:
-            num_file = len(context.split('\n'))
+            num_file = len(content.split('\n'))
             print(f'{num_file} broken files found, name list save in file:'
                   f'{log_file_path}')
     print()
@@ -101,13 +103,22 @@ def main():
     # touch output file to save broken files list.
     output_path = Path(args.out_path)
     if not output_path.parent.exists():
-        raise Exception('log_file parent directory not found.')
+        raise Exception("Path '--out-path' parent directory not found.")
     if output_path.exists():
         os.remove(output_path)
     output_path.touch()
 
-    # do valid
-    validator = DatasetValidator(cfg, output_path, args.phase)
+    if args.phase == 'train':
+        dataset_cfg = cfg.train_dataloader.dataset
+    elif args.phase == 'val':
+        dataset_cfg = cfg.val_dataloader.dataset
+    elif args.phase == 'test':
+        dataset_cfg = cfg.test_dataloader.dataset
+    else:
+        raise ValueError("'--phase' only support 'train', 'val' and 'test'.")
+
+    # do validate
+    validator = DatasetValidator(dataset_cfg, output_path)
 
     if args.num_process > 1:
         # The default chunksize calcuation method of Pool.map

@@ -1,0 +1,43 @@
+Collections:
+  - Name: CAE
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+      Training Resources: 8x A100-80G GPUs
+      Architecture:
+        - ViT
+    Paper:
+      Title: Context Autoencoder for Self-Supervised Representation Learning
+      URL: https://arxiv.org/abs/2202.03026
+    README: configs/cae/README.md
+
+Models:
+  - Name: cae_beit-base-p16_8xb256-amp-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+      FLOPs: 17581976064
+      Parameters: 288429952
+      Training Data: ImageNet-1k
+    In Collection: CAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth
+    Config: configs/cae/cae_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Downstream:
+      - beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
+  - Name: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581219584
+      Parameters: 86682280
+      Training Data: ImageNet-1k
+    In Collection: CAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.2
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.pth
+    Config: configs/cae/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py

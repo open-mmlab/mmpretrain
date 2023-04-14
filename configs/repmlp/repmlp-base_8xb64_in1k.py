@@ -5,16 +5,22 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+# dataset settings
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    # resizing to (256, 256) here, different with resizing shorter edge to 256
-    dict(type='Resize', size=(256, 256), backend='pillow'),
+    # resizing to (256, 256) here, different from resizing shorter edge to 256
+    dict(type='Resize', scale=(256, 256), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackInputs'),
 ]
-data = dict(
-    val=dict(pipeline=test_pipeline), test=dict(pipeline=test_pipeline))
+
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+
+# schedule settings
+optim_wrapper = dict(clip_grad=dict(max_norm=5.0))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (8 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=512)

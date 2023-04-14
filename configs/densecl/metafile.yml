@@ -1,0 +1,44 @@
+Collections:
+  - Name: DenseCL
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Architecture:
+        - ResNet
+    Paper:
+      Title: Dense contrastive learning for self-supervised visual pre-training
+      URL: https://arxiv.org/abs/2011.09157
+    README: configs/densecl/README.md
+
+Models:
+  - Name: densecl_resnet50_8xb32-coslr-200e_in1k
+    Metadata:
+      Epochs: 200
+      Batch Size: 256
+      FLOPs: 4109364224
+      Parameters: 64850560
+      Training Data: ImageNet-1k
+    In Collection: DenseCL
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/densecl/densecl_resnet50_8xb32-coslr-200e_in1k/densecl_resnet50_8xb32-coslr-200e_in1k_20220825-3078723b.pth
+    Config: configs/densecl/densecl_resnet50_8xb32-coslr-200e_in1k.py
+    Downstream:
+      - resnet50_densecl-pre_8xb32-linear-steplr-100e_in1k
+  - Name: resnet50_densecl-pre_8xb32-linear-steplr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 256
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: DenseCL
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 63.5
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/densecl/densecl_resnet50_8xb32-coslr-200e_in1k/resnet50_linear-8xb32-steplr-100e_in1k/resnet50_linear-8xb32-steplr-100e_in1k_20220825-f0f0a579.pth
+    Config: configs/densecl/benchmarks/resnet50_8xb32-linear-steplr-100e_in1k.py

@@ -1,3 +1,4 @@
-include mmcls/.mim/model-index.yml
-recursive-include mmcls/.mim/configs *.py *.yml
-recursive-include mmcls/.mim/tools *.py *.sh
+include requirements/*.txt
+include mmpretrain/.mim/model-index.yml
+recursive-include mmpretrain/.mim/configs *.py *.yml
+recursive-include mmpretrain/.mim/tools *.py *.sh

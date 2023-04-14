@@ -5,6 +5,15 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-optimizer = dict(lr=0.01)
+# schedule setting
+optim_wrapper = dict(
+    optimizer=dict(lr=0.01),
+    clip_grad=dict(max_norm=5.0),
+)
 
-runner = dict(type='EpochBasedRunner', max_epochs=300)
+train_cfg = dict(by_epoch=True, max_epochs=300)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (10 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=640)

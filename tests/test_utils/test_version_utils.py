@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcls import digit_version
+from mmpretrain import digit_version
 
 
 def test_digit_version():

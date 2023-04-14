@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 
-from mmcv import Config
-from mmcv.cnn.utils import get_model_complexity_info
+from mmengine.analysis import get_model_complexity_info
 
-from mmcls.models import build_classifier
+from mmpretrain import get_model
 
 
 def parse_args():
@@ -21,9 +20,7 @@ def parse_args():
 
 
 def main():
-
     args = parse_args()
-
     if len(args.shape) == 1:
         input_shape = (3, args.shape[0], args.shape[0])
     elif len(args.shape) == 2:
@@ -31,21 +28,30 @@ def main():
     else:
         raise ValueError('invalid input shape')
 
-    cfg = Config.fromfile(args.config)
-    model = build_classifier(cfg.model)
+    model = get_model(args.config)
     model.eval()
-
     if hasattr(model, 'extract_feat'):
         model.forward = model.extract_feat
     else:
         raise NotImplementedError(
             'FLOPs counter is currently not currently supported with {}'.
             format(model.__class__.__name__))
-
-    flops, params = get_model_complexity_info(model, input_shape)
+    analysis_results = get_model_complexity_info(
+        model,
+        input_shape,
+    )
+    flops = analysis_results['flops_str']
+    params = analysis_results['params_str']
+    activations = analysis_results['activations_str']
+    out_table = analysis_results['out_table']
+    out_arch = analysis_results['out_arch']
+    print(out_arch)
+    print(out_table)
     split_line = '=' * 30
     print(f'{split_line}\nInput shape: {input_shape}\n'
-          f'Flops: {flops}\nParams: {params}\n{split_line}')
+          f'Flops: {flops}\nParams: {params}\n'
+          f'Activation: {activations}\n{split_line}')
+    print('!!!Only the backbone network is counted in FLOPs analysis.')
     print('!!!Please be cautious if you use the results in papers. '
           'You may need to check if all ops are supported and verify that the '
           'flops computation is correct.')

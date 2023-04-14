@@ -21,6 +21,7 @@ parts/
 sdist/
 var/
 wheels/
+outputs/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -75,6 +76,9 @@ docs/zh_CN/_model_zoo.rst
 docs/zh_CN/modelzoo_statistics.md
 docs/zh_CN/papers/
 docs/zh_CN/api/generated/
+docs/zh_CN/locales/
+!docs/zh_CN/locales/zh_CN/LC_MESSAGES/api.po
+!docs/zh_CN/locales/zh_CN/LC_MESSAGES/papers.po
 
 # PyBuilder
 target/
@@ -121,7 +125,9 @@ venv.bak/
 *.pkl.json
 *.log.json
 /work_dirs
-/mmcls/.mim
+/projects/*/work_dirs
+/projects/*/data
+/mmpretrain/.mim
 .DS_Store
 
 # Pytorch
@@ -132,3 +138,13 @@ venv.bak/
 *.pvti-journal
 /cache_engine
 /report
+
+# slurm
+*.out
+
+# tensorflow
+*.tar.gz
+checkpoint
+model_params.txt
+*.ckpt*
+results.txt

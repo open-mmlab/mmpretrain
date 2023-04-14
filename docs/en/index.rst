@@ -1,89 +1,151 @@
-Welcome to MMClassification's documentation!
+Welcome to MMPretrain's documentation!
 ============================================
 
-You can switch between Chinese and English documentation in the lower-left corner of the layout.
+MMPretrain is a newly upgraded open-source framework for pre-training.
+It has set out to provide multiple powerful pre-trained backbones and
+support different pre-training strategies. MMPretrain originated from the
+famous open-source projects
+`MMClassification <https://github.com/open-mmlab/mmclassification/tree/1.x>`_
+and `MMSelfSup <https://github.com/open-mmlab/mmselfsup>`_, and is developed
+with many exiciting new features. The pre-training stage is essential for
+vision recognition currently. With the rich and strong pre-trained models,
+we are currently capable of improving various downstream vision tasks.
 
-您可以在页面左下角切换中英文文档。
+Our primary objective for the codebase is to become an easily accessible and
+user-friendly library and to streamline research and engineering. We
+detail the properties and design of MMPretrain across different sections.
 
+Hands-on Roadmap of MMPretrain
+-------------------------------
+
+To help users quickly utilize MMPretrain, we recommend following the hands-on
+roadmap we have created for the library:
+
+   - For users who want to try MMPretrain, we suggest reading the GetStarted_
+     section for the environment setup.
+
+   - For basic usage, we refer users to UserGuides_ for utilizing various
+     algorithms to obtain the pre-trained models and evaluate their performance
+     in downstream tasks.
+
+   - For those who wish to customize their own algorithms, we provide
+     AdvancedGuides_ that include hints and rules for modifying code.
+
+   - To find your desired pre-trained models, users could check the ModelZoo_,
+     which features a summary of various backbones and pre-training methods and
+     introfuction of different algorithms.
+
+   - Additionally, we provide Analysis_ and Visualization_ tools to help
+     diagnose algorithms.
+
+   - Besides, if you have any other questions or concerns, please refer to the
+     Notes_ section for potential answers.
+
+We always welcome *PRs* and *Issues* for the betterment of MMPretrain.
+
+.. _GetStarted:
 .. toctree::
    :maxdepth: 1
    :caption: Get Started
 
-   install.md
-   getting_started.md
+   get_started.md
 
-
+.. _UserGuides:
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: User Guides
 
-   tutorials/config.md
-   tutorials/finetune.md
-   tutorials/new_dataset.md
-   tutorials/data_pipeline.md
-   tutorials/new_modules.md
-   tutorials/schedule.md
-   tutorials/runtime.md
+   user_guides/config.md
+   user_guides/dataset_prepare.md
+   user_guides/inference.md
+   user_guides/train.md
+   user_guides/test.md
+   user_guides/downstream.md
 
-
+.. _AdvancedGuides:
 .. toctree::
    :maxdepth: 1
-   :caption: Model zoo
+   :caption: Advanced Guides
+
+   advanced_guides/datasets.md
+   advanced_guides/pipeline.md
+   advanced_guides/modules.md
+   advanced_guides/schedule.md
+   advanced_guides/runtime.md
+   advanced_guides/evaluation.md
+   advanced_guides/convention.md
+
+.. _ModelZoo:
+.. toctree::
+   :maxdepth: 1
+   :caption: Model Zoo
    :glob:
 
    modelzoo_statistics.md
-   model_zoo.md
    papers/*
 
+.. _Visualization:
+.. toctree::
+   :maxdepth: 1
+   :caption: Visualization
+
+   useful_tools/dataset_visualization.md
+   useful_tools/scheduler_visualization.md
+   useful_tools/cam_visualization.md
+
+.. _Analysis:
+.. toctree::
+   :maxdepth: 1
+   :caption: Analysis Tools
+
+   useful_tools/print_config.md
+   useful_tools/verify_dataset.md
+   useful_tools/log_result_analysis.md
+   useful_tools/complexity_analysis.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: Useful Tools and Scripts
+   :caption: Deployment
 
-   tools/pytorch2onnx.md
-   tools/onnx2tensorrt.md
-   tools/pytorch2torchscript.md
-   tools/model_serving.md
-   tools/visualization.md
-   tools/analysis.md
-   tools/miscellaneous.md
-
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: Community
+   :caption: Migration
 
-   community/CONTRIBUTING.md
-
+   migration.md
 
 .. toctree::
    :maxdepth: 1
    :caption: API Reference
 
-   mmcls.apis <api/apis>
-   mmcls.core <api/core>
-   mmcls.models <api/models>
-   mmcls.models.utils <api/models.utils>
-   mmcls.datasets <api/datasets>
-   Data Transformations <api/transforms>
-   Batch Augmentation <api/models.utils.augment>
-   mmcls.utils <api/utils>
+   mmpretrain.apis <api/apis>
+   mmpretrain.engine <api/engine>
+   mmpretrain.datasets <api/datasets>
+   Data Process <api/data_process>
+   mmpretrain.models <api/models>
+   mmpretrain.structures <api/structures>
+   mmpretrain.visualization <api/visualization>
+   mmpretrain.evaluation <api/evaluation>
+   mmpretrain.utils <api/utils>
 
-
+.. _Notes:
 .. toctree::
    :maxdepth: 1
    :caption: Notes
 
-   changelog.md
-   compatibility.md
-   faq.md
+   notes/contribution_guide.md
+   notes/projects.md
+   notes/changelog.md
+   notes/faq.md
+   notes/pretrain_custom_dataset.md
+   notes/finetune_custom_dataset.md
 
 .. toctree::
-   :caption: Language Switch
+   :maxdepth: 1
+   :caption: Device Support
 
-   English <https://mmclassification.readthedocs.io/en/latest/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
-
+   device/npu.md
 
 Indices and tables
 ==================

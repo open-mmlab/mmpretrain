@@ -1,54 +1,51 @@
 # dataset settings
 dataset_type = 'CUB'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+data_preprocessor = dict(
+    num_classes=200,
+    # RGB format normalization parameters
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=510),
-    dict(type='RandomCrop', size=384),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='Resize', scale=510),
+    dict(type='RandomCrop', crop_size=384),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackInputs'),
 ]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=510),
+    dict(type='Resize', scale=510),
     dict(type='CenterCrop', crop_size=384),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackInputs'),
 ]
 
-data_root = 'data/CUB_200_2011/'
-data = dict(
-    samples_per_gpu=8,
-    workers_per_gpu=2,
-    train=dict(
+train_dataloader = dict(
+    batch_size=8,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
-        ann_file=data_root + 'images.txt',
-        image_class_labels_file=data_root + 'image_class_labels.txt',
-        train_test_split_file=data_root + 'train_test_split.txt',
-        data_prefix=data_root + 'images',
+        data_root='data/CUB_200_2011',
+        test_mode=False,
         pipeline=train_pipeline),
-    val=dict(
+    sampler=dict(type='DefaultSampler', shuffle=True),
+)
+
+val_dataloader = dict(
+    batch_size=8,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
-        ann_file=data_root + 'images.txt',
-        image_class_labels_file=data_root + 'image_class_labels.txt',
-        train_test_split_file=data_root + 'train_test_split.txt',
-        data_prefix=data_root + 'images',
+        data_root='data/CUB_200_2011',
         test_mode=True,
         pipeline=test_pipeline),
-    test=dict(
-        type=dataset_type,
-        ann_file=data_root + 'images.txt',
-        image_class_labels_file=data_root + 'image_class_labels.txt',
-        train_test_split_file=data_root + 'train_test_split.txt',
-        data_prefix=data_root + 'images',
-        test_mode=True,
-        pipeline=test_pipeline))
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+val_evaluator = dict(type='Accuracy', topk=(1, ))
 
-evaluation = dict(
-    interval=1, metric='accuracy',
-    save_best='auto')  # save the checkpoint with highest accuracy
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator

@@ -1,0 +1,118 @@
+Collections:
+  - Name: EdgeNeXt
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - SDTA
+        - 1x1 Convolution
+        - Channel Self-attention
+    Paper:
+      URL: https://arxiv.org/abs/2206.10589
+      Title: 'EdgeNeXt: Efficiently Amalgamated CNN-Transformer Architecture for Mobile Vision Applications'
+    README: configs/edgenext/README.md
+    Code:
+      Version: v1.0.0rc1
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.23.2/mmcls/models/backbones/edgenext.py
+
+Models:
+  - Name: edgenext-xxsmall_3rdparty_in1k
+    Metadata:
+      FLOPs: 255640144
+      Parameters: 1327216
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 71.20
+          Top 5 Accuracy: 89.91
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xxsmall_3rdparty_in1k_20220801-7ca8a81d.pth
+    Config: configs/edgenext/edgenext-xxsmall_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_xxsmall.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt
+  - Name: edgenext-xsmall_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 529970560
+      Parameters: 2336804
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.86
+          Top 5 Accuracy: 92.31
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-xsmall_3rdparty_in1k_20220801-974f9fe7.pth
+    Config: configs/edgenext/edgenext-xsmall_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_xsmall.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt
+  - Name: edgenext-small_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 1249788000
+      Parameters: 5586832
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.41
+          Top 5 Accuracy: 94.53
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-small_3rdparty_in1k_20220801-d00db5f8.pth
+    Config: configs/edgenext/edgenext-small_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.0/edgenext_small.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt
+  - Name: edgenext-small-usi_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 1249788000
+      Parameters: 5586832
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.06
+          Top 5 Accuracy: 95.34
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-small_3rdparty-usi_in1k_20220801-ae6d8dd3.pth
+    Config: configs/edgenext/edgenext-small_8xb256-usi_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.1/edgenext_small_usi.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt
+  - Name: edgenext-base_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 3814395280
+      Parameters: 18511292
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.48
+          Top 5 Accuracy: 96.2
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty_in1k_20220801-9ade408b.pth
+    Config: configs/edgenext/edgenext-base_8xb256_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt
+  - Name: edgenext-base_3rdparty-usi_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 3814395280
+      Parameters: 18511292
+    In Collection: EdgeNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.67
+          Top 5 Accuracy: 96.7
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty-usi_in1k_20220801-909e8939.pth
+    Config: configs/edgenext/edgenext-base_8xb256-usi_in1k.py
+    Converted From:
+      Weights: https://github.com/mmaaz60/EdgeNeXt/releases/download/v1.2/edgenext_base_usi.pth
+      Code: https://github.com/mmaaz60/EdgeNeXt

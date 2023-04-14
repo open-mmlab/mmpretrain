@@ -2,30 +2,37 @@ _base_ = [
     '../_base_/models/van/van_base.py',
     '../_base_/datasets/imagenet_bs64_swin_224.py',
     '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
-    '../_base_/default_runtime.py'
+    '../_base_/default_runtime.py',
 ]
 
-# Note that the mean and variance used here are different from other configs
-img_norm_cfg = dict(
-    mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
+# dataset setting
+data_preprocessor = dict(
+    mean=[127.5, 127.5, 127.5],
+    std=[127.5, 127.5, 127.5],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
+
+bgr_mean = data_preprocessor['mean'][::-1]
+bgr_std = data_preprocessor['std'][::-1]
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        size=224,
+        scale=224,
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
-        policies={{_base_.rand_increasing_policies}},
+        policies='timm_increasing',
         num_policies=2,
         total_level=10,
         magnitude_level=9,
         magnitude_std=0.5,
         hparams=dict(
-            pad_val=[round(x) for x in img_norm_cfg['mean'][::-1]],
-            interpolation='bicubic')),
+            pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
     dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
     dict(
         type='RandomErasing',
@@ -33,29 +40,26 @@ train_pipeline = [
         mode='rand',
         min_area_ratio=0.02,
         max_area_ratio=1 / 3,
-        fill_color=img_norm_cfg['mean'][::-1],
-        fill_std=img_norm_cfg['std'][::-1]),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+        fill_color=bgr_mean,
+        fill_std=bgr_std),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='Resize',
-        size=(248, -1),
+        type='ResizeEdge',
+        scale=248,
+        edge='short',
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackInputs'),
 ]
 
-data = dict(
-    samples_per_gpu=128,
-    train=dict(pipeline=train_pipeline),
-    val=dict(pipeline=test_pipeline),
-    test=dict(pipeline=test_pipeline))
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline), batch_size=128)
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+
+# schedule settings
+optim_wrapper = dict(clip_grad=dict(max_norm=5.0))

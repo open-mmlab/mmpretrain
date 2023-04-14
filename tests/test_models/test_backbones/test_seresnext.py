@@ -2,8 +2,8 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import SEResNeXt
-from mmcls.models.backbones.seresnext import SEBottleneck as SEBottleneckX
+from mmpretrain.models.backbones import SEResNeXt
+from mmpretrain.models.backbones.seresnext import SEBottleneck as SEBottleneckX
 
 
 def test_bottleneck():

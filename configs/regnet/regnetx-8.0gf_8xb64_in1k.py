@@ -5,7 +5,14 @@ model = dict(
     backbone=dict(type='RegNet', arch='regnetx_8.0gf'),
     head=dict(in_channels=1920, ))
 
-# for batch_size 512, use lr = 0.4
-optimizer = dict(lr=0.4)
+# dataset settings
+train_dataloader = dict(batch_size=64)
 
-data = dict(samples_per_gpu=64, )
+# schedule settings
+# for batch_size 512, use lr = 0.4
+optim_wrapper = dict(optimizer=dict(lr=0.4))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (8 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=512)

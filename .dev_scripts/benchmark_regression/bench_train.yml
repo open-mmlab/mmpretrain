@@ -1,85 +1,118 @@
-Models:
-  - Name: resnet34
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 73.85
-          Top 5 Accuracy: 91.53
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_batch256_imagenet_20200708-32ffb4f7.pth
-    Config: configs/resnet/resnet34_8xb32_in1k.py
-    Gpus: 8
+- Name: mobilenet-v2_8xb32_in1k
+  Cycle: month
 
-  - Name: vgg11bn
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 70.75
-          Top 5 Accuracy: 90.12
-    Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_bn_batch256_imagenet_20210207-f244902c.pth
-    Config: configs/vgg/vgg11bn_8xb32_in1k.py
-    Gpus: 8
+- Name: resnet50_8xb32_in1k
+  Cycle: month
 
-  - Name: seresnet50
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 77.74
-          Top 5 Accuracy: 93.84
-    Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
-    Config: configs/seresnet/seresnet50_8xb32_in1k.py
-    Gpus: 8
+- Name: seresnet50_8xb32_in1k
+  Cycle: month
 
-  - Name: resnext50
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 77.92
-          Top 5 Accuracy: 93.74
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_batch256_imagenet_20200708-c07adbb7.pth
-    Config: configs/resnext/resnext50-32x4d_8xb32_in1k.py
-    Gpus: 8
+- Name: swin-small_16xb64_in1k
+  Cycle: month
 
-  - Name: mobilenet
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 71.86
-          Top 5 Accuracy: 90.42
-    Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth
-    Config: configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
-    Gpus: 8
-    Months:
-      - 1
-      - 4
-      - 7
-      - 10
+- Name: vit-base-p16_32xb128-mae_in1k
+  Cycle: month
 
-  - Name: shufflenet_v1
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 68.13
-          Top 5 Accuracy: 87.81
-    Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
-    Config: configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
-    Gpus: 16
-    Months:
-      - 2
-      - 5
-      - 8
-      - 11
+- Name: resnet50_8xb256-rsb-a1-600e_in1k
+  Cycle: quarter
 
-  - Name: swin_tiny
-    Results:
-    - Dataset: ImageNet
-      Metrics:
-        Top 1 Accuracy: 81.18
-        Top 5 Accuracy: 95.61
-    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
-    Config: configs/swin_transformer/swin-tiny_16xb64_in1k.py
-    Gpus: 16
-    Months:
-      - 3
-      - 6
-      - 9
-      - 12
+- Name: resnext50-32x4d_8xb32_in1k
+  Cycle: quarter
+
+- Name: shufflenet-v2-1x_16xb64_in1k
+  Cycle: quarter
+
+- Name: vgg16_8xb32_in1k
+  Cycle: quarter
+
+- Name: shufflenet-v1-1x_16xb64_in1k
+  Cycle: half-year
+
+- Name: t2t-vit-t-14_8xb64_in1k
+  Cycle: half-year
+
+- Name: regnetx-1.6gf_8xb128_in1k
+  Cycle: half-year
+
+- Name: conformer-small-p32_8xb128_in1k
+  Cycle: half-year
+
+- Name: convnext-small_32xb128_in1k
+  Cycle: month
+
+- Name: mobilenet-v3-small_8xb128_in1k
+  Cycle: half-year
+
+- Name: mobileone-s2_8xb32_in1k
+  Cycle: quarter
+
+- Name: repvgg-b2g4_8xb32_in1k
+  Cycle: half-year
+
+- Name: barlowtwins_resnet50_8xb256-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
+
+- Name: beit_beit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: quarter
+  Downstream: beit-base-p16_beit-pre_8xb128-coslr-100e_in1k
+
+- Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: quarter
+  Downstream: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+
+- Name: byol_resnet50_16xb256-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_byol-pre_8xb512-linear-coslr-90e_in1k
+
+- Name: cae_beit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
+
+- Name: densecl_resnet50_8xb32-coslr-200e_in1k
+  Cycle: half-year
+  Downstream: resnet50_densecl-pre_8xb32-linear-steplr-100e_in1k
+
+- Name: eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k
+  Cycle: half-year
+  Downstream: vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
+
+- Name: mae_vit-base-p16_8xb512-amp-coslr-300e_in1k
+  Cycle: month
+  Downstream: vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
+
+- Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k
+  Cycle: quarter
+  Downstream: vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
+
+- Name: milan_vit-base-p16_16xb256-amp-coslr-400e_in1k
+  Cycle: quarter
+  Downstream: vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
+
+- Name: mixmim_mixmim-base_16xb128-coslr-300e_in1k
+  Cycle: half-year
+  Downstream: mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
+
+- Name: mocov2_resnet50_8xb32-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
+
+- Name: mocov3_vit-small-p16_16xb256-amp-coslr-300e_in1k
+  Cycle: month
+  Downstream: vit-small-p16_mocov3-pre_8xb128-linear-coslr-90e_in1k
+
+- Name: simclr_resnet50_16xb256-coslr-200e_in1k
+  Cycle: quarter
+  Downstream: resnet50_simclr-200e-pre_8xb512-linear-coslr-90e_in1k
+
+- Name: simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px
+  Cycle: month
+  Downstream: swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
+
+- Name: simsiam_resnet50_8xb32-coslr-100e_in1k
+  Cycle: quarter
+  Downstream: resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
+
+- Name: swav_resnet50_8xb32-mcrop-coslr-200e_in1k-224px-96px
+  Cycle: half-year
+  Downstream: resnet50_swav-pre_8xb32-linear-coslr-100e_in1k

@@ -19,5 +19,6 @@ model = dict(
             reduction='mean',
             loss_weight=1.0),
         topk=(1, 5),
-        cal_acc=False))
-train_cfg = dict(mixup=dict(alpha=0.2, num_classes=1000))
+        cal_acc=False),
+    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2)),
+)

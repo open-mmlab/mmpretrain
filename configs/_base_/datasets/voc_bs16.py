@@ -1,41 +1,70 @@
 # dataset settings
 dataset_type = 'VOC'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+data_preprocessor = dict(
+    num_classes=20,
+    # RGB format normalization parameters
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    # convert image from BGR to RGB
+    to_rgb=True,
+    # generate onehot-format labels for multi-label classification.
+    to_onehot=True,
+)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=224),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='RandomResizedCrop', scale=224),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackInputs'),
 ]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=(256, -1)),
+    dict(type='ResizeEdge', scale=256, edge='short'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackInputs'),
 ]
-data = dict(
-    samples_per_gpu=16,
-    workers_per_gpu=2,
-    train=dict(
+
+train_dataloader = dict(
+    batch_size=16,
+    num_workers=5,
+    dataset=dict(
         type=dataset_type,
-        data_prefix='data/VOCdevkit/VOC2007/',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt',
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
         pipeline=train_pipeline),
-    val=dict(
+    sampler=dict(type='DefaultSampler', shuffle=True),
+)
+
+val_dataloader = dict(
+    batch_size=16,
+    num_workers=5,
+    dataset=dict(
         type=dataset_type,
-        data_prefix='data/VOCdevkit/VOC2007/',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/test.txt',
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
         pipeline=test_pipeline),
-    test=dict(
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+
+test_dataloader = dict(
+    batch_size=16,
+    num_workers=5,
+    dataset=dict(
         type=dataset_type,
-        data_prefix='data/VOCdevkit/VOC2007/',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/test.txt',
-        pipeline=test_pipeline))
-evaluation = dict(
-    interval=1, metric=['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1'])
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+
+# calculate precision_recall_f1 and mAP
+val_evaluator = [
+    dict(type='VOCMultiLabelMetric'),
+    dict(type='VOCMultiLabelMetric', average='micro'),
+    dict(type='VOCAveragePrecision')
+]
+
+# If you want standard test, please manually configure the test dataset
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator

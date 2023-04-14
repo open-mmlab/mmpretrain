@@ -1,0 +1,59 @@
+Collections:
+  - Name: MILAN
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+      Training Resources: 16x A100-80G GPUs
+      Architecture:
+        - ViT
+    Paper:
+      Title: 'MILAN: Masked Image Pretraining on Language Assisted Representation'
+      URL: https://arxiv.org/pdf/2208.06049
+    README: configs/milan/README.md
+
+Models:
+  - Name: milan_vit-base-p16_16xb256-amp-coslr-400e_in1k
+    Metadata:
+      Epochs: 400
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111907584
+      Training Data: ImageNet-1k
+    In Collection: MILAN
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.pth
+    Config: configs/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k.py
+    Downstream:
+      - vit-base-p16_milan-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
+  - Name: vit-base-p16_milan-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MILAN
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.3
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.pth
+    Config: configs/milan/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: MILAN
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.9
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221129-03f26f85.pth
+    Config: configs/milan/benchmarks/vit-base-p16_8xb2048-linear-coslr-100e_in1k.py

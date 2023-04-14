@@ -5,10 +5,10 @@ from itertools import chain
 from unittest import TestCase
 
 import torch
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
-from mmcls.models.backbones import VAN
+from mmpretrain.models.backbones import VAN
 
 
 def check_norm_state(modules, train_state):

@@ -12,17 +12,58 @@ Deep residual networks were shown to be able to scale up to thousands of layers 
 <img src="https://user-images.githubusercontent.com/26739999/156701329-2c7ec7bc-23da-401b-86bf-dea8567ccee8.png" width="90%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|      Model      | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                   |                                   Download                                   |
-| :-------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
-|    WRN-50\*     |   68.88   |  11.44   |   78.48   |   94.08   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth) |
-|    WRN-101\*    |  126.89   |  22.81   |   78.84   |   94.28   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
-| WRN-50 (timm)\* |   68.88   |  11.44   |   81.45   |   95.53   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet50_timm_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth) |
+**Predict image**
 
-*Models with * are converted from the [TorchVision](https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py) and [TIMM](https://github.com/rwightman/pytorch-image-models/blob/master). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('wide-resnet50_3rdparty_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('wide-resnet50_3rdparty_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/wrn/wide-resnet50_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                                      |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                              Download                               |
+| :----------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :-----------------------------------------------------------------: |
+| `wide-resnet50_3rdparty_8xb32_in1k`\*      | From scratch |   68.88    |   11.44   |   78.48   |   94.08   |   [config](wide-resnet50_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth) |
+| `wide-resnet101_3rdparty_8xb32_in1k`\*     | From scratch |   126.89   |   22.81   |   78.84   |   94.28   |   [config](wide-resnet101_8xb32_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
+| `wide-resnet50_3rdparty-timm_8xb32_in1k`\* | From scratch |   68.88    |   11.44   |   81.45   |   95.53   | [config](wide-resnet50_timm_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth) |
+
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 

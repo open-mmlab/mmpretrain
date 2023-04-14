@@ -12,14 +12,14 @@ Collections:
     README: configs/poolformer/README.md
     Code:
       Version: v0.22.1
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.22.1/mmcls/models/backbones/poolformer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.22.1/mmcls/models/backbones/poolformer.py
 
 Models:
   - Name: poolformer-s12_3rdparty_32xb128_in1k
     Metadata:
       FLOPs: 1871399424
       Parameters: 11915176
-    In Collections: PoolFormer
+    In Collection: PoolFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -36,7 +36,7 @@ Models:
       Training Data: ImageNet-1k
       FLOPs: 3510411008
       Parameters: 21388968
-    In Collections: PoolFormer
+    In Collection: PoolFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -52,7 +52,7 @@ Models:
     Metadata:
       FLOPs: 5149422592
       Parameters: 30862760
-    In Collections: PoolFormer
+    In Collection: PoolFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -69,7 +69,7 @@ Models:
       Training Data: ImageNet-1k
       FLOPs: 8960175744
       Parameters: 56172520
-    In Collections: PoolFormer
+    In Collection: PoolFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -85,7 +85,7 @@ Models:
     Metadata:
       FLOPs: 11801805696
       Parameters: 73473448
-    In Collections: PoolFormer
+    In Collection: PoolFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:

@@ -5,5 +5,4 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-data = dict(samples_per_gpu=128)
-evaluation = dict(interval=1, metric='accuracy')
+train_dataloader = dict(batch_size=128)

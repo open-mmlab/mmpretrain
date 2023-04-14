@@ -7,53 +7,83 @@ model = dict(
         type='ClsHead',
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     ))
+
 # dataset settings
 dataset_type = 'MNIST'
-img_norm_cfg = dict(mean=[33.46], std=[78.87], to_rgb=True)
-train_pipeline = [
-    dict(type='Resize', size=32),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label']),
-]
-test_pipeline = [
-    dict(type='Resize', size=32),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img']),
-]
-data = dict(
-    samples_per_gpu=128,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type, data_prefix='data/mnist', pipeline=train_pipeline),
-    val=dict(
-        type=dataset_type, data_prefix='data/mnist', pipeline=test_pipeline),
-    test=dict(
-        type=dataset_type, data_prefix='data/mnist', pipeline=test_pipeline))
-evaluation = dict(
-    interval=5, metric='accuracy', metric_options={'topk': (1, )})
-# optimizer
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
-optimizer_config = dict(grad_clip=None)
-# learning policy
-lr_config = dict(policy='step', step=[15])
-# checkpoint saving
-checkpoint_config = dict(interval=1)
-# yapf:disable
-log_config = dict(
-    interval=150,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
-    ])
-# yapf:enable
+data_preprocessor = dict(mean=[33.46], std=[78.87], num_classes=10)
+
+pipeline = [dict(type='Resize', scale=32), dict(type='PackInputs')]
+
+common_data_cfg = dict(
+    type=dataset_type, data_prefix='data/mnist', pipeline=pipeline)
+
+train_dataloader = dict(
+    batch_size=128,
+    num_workers=2,
+    dataset=dict(**common_data_cfg, test_mode=False),
+    sampler=dict(type='DefaultSampler', shuffle=True),
+)
+
+val_dataloader = dict(
+    batch_size=128,
+    num_workers=2,
+    dataset=dict(**common_data_cfg, test_mode=True),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+val_evaluator = dict(type='Accuracy', topk=(1, ))
+
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator
+
+# schedule settings
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001))
+
+param_scheduler = dict(
+    type='MultiStepLR',  # learning policy, decay on several milestones.
+    by_epoch=True,  # update based on epoch.
+    milestones=[15],  # decay at the 15th epochs.
+    gamma=0.1,  # decay to 0.1 times.
+)
+
+train_cfg = dict(by_epoch=True, max_epochs=5, val_interval=1)  # train 5 epochs
+val_cfg = dict()
+test_cfg = dict()
+
 # runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=5)
-dist_params = dict(backend='nccl')
+default_scope = 'mmpretrain'
+
+default_hooks = dict(
+    # record the time of every iteration.
+    timer=dict(type='IterTimerHook'),
+    # print log every 150 iterations.
+    logger=dict(type='LoggerHook', interval=150),
+    # enable the parameter scheduler.
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    # save checkpoint per epoch.
+    checkpoint=dict(type='CheckpointHook', interval=1),
+    # set sampler seed in distributed evrionment.
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+)
+
+env_cfg = dict(
+    # disable cudnn benchmark
+    cudnn_benchmark=False,
+    # set multi process parameters
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    # set distributed parameters
+    dist_cfg=dict(backend='nccl'),
+)
+
 log_level = 'INFO'
-work_dir = './work_dirs/mnist/'
+
+# load from which checkpoint
 load_from = None
+
+# whether to resume the training of the checkpoint
 resume_from = None
-workflow = [('train', 1)]
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (1 GPUs) x (128 samples per GPU)
+auto_scale_lr = dict(base_batch_size=128)

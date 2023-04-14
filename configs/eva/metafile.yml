@@ -1,0 +1,261 @@
+Collections:
+  - Name: EVA
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      Title: 'EVA: Exploring the Limits of Masked Visual Representation Learning at
+        Scale'
+      URL: https://arxiv.org/abs/2211.07636
+    README: configs/eva/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k
+    Metadata:
+      Epochs: 400
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111776512
+      Training Data: ImageNet-1k
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k_20221226-26d90f07.pth
+    Config: configs/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k.py
+    Downstream:
+      - vit-base-p16_eva-mae-style-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
+  - Name: vit-base-p16_eva-mae-style-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.7
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221226-f61cf992.pth
+    Config: configs/eva/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 69.0
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221226-ef51bf09.pth
+    Config: configs/eva/benchmarks/vit-base-p16_8xb2048-linear-coslr-100e_in1k.py
+  - Name: beit-l-p14_eva-pre_3rdparty_in1k-196px
+    Metadata:
+      FLOPs: 61565981696
+      Parameters: 304142312
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 87.94
+          Top 5 Accuracy: 98.5
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_mim-pre_3rdparty_in1k-196px_20221214-2adf4d28.pth
+    Config: configs/eva/eva-l-p14_8xb16_in1k-196px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_196px_1k_ft_88p0.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-l-p14_eva-in21k-pre_3rdparty_in1k-196px
+    Metadata:
+      FLOPs: 61565981696
+      Parameters: 304142312
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 88.58
+          Top 5 Accuracy: 98.65
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_mim-in21k-pre_3rdparty_in1k-196px_20221213-b730c7e7.pth
+    Config: configs/eva/eva-l-p14_8xb16_in1k-196px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_196px_21k_to_1k_ft_88p6.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-l-p14_3rdparty-eva_in21k
+    Metadata:
+      FLOPs: 81075147776
+      Parameters: 303178752
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_3rdparty-mim_in21k_20221213-3a5da50b.pth
+    Config: configs/eva/eva-l-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14.pt
+      Code: https://github.com/baaivision/EVA
+    Downstream:
+      - beit-l-p14_eva-pre_3rdparty_in21k
+      - beit-l-p14_eva-pre_3rdparty_in1k-336px
+      - beit-l-p14_eva-pre_3rdparty_in1k-196px
+  - Name: beit-l-p14_eva-pre_3rdparty_in21k
+    Metadata:
+      FLOPs: 81075147776
+      Parameters: 303178752
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_mim-pre_3rdparty_in21k_20221213-8f194fa2.pth
+    Config: configs/eva/eva-l-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_21k_ft.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-l-p14_eva-pre_3rdparty_in1k-336px
+    Metadata:
+      FLOPs: 191100916736
+      Parameters: 304531432
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 88.66
+          Top 5 Accuracy: 98.75
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_mim-pre_3rdparty_in1k-336px_20221214-07785cfd.pth
+    Config: configs/eva/eva-l-p14_8xb16_in1k-336px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_336px_1k_ft_88p65.pt
+      Code: https://github.com/baaivision/EVA
+    Downstream:
+      - beit-l-p14_eva-in21k-pre_3rdparty_in1k-336px
+      - beit-l-p14_eva-in21k-pre_3rdparty_in1k-196px
+  - Name: beit-l-p14_eva-in21k-pre_3rdparty_in1k-336px
+    Metadata:
+      FLOPs: 191100916736
+      Parameters: 304531432
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 89.17
+          Top 5 Accuracy: 98.86
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-l-p14_mim-in21k-pre_3rdparty_in1k-336px_20221213-f25b7634.pth
+    Config: configs/eva/eva-l-p14_8xb16_in1k-336px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_336px_21k_to_1k_ft_89p2.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-g-p16_3rdparty-eva_30m
+    Metadata:
+      FLOPs: 203517463424
+      Parameters: 1011315072
+      Training Data:
+        - merged-30M
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p16_3rdparty_30m_20221213-7bed23ee.pth
+    Config: configs/eva/eva-g-p16_headless.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_psz14to16.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-g-p14_3rdparty-eva_30m
+    Metadata:
+      FLOPs: 267174833024
+      Parameters: 1011596672
+      Training Data:
+        - merged-30M
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_3rdparty_30m_20221213-3b7aca97.pth
+    Config: configs/eva/eva-g-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_psz14.pt
+      Code: https://github.com/baaivision/EVA
+    Downstream:
+      - beit-g-p14_eva-30m-pre_3rdparty_in21k
+  - Name: beit-g-p14_eva-30m-pre_3rdparty_in21k
+    Metadata:
+      FLOPs: 267174833024
+      Parameters: 1011596672
+      Training Data:
+        - merged-30M
+        - ImageNet-21k
+    In Collection: EVA
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-pre_3rdparty_in21k_20221213-d72285b7.pth
+    Config: configs/eva/eva-g-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_224px_psz14.pt
+      Code: https://github.com/baaivision/EVA
+    Downstream:
+      - beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-336px
+      - beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-560px
+  - Name: beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-336px
+    Metadata:
+      FLOPs: 620642757504
+      Parameters: 1013005672
+      Training Data:
+        - merged-30M
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 89.61
+          Top 5 Accuracy: 98.93
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-in21k-pre_3rdparty_in1k-336px_20221213-210f9071.pth
+    Config: configs/eva/eva-g-p14_8xb16_in1k-336px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_1k_336px_psz14_ema_89p6.pt
+      Code: https://github.com/baaivision/EVA
+  - Name: beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-560px
+    Metadata:
+      FLOPs: 1906761591680
+      Parameters: 1014447464
+      Training Data:
+        - merged-30M
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 89.71
+          Top 5 Accuracy: 98.96
+    Weights: https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-in21k-pre_3rdparty_in1k-560px_20221213-fa1c3652.pth
+    Config: configs/eva/eva-g-p14_8xb16_in1k-560px.py
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_1k_560px_psz14_ema_89p7.pt
+      Code: https://github.com/baaivision/EVA

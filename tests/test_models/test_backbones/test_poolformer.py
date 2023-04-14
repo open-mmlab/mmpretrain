@@ -4,8 +4,8 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models.backbones import PoolFormer
-from mmcls.models.backbones.poolformer import PoolFormerBlock
+from mmpretrain.models.backbones import PoolFormer
+from mmpretrain.models.backbones.poolformer import PoolFormerBlock
 
 
 class TestPoolFormer(TestCase):

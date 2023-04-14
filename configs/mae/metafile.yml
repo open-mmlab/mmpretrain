@@ -1,0 +1,367 @@
+Collections:
+  - Name: MAE
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+      Training Resources: 8x A100-80G GPUs
+      Architecture:
+        - ViT
+    Paper:
+      Title: Masked Autoencoders Are Scalable Vision Learners
+      URL: https://arxiv.org/abs/2111.06377
+    README: configs/mae/README.md
+
+Models:
+  - Name: mae_vit-base-p16_8xb512-amp-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111907840
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.pth
+    Config: configs/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py
+    Downstream:
+      - vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-base-p16_mae-300e-pre_8xb128-coslr-100e_in1k
+  - Name: mae_vit-base-p16_8xb512-amp-coslr-400e_in1k
+    Metadata:
+      Epochs: 400
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111907840
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.pth
+    Config: configs/mae/mae_vit-base-p16_8xb512-amp-coslr-400e_in1k.py
+    Downstream:
+      - vit-base-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-base-p16_mae-400e-pre_8xb128-coslr-100e_in1k
+  - Name: mae_vit-base-p16_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      Epochs: 800
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111907840
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth
+    Config: configs/mae/mae_vit-base-p16_8xb512-amp-coslr-800e_in1k.py
+    Downstream:
+      - vit-base-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-base-p16_mae-800e-pre_8xb128-coslr-100e_in1k
+  - Name: mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k
+    Metadata:
+      Epochs: 1600
+      Batch Size: 4096
+      FLOPs: 17581972224
+      Parameters: 111907840
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.pth
+    Config: configs/mae/mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k.py
+    Downstream:
+      - vit-base-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-base-p16_mae-1600e-pre_8xb128-coslr-100e_in1k
+  - Name: mae_vit-large-p16_8xb512-amp-coslr-400e_in1k
+    Metadata:
+      Epochs: 400
+      Batch Size: 4096
+      FLOPs: 61603111936
+      Parameters: 329541888
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.pth
+    Config: configs/mae/mae_vit-large-p16_8xb512-amp-coslr-400e_in1k.py
+    Downstream:
+      - vit-large-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-large-p16_mae-400e-pre_8xb128-coslr-50e_in1k
+  - Name: mae_vit-large-p16_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      Epochs: 800
+      Batch Size: 4096
+      FLOPs: 61603111936
+      Parameters: 329541888
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.pth
+    Config: configs/mae/mae_vit-large-p16_8xb512-amp-coslr-800e_in1k.py
+    Downstream:
+      - vit-large-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-large-p16_mae-800e-pre_8xb128-coslr-50e_in1k
+  - Name: mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k
+    Metadata:
+      Epochs: 1600
+      Batch Size: 4096
+      FLOPs: 61603111936
+      Parameters: 329541888
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth
+    Config: configs/mae/mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k.py
+    Downstream:
+      - vit-large-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+      - vit-large-p16_mae-1600e-pre_8xb128-coslr-50e_in1k
+  - Name: mae_vit-huge-p16_8xb512-amp-coslr-1600e_in1k
+    Metadata:
+      Epochs: 1600
+      Batch Size: 4096
+      FLOPs: 167400741120
+      Parameters: 657074508
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth
+    Config: configs/mae/mae_vit-huge-p14_8xb512-amp-coslr-1600e_in1k.py
+    Downstream:
+      - vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k
+      - vit-huge-p14_mae-1600e-pre_32xb8-coslr-50e_in1k-448px
+  - Name: vit-base-p16_mae-300e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.1
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mae-400e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.3
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mae-800e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.3
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mae-1600e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.5
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220825-cf70aa21.pth
+    Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 60.8
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-base-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 62.5
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-base-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 65.1
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-base-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581972992
+      Parameters: 86567656
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 67.1
+    Weights: null
+    Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-large-p16_mae-400e-pre_8xb128-coslr-50e_in1k
+    Metadata:
+      Epochs: 50
+      Batch Size: 1024
+      FLOPs: 61602103296
+      Parameters: 304324584
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.2
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py
+  - Name: vit-large-p16_mae-800e-pre_8xb128-coslr-50e_in1k
+    Metadata:
+      Epochs: 50
+      Batch Size: 1024
+      FLOPs: 61602103296
+      Parameters: 304324584
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.4
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py
+  - Name: vit-large-p16_mae-1600e-pre_8xb128-coslr-50e_in1k
+    Metadata:
+      Epochs: 50
+      Batch Size: 1024
+      FLOPs: 61602103296
+      Parameters: 304324584
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.7
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py
+  - Name: vit-large-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 61603112960
+      Parameters: 304326632
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 70.7
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-large-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 61603112960
+      Parameters: 304326632
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 73.7
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-large-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 61603112960
+      Parameters: 304326632
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 75.5
+    Weights: null
+    Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k
+    Metadata:
+      Epochs: 50
+      Batch Size: 1024
+      FLOPs: 167399096320
+      Parameters: 632043240
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.9
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220916-0bfc9bfd.pth
+    Config: configs/mae/benchmarks/vit-huge-p14_8xb128-coslr-50e_in1k.py
+  - Name: vit-huge-p14_mae-1600e-pre_32xb8-coslr-50e_in1k-448px
+    Metadata:
+      Epochs: 50
+      Batch Size: 256
+      FLOPs: 732131983360
+      Parameters: 633026280
+      Training Data: ImageNet-1k
+    In Collection: MAE
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.3
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220916-95b6a0ce.pth
+    Config: configs/mae/benchmarks/vit-huge-p14_32xb8-coslr-50e_in1k-448px.py

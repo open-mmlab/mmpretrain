@@ -1,0 +1,44 @@
+Collections:
+  - Name: BarlowTwins
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - LARS
+      Training Resources: 8x A100 GPUs
+      Architecture:
+        - ResNet
+        - BarlowTwins
+    Paper:
+      Title: 'Barlow Twins: Self-Supervised Learning via Redundancy Reduction'
+      URL: https://arxiv.org/abs/2103.03230
+    README: configs/barlowtwins/README.md
+
+Models:
+  - Name: barlowtwins_resnet50_8xb256-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+      FLOPs: 4109364224
+      Parameters: 174535744
+      Training Data: ImageNet-1k
+    In Collection: BarlowTwins
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k/barlowtwins_resnet50_8xb256-coslr-300e_in1k_20220825-57307488.pth
+    Config: configs/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k.py
+    Downstream:
+      - resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
+  - Name: resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 256
+      FLOPs: 4109464576
+      Parameters: 25557032
+      Training Data: ImageNet-1k
+    In Collection: BarlowTwins
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 71.8
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k/resnet50_linear-8xb32-coslr-100e_in1k/resnet50_linear-8xb32-coslr-100e_in1k_20220825-52fde35f.pth
+    Config: configs/barlowtwins/benchmarks/resnet50_8xb32-linear-coslr-100e_in1k.py

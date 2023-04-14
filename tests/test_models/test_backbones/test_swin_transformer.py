@@ -7,11 +7,11 @@ from itertools import chain
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.runner import load_checkpoint, save_checkpoint
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import SwinTransformer
-from mmcls.models.backbones.swin_transformer import SwinBlock
+from mmpretrain.models.backbones import SwinTransformer
+from mmpretrain.models.backbones.swin_transformer import SwinBlock
 from .utils import timm_resize_pos_embed
 
 
@@ -28,7 +28,7 @@ class TestSwinTransformer(TestCase):
 
     def setUp(self):
         self.cfg = dict(
-            arch='b', img_size=224, patch_size=4, drop_path_rate=0.1)
+            arch='tiny', img_size=224, patch_size=4, drop_path_rate=0.1)
 
     def test_arch(self):
         # Test invalid default arch
@@ -90,7 +90,7 @@ class TestSwinTransformer(TestCase):
         tmpdir = tempfile.gettempdir()
         # Save v3 checkpoints
         checkpoint_v2 = os.path.join(tmpdir, 'v3.pth')
-        save_checkpoint(model, checkpoint_v2)
+        save_checkpoint(model.state_dict(), checkpoint_v2)
         # Save v1 checkpoints
         setattr(model, 'norm', model.norm3)
         setattr(model.stages[0].blocks[1].attn, 'attn_mask',
@@ -98,7 +98,7 @@ class TestSwinTransformer(TestCase):
         model._version = 1
         del model.norm3
         checkpoint_v1 = os.path.join(tmpdir, 'v1.pth')
-        save_checkpoint(model, checkpoint_v1)
+        save_checkpoint(model.state_dict(), checkpoint_v1)
 
         # test load v1 checkpoint
         cfg = deepcopy(self.cfg)
@@ -135,7 +135,7 @@ class TestSwinTransformer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (1, 1024, 7, 7))
+        self.assertEqual(feat.shape, (1, 768, 7, 7))
 
         # test with window_size=12
         cfg = deepcopy(self.cfg)
@@ -145,7 +145,7 @@ class TestSwinTransformer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (1, 1024, 12, 12))
+        self.assertEqual(feat.shape, (1, 768, 12, 12))
         with self.assertRaisesRegex(AssertionError, r'the window size \(12\)'):
             model(torch.randn(1, 3, 224, 224))
 
@@ -158,7 +158,7 @@ class TestSwinTransformer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (1, 1024, 7, 7))
+        self.assertEqual(feat.shape, (1, 768, 7, 7))
 
         # test multiple output indices
         cfg = deepcopy(self.cfg)
@@ -167,9 +167,9 @@ class TestSwinTransformer(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
-        for stride, out in zip([2, 4, 8, 8], outs):
+        for stride, out in zip([1, 2, 4, 8], outs):
             self.assertEqual(out.shape,
-                             (1, 128 * stride, 56 // stride, 56 // stride))
+                             (1, 96 * stride, 56 // stride, 56 // stride))
 
         # test with checkpoint forward
         cfg = deepcopy(self.cfg)
@@ -185,7 +185,7 @@ class TestSwinTransformer(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (1, 1024, 7, 7))
+        self.assertEqual(feat.shape, (1, 768, 7, 7))
 
         # test with dynamic input shape
         imgs1 = torch.randn(1, 3, 224, 224)
@@ -200,7 +200,7 @@ class TestSwinTransformer(TestCase):
             feat = outs[-1]
             expect_feat_shape = (math.ceil(imgs.shape[2] / 32),
                                  math.ceil(imgs.shape[3] / 32))
-            self.assertEqual(feat.shape, (1, 1024, *expect_feat_shape))
+            self.assertEqual(feat.shape, (1, 768, *expect_feat_shape))
 
     def test_structure(self):
         # test drop_path_rate decay

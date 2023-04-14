@@ -1,0 +1,115 @@
+Collections:
+  - Name: HorNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - HorNet
+        - gnConv
+    Paper:
+      URL: https://arxiv.org/abs/2207.14284
+      Title: "HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions"
+    README: configs/hornet/README.md
+    Code:
+      Version: v0.24.0
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.24.0/mmcls/models/backbones/hornet.py
+
+Models:
+  - Name: hornet-tiny_3rdparty_in1k
+    Metadata:
+      FLOPs: 3976156352   # 3.98G
+      Parameters: 22409512      # 22.41M
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.84
+          Top 5 Accuracy: 96.24
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth
+    Config: configs/hornet/hornet-tiny_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/1ca970586c6043709a3f/?dl=1
+  - Name: hornet-tiny-gf_3rdparty_in1k
+    Metadata:
+      FLOPs: 3896472160   # 3.9G
+      Parameters: 22991848      # 22.99M
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.98
+          Top 5 Accuracy: 96.38
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth
+    Config: configs/hornet/hornet-tiny-gf_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/511faad0bde94dfcaa54/?dl=1
+  - Name: hornet-small_3rdparty_in1k
+    Metadata:
+      FLOPs:  8825621280    # 8.83G
+      Parameters: 49528264          # 49.53M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.79
+            Top 5 Accuracy: 96.75
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth
+    Config: configs/hornet/hornet-small_8xb64_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/46422799db2941f7b684/?dl=1
+  - Name: hornet-small-gf_3rdparty_in1k
+    Metadata:
+      FLOPs:  8706094992    # 8.71G
+      Parameters: 50401768          # 50.4M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.98
+            Top 5 Accuracy: 96.77
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth
+    Config: configs/hornet/hornet-small-gf_8xb64_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/8405c984bf084d2ba85a/?dl=1
+  - Name: hornet-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 15582677376              # 15.59G
+      Parameters: 87256680            # 87.26M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.24
+            Top 5 Accuracy: 96.94
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth
+    Config: configs/hornet/hornet-base_8xb64_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/5c86cb3d655d4c17a959/?dl=1
+  - Name: hornet-base-gf_3rdparty_in1k
+    Metadata:
+      FLOPs: 15423308992              # 15.42G
+      Parameters: 88421352            # 88.42M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.32
+            Top 5 Accuracy: 96.95
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth
+    Config: configs/hornet/hornet-base-gf_8xb64_in1k.py
+    Converted From:
+      Code: https://github.com/raoyongming/HorNet
+      Weights: https://cloud.tsinghua.edu.cn/f/6c84935e63b547f383fb/?dl=1

@@ -1,7 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 
-from mmcv import Config, DictAction
+import rich.console
+from mmengine import Config, DictAction
+
+console = rich.console.Console()
 
 
 def parse_args():
@@ -28,7 +31,7 @@ def main():
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
-    print(f'Config:\n{cfg.pretty_text}')
+    console.print(cfg.pretty_text, markup=False)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,69 @@
+Collections:
+  - Name: BEiTv2
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      Title: 'BEiT v2: Masked Image Modeling with Vector-Quantized Visual Tokenizers'
+      URL: https://arxiv.org/abs/2208.06366
+    README: configs/beitv2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/beit.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+      FLOPs: 17581223424
+      Parameters: 192811376
+      Training Data: ImageNet-1k
+    In Collection: BEiTv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221212-a157be30.pth
+    Config: configs/beitv2/beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Downstream:
+      - beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+  - Name: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data: ImageNet-1k
+    In Collection: BEiTv2
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.0
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.pth
+    Config: configs/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: beit-base-p16_beitv2-in21k-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: BEiTv2
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 86.47
+          Top 5 Accuracy: 97.99
+    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beitv2-base_3rdparty_in1k_20221114-73e11905.pth
+    Config: configs/beitv2/benchmarks/beit-base-p16_8xb64_in1k.py
+    Converted From:
+      Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_base_patch16_224_pt1k_ft21kto1k.pth
+      Code: https://github.com/microsoft/unilm/tree/master/beit2

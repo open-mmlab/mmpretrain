@@ -1,0 +1,83 @@
+Collections:
+  - Name: MobileOne
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - re-parameterization Convolution
+        - VGG-style Neural Network
+        - Depthwise Convolution
+        - Pointwise Convolution
+    Paper:
+      URL: https://arxiv.org/abs/2206.04040
+      Title: 'An Improved One millisecond Mobile Backbone'
+    README: configs/mobileone/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc1/configs/mobileone/metafile.yml
+      Version: v1.0.0rc1
+
+Models:
+  - Name: mobileone-s0_8xb32_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s0_8xb32_in1k.py
+    Metadata:
+      FLOPs: 274136576  # 0.27G
+      Parameters: 2078504  # 2.08M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 71.34
+        Top 5 Accuracy: 89.87
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth
+  - Name: mobileone-s1_8xb32_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s1_8xb32_in1k.py
+    Metadata:
+      FLOPs: 823839744    # 8.6G
+      Parameters: 4764840  # 4.82M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 75.72
+        Top 5 Accuracy: 92.54
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_8xb32_in1k_20221110-ceeef467.pth
+  - Name: mobileone-s2_8xb32_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s2_8xb32_in1k.py
+    Metadata:
+      FLOPs: 1296478848
+      Parameters: 7808168
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 77.37
+        Top 5 Accuracy: 93.34
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_8xb32_in1k_20221110-9c7ecb97.pth
+  - Name: mobileone-s3_8xb32_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s3_8xb32_in1k.py
+    Metadata:
+      FLOPs: 1893842944
+      Parameters: 10078312
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 78.06
+        Top 5 Accuracy: 93.83
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_8xb32_in1k_20221110-c95eb3bf.pth
+  - Name: mobileone-s4_8xb32_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s4_8xb32_in1k.py
+    Metadata:
+      FLOPs: 2979222528
+      Parameters: 14838352
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.69
+        Top 5 Accuracy: 94.46
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_8xb32_in1k_20221110-28d888cb.pth

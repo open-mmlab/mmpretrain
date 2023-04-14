@@ -10,7 +10,7 @@ Collections:
       Title: 'RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition'
     README: configs/repmlp/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.21.0/mmcls/models/backbones/repmlp.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.21.0/mmcls/models/backbones/repmlp.py
       Version: v0.21.0
 
 Models:
@@ -30,7 +30,7 @@ Models:
     Converted From:
       Weights: https://github.com/DingXiaoH/RepMLP
       Code: https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L274
-  - Name: repmlp-base_3rdparty_8xb64_in1k-256px.py
+  - Name: repmlp-base_3rdparty_8xb64_in1k-256px
     In Collection: RepMLP
     Config: configs/repmlp/repmlp-base_8xb64_in1k-256px.py
     Metadata:

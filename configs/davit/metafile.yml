@@ -1,0 +1,71 @@
+Collections:
+  - Name: DaViT
+    Metadata:
+      Architecture:
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      URL: https://arxiv.org/abs/2204.03645v1
+      Title: 'DaViT: Dual Attention Vision Transformers'
+    README: configs/davit/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc3/mmcls/models/backbones/davit.py
+      Version: v1.0.0rc3
+
+Models:
+  - Name: davit-tiny_3rdparty_in1k
+    In Collection: DaViT
+    Metadata:
+      FLOPs: 4539698688
+      Parameters: 28360168
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 82.24
+        Top 5 Accuracy: 96.13
+    Weights: https://download.openmmlab.com/mmclassification/v0/davit/davit-tiny_3rdparty_in1k_20221116-700fdf7d.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/1RSpi3lxKaloOL5-or20HuG975tbPwxRZ/view?usp=sharing
+      Code: https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355
+    Config: configs/davit/davit-tiny_4xb256_in1k.py
+  - Name: davit-small_3rdparty_in1k
+    In Collection: DaViT
+    Metadata:
+      FLOPs: 8799942144
+      Parameters: 49745896
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.61
+        Top 5 Accuracy: 96.75
+    Weights: https://download.openmmlab.com/mmclassification/v0/davit/davit-small_3rdparty_in1k_20221116-51a849a6.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/1q976ruj45mt0RhO9oxhOo6EP_cmj4ahQ/view?usp=sharing
+      Code: https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355
+    Config: configs/davit/davit-small_4xb256_in1k.py
+  - Name: davit-base_3rdparty_in1k
+    In Collection: DaViT
+    Metadata:
+      FLOPs: 15509702656
+      Parameters: 87954408
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.09
+        Top 5 Accuracy: 96.82
+    Weights: https://download.openmmlab.com/mmclassification/v0/davit/davit-base_3rdparty_in1k_20221116-19e0d956.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/1u9sDBEueB-YFuLigvcwf4b2YyA4MIVsZ/view?usp=sharing
+      Code: https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355
+    Config: configs/davit/davit-base_4xb256_in1k.py

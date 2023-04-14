@@ -1,0 +1,95 @@
+Collections:
+  - Name: MViT V2
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - GELU
+        - Layer Normalization
+        - Scaled Dot-Product Attention
+        - Attention Pooling
+    Paper:
+      URL: http://openaccess.thecvf.com//content/CVPR2022/papers/Li_MViTv2_Improved_Multiscale_Vision_Transformers_for_Classification_and_Detection_CVPR_2022_paper.pdf
+      Title: 'MViTv2: Improved Multiscale Vision Transformers for Classification and Detection'
+    README: configs/mvit/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.24.0/mmcls/models/backbones/mvit.py
+      Version: v0.24.0
+
+Models:
+  - Name: mvitv2-tiny_3rdparty_in1k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 4703510768
+      Parameters: 24173320
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 82.33
+        Top 5 Accuracy: 96.15
+    Weights: https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_T_in1k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-tiny_8xb256_in1k.py
+
+  - Name: mvitv2-small_3rdparty_in1k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 6997555136
+      Parameters: 34870216
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.63
+        Top 5 Accuracy: 96.51
+    Weights: https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-small_3rdparty_in1k_20220722-986bd741.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_S_in1k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-small_8xb256_in1k.py
+
+  - Name: mvitv2-base_3rdparty_in1k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 10157964400
+      Parameters: 51472744
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.34
+        Top 5 Accuracy: 96.86
+    Weights: https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_B_in1k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-base_8xb256_in1k.py
+
+  - Name: mvitv2-large_3rdparty_in1k
+    In Collection: MViT V2
+    Metadata:
+      FLOPs: 43868151412
+      Parameters: 217992952
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.25
+        Top 5 Accuracy: 97.14
+    Weights: https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-large_3rdparty_in1k_20220722-2b57b983.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_L_in1k.pyth
+      Code: https://github.com/facebookresearch/mvit
+    Config: configs/mvit/mvitv2-large_8xb256_in1k.py

@@ -3,11 +3,11 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import ResNet, ResNetV1c, ResNetV1d
-from mmcls.models.backbones.resnet import (BasicBlock, Bottleneck, ResLayer,
-                                           get_expansion)
+from mmpretrain.models.backbones import ResNet, ResNetV1c, ResNetV1d
+from mmpretrain.models.backbones.resnet import (BasicBlock, Bottleneck,
+                                                ResLayer, get_expansion)
 
 
 def is_block(modules):

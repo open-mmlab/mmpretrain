@@ -4,3 +4,5 @@ _base_ = [
     '../_base_/schedules/imagenet_bs4096_AdamW.py',
     '../_base_/default_runtime.py',
 ]
+
+optim_wrapper = dict(clip_grad=dict(max_norm=1.0))

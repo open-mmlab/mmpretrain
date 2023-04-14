@@ -4,7 +4,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.utils import SELayer
+from mmpretrain.models.utils import SELayer
 
 
 def is_norm(modules):

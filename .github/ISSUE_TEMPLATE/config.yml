@@ -1,6 +1,12 @@
 blank_issues_enabled: false
 
 contact_links:
-  - name: MMClassification Documentation
-    url: https://mmclassification.readthedocs.io/en/latest/
+  - name: 📚 MMPreTrain Documentation (官方文档)
+    url: https://mmpretrain.readthedocs.io/en/latest/
     about: Check if your question is answered in docs
+  - name: 💬 General questions (寻求帮助)
+    url: https://github.com/open-mmlab/mmpretrain/discussions
+    about: Ask general usage questions and discuss with other MMPreTrain community members
+  - name: 🌐 Explore OpenMMLab (官网)
+    url: https://openmmlab.com/
+    about: Get know more about OpenMMLab

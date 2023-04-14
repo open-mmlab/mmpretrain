@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="resources/mmcls-logo.png" width="600"/>
+<img src="resources/mmpt-logo.png" width="600"/>
   <div>&nbsp;</div>
   <div align="center">
     <b><font size="5">OpenMMLab 官网</font></b>
@@ -19,152 +19,243 @@
   </div>
   <div>&nbsp;</div>
 
-[![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
-[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/zh_CN/latest/)
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![PyPI](https://img.shields.io/pypi/v/mmpretrain)](https://pypi.org/project/mmpretrain)
+[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmpretrain.readthedocs.io/zh_CN/latest/)
+[![Build Status](https://github.com/open-mmlab/mmpretrain/workflows/build/badge.svg)](https://github.com/open-mmlab/mmpretrain/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmpretrain/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmpretrain)
+[![license](https://img.shields.io/github/license/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/blob/main/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmpretrain.svg)](https://github.com/open-mmlab/mmpretrain/issues)
 
-[📘 中文文档](https://mmclassification.readthedocs.io/zh_CN/latest/) |
-[🛠️ 安装教程](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) |
-[👀 模型库](https://mmclassification.readthedocs.io/zh_CN/latest/model_zoo.html) |
-[🆕 更新日志](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
-[🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[📘 中文文档](https://mmpretrain.readthedocs.io/zh_CN/latest/) |
+[🛠️ 安装教程](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) |
+[👀 模型库](https://mmpretrain.readthedocs.io/zh_CN/latest/modelzoo_statistics.html) |
+[🆕 更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html) |
+[🤔 报告问题](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 
+<img src="https://user-images.githubusercontent.com/36138628/230307505-4727ad0a-7d71-4069-939d-b499c7e272b7.png" width="400"/>
+
+[English](/README.md) | 简体中文
+
+</div>
+
+<div align="center">
+  <a href="https://openmmlab.medium.com/" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/219255827-67c1a27f-f8c5-46a9-811d-5e57448c61d1.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://discord.gg/raweFPmdzG" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218347213-c080267f-cbb6-443e-8532-8e1ed9a58ea9.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://twitter.com/OpenMMLab" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218346637-d30c8a0f-3eba-4699-8131-512fb06d46db.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://www.youtube.com/openmmlab" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/218346691-ceb2116a-465a-40af-8424-9f30d2348ca9.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://space.bilibili.com/1293512903" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/219026751-d7d14cce-a7c9-4e82-9942-8375fca65b99.png" width="3%" alt="" /></a>
+  <img src="https://user-images.githubusercontent.com/25839884/218346358-56cc8e2f-a2b8-487f-9088-32480cceabcf.png" width="3%" alt="" />
+  <a href="https://www.zhihu.com/people/openmmlab" style="text-decoration:none;">
+    <img src="https://user-images.githubusercontent.com/25839884/219026120-ba71e48b-6e94-4bd4-b4e9-b7d175b5e362.png" width="3%" alt="" /></a>
 </div>
 
 ## Introduction
 
-[English](/README.md) | 简体中文
+MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 
-MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
-
-主分支代码目前支持 PyTorch 1.5 以上的版本。
-
-<div align="center">
-  <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
-</div>
+`主分支`代码目前支持 PyTorch 1.8 以上的版本。
 
 ### 主要特性
 
 - 支持多样的主干网络与预训练模型
-- 支持配置多种训练技巧
+- 支持多种训练策略（有监督学习，无监督学习等）
+- 提供多种训练技巧
 - 大量的训练配置文件
 - 高效率和高可扩展性
-- 功能强大的工具箱
+- 功能强大的工具箱，有助于模型分析和实验
 
 ## 更新日志
 
-2022/5/1 发布了 v0.23.0 版本
+🌟 2023/4/7 发布了 v1.0.0rc7 版本
 
-新版本亮点：
+- 整和来自 MMSelfSup 的自监督学习算法，例如 `MAE`, `BEiT` 等
+- 支持了 **RIFormer**，简单但有效的视觉主干网络，却移除了 token mixer
+- 支持 t-SNE 可视化
+- 重构数据管道可视化
 
-- 支持了 **DenseNet**，**VAN** 和 **PoolFormer** 三个网络，并提供了预训练模型。
-- 支持在 IPU 上进行训练。
-- 更新了 API 文档的样式，更方便查阅，[欢迎查阅](https://mmclassification.readthedocs.io/en/master/api/models.html)。
+之前版本更新内容
 
-2022/3/30 发布了 v0.22.0 版本
+- 支持了 **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
+- 复现了 ConvNeXt 和 RepVGG 的训练精度。
+- 支持混淆矩阵计算和画图。
+- 支持了 **多任务** 训练和测试。
+- 支持了测试时增强（TTA）。
+- 更新了主要 API 接口，用以方便地获取 MMPreTrain 中预定义的模型。
+- 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
-新版本亮点：
+这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmpretrain.readthedocs.io/zh_CN/latest/) 进行试用。
 
-- 支持了一系列 **CSP Net**，包括 CSP-ResNet，CSP-ResNeXt 和 CSP-DarkNet。
-- 我们提供了一个新的 `CustomDataset` 类，这个类将帮助你轻松使用**自己的数据集**！
-- 支持了新的主干网络 **ConvMixer**、**RepMLP** 和一个新的数据集 **CUB dataset**。
+同时，新版本中存在一些与旧版本不兼容的修改。请查看 [迁移文档](https://mmpretrain.readthedocs.io/zh_CN/latest/migration.html) 来详细了解这些变动。
 
-发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
+发布历史和更新细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
 
 ## 安装
 
 以下是安装的简要步骤：
 
 ```shell
-conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda create -n open-mmlab python=3.8 pytorch==1.10.1 torchvision==0.11.2 cudatoolkit=11.3 -c pytorch -y
 conda activate open-mmlab
 pip3 install openmim
-mim install mmcv-full
-git clone https://github.com/open-mmlab/mmclassification.git
-cd mmclassification
-pip3 install -e .
+git clone https://github.com/open-mmlab/mmpretrain.git
+cd mmpretrain
+mim install -e .
 ```
 
-更详细的步骤请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装。
+更详细的步骤请参考 [安装指南](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) 进行安装。
 
 ## 基础教程
 
-请参考 [基础教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程：
+我们为新用户提供了一系列基础教程：
 
-- [如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)
-- [如何微调模型](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/finetune.html)
-- [如何增加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)
-- [如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
-- [如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html)
-- [如何自定义优化策略](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/schedule.html)
-- [如何自定义运行参数](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/runtime.html)
+- [学习配置文件](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/config.html)
+- [准备数据集](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/dataset_prepare.html)
+- [使用现有模型推理](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/inference.html)
+- [训练](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/train.html)
+- [测试](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/test.html)
+- [下游任务](https://mmpretrain.readthedocs.io/zh_CN/latest/user_guides/downstream.html)
 
-我们也提供了相应的中文 Colab 教程：
-
-- 了解 MMClassification **Python API**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb)。
-- 了解 MMClassification **命令行工具**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb)。
+关于更多的信息，请查阅我们的 [相关文档](https://mmpretrain.readthedocs.io/zh_CN/latest/)。
 
 ## 模型库
 
-相关结果和模型可在 [model zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) 中获得
+相关结果和模型可在 [模型库](https://mmpretrain.readthedocs.io/zh_CN/latest/modelzoo_statistics.html) 中获得。
 
-<details open>
-<summary>支持的主干网络</summary>
-
-- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/vgg)
-- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)
-- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)
-- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
-- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
-- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/regnet)
-- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)
-- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)
-- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)
-- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v3)
-- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)
-- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
-- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)
-- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/tnt)
-- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/master/configs/res2net)
-- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/mlp_mixer)
-- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
-- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
-- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
-- [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
-- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
-- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
-- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
-- [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/master/configs/van)
-- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
-- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
-- [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
-
-</details>
+<div align="center">
+  <b>概览</b>
+</div>
+<table align="center">
+  <tbody>
+    <tr align="center" valign="bottom">
+      <td>
+        <b>支持的主干网络</b>
+      </td>
+      <td>
+        <b>自监督学习</b>
+      </td>
+      <td>
+        <b>其它</b>
+      </td>
+    </tr>
+    <tr valign="top">
+      <td>
+        <ul>
+        <li><a href="configs/vgg">VGG</a></li>
+        <li><a href="configs/resnet">ResNet</a></li>
+        <li><a href="configs/resnext">ResNeXt</a></li>
+        <li><a href="configs/seresnet">SE-ResNet</a></li>
+        <li><a href="configs/seresnet">SE-ResNeXt</a></li>
+        <li><a href="configs/regnet">RegNet</a></li>
+        <li><a href="configs/shufflenet_v1">ShuffleNet V1</a></li>
+        <li><a href="configs/shufflenet_v2">ShuffleNet V2</a></li>
+        <li><a href="configs/mobilenet_v2">MobileNet V2</a></li>
+        <li><a href="configs/mobilenet_v3">MobileNet V3</a></li>
+        <li><a href="configs/swin_transformer">Swin-Transformer</a></li>
+        <li><a href="configs/swin_transformer_v2">Swin-Transformer V2</a></li>
+        <li><a href="configs/repvgg">RepVGG</a></li>
+        <li><a href="configs/vision_transformer">Vision-Transformer</a></li>
+        <li><a href="configs/tnt">Transformer-in-Transformer</a></li>
+        <li><a href="configs/res2net">Res2Net</a></li>
+        <li><a href="configs/mlp_mixer">MLP-Mixer</a></li>
+        <li><a href="configs/deit">DeiT</a></li>
+        <li><a href="configs/deit3">DeiT-3</a></li>
+        <li><a href="configs/conformer">Conformer</a></li>
+        <li><a href="configs/t2t_vit">T2T-ViT</a></li>
+        <li><a href="configs/twins">Twins</a></li>
+        <li><a href="configs/efficientnet">EfficientNet</a></li>
+        <li><a href="configs/edgenext">EdgeNeXt</a></li>
+        <li><a href="configs/convnext">ConvNeXt</a></li>
+        <li><a href="configs/hrnet">HRNet</a></li>
+        <li><a href="configs/van">VAN</a></li>
+        <li><a href="configs/convmixer">ConvMixer</a></li>
+        <li><a href="configs/cspnet">CSPNet</a></li>
+        <li><a href="configs/poolformer">PoolFormer</a></li>
+        <li><a href="configs/inception_v3">Inception V3</a></li>
+        <li><a href="configs/mobileone">MobileOne</a></li>
+        <li><a href="configs/efficientformer">EfficientFormer</a></li>
+        <li><a href="configs/mvit">MViT</a></li>
+        <li><a href="configs/hornet">HorNet</a></li>
+        <li><a href="configs/mobilevit">MobileViT</a></li>
+        <li><a href="configs/davit">DaViT</a></li>
+        <li><a href="configs/replknet">RepLKNet</a></li>
+        <li><a href="configs/beit">BEiT</a></li>
+        <li><a href="configs/mixmim">MixMIM</a></li>
+        <li><a href="configs/revvit">RevViT</a></li>
+        <li><a href="configs/convnext_v2">ConvNeXt V2</a></li>
+        <li><a href="configs/vig">ViG</a></li>
+        <li><a href="configs/xcit">XCiT</a></li>
+        <li><a href="configs/levit">LeViT</a></li>
+        <li><a href="configs/riformer">RIFormer</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+        <li><a href="configs/mocov2">MoCo V1 (CVPR'2020)</a></li>
+        <li><a href="configs/simclr">SimCLR (ICML'2020)</a></li>
+        <li><a href="configs/mocov2">MoCo V2 (arXiv'2020)</a></li>
+        <li><a href="configs/byol">BYOL (NeurIPS'2020)</a></li>
+        <li><a href="configs/swav">SwAV (NeurIPS'2020)</a></li>
+        <li><a href="configs/densecl">DenseCL (CVPR'2021)</a></li>
+        <li><a href="configs/simsiam">SimSiam (CVPR'2021)</a></li>
+        <li><a href="configs/barlowtwins">Barlow Twins (ICML'2021)</a></li>
+        <li><a href="configs/mocov3">MoCo V3 (ICCV'2021)</a></li>
+        <li><a href="configs/beit">BEiT (ICLR'2022)</a></li>
+        <li><a href="configs/mae">MAE (CVPR'2022)</a></li>
+        <li><a href="configs/simmim">SimMIM (CVPR'2022)</a></li>
+        <li><a href="configs/maskfeat">MaskFeat (CVPR'2022)</a></li>
+        <li><a href="configs/cae">CAE (arXiv'2022)</a></li>
+        <li><a href="configs/milan">MILAN (arXiv'2022)</a></li>
+        <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
+        <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
+        <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+      图像检索任务：
+        <ul>
+        <li><a href="configs/arcface">ArcFace (CVPR'2019)</a></li>
+        </ul>
+      训练和测试 Tips:
+        <ul>
+        <li><a href="https://arxiv.org/abs/1909.13719">RandAug</a></li>
+        <li><a href="https://arxiv.org/abs/1805.09501">AutoAug</a></li>
+        <li><a href="mmpretrain/datasets/samplers/repeat_aug.py">RepeatAugSampler</a></li>
+        <li><a href="mmpretrain/models/tta/score_tta.py">TTA</a></li>
+        <li>...</li>
+        </ul>
+      </td>
+  </tbody>
+</table>
 
 ## 参与贡献
 
-我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](https://mmclassification.readthedocs.io/zh_CN/latest/community/CONTRIBUTING.html) 来了解如何参与贡献。
+我们非常欢迎任何有助于提升 MMPreTrain 的贡献，请参考 [贡献指南](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/contribution_guide.html) 来了解如何参与贡献。
 
 ## 致谢
 
-MMClassification 是一款由不同学校和公司共同贡献的开源项目。我们感谢所有为项目提供算法复现和新功能支持的贡献者，以及提供宝贵反馈的用户。
-
+MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们感谢所有为项目提供算法复现和新功能支持的贡献者，以及提供宝贵反馈的用户。
 我们希望该工具箱和基准测试可以为社区提供灵活的代码工具，供用户复现现有算法并开发自己的新模型，从而不断为开源社区提供贡献。
 
 ## 引用
 
-如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMClassification。
+如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMPreTrain。
 
 ```BibTeX
-@misc{2020mmclassification,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
-    year={2020}
+@misc{2023mmpretrain,
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
+    year={2023}
 }
 ```
 
@@ -174,12 +265,15 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 
 ## OpenMMLab 的其他项目
 
+- [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab 深度学习模型训练基础库
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
+- [MMEval](https://github.com/open-mmlab/mmeval): 统一开放的跨框架算法评测库
+- [MMPreTrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab 深度学习预训练工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab 旋转框检测工具箱与测试基准
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO 系列工具箱与测试基准
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
 - [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab 姿态估计工具箱
@@ -199,7 +293,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3) 或联络 OpenMMLab 官方微信小助手
 
 <div align="center">
-<img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/qq_group_qrcode.jpg" height="400" /> <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/wechat_qrcode.jpg" height="400" />
+<img src="./resources/zhihu_qrcode.jpg" height="400"/> <img src="./resources/xiaozhushou_weixin_qrcode.jpeg" height="400"/>
 </div>
 
 我们会在 OpenMMLab 社区为大家

@@ -1,6 +1,13 @@
-# Contributing to OpenMMLab
+# Contributing to MMPreTrain
 
-All kinds of contributions are welcome, including but not limited to the following.
+- [Contributing to MMPreTrain](#contributing-to-mmpretrain)
+  - [Workflow](#workflow)
+  - [Code style](#code-style)
+    - [Python](#python)
+    - [C++ and CUDA](#c-and-cuda)
+  - [Pre-commit Hook](#pre-commit-hook)
+
+Thanks for your interest in contributing to MMPreTrain! All kinds of contributions are welcome, including but not limited to the following.
 
 - Fix typo or bugs
 - Add documentation or translate the documentation into other languages
@@ -8,14 +15,19 @@ All kinds of contributions are welcome, including but not limited to the followi
 
 ## Workflow
 
-1. fork and pull the latest OpenMMLab repository (MMClassification)
-2. checkout a new branch (do not use master branch for PRs)
-3. commit your changes
-4. create a PR
+We recommend the potential contributors follow this workflow for contribution.
 
-```{note}
-If you plan to add some new features that involve large changes, it is encouraged to open an issue for discussion first.
+1. Fork and pull the latest MMPreTrain repository, follow [get started](https://mmpretrain.readthedocs.io/en/latest/get_started.html) to setup the environment.
+2. Checkout a new branch (**do not use the master or dev branch** for PRs)
+
+```bash
+git checkout -b xxxx # xxxx is the name of new branch
 ```
+
+3. Edit the related files follow the code style mentioned below
+4. Use [pre-commit hook](https://pre-commit.com/) to check and format your changes.
+5. Commit your changes
+6. Create a PR with related information
 
 ## Code style
 
@@ -32,11 +44,17 @@ We use the following tools for linting and formatting:
 - [mdformat](https://github.com/executablebooks/mdformat): Mdformat is an opinionated Markdown formatter that can be used to enforce a consistent style in Markdown files.
 - [docformatter](https://github.com/myint/docformatter): A formatter to format docstring.
 
-Style configurations can be found in [setup.cfg](./setup.cfg).
+Style configurations of yapf and isort can be found in [setup.cfg](https://github.com/open-mmlab/mmpretrain/blob/main/setup.cfg).
+
+### C++ and CUDA
+
+We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+
+## Pre-commit Hook
 
 We use [pre-commit hook](https://pre-commit.com/) that checks and formats for `flake8`, `yapf`, `isort`, `trailing whitespaces`, `markdown files`,
 fixes `end-of-files`, `double-quoted-strings`, `python-encoding-pragma`, `mixed-line-ending`, sorts `requirments.txt` automatically on every commit.
-The config for a pre-commit hook is stored in [.pre-commit-config](https://github.com/open-mmlab/mmclassification/blob/master/.pre-commit-config.yaml).
+The config for a pre-commit hook is stored in [.pre-commit-config](https://github.com/open-mmlab/mmpretrain/blob/main/.pre-commit-config.yaml).
 
 After you clone the repository, you will need to install initialize pre-commit hook.
 
@@ -52,10 +70,4 @@ pre-commit install
 
 After this on every commit check code linters and formatter will be enforced.
 
-```{important}
-Before you create a PR, make sure that your code lints and is formatted by yapf.
-```
-
-### C++ and CUDA
-
-We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
+> Before you create a PR, make sure that your code lints and is formatted by yapf.

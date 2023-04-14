@@ -13,10 +13,10 @@ Collections:
         - Res2Net Block
     Paper:
       Title: 'Res2Net: A New Multi-scale Backbone Architecture'
-      URL: https://arxiv.org/pdf/1904.01169.pdf
+      URL: https://arxiv.org/abs/1904.01169
     README: configs/res2net/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/res2net.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.17.0/mmcls/models/backbones/res2net.py
       Version: v0.17.0
 
 Models:

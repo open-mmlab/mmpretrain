@@ -1,0 +1,60 @@
+Collections:
+  - Name: MobileViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - MobileViT Block
+    Paper:
+      URL: https://arxiv.org/abs/2110.02178
+      Title: MobileViT Light-weight, General-purpose, and Mobile-friendly Vision Transformer
+    README: configs/mobilevit/README.md
+
+Models:
+  - Name: mobilevit-small_3rdparty_in1k
+    Metadata:
+      FLOPs: 2030000000
+      Parameters: 5580000
+    In Collection: MobileViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.25
+          Top 5 Accuracy: 94.09
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth
+    Config: configs/mobilevit/mobilevit-small_8xb128_in1k.py
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_s.pt
+      Code: https://github.com/apple/ml-cvnets
+  - Name: mobilevit-xsmall_3rdparty_in1k
+    Metadata:
+      FLOPs: 1050000000
+      Parameters: 2320000
+    In Collection: MobileViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.75
+          Top 5 Accuracy: 92.32
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth
+    Config: configs/mobilevit/mobilevit-xsmall_8xb128_in1k.py
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_xs.pt
+      Code: https://github.com/apple/ml-cvnets
+  - Name: mobilevit-xxsmall_3rdparty_in1k
+    Metadata:
+      FLOPs: 420000000
+      Parameters: 1270000
+    In Collection: MobileViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 69.02
+          Top 5 Accuracy: 88.91
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth
+    Config: configs/mobilevit/mobilevit-xxsmall_8xb128_in1k.py
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_xxs.pt
+      Code: https://github.com/apple/ml-cvnets

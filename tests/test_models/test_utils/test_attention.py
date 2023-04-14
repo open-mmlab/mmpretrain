@@ -5,14 +5,15 @@ from unittest.mock import ANY, MagicMock
 import pytest
 import torch
 
-from mmcls.models.utils.attention import ShiftWindowMSA, WindowMSA
+from mmpretrain.models.utils.attention import (ShiftWindowMSA, WindowMSA,
+                                               torch_meshgrid)
 
 
 def get_relative_position_index(window_size):
     """Method from original code of Swin-Transformer."""
     coords_h = torch.arange(window_size[0])
     coords_w = torch.arange(window_size[1])
-    coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
+    coords = torch.stack(torch_meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
     coords_flatten = torch.flatten(coords, 1)  # 2, Wh*Ww
     # 2, Wh*Ww, Wh*Ww
     relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
@@ -186,16 +187,3 @@ class TestShiftWindowMSA(TestCase):
         # drop all attn output, output shuold be equal to proj.bias
         self.assertTrue(
             torch.allclose(attn(inputs, (14, 14)), torch.tensor(0.)))
-
-    def test_deprecation(self):
-        # test deprecated arguments
-        with pytest.warns(DeprecationWarning):
-            ShiftWindowMSA(
-                embed_dims=96,
-                num_heads=4,
-                window_size=7,
-                input_resolution=(14, 14))
-
-        with pytest.warns(DeprecationWarning):
-            ShiftWindowMSA(
-                embed_dims=96, num_heads=4, window_size=7, auto_pad=True)
