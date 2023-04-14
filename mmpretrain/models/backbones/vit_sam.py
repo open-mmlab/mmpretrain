@@ -560,6 +560,13 @@ class ViTSAM(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
+        # freeze channel_reduction module
+        if self.frozen_stages == self.num_layers and self.out_channels > 0:
+            m = self.channel_reduction
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor]:
         B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
