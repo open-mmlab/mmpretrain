@@ -542,11 +542,6 @@ class ViTSAM(BaseBackbone):
             if self.pos_embed is not None:
                 trunc_normal_(self.pos_embed, std=0.02)
 
-    @staticmethod
-    def resize_pos_embed(*args, **kwargs):
-        """Interface for backward-compatibility."""
-        return resize_pos_embed(*args, **kwargs)
-
     def _freeze_stages(self):
         # freeze position embedding
         if self.pos_embed is not None:
@@ -600,7 +595,6 @@ class ViTSAM(BaseBackbone):
         return tuple(outs)
 
     def _format_output(self, x) -> torch.Tensor:
-        breakpoint()
         if self.out_type == 'raw' or self.out_type == 'featmap':
             return x
         elif self.out_type == 'avg_featmap':
