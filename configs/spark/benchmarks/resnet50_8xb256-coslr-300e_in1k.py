@@ -1,6 +1,7 @@
 _base_ = [
-    '_base_/models/resnet50.py', '_base_/datasets/imagenet_bs256_rsb_a12.py',
-    '_base_/default_runtime.py'
+    '../../_base_/models/resnet50.py',
+    '../../_base_/datasets/imagenet_bs256_rsb_a12.py',
+    '../../_base_/default_runtime.py'
 ]
 # modification is based on ResNets RSB settings
 data_preprocessor = dict(
@@ -23,16 +24,22 @@ train_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='NumpyToPIL', to_rgb=True),
     dict(
-        type='RandAugment',
-        policies='timm_increasing',
-        num_policies=2,
-        total_level=10,
-        magnitude_level=9,
-        magnitude_std=0.5,
-        hparams=dict(
-            pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
-    dict(type='PackClsInputs'),
+        type='torchvision/TrivialAugmentWide',
+        num_magnitude_bins=31,
+        interpolation='bicubic',
+        fill=None),
+    dict(type='PILToNumpy', to_bgr=True),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.25,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=1 / 3,
+        fill_color=bgr_mean,
+        fill_std=bgr_std),
+    dict(type='PackInputs'),
 ]
 train_dataloader = dict(
     dataset=dict(pipeline=train_pipeline),
