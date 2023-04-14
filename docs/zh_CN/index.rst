@@ -128,6 +128,12 @@ MMPretrain 上手路线
    notes/finetune_custom_dataset.md
 
 .. toctree::
+   :maxdepth: 1
+   :caption: 设备支持
+
+   device/npu.md
+
+.. toctree::
    :caption: 切换语言
 
    English <https://mmpretrain.readthedocs.io/en/latest/>
