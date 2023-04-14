@@ -41,6 +41,7 @@ jobs:
           pip install -U openmim
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
+          pip install rich==13.3.3
       - name: Build and install
         run: pip install -e .
       - name: Run unittests and generate coverage report
@@ -90,6 +91,7 @@ jobs:
           pip install -U openmim
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
+          pip install rich==13.3.3
       - name: Build and install
         run: pip install -e .
       - name: Run unittests and generate coverage report
@@ -128,6 +130,7 @@ jobs:
           mim install mmengine
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
+          pip install rich==13.3.3
       - name: Build and install
         run: pip install -e . -v
       - name: Run unittests
