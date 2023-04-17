@@ -4,7 +4,7 @@ We list some common troubles faced by many users and their corresponding
 solutions here. Feel free to enrich the list if you find any frequent issues
 and have ways to help others to solve them. If the contents here do not cover
 your issue, please create an issue using the
-[provided templates](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[provided templates](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 and make sure you fill in all required information in the template.
 
 ## Installation
@@ -16,7 +16,7 @@ and make sure you fill in all required information in the template.
 
   | MMPretrain version | MMEngine version  |   MMCV version   |
   | :----------------: | :---------------: | :--------------: |
-  |  1.0.0rc0 (main)   | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  |  1.0.0rc7 (main)   | mmengine >= 0.5.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
   Since the `dev` branch is under frequent development, the MMEngine and MMCV

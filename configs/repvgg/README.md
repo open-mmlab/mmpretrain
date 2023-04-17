@@ -61,7 +61,7 @@ print(type(feats))
 
 **Train/Test Command**
 
-Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 

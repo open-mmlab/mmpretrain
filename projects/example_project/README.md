@@ -8,8 +8,8 @@ according to your project.
 
 ### Setup Environment
 
-Please refer to [Get Started](https://mmclassification.readthedocs.io/en/1.x/get_started.html) to install
-MMClassification.
+Please refer to [Get Started](https://mmpretrain.readthedocs.io/en/latest/get_started.html) to install
+MMPreTrain.
 
 At first, add the current folder to `PYTHONPATH`, so that Python can find your code. Run command in the current directory to add it.
 
@@ -21,26 +21,26 @@ export PYTHONPATH=`pwd`:$PYTHONPATH
 
 ### Data Preparation
 
-Prepare the ImageNet-2012 dataset according to the [instruction](https://mmclassification.readthedocs.io/en/dev-1.x/user_guides/dataset_prepare.html#imagenet).
+Prepare the ImageNet-2012 dataset according to the [instruction](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#imagenet).
 
 ### Training commands
 
 **To train with single GPU:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py
+mim train mmpretrain configs/examplenet_8xb32_in1k.py
 ```
 
 **To train with multiple GPUs:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py --launcher pytorch --gpus 8
+mim train mmpretrain configs/examplenet_8xb32_in1k.py --launcher pytorch --gpus 8
 ```
 
 **To train with multiple GPUs by slurm:**
 
 ```bash
-mim train mmcls configs/examplenet_8xb32_in1k.py --launcher slurm \
+mim train mmpretrain configs/examplenet_8xb32_in1k.py --launcher slurm \
     --gpus 16 --gpus-per-node 8 --partition $PARTITION
 ```
 
@@ -49,19 +49,19 @@ mim train mmcls configs/examplenet_8xb32_in1k.py --launcher slurm \
 **To test with single GPU:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT
 ```
 
 **To test with multiple GPUs:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher pytorch --gpus 8
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher pytorch --gpus 8
 ```
 
 **To test with multiple GPUs by slurm:**
 
 ```bash
-mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
+mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
     --gpus 16 --gpus-per-node 8 --partition $PARTITION
 ```
 
@@ -79,25 +79,25 @@ mim test mmcls configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
 
 <!-- Replace to the citation of the paper your project refers to. -->
 
-```bibtex
-@misc{2020mmclassification,
-    title={OpenMMLab's Image Classification Toolbox and Benchmark},
-    author={MMClassification Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
-    year={2020}
+```BibTeX
+@misc{2023mmpretrain,
+    title={OpenMMLab's Pre-training Toolbox and Benchmark},
+    author={MMPreTrain Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmpretrain}},
+    year={2023}
 }
 ```
 
 ## Checklist
 
 Here is a checklist of this project's progress. And you can ignore this part if you don't plan to contribute
-to MMClassification projects.
+to MMPreTrain projects.
 
 - [ ] Milestone 1: PR-ready, and acceptable to be one of the `projects/`.
 
   - [ ] Finish the code
 
-    <!-- The code's design shall follow existing interfaces and convention. For example, each model component should be registered into `mmcls.registry.MODELS` and configurable via a config file. -->
+    <!-- The code's design shall follow existing interfaces and convention. For example, each model component should be registered into `mmpretrain.registry.MODELS` and configurable via a config file. -->
 
   - [ ] Basic docstrings & proper citation
 
@@ -117,7 +117,7 @@ to MMClassification projects.
 
   - [ ] Unit tests
 
-    <!-- Unit tests for the major module are required. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/tests/test_models/test_backbones/test_vision_transformer.py) -->
+    <!-- Unit tests for the major module are required. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/tests/test_models/test_backbones/test_vision_transformer.py) -->
 
   - [ ] Code style
 
@@ -125,4 +125,4 @@ to MMClassification projects.
 
   - [ ] `metafile.yml` and `README.md`
 
-    <!-- It will used for MMClassification to acquire your models. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/swin_transformer/README.md) -->
+    <!-- It will used for MMPreTrain to acquire your models. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/mvit/metafile.yml). In particular, you may have to refactor this README into a standard one. [Example](https://github.com/open-mmlab/mmpretrain/blob/main/configs/swin_transformer/README.md) -->

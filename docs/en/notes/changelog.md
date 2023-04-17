@@ -1,4 +1,52 @@
-# Changelog
+# Changelog (MMPreTrain)
+
+## v1.0.0rc7(07/04/2023)
+
+### Highlights
+
+- Integrated Self-supervised learning algorithms from **MMSelfSup**, such as **MAE**, **BEiT**, etc.
+- Support **RIFormer**, a simple but effective vision backbone by removing token mixer.
+- Support **LeViT**, **XCiT**, **ViG** and **ConvNeXt-V2** backbone.
+- Add t-SNE visualization.
+- Refactor dataset pipeline visualization.
+- Support confusion matrix calculation and plot.
+
+### New Features
+
+- Support RIFormer. ([#1453](https://github.com/open-mmlab/mmpretrain/pull/1453))
+- Support XCiT Backbone. ([#1305](https://github.com/open-mmlab/mmclassification/pull/1305))
+- Support calculate confusion matrix and plot it. ([#1287](https://github.com/open-mmlab/mmclassification/pull/1287))
+- Support RetrieverRecall metric & Add ArcFace config ([#1316](https://github.com/open-mmlab/mmclassification/pull/1316))
+- Add `ImageClassificationInferencer`. ([#1261](https://github.com/open-mmlab/mmclassification/pull/1261))
+- Support InShop Dataset (Image Retrieval). ([#1019](https://github.com/open-mmlab/mmclassification/pull/1019))
+- Support LeViT backbone. ([#1238](https://github.com/open-mmlab/mmclassification/pull/1238))
+- Support VIG Backbone. ([#1304](https://github.com/open-mmlab/mmclassification/pull/1304))
+- Support ConvNeXt-V2 backbone. ([#1294](https://github.com/open-mmlab/mmclassification/pull/1294))
+
+### Improvements
+
+- Use PyTorch official `scaled_dot_product_attention` to accelerate `MultiheadAttention`. ([#1434](https://github.com/open-mmlab/mmpretrain/pull/1434))
+- Add ln to vit avg_featmap output ([#1447](https://github.com/open-mmlab/mmpretrain/pull/1447))
+- Update analysis tools and documentations. ([#1359](https://github.com/open-mmlab/mmclassification/pull/1359))
+- Unify the `--out` and `--dump` in `tools/test.py`. ([#1307](https://github.com/open-mmlab/mmclassification/pull/1307))
+- Enable to toggle whether Gem Pooling is trainable or not. ([#1246](https://github.com/open-mmlab/mmclassification/pull/1246))
+- Update registries of mmcls. ([#1306](https://github.com/open-mmlab/mmclassification/pull/1306))
+- Add metafile fill and validation tools. ([#1297](https://github.com/open-mmlab/mmclassification/pull/1297))
+- Remove useless EfficientnetV2 config files. ([#1300](https://github.com/open-mmlab/mmclassification/pull/1300))
+
+### Bug Fixes
+
+- Fix precise bn hook ([#1466](https://github.com/open-mmlab/mmpretrain/pull/1466))
+- Fix retrieval multi gpu bug ([#1319](https://github.com/open-mmlab/mmclassification/pull/1319))
+- Fix error repvgg-deploy base config path. ([#1357](https://github.com/open-mmlab/mmclassification/pull/1357))
+- Fix bug in test tools. ([#1309](https://github.com/open-mmlab/mmclassification/pull/1309))
+
+### Docs Update
+
+- Translate some tools tutorials to Chinese. ([#1321](https://github.com/open-mmlab/mmclassification/pull/1321))
+- Add Chinese translation for runtime.md.  ([#1313](https://github.com/open-mmlab/mmclassification/pull/1313))
+
+# Changelog (MMClassification)
 
 ## v1.0.0rc5(30/12/2022)
 

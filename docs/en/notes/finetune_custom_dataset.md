@@ -81,7 +81,7 @@ freeze the first two stages' parameters, just use the following configs:
 
 ```{note}
 Not all backbones support the `frozen_stages` argument by now. Please check
-[the docs](https://mmpretrain.readthedocs.io/en/main/api.html#module-mmpretrain.models.backbones)
+[the docs](https://mmpretrain.readthedocs.io/en/latest/api.html#module-mmpretrain.models.backbones)
 to confirm if your backbone supports it.
 ```
 

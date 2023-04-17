@@ -75,7 +75,7 @@ _base_ = [
 络的参数，只需要在上面的配置中添加一行：
 
 ```{note}
-注意，目前并非所有的主干网络都支持 `frozen_stages` 参数。请检查[文档](https://mmpretrain.readthedocs.io/en/main/api.html#module-mmpretrain.models.backbones)
+注意，目前并非所有的主干网络都支持 `frozen_stages` 参数。请检查[文档](https://mmpretrain.readthedocs.io/en/latest/api.html#module-mmpretrain.models.backbones)
 确认使用的主干网络是否支持这一参数。
 ```
 

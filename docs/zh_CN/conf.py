@@ -93,7 +93,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmclassification/tree/pretrain'
+            'url': 'https://github.com/open-mmlab/mmpretrain'
         },
         {
             'name': 'Colab 教程',
@@ -108,11 +108,11 @@ html_theme_options = {
             'name': 'Version',
             'children': [
                 {'name': 'MMPretrain 0.x',
-                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/latest/',
-                 'description': 'master branch'},
+                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/0.x/',
+                 'description': '0.x branch'},
                 {'name': 'MMPretrain 1.x',
-                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/dev-1.x/',
-                 'description': '1.x branch'},
+                 'url': 'https://mmpretrain.readthedocs.io/zh_CN/latest/',
+                 'description': 'Main branch'},
             ],
         }
     ],
@@ -181,7 +181,7 @@ man_pages = [(root_doc, 'mmpretrain', 'MMPretrain Documentation', [author], 1)]
 #  dir menu entry, description, category)
 texinfo_documents = [
     (root_doc, 'mmpretrain', 'MMPretrain Documentation', author, 'mmpretrain',
-     'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
+     'OpenMMLab pre-training toolbox and benchmark.', 'Miscellaneous'),
 ]
 
 # -- Options for Epub output -------------------------------------------------

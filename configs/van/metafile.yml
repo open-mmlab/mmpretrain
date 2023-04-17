@@ -12,7 +12,7 @@ Collections:
       Title: "Visual Attention Network"
     README: configs/van/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.23.0/mmcls/models/backbones/van.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.23.0/mmcls/models/backbones/van.py
       Version: v0.23.0
 
 Models:

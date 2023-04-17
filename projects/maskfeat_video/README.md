@@ -37,7 +37,7 @@ Requirements:
 - MMPretrain >= 1.0.0rc0
 - MMAction2 >= 1.0.0rc3
 
-Please refer to [Get Started](https://mmpretrain.readthedocs.io/en/main/get_started.html) documentation of MMPretrain to finish installation.
+Please refer to [Get Started](https://mmpretrain.readthedocs.io/en/latest/get_started.html) documentation of MMPretrain to finish installation.
 
 Besides, to process the video data, we apply transforms in MMAction2. The instruction to install MMAction2 can be found in [Get Started documentation](https://mmaction2.readthedocs.io/en/1.x/get_started.html).
 

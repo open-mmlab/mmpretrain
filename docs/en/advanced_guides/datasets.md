@@ -1,7 +1,7 @@
 # Adding New Dataset
 
 You can write a new dataset class inherited from `BaseDataset`, and overwrite `load_data_list(self)`,
-like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/imagenet.py).
+like [CIFAR10](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/imagenet.py).
 Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
 
 Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing. The format of annotation list is as follows:
@@ -65,7 +65,7 @@ train_dataloader = dict(
 )
 ```
 
-All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/pretrain/mmpretrain/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents of {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`.
+All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents of {external+mmengine:doc}`BaseDataset <advanced_tutorials/basedataset>`.
 
 ```{note}
 If the dictionary of the data sample contains 'img_path' but not 'img', then 'LoadImgFromFile' transform must be added in the pipeline.

@@ -55,7 +55,7 @@ class TestAnalyzeLogs(TestCase):
             'python',
             'tools/analysis_tools/analyze_logs.py',
             'cal_train_time',
-            self.log_file,
+            str(self.log_file),
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
@@ -65,7 +65,7 @@ class TestAnalyzeLogs(TestCase):
             'python',
             'tools/analysis_tools/analyze_logs.py',
             'plot_curve',
-            self.log_file,
+            str(self.log_file),
             '--keys',
             'accuracy/top1',
             '--out',
@@ -113,10 +113,10 @@ class TestAnalyzeResults(TestCase):
         command = [
             'python',
             'tools/analysis_tools/analyze_results.py',
-            self.config_file,
-            self.result_file,
+            str(self.config_file),
+            str(self.result_file),
             '--out-dir',
-            self.tmpdir.name,
+            str(self.tmpdir.name),
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         p.communicate()
@@ -137,7 +137,7 @@ class TestPrintConfig(TestCase):
         command = [
             'python',
             'tools/misc/print_config.py',
-            self.config_file,
+            str(self.config_file),
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
@@ -170,9 +170,9 @@ class TestVerifyDataset(TestCase):
         command = [
             'python',
             'tools/misc/verify_dataset.py',
-            self.config_file,
+            str(self.config_file),
             '--out-path',
-            self.dir / 'log.log',
+            str(self.dir / 'log.log'),
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
@@ -204,7 +204,7 @@ class TestEvalMetric(TestCase):
         command = [
             'python',
             'tools/analysis_tools/eval_metric.py',
-            self.result_file,
+            str(self.result_file),
             '--metric',
             'type=Accuracy',
             'topk=1,2',
@@ -244,7 +244,7 @@ class TestVisScheduler(TestCase):
         command = [
             'python',
             'tools/visualization/vis_scheduler.py',
-            self.config_file,
+            str(self.config_file),
             '--dataset-size',
             '100',
             '--not-show',
@@ -280,8 +280,8 @@ class TestPublishModel(TestCase):
         command = [
             'python',
             'tools/model_converters/publish_model.py',
-            self.ckpt_file,
-            self.ckpt_file,
+            str(self.ckpt_file),
+            str(self.ckpt_file),
             '--dataset-type',
             'ImageNet',
             '--no-ema',
@@ -318,11 +318,11 @@ class TestVisCam(TestCase):
         command = [
             'python',
             'tools/visualization/vis_cam.py',
-            ASSETS_ROOT / 'color.jpg',
-            self.config_file,
-            self.ckpt_file,
+            str(ASSETS_ROOT / 'color.jpg'),
+            str(self.config_file),
+            str(self.ckpt_file),
             '--save-path',
-            self.dir / 'cam.jpg',
+            str(self.dir / 'cam.jpg'),
         ]
         p = Popen(command, cwd=MMPRE_ROOT, stdout=PIPE)
         out, _ = p.communicate()
@@ -354,10 +354,10 @@ class TestConfusionMatrix(TestCase):
         command = [
             'python',
             'tools/analysis_tools/confusion_matrix.py',
-            self.config_file,
-            self.result_file,
+            str(self.config_file),
+            str(self.result_file),
             '--out',
-            self.dir / 'result.pkl',
+            str(self.dir / 'result.pkl'),
         ]
         Popen(command, cwd=MMPRE_ROOT, stdout=PIPE).wait()
         result = mmengine.load(self.dir / 'result.pkl')
@@ -396,9 +396,9 @@ class TestVisTsne(TestCase):
         command = [
             'python',
             'tools/visualization/vis_tsne.py',
-            self.config_file,
+            str(self.config_file),
             '--work-dir',
-            self.dir,
+            str(self.dir),
             '--perplexity',
             '2',
         ]

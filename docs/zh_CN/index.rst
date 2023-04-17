@@ -5,7 +5,7 @@ MMPretrain 是一个全新升级的预训练开源算法框架，旨在提供各
 并支持了不同的预训练策略。MMPretrain 源自著名的开源项目
 `MMClassification <https://github.com/open-mmlab/mmclassification/tree/1.x>`_
 和 `MMSelfSup <https://github.com/open-mmlab/mmselfsup>`_，并开发了许多令人兴奋的新功能。
-目前，预训练阶段对于视觉识别至关重要，凭借丰富而强大的预训练模型，我们嫩能够改进各种下游视觉任务。
+目前，预训练阶段对于视觉识别至关重要，凭借丰富而强大的预训练模型，我们能够改进各种下游视觉任务。
 
 我们的代码库旨在成为一个易于使用和用户友好的代码库库，并简化学术研究活动和工程任务。
 我们在以下不同部分中详细介绍了 MMPretrain 的特性和设计。
@@ -130,8 +130,8 @@ MMPretrain 上手路线
 .. toctree::
    :caption: 切换语言
 
-   English <https://mmclassification.readthedocs.io/en/1.x/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/1.x/>
+   English <https://mmpretrain.readthedocs.io/en/latest/>
+   简体中文 <https://mmpretrain.readthedocs.io/zh_CN/latest/>
 
 
 索引与表格

@@ -10,7 +10,7 @@ Collections:
     README: configs/arcface/README.md
     Code:
       Version: v1.0.0rc3
-      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/heads/margin_head.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v1.0.0rc3/mmcls/models/heads/margin_head.py
 
 Models:
   - Name: resnet50-arcface_8xb32_inshop

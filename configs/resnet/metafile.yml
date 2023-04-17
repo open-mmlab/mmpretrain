@@ -15,7 +15,7 @@ Collections:
       Title: "Deep Residual Learning for Image Recognition"
     README: configs/resnet/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/resnet.py#L383
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.15.0/mmcls/models/backbones/resnet.py#L383
       Version: v0.15.0
 
 Models:

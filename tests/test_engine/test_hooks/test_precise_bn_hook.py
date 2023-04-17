@@ -9,10 +9,11 @@ import pytest
 import torch
 import torch.nn as nn
 from mmengine.logging import MMLogger
-from mmengine.model import BaseDataPreprocessor, BaseModel
+from mmengine.model import BaseModel
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader, Dataset
 
+from mmpretrain.models.utils import ClsDataPreprocessor
 from mmpretrain.registry import HOOKS
 from mmpretrain.structures import DataSample
 
@@ -31,12 +32,12 @@ class ExampleDataset(Dataset):
         return 10
 
 
-class MockDataPreprocessor(BaseDataPreprocessor):
+class MockDataPreprocessor(ClsDataPreprocessor):
     """mock preprocessor that do nothing."""
 
-    def forward(self, data, training):
+    def forward(self, data, training=False):
 
-        return data['imgs'], DataSample()
+        return dict(inputs=data['imgs'], data_samples=DataSample())
 
 
 class ExampleModel(BaseModel):
@@ -48,9 +49,9 @@ class ExampleModel(BaseModel):
         self.bn = nn.BatchNorm1d(1)
         self.test_cfg = None
 
-    def forward(self, batch_inputs, data_samples, mode='tensor'):
-        batch_inputs = batch_inputs.to(next(self.parameters()).device)
-        return self.bn(self.conv(batch_inputs))
+    def forward(self, inputs, data_samples, mode='tensor'):
+        inputs = inputs.to(next(self.parameters()).device)
+        return self.bn(self.conv(inputs))
 
     def train_step(self, data, optim_wrapper):
         outputs = {'loss': 0.5, 'num_samples': 1}
@@ -64,8 +65,8 @@ class SingleBNModel(ExampleModel):
         self.bn = nn.BatchNorm1d(1)
         self.test_cfg = None
 
-    def forward(self, batch_inputs, data_samples, mode='tensor'):
-        return self.bn(batch_inputs)
+    def forward(self, inputs, data_samples, mode='tensor'):
+        return self.bn(inputs)
 
 
 class GNExampleModel(ExampleModel):
@@ -84,8 +85,8 @@ class NoBNExampleModel(ExampleModel):
         delattr(self, 'bn')
         self.test_cfg = None
 
-    def forward(self, batch_inputs, data_samples, mode='tensor'):
-        return self.conv(batch_inputs)
+    def forward(self, inputs, data_samples, mode='tensor'):
+        return self.conv(inputs)
 
 
 class TestPreciseBNHookHook(TestCase):

@@ -11,7 +11,7 @@ Collections:
     README: configs/revvit/README.md
     Code:
       Version: v1.0.0rc5
-      URL: https://github.com/open-mmlab/mmclassification/blob/1.0.0rc5/mmcls/models/backbones/revvit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/1.0.0rc5/mmcls/models/backbones/revvit.py
 
 Models:
   - Name: revvit-small_3rdparty_in1k

@@ -1,7 +1,7 @@
 Welcome to MMPretrain's documentation!
 ============================================
 
-MMPretrain is a newly upgraded open-source framework for visual pre-training.
+MMPretrain is a newly upgraded open-source framework for pre-training.
 It has set out to provide multiple powerful pre-trained backbones and
 support different pre-training strategies. MMPretrain originated from the
 famous open-source projects

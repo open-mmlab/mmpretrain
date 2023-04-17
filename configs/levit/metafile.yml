@@ -10,7 +10,7 @@ Collections:
       URL: https://arxiv.org/abs/2104.01136
     README: configs/levit/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/levit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/levit.py
       Version: v1.0.0rc5
 
 Models:

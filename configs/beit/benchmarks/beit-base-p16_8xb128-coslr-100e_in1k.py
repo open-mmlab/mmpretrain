@@ -1,4 +1,3 @@
-# mmcls:: means we use the default settings from MMClassification
 _base_ = [
     '../../_base_/datasets/imagenet_bs64_swin_224.py',
     '../../_base_/schedules/imagenet_bs1024_adamw_swin.py',

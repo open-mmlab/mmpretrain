@@ -2,7 +2,7 @@
 
 我们在这里列出了一些常见问题及其相应的解决方案。如果您发现任何常见问题并有方法
 帮助解决，欢迎随时丰富列表。如果这里的内容没有涵盖您的问题，请按照
-[提问模板](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[提问模板](https://github.com/open-mmlab/mmpretrain/issues/new/choose)
 在 GitHub 上提出问题，并补充模板中需要的信息。
 
 ## 安装
@@ -13,7 +13,7 @@
 
   | MMPretrain 版本 |   MMEngine 版本   |    MMCV 版本     |
   | :-------------: | :---------------: | :--------------: |
-  | 1.0.0rc0 (main) | mmengine >= 0.4.0 | mmcv >= 2.0.0rc4 |
+  | 1.0.0rc7 (main) | mmengine >= 0.5.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}
   由于 `dev` 分支处于频繁开发中，MMEngine 和 MMCV 版本依赖可能不准确。如果您在使用

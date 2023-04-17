@@ -11,7 +11,7 @@ Collections:
       Title: "MLP-Mixer: An all-MLP Architecture for Vision"
     README: configs/mlp_mixer/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.18.0/mmcls/models/backbones/mlp_mixer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.18.0/mmcls/models/backbones/mlp_mixer.py
       Version: v0.18.0
 
 Models:

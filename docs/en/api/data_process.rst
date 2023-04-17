@@ -4,7 +4,7 @@
 Data Process
 =================
 
-In MMClassification, the data process and the dataset is decomposed. The
+In MMPreTrain, the data process and the dataset is decomposed. The
 datasets only define how to get samples' basic information from the file
 system. These basic information includes the ground-truth label and raw
 images data / the paths of images.The data process includes data transforms,
@@ -154,7 +154,7 @@ The data preprocessor is also a component to process the data before feeding dat
 Comparing with the data transforms, the data preprocessor is a module of the classifier,
 and it takes a batch of data to process, which means it can use GPU and batch to accelebrate the processing.
 
-The default data preprocessor in MMClassification could do the pre-processing like following:
+The default data preprocessor in MMPreTrain could do the pre-processing like following:
 
 1. Move data to the target device.
 2. Pad inputs to the maximum size of current batch.
@@ -235,7 +235,7 @@ You can also specify the probabilities of every batch augmentation by the ``prob
        ], probs=[0.3, 0.7])
    )
 
-Here is a list of batch augmentations can be used in MMClassification.
+Here is a list of batch augmentations can be used in MMPreTrain.
 
 .. autosummary::
    :toctree: generated

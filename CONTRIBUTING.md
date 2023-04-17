@@ -1,13 +1,13 @@
-# Contributing to MMClassification
+# Contributing to MMPreTrain
 
-- [Contributing to MMClassification](#contributing-to-mmclassification)
+- [Contributing to MMPreTrain](#contributing-to-mmpretrain)
   - [Workflow](#workflow)
   - [Code style](#code-style)
     - [Python](#python)
     - [C++ and CUDA](#c-and-cuda)
   - [Pre-commit Hook](#pre-commit-hook)
 
-Thanks for your interest in contributing to MMClassification! All kinds of contributions are welcome, including but not limited to the following.
+Thanks for your interest in contributing to MMPreTrain! All kinds of contributions are welcome, including but not limited to the following.
 
 - Fix typo or bugs
 - Add documentation or translate the documentation into other languages
@@ -17,7 +17,7 @@ Thanks for your interest in contributing to MMClassification! All kinds of contr
 
 We recommend the potential contributors follow this workflow for contribution.
 
-1. Fork and pull the latest MMClassification repository, follow [get started](https://mmclassification.readthedocs.io/en/1.x/get_started.html) to setup the environment.
+1. Fork and pull the latest MMPreTrain repository, follow [get started](https://mmpretrain.readthedocs.io/en/latest/get_started.html) to setup the environment.
 2. Checkout a new branch (**do not use the master or dev branch** for PRs)
 
 ```bash
@@ -44,7 +44,7 @@ We use the following tools for linting and formatting:
 - [mdformat](https://github.com/executablebooks/mdformat): Mdformat is an opinionated Markdown formatter that can be used to enforce a consistent style in Markdown files.
 - [docformatter](https://github.com/myint/docformatter): A formatter to format docstring.
 
-Style configurations of yapf and isort can be found in [setup.cfg](https://github.com/open-mmlab/mmclassification/blob/1.x/setup.cfg).
+Style configurations of yapf and isort can be found in [setup.cfg](https://github.com/open-mmlab/mmpretrain/blob/main/setup.cfg).
 
 ### C++ and CUDA
 
@@ -54,7 +54,7 @@ We follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppgu
 
 We use [pre-commit hook](https://pre-commit.com/) that checks and formats for `flake8`, `yapf`, `isort`, `trailing whitespaces`, `markdown files`,
 fixes `end-of-files`, `double-quoted-strings`, `python-encoding-pragma`, `mixed-line-ending`, sorts `requirments.txt` automatically on every commit.
-The config for a pre-commit hook is stored in [.pre-commit-config](https://github.com/open-mmlab/mmclassification/blob/1.x/.pre-commit-config.yaml).
+The config for a pre-commit hook is stored in [.pre-commit-config](https://github.com/open-mmlab/mmpretrain/blob/main/.pre-commit-config.yaml).
 
 After you clone the repository, you will need to install initialize pre-commit hook.
 

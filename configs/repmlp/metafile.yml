@@ -10,7 +10,7 @@ Collections:
       Title: 'RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition'
     README: configs/repmlp/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.21.0/mmcls/models/backbones/repmlp.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.21.0/mmcls/models/backbones/repmlp.py
       Version: v0.21.0
 
 Models:

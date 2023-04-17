@@ -10,7 +10,7 @@ Collections:
       Title: 'RepVGG: Making VGG-style ConvNets Great Again'
     README: configs/repvgg/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.16.0/mmcls/models/backbones/repvgg.py#L257
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.16.0/mmcls/models/backbones/repvgg.py#L257
       Version: v0.16.0
 
 Models:

@@ -39,7 +39,7 @@ def main():
     args = parser.parse_args()
 
     save_path = Path(args.save_path)
-    if save_path.suffix != '.pth':
+    if save_path.suffix != '.pth' and save_path.suffix != '.tar':
         print('The path should contain the name of the pth format file.')
         exit()
     save_path.parent.mkdir(parents=True, exist_ok=True)

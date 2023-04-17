@@ -15,7 +15,7 @@ MMPretrain provides high-level Python APIs for inference on a given image:
 Here is an example of building the model and inference on a given image by using ImageNet-1k pre-trained checkpoint.
 
 ```{note}
-You can use `wget https://github.com/open-mmlab/mmclassification/raw/master/demo/demo.JPEG` to download the example image or use your own image.
+You can use `wget https://github.com/open-mmlab/mmpretrain/raw/main/demo/demo.JPEG` to download the example image or use your own image.
 ```
 
 ```python
@@ -35,4 +35,4 @@ result = inference_model(model, img_path)
 {"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}
 ```
 
-An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmclassification/blob/pretrain/demo/image_demo.py).
+An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmpretrain/blob/main/demo/image_demo.py).

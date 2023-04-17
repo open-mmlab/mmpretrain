@@ -16,7 +16,7 @@ Collections:
       URL: https://arxiv.org/abs/2103.00020
     README: configs/clip/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/vision_transformer.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/vision_transformer.py
       Version: v1.0.0
 
 Models:

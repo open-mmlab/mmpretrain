@@ -1,5 +1,5 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
-mmcv-lite>=2.0.0rc1
+mmcv-lite>=2.0.0rc4
 mmengine
 torch
 torchvision

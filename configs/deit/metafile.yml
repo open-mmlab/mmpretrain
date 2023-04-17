@@ -13,7 +13,7 @@ Collections:
     README: configs/deit/README.md
     Code:
       URL: v0.19.0
-      Version: https://github.com/open-mmlab/mmclassification/blob/v0.19.0/mmcls/models/backbones/deit.py
+      Version: https://github.com/open-mmlab/mmpretrain/blob/v0.19.0/mmcls/models/backbones/deit.py
 
 Models:
   - Name: deit-tiny_4xb256_in1k
