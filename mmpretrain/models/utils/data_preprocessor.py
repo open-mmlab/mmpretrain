@@ -608,12 +608,7 @@ class MultiModalDataPreprocessor(BaseDataPreprocessor):
             pad_w = target_w - w
             imgs = F.pad(imgs, (0, pad_w, 0, pad_h), 'constant',
                          self.pad_value)
-        inputs = {'imgs': imgs}
 
         data_samples = data.get('data_samples', None)
-        sample_item = data_samples[0] if data_samples is not None else None
 
-        if sample_item is not None and 'text' in sample_item:
-            inputs['texts'] = [sample.get('text') for sample in data_samples]
-
-        return {'inputs': inputs, 'data_samples': data_samples}
+        return {'images': imgs, 'data_samples': data_samples}

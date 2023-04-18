@@ -995,17 +995,10 @@ class BaseEncoder(nn.Module):
 @MODELS.register_module()
 class XBertEncoder(BertModel, BaseEncoder):
 
-    def __init__(self, med_config_path, from_pretrained=False):
+    def __init__(self, med_config, from_pretrained=False):
 
-        med_config = BertConfig.from_json_file(med_config_path)
-
-        if from_pretrained:
-            self = XBertEncoder.from_pretrained(
-                'bert-base-uncased',
-                config=med_config,
-                add_pooling_layer=False)
-        else:
-            super().__init__(config=med_config, add_pooling_layer=False)
+        med_config = BertConfig.from_dict(med_config)
+        super().__init__(config=med_config, add_pooling_layer=False)
 
     def forward_automask(self, tokenized_text, visual_embeds, **kwargs):
         image_atts = torch.ones(
