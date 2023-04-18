@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .default import DefaultSampler
 from .repeat_aug import RepeatAugSampler
+from .sequential import SequentialSampler
 
-__all__ = ['RepeatAugSampler', 'DefaultSampler']
+__all__ = ['RepeatAugSampler', 'SequentialSampler']

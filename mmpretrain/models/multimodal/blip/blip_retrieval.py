@@ -17,8 +17,9 @@ from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
 
 
-def all_gather_diff_size(data: torch.Tensor):
-    """Gather tensor with different lengths in a list.
+def all_gather_concat(data: torch.Tensor) -> torch.Tensor:
+    """Gather tensors with different first-dimension size and concat to one
+    tenosr.
 
     Note:
         Only the first dimension should be different.
@@ -27,10 +28,11 @@ def all_gather_diff_size(data: torch.Tensor):
         data (Tensor): Tensor to be gathered.
 
     Returns:
-        list[Tensor]: Return a list containing data from the whole group if
-        in distributed environment, otherwise a list only containing
-        :attr:`data` itself.
+        torch.Tensor: The concatenated tenosr.
     """
+    if dist.get_world_size() == 1:
+        return data
+
     data_size = torch.tensor(data.size(0), device=data.device)
     sizes_list = dist.all_gather(data_size)
 
@@ -47,7 +49,8 @@ def all_gather_diff_size(data: torch.Tensor):
     for tensor, size in zip(gather_list, sizes_list):
 
         all_data.append(tensor[:size])
-    return all_data
+
+    return torch.concat(all_data)
 
 
 @MODELS.register_module()
@@ -208,6 +211,8 @@ class BLIPRetriever(BaseModel):
                 texts = [sample.get('text') for sample in data_samples]
             else:
                 raise TypeError('text must be a string or a list of strings')
+        else:
+            return None
 
         # perform tokenize first if satisfied conditions
         texts = self.tokenizer(
@@ -221,7 +226,7 @@ class BLIPRetriever(BaseModel):
         return texts
 
     def forward(self,
-                images: dict,
+                images: torch.tensor = None,
                 data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor') -> Union[Tuple, dict]:
         """The unified entry for a forward process in both training and test.
@@ -254,26 +259,20 @@ class BLIPRetriever(BaseModel):
             - If ``mode="tensor"``, return a tuple.
             - If ``mode="loss"``, return a dict of tensor.
         """
-        texts = self.preprocess_text(data_samples)
-        inputs = {'images': images, 'texts': texts}
         if mode == 'tensor':
-            # save tokenized inputs for re-use in predict_all
-            return texts, self.extract_feat(inputs)
+            return self.extract_feat(images, data_samples)
         elif mode == 'loss':
-            return self.loss(inputs, data_samples)
+            return self.loss(images, data_samples)
         elif mode == 'predict':
-            raise RuntimeError(
-                'Batch prediction is not supported for image-text retrieval '
-                'evaluation. Please set `val_cfg` and `test_cfg` field to '
-                '`RetrievalValLoop` and `RetrievalTestLoop` correspondingly '
-                'in config file for evaluation.')
+            return self.predict(images, data_samples)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
     def extract_feat(
         self,
-        inputs: dict,
-    ) -> Tuple[torch.Tensor]:
+        images: torch.Tensor = None,
+        data_samples: List[DataSample] = None,
+    ) -> Dict[str, torch.Tensor]:
         """Extract features from the input dict.
 
         Args:
@@ -287,15 +286,26 @@ class BLIPRetriever(BaseModel):
                 If multimodal_backbone is not exist, tuple of torch.Tensor
                 will be returned.
         """
-        assert 'images' in inputs or 'texts' in inputs, \
+        if data_samples is not None:
+            texts = self.preprocess_text(data_samples)
+        else:
+            texts = None
+
+        assert images is not None or texts is not None, \
             'At least single modality should be passed as inputs.'
 
-        results = ()
-        for key in ['images', 'texts']:
-            # extract image and text feats if exists inputs
-            if key in inputs:
-                results = results + self._extract_feat(
-                    inputs[key], modality=key)
+        results = {
+            'text_ids': texts.input_ids,
+            'text_attn_mask': texts.attention_mask,
+        }
+
+        # extract image features
+        if images is not None:
+            results.update(self._extract_feat(images, modality='images'))
+
+        # extract text features
+        if texts is not None:
+            results.update(self._extract_feat(texts, modality='texts'))
 
         return results
 
@@ -324,7 +334,7 @@ class BLIPRetriever(BaseModel):
             image_embeds = self.vision_backbone(inputs)[0]
             image_feat = F.normalize(
                 self.vision_neck(image_embeds[:, 0, :]), dim=-1)
-            return image_embeds, image_feat
+            return {'image_embeds': image_embeds, 'image_feat': image_feat}
         elif modality == 'texts':
             # extract text features
             text_output = self.text_backbone(
@@ -337,13 +347,13 @@ class BLIPRetriever(BaseModel):
             text_embeds = text_output.last_hidden_state
             text_feat = F.normalize(
                 self.text_neck(text_embeds[:, 0, :]), dim=-1)
-            return text_embeds, text_feat
+            return {'text_embeds': text_embeds, 'text_feat': text_feat}
         else:
             raise RuntimeError(f'Invalid modality "{modality}".')
 
     def loss(
         self,
-        inputs: dict,
+        images: torch.Tensor,
         data_samples: Optional[List[DataSample]] = None,
     ) -> Dict[str, torch.tensor]:
         """Calculate losses from a batch of inputs and data samples.
@@ -360,24 +370,27 @@ class BLIPRetriever(BaseModel):
             Dict[str, torch.tensor]: a dictionary of loss components of
                 both head and multimodal head.
         """
-        image_embeds, image_feat, text_embeds, text_feat = self.extract_feat(
-            inputs)
+        output = self.extract_feat(images, data_samples)
 
-        img_inputs = inputs['images']
-        text_inputs = inputs['texts']
+        text_ids = output['text_ids']
+        text_attn_mask = output['text_attn_mask']
+        image_embeds = output['image_embeds']
+        image_feat = output['image_feat']
+        text_feat = output['text_feat']
+
         image_atts = torch.ones(
             image_embeds.size()[:-1], dtype=torch.long).to(self.device)
 
         # get momentum features
         with torch.no_grad():
             self._momentum_update()
-            image_embeds_m = self.vision_backbone_m(img_inputs)[0]
+            image_embeds_m = self.vision_backbone_m(images)[0]
             image_feat_m = F.normalize(
                 self.vision_neck_m(image_embeds_m[:, 0, :]), dim=-1)
 
             text_output_m = self.text_backbone_m(
-                text_inputs.input_ids,
-                attention_mask=text_inputs.attention_mask,
+                text_ids,
+                attention_mask=text_attn_mask,
                 token_type_ids=None,
                 return_dict=True,
                 mode='text',
@@ -391,12 +404,12 @@ class BLIPRetriever(BaseModel):
             data_samples)
 
         # prepare for itm
-        encoder_input_ids = text_inputs.input_ids.clone()
+        encoder_input_ids = text_ids.clone()
         encoder_input_ids[:,
                           0] = self.tokenizer.additional_special_tokens_ids[0]
         output_pos = self.text_backbone(
             encoder_input_ids,
-            attention_mask=text_inputs.attention_mask,
+            attention_mask=text_attn_mask,
             encoder_hidden_states=image_embeds,
             encoder_attention_mask=image_atts,
             return_dict=True,
@@ -438,8 +451,7 @@ class BLIPRetriever(BaseModel):
 
             # select a negative text (from all ranks) for each image
             input_ids_world = torch.cat(dist.all_gather(encoder_input_ids))
-            att_mask_world = torch.cat(
-                dist.all_gather(text_inputs.attention_mask))
+            att_mask_world = torch.cat(dist.all_gather(text_attn_mask))
 
             text_ids_neg = []
             text_atts_neg = []
@@ -452,8 +464,7 @@ class BLIPRetriever(BaseModel):
         text_atts_neg = torch.stack(text_atts_neg, dim=0)
 
         text_ids_all = torch.cat([encoder_input_ids, text_ids_neg], dim=0)
-        text_atts_all = torch.cat([text_inputs.attention_mask, text_atts_neg],
-                                  dim=0)
+        text_atts_all = torch.cat([text_attn_mask, text_atts_neg], dim=0)
 
         image_embeds_all = torch.cat([image_embeds_neg, image_embeds], dim=0)
         image_atts_all = torch.cat([image_atts, image_atts], dim=0)
@@ -482,66 +493,57 @@ class BLIPRetriever(BaseModel):
 
         return dict(ChainMap(loss, loss_multimodal))
 
+    def predict(self, images, data_samples, cal_i2t=True, cal_t2i=True):
+        feats = self.extract_feat(images, data_samples)
+
+        return self.predict_all(
+            feats, data_samples, cal_i2t=cal_i2t, cal_t2i=cal_t2i)
+
     def predict_all(self,
-                    text: Dict[str, torch.tensor],
-                    feats: Tuple[torch.tensor],
-                    img_size: int,
-                    text_size: int,
-                    data_samples: Optional[List[DataSample]] = None,
-                    **kwargs) -> List[DataSample]:
-        """Predict retrieval results after forward all batches. Therefore, we
-        use all computed feats as inputs rather than predict on each batch.
-        This method should be used with `RetrievaTestLoop` and
-        `RetrievaValLoop`.
-
-        Args:
-            text (Dict[str, torch.tensor]): A dict of tokenized text inputs.
-            img_feats (Tuple[torch.tensor]): The features extracted from the
-                vision backbone.
-            text_feats (Tuple[torch.tensor]): The features extracted from the
-                text backbone.
-            img_size (int): The size of all image samples, which is needed for
-                gathering without redundant.
-            text_size (int): The size of all text samples.
-            img_data_samples (List[DataSample], optional): The
-                annotation data of every samples. Defaults to None.
-            text_data_samples (List[DataSample], optional): The
-                annotation data of every samples. Defaults to None.
-            **kwargs: Other keyword arguments accepted by the ``predict``
-                method of :attr:`head`.
-
-        Returns:
-            List[DataSample]: the raw data_samples with
-                the predicted results.
-        """
-        img_embeds, img_feats, _, text_feats = feats
-
-        def _gather_all_in_order(tensor, size):
-            tensor_list = all_gather_diff_size(tensor)
-            return torch.cat(tensor_list)[:size]
-
-        # all gather features from all rank for further prediction
-        img_embeds_all = _gather_all_in_order(img_embeds, img_size)
-        img_feats_all = _gather_all_in_order(img_feats, img_size)
-
-        text_feats_all = _gather_all_in_order(text_feats, text_size)
-
-        text_ids = torch.cat([t.input_ids for t in text])
+                    feats,
+                    data_samples,
+                    num_images=None,
+                    num_texts=None,
+                    cal_i2t=True,
+                    cal_t2i=True):
+        text_ids = feats['text_ids']
         text_ids[:, 0] = self.tokenizer.additional_special_tokens_ids[0]
-        text_atts = torch.cat([t.attention_mask for t in text])
+        text_attn_mask = feats['text_attn_mask']
+        image_embeds = feats['image_embeds']
+        image_feat = feats['image_feat']
+        text_feat = feats['text_feat']
 
-        text_ids_all = _gather_all_in_order(text_ids, text_size)
-        text_atts_all = _gather_all_in_order(text_atts, text_size)
+        num_images = num_images or image_feat.size(0)
+        num_texts = num_texts or text_feat.size(0)
 
-        result_i2t = self.compute_score_matrix_i2t(img_feats, img_embeds,
-                                                   text_feats_all,
-                                                   text_ids_all, text_atts_all)
-        result_t2i = self.compute_score_matrix_t2i(img_feats_all,
-                                                   img_embeds_all, text_feats,
-                                                   text_ids, text_atts)
-        return self._get_predictions(result_i2t, data_samples,
-                                     'i2t'), self._get_predictions(
-                                         result_t2i, data_samples, 't2i')
+        image_embeds_all = all_gather_concat(image_embeds)[:num_images]
+        image_feat_all = all_gather_concat(image_feat)[:num_images]
+        text_feat_all = all_gather_concat(text_feat)[:num_texts]
+        text_ids_all = all_gather_concat(text_ids)[:num_texts]
+        text_attn_mask_all = all_gather_concat(text_attn_mask)[:num_texts]
+
+        results = []
+        if cal_i2t:
+            result_i2t = self.compute_score_matrix_i2t(
+                image_feat,
+                image_embeds,
+                text_feat_all,
+                text_ids_all,
+                text_attn_mask_all,
+            )
+            results.append(
+                self._get_predictions(result_i2t, data_samples, mode='i2t'))
+        if cal_t2i:
+            result_t2i = self.compute_score_matrix_t2i(
+                image_feat_all,
+                image_embeds_all,
+                text_feat,
+                text_ids,
+                text_attn_mask,
+            )
+            results.append(
+                self._get_predictions(result_t2i, data_samples, mode='t2i'))
+        return tuple(results)
 
     def compute_score_matrix_i2t(self, img_feats, img_embeds, text_feats,
                                  text_ids, text_atts):
@@ -634,7 +636,7 @@ class BLIPRetriever(BaseModel):
     def _get_predictions(self,
                          result: torch.Tensor,
                          data_samples: List[DataSample],
-                         type: str = 'i2t'):
+                         mode: str = 'i2t'):
         """Post-process the output of retriever.
 
         Args:
@@ -642,7 +644,7 @@ class BLIPRetriever(BaseModel):
                 either from image or text.
             data_samples (List[DataSample], optional): The annotation
                 data of every samples.
-            type (str): Retrieve type, either `i2t` for image to text, or `t2i`
+            mode (str): Retrieve mode, either `i2t` for image to text, or `t2i`
                 text to image. Defaults to `i2t`.
 
         Returns:
@@ -665,21 +667,21 @@ class BLIPRetriever(BaseModel):
             for ds, gt_image_id, gt_text_id in zip(new_data_samples,
                                                    gt_image_id_list,
                                                    gt_text_id_list):
-                if type == 'i2t':
+                if mode == 'i2t':
                     ds.gt_label = gt_text_id
-                elif type == 't2i':
+                elif mode == 't2i':
                     ds.gt_label = gt_image_id
                 else:
-                    raise ValueError(f'Type {type} is not supported.')
+                    raise ValueError(f'Mode {mode} is not supported.')
             data_samples = new_data_samples
         else:
             for ds in data_samples:
-                if type == 'i2t':
+                if mode == 'i2t':
                     ds.gt_label = ds.gt_text_id
-                elif type == 't2i':
+                elif mode == 't2i':
                     ds.gt_label = ds.gt_image_id
                 else:
-                    raise ValueError(f'Type {type} is not supported.')
+                    raise ValueError(f'Type {mode} is not supported.')
 
         for data_sample, score in zip(data_samples, result):
             idx = score.argmax(keepdim=True).detach()

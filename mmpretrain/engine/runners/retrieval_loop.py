@@ -26,7 +26,6 @@ class RetrievalValLoop(ValLoop):
         self.runner.call_hook('before_val_epoch')
         self.runner.model.eval()
 
-        texts_local = []
         feats_local = []
         data_samples_local = []
 
@@ -43,9 +42,8 @@ class RetrievalValLoop(ValLoop):
 
                     # get features for retrieval instead of data samples
                     data_batch = data_preprocessor(data_batch, False)
-                    text_inputs, feats = self.runner.model._run_forward(
+                    feats = self.runner.model._run_forward(
                         data_batch, mode='tensor')
-                    texts_local.append(text_inputs)
                     feats_local.append(feats)
                     data_samples_local.extend(data_batch['data_samples'])
                 self.runner.call_hook(
@@ -55,30 +53,35 @@ class RetrievalValLoop(ValLoop):
                     outputs=feats)
 
         # concatenate different features
-        feats_local = [
-            torch.cat(list(map(lambda x: x[i], feats_local)))
-            for i in range(len(feats_local[0]))
-        ]
+        feats_local = {
+            k: torch.cat([dic[k] for dic in feats_local])
+            for k in feats_local[0]
+        }
 
         # get predictions
         if is_model_wrapper(self.runner.model):
-            predict_all_func = self.runner.model.module.predict_all
+            predict_all_fn = self.runner.model.module.predict_all
         else:
-            predict_all_func = self.runner.model.predict_all
+            predict_all_fn = self.runner.model.predict_all
 
         img_size = self.dataloader.dataset.img_size
         text_size = self.dataloader.dataset.text_size
         with torch.no_grad():
-            i2t_data_samples, t2i_data_samples = predict_all_func(
-                texts_local, feats_local, img_size, text_size,
-                data_samples_local)
+            i2t_data_samples, t2i_data_samples = predict_all_fn(
+                feats_local,
+                data_samples_local,
+                num_images=img_size,
+                num_texts=text_size,
+            )
 
         # process in evaluator and compute metrics
         self.evaluator.process(i2t_data_samples, None)
-        img_metrics = self.evaluator.evaluate(img_size)
+        i2t_metrics = self.evaluator.evaluate(img_size)
+        i2t_metrics = {f'i2t/{k}': v for k, v in i2t_metrics.items()}
         self.evaluator.process(t2i_data_samples, None)
-        text_metrics = self.evaluator.evaluate(text_size)
-        metrics = {'i2t': img_metrics, 't2i': text_metrics}
+        t2i_metrics = self.evaluator.evaluate(text_size)
+        t2i_metrics = {f't2i/{k}': v for k, v in t2i_metrics.items()}
+        metrics = {**i2t_metrics, **t2i_metrics}
 
         self.runner.call_hook('after_val_epoch', metrics=metrics)
         self.runner.call_hook('after_val')
@@ -104,7 +107,6 @@ class RetrievalTestLoop(TestLoop):
         self.runner.call_hook('before_test_epoch')
         self.runner.model.eval()
 
-        texts_local = []
         feats_local = []
         data_samples_local = []
 
@@ -121,9 +123,8 @@ class RetrievalTestLoop(TestLoop):
 
                     # get features for retrieval instead of data samples
                     data_batch = data_preprocessor(data_batch, False)
-                    text_inputs, feats = self.runner.model._run_forward(
+                    feats = self.runner.model._run_forward(
                         data_batch, mode='tensor')
-                    texts_local.append(text_inputs)
                     feats_local.append(feats)
                     data_samples_local.extend(data_batch['data_samples'])
                 self.runner.call_hook(
@@ -133,30 +134,35 @@ class RetrievalTestLoop(TestLoop):
                     outputs=feats)
 
         # concatenate different features
-        feats_local = [
-            torch.cat(list(map(lambda x: x[i], feats_local)))
-            for i in range(len(feats_local[0]))
-        ]
+        feats_local = {
+            k: torch.cat([dic[k] for dic in feats_local])
+            for k in feats_local[0]
+        }
 
         # get predictions
         if is_model_wrapper(self.runner.model):
-            predict_all_func = self.runner.model.module.predict_all
+            predict_all_fn = self.runner.model.module.predict_all
         else:
-            predict_all_func = self.runner.model.predict_all
+            predict_all_fn = self.runner.model.predict_all
 
         img_size = self.dataloader.dataset.img_size
         text_size = self.dataloader.dataset.text_size
         with torch.no_grad():
-            i2t_data_samples, t2i_data_samples = predict_all_func(
-                texts_local, feats_local, img_size, text_size,
-                data_samples_local)
+            i2t_data_samples, t2i_data_samples = predict_all_fn(
+                feats_local,
+                data_samples_local,
+                num_images=img_size,
+                num_texts=text_size,
+            )
 
         # process in evaluator and compute metrics
         self.evaluator.process(i2t_data_samples, None)
-        img_metrics = self.evaluator.evaluate(img_size)
+        i2t_metrics = self.evaluator.evaluate(img_size)
+        i2t_metrics = {f'i2t/{k}': v for k, v in i2t_metrics.items()}
         self.evaluator.process(t2i_data_samples, None)
-        text_metrics = self.evaluator.evaluate(text_size)
-        metrics = {'i2t': img_metrics, 't2i': text_metrics}
+        t2i_metrics = self.evaluator.evaluate(text_size)
+        t2i_metrics = {f't2i/{k}': v for k, v in t2i_metrics.items()}
+        metrics = {**i2t_metrics, **t2i_metrics}
 
         self.runner.call_hook('after_test_epoch', metrics=metrics)
         self.runner.call_hook('after_test')

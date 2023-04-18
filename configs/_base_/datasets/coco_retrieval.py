@@ -84,8 +84,7 @@ val_dataloader = dict(
         # This is required for evaluation
         is_eval=True,
     ),
-    sampler=dict(
-        type='DefaultSampler', shuffle=False, subsample_type='sequential'),
+    sampler=dict(type='SequentialSampler', subsample_type='sequential'),
     persistent_workers=True,
 )
 

@@ -3,9 +3,9 @@ from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
-from mmcls.evaluation.metrics import Accuracy
 from mmengine.model import BaseModule
 
+from mmpretrain.evaluation import Accuracy
 from mmpretrain.registry import MODELS
 
 
@@ -44,8 +44,7 @@ class ITMHead(BaseModule):
     def __init__(self,
                  hidden_size: int,
                  with_pooler: bool = True,
-                 loss: dict = dict(
-                     type='mmcls.CrossEntropyLoss', loss_weight=1.0),
+                 loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  cal_acc: bool = False,
                  init_cfg: Optional[dict] = None):
         super(ITMHead, self).__init__(init_cfg=init_cfg)
