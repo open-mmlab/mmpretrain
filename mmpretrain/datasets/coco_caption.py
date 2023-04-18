@@ -3,10 +3,10 @@ from pathlib import Path
 from typing import List
 
 import mmengine
+from mmengine.dataset import BaseDataset
 from mmengine.fileio import get_file_backend
 
 from mmpretrain.registry import DATASETS
-from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()

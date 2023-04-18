@@ -4,8 +4,8 @@ from typing import List, Optional
 import torch
 from mmengine.model import BaseModel
 
-from mmpretrain.structures import DataSample
 from mmpretrain.registry import MODELS, TOKENIZER
+from mmpretrain.structures import DataSample
 
 
 @MODELS.register_module()

@@ -10,11 +10,11 @@ from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            SolarizeAdd, Translate)
 from .formatting import (Collect, PackInputs, PackMultiTaskInputs, ToNumpy,
                          ToPIL, Transpose)
-from .processing import (Albumentations, BEiTMaskGenerator, ColorJitter,
-                         EfficientNetCenterCrop, EfficientNetRandomCrop,
-                         Lighting, RandomCrop, RandomErasing,
-                         RandomResizedCrop, ResizeEdge, SimMIMMaskGenerator,
-                         CleanCaption)
+from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
+                         ColorJitter, EfficientNetCenterCrop,
+                         EfficientNetRandomCrop, Lighting, RandomCrop,
+                         RandomErasing, RandomResizedCrop, ResizeEdge,
+                         SimMIMMaskGenerator)
 from .wrappers import MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,

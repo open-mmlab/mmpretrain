@@ -96,7 +96,12 @@ def parse_args():
 
 def main():
     args = parse_args()
-    src = torch.load(args.src)['model']
+    src = torch.load(args.src)
+    if 'extra_state' in src and 'ema' in src['extra_state']:
+        print('Use EMA weights.')
+        src = src['extra_state']['ema']
+    else:
+        src = src['model']
     dst, _ = convert_by_mapdict(src, map_dict)
     torch.save(dst, args.dst)
     print('Done!!')

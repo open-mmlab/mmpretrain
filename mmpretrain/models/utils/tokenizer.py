@@ -33,6 +33,7 @@ def register_hf_tokenizer(cls: Optional[type] = None):
         module=from_pretrained, module_name=cls.__name__)
     return cls
 
+
 register_hf_tokenizer(AutoTokenizer)
 
 

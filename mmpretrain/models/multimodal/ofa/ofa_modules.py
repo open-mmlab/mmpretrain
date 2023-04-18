@@ -191,9 +191,6 @@ class MultiheadAttention(BaseModule):
 
         past_key_value = (k, v)
 
-        if attn_mask is not None and attn_mask.dtype == torch.bool:
-            attn_mask = attn_mask.masked_fill(not attn_mask, -float('inf'))
-
         attn_weights = q @ k.transpose(-2, -1) * self.scale
 
         if attn_bias is not None:
@@ -787,8 +784,7 @@ class OFAEncoder(BaseModule):
                 self_attn_bias[:, :, :token_len, :token_len] += rel_pos_bias
 
             if has_pads:
-                attention_mask = torch.logical_not(
-                    padding_mask.unsqueeze(1).unsqueeze(2))
+                attention_mask = _expand_mask(padding_mask, dtype=x.dtype)
             else:
                 attention_mask = None
 
@@ -1403,6 +1399,7 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
                 use_cache=False,
                 output_attentions=False,
                 output_hidden_states=False,
+                constrain_fn=None,
                 return_dict=False):
         """Forword the module.
 
@@ -1433,6 +1430,8 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
                 Defaults to False.
             output_hidden_states (bool): Whether to output hidden states.
                 Defaults to False.
+            constrain_fn (Callable, optional): The function to constrain the
+                output logits. Defaults to None.
             return_dict (bool): Not used, it's only for compat with the
                 interface of the ``generate`` of ``transformers``.
 
@@ -1467,7 +1466,7 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
                 sample_patch_num=sample_patch_num,
             )
 
-        if decoder_input_ids.eq(self.config.pad_token_id).any():
+        if decoder_input_ids.eq(self.padding_idx).any():
             attention_mask = decoder_input_ids.eq(self.padding_idx)
 
         encoder_hidden_states = encoder_outputs.last_hidden_state
@@ -1489,8 +1488,17 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
             output_hidden_states=output_hidden_states,
         )
 
+        # The constrain operation for fine-tuned model in OFA is applied
+        # before log_softmax, therefore we cannot use
+        # `prefix_allowed_tokens_fn` to implement it.
+        if constrain_fn is not None:
+            logits = constrain_fn(decoder_input_ids,
+                                  decoder_outputs.last_hidden_state)
+        else:
+            logits = decoder_outputs.last_hidden_state
+
         return Seq2SeqLMOutput(
-            logits=decoder_outputs.last_hidden_state,
+            logits=logits,
             past_key_values=decoder_outputs.past_key_values,
             decoder_hidden_states=decoder_outputs.hidden_states,
             decoder_attentions=decoder_outputs.attentions,
@@ -1507,6 +1515,7 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
                                       code_masks=None,
                                       use_cache=False,
                                       encoder_outputs=None,
+                                      constrain_fn=None,
                                       **kwargs):
         # if attention_mask is None:
         attention_mask = decoder_input_ids.new_zeros(decoder_input_ids.shape)
@@ -1526,6 +1535,7 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
             'decoder_input_ids': decoder_input_ids,
             'code_masks': code_masks,
             'use_cache': use_cache,
+            'constrain_fn': constrain_fn,
         }
 
     def _prepare_encoder_decoder_kwargs_for_generation(
@@ -1538,7 +1548,8 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
 
         # 2. prepare encoder args and encoder kwargs from model kwargs
         irrelevant_prefix = [
-            'decoder_', 'cross_attn', 'use_cache', 'attention_mask'
+            'decoder_', 'cross_attn', 'use_cache', 'attention_mask',
+            'constrain_fn'
         ]
         encoder_kwargs = {
             argument: value
