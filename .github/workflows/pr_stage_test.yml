@@ -42,9 +42,10 @@ jobs:
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
-        run: pip install -e .
+        run: mim install -e .
       - name: Run unittests and generate coverage report
         run: |
+          pip list | grep "mmpretrain\|mmcv\|torch\|mmengine\|mmdet"
           coverage run --branch --source mmpretrain -m pytest tests/
           coverage xml
           coverage report -m
