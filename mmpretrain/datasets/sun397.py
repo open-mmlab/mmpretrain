@@ -214,6 +214,12 @@ class SUN397(BaseDataset):
 
         return data_list
 
+    def __getitem__(self, idx: int) -> dict:
+        try:
+            super(SUN397, self).__getitem__(idx)
+        except FileNotFoundError:
+            print('pass')
+
     def extra_repr(self) -> List[str]:
         """The extra repr information of the dataset."""
         body = [
