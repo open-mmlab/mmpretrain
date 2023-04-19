@@ -1,0 +1,16 @@
+$dsdl-version: "0.5.3"
+
+$import:
+  - ../defs/class-dom
+  - ../defs/template
+
+meta:
+  Dataset Name: "CIFAR-10"
+  HomePage: "https://www.cs.toronto.edu/~kriz/cifar.html"
+  Subset Name: "train"
+  Modality: "Images"
+  Task: "Image Classification"
+
+data:
+  sample-type: Cifar10Sample[cdom=Cifar10ImageClassificationClassDom]
+  sample-path: train_samples.json

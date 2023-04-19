@@ -1,0 +1,16 @@
+$dsdl-version: "0.5.3"
+
+Cifar10ImageClassificationClassDom:
+    $def: class_domain
+    classes:
+        - airplane
+        - automobile
+        - bird
+        - cat
+        - deer
+        - dog
+        - frog
+        - horse
+        - ship
+        - truck
+
