@@ -32,12 +32,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade pip
-        run: pip install pip --upgrade
+        run: pip install -U pip
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
       - name: Install mmpretrain dependencies
         run: |
-          pip install git+https://github.com/open-mmlab/mmengine.git@main
+          pip install mmengine
           pip install -U openmim
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
