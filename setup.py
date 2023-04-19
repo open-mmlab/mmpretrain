@@ -157,8 +157,6 @@ def add_mim_extension():
             else:
                 raise ValueError(f'Invalid mode {mode}')
 
-        print(f"Successfully cp {filename} into 'mmpretrain'...")
-
 
 if __name__ == '__main__':
     add_mim_extension()
