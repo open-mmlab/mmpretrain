@@ -34,7 +34,7 @@ jobs:
       - name: Upgrade pip
         run: pip install pip --upgrade
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
       - name: Install mmpretrain dependencies
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
@@ -42,7 +42,7 @@ jobs:
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
-        run: pip install -e .
+        run: mim install .
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source mmpretrain -m pytest tests/
@@ -129,7 +129,7 @@ jobs:
           mim install 'mmcv >= 2.0.0rc4'
           pip install -r requirements.txt
       - name: Build and install
-        run: pip install -e . -v
+        run: mim install .
       - name: Run unittests
         run: |
           pytest tests/ --ignore tests/test_models/test_backbones

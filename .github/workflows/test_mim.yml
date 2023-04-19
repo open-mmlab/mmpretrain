@@ -39,6 +39,6 @@ jobs:
       - name: Install openmim
         run: pip install openmim
       - name: Build and install
-        run: mim install -e .
+        run: mim install .
       - name: test commands of mim
         run: mim search mmpretrain
