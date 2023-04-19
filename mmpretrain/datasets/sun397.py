@@ -44,8 +44,6 @@ class SUN397(BaseDataset):
              to use the training set or test set. Defaults to False.
         ann_file (str): Annotation file path, path relative to
             ``data_root``. Defaults to 'Partitions/Training_01.txt'.
-        invalid (str, optional): The file that list invalid images.
-            Defaults to 'Partitions/invalid.txt'.
         data_prefix (str): Prefix for images, path relative to
             ``data_root``. Defaults to 'images'.
 
