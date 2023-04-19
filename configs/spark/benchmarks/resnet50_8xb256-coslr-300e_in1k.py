@@ -43,7 +43,7 @@ train_pipeline = [
 ]
 train_dataloader = dict(
     dataset=dict(pipeline=train_pipeline),
-    sampler=dict(type='RepeatAugSampler', shuffle=True),
+    # sampler=dict(type='RepeatAugSampler', shuffle=True),
 )
 
 # model settings
