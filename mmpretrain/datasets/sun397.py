@@ -34,7 +34,6 @@ class SUN397(BaseDataset):
         │   └── ...
         └── Partitions
             ├── ClassName.txt
-            ├── invalid.txt (provide by us)
             ├── Training_01.txt
             ├── Testing_01.txt
             └── ...
@@ -50,13 +49,9 @@ class SUN397(BaseDataset):
         data_prefix (str): Prefix for images, path relative to
             ``data_root``. Defaults to 'images'.
 
-    Please note that some of the images downloaded from the official website
-    are invalid and we provide invalid.txt to filter them out. You can download it from
-    <https://xxx/invalid.txt>
-
     Examples:
         >>> from mmpretrain.datasets import SUN397
-        >>> train_cfg = dict(data_root='data/SUN397', invalid=None)
+        >>> train_cfg = dict(data_root='data/SUN397')
         >>> train = SUN397(**train_cfg)
         >>> train
         Dataset SUN397
@@ -64,7 +59,7 @@ class SUN397(BaseDataset):
             Number of categories:       397
             Root of dataset:    data/SUN397
         >>> test_cfg = dict(data_root='data/SUN397', test_mode=True,
-        ... ann_file='Partitions/Testing_01.txt', invalid=None)
+        ... ann_file='Partitions/Testing_01.txt')
         >>> test = SUN397(**test_cfg)
         >>> test
         Dataset SUN397
@@ -80,16 +75,9 @@ class SUN397(BaseDataset):
                  test_mode: bool = False,
                  data_prefix: str = 'SUN397',
                  ann_file: str = 'Partitions/Training_01.txt',
-                 invalid: str = 'Partitions/invalid.txt',
                  **kwargs):
 
         self.backend = get_file_backend(data_root, enable_singleton=True)
-
-        if invalid is not None:
-            invalid_file = self.backend.join_path(data_root, invalid)
-            self.invalid_list = set(list_from_file(invalid_file))
-        else:
-            self.invalid_list = set()
 
         super(SUN397, self).__init__(
             ann_file=ann_file,
@@ -102,8 +90,6 @@ class SUN397(BaseDataset):
         pairs = list_from_file(self.ann_file)
         data_list = []
         for pair in pairs:
-            if pair in self.invalid_list:
-                continue
             items = pair.split('/')
             img_path = self.backend.join_path(self.img_prefix, pair[1:])
             class_name = '/'.join(items[:-1])
@@ -112,6 +98,12 @@ class SUN397(BaseDataset):
             data_list.append(info)
 
         return data_list
+
+    def __getitem__(self, idx: int) -> dict:
+        try:
+            super(SUN397, self).__getitem__(idx)
+        except FileNotFoundError:
+            print('pass')
 
     def extra_repr(self) -> List[str]:
         """The extra repr information of the dataset."""
