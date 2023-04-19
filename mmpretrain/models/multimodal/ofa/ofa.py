@@ -95,7 +95,7 @@ class OFA(BaseModel):
             Defaults to an empty dict.
         init_cfg (dict, optional): The initialization config. Defaults to None.
     """
-    support_tasks = {'caption', 'vqa'}
+    support_tasks = {'caption', 'vqa', 'refcoco'}
 
     def __init__(
         self,
@@ -104,7 +104,7 @@ class OFA(BaseModel):
         vocab_size,
         embedding_dim,
         tokenizer,
-        task='caption',
+        task,
         prompt=None,
         ans2label: Union[dict, str, None] = None,
         generation_cfg=dict(),
@@ -162,7 +162,7 @@ class OFA(BaseModel):
 
     def forward(
         self,
-        inputs: dict,
+        images: torch.Tensor,
         data_samples: Optional[list] = None,
         mode: str = 'predict',
         **kwargs,
@@ -190,26 +190,31 @@ class OFA(BaseModel):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'loss':
-            return self.loss(inputs, data_samples, **kwargs)
+            return self.loss(images, data_samples, **kwargs)
         elif mode == 'predict':
-            return self.predict(inputs, data_samples, **kwargs)
+            return self.predict(images, data_samples, **kwargs)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
     def predict(
         self,
-        inputs,
+        images,
         data_samples=None,
         post_process=True,
         **generation_config,
     ):
-        images = inputs['imgs']
-        input_ids = self.prepare_input_ids(
-            images.size(0), data_samples, images.device)
+        text_tokens = self.preprocess_text(data_samples, images.size(0),
+                                           images.device)
+
+        if 'images_mask' in data_samples[0]:
+            images_mask = torch.tensor([
+                sample.get('images_mask') for sample in data_samples
+            ]).bool().to(images.device)
+        else:
+            images_mask = None
 
         num_beams = generation_config.get(
             'num_beams', getattr(self.model.generation_config, 'num_beams'))
-
         decoder_prompts = self.get_decoder_prompts(data_samples)
         constrain_fn = partial(
             apply_constraint,
@@ -219,9 +224,9 @@ class OFA(BaseModel):
         )
 
         outputs = self.model.generate(
-            input_ids=input_ids,
+            input_ids=text_tokens,
             images=images,
-            images_mask=inputs.get('images_mask'),
+            images_mask=images_mask,
             constrain_fn=constrain_fn,
             **generation_config,
         )
@@ -247,7 +252,7 @@ class OFA(BaseModel):
             decoder_prompts.append(prompt_ids)
         return decoder_prompts
 
-    def prepare_input_ids(self, batch_size, data_samples, device):
+    def preprocess_text(self, data_samples, batch_size, device):
         if self.task == 'caption':
             prompt = self.prompt or ' what does the image describe?'
             prompts = [prompt] * batch_size
@@ -261,31 +266,46 @@ class OFA(BaseModel):
             prompts = self.tokenizer(
                 prompts, return_tensors='pt', padding=True)
             return prompts.input_ids.to(device)
+        elif self.task == 'refcoco':
+            prompt_template = self.prompt or \
+                ' which region does the text " {} " describe?'
+            prompts = []
+            for sample in data_samples:
+                prompt = prompt_template.format(sample.get('text'))
+                prompts.append(prompt)
+            prompts = self.tokenizer(
+                prompts, return_tensors='pt', padding=True)
+            return prompts.input_ids.to(device)
 
     def post_process(self, outputs, data_samples):
 
-        decode_tokens = self.tokenizer.batch_decode(
-            outputs, skip_special_tokens=True)
-
         out_data_samples = []
         if data_samples is None:
-            data_samples = [None for _ in range(len(decode_tokens))]
+            data_samples = [None] * outputs.size(0)
 
-        if self.task == 'caption':
-            process_fn = CleanCaption(
-                lowercase=False, remove_chars=string.punctuation).clean
-        else:
-            process_fn = lambda x: x.strip()  # noqa: E731
-
-        for data_sample, decode_token in zip(data_samples, decode_tokens):
+        for data_sample, token in zip(data_samples, outputs):
             if data_sample is None:
                 data_sample = DataSample()
-            if process_fn is not None:
-                decode_token = process_fn(decode_token)
+
             if self.task == 'caption':
-                data_sample.pred_caption = decode_token
+                text = self.tokenizer.decode(token, skip_special_tokens=True)
+                text = CleanCaption(
+                    lowercase=False,
+                    remove_chars=string.punctuation).clean(text)
+                data_sample.pred_caption = text
             elif self.task == 'vqa':
-                data_sample.pred_answer = decode_token
+                text = self.tokenizer.decode(token, skip_special_tokens=True)
+                data_sample.pred_answer = text.strip()
+            elif self.task == 'refcoco':
+                bbox = token[1:5] - self.tokenizer.bin_offset
+                # During training, the bbox is normalized by 512. It's related
+                # to the `max_image_size` config in the official repo.
+                bbox = bbox / self.tokenizer.num_bins * 512
+                scale_factor = data_sample.get('scale_factor')
+                if scale_factor is not None:
+                    bbox[::2] /= scale_factor[0]
+                    bbox[1::2] /= scale_factor[1]
+                data_sample.pred_bboxes = bbox.unsqueeze(0)
             out_data_samples.append(data_sample)
 
         return out_data_samples

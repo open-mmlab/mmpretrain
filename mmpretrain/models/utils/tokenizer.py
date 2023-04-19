@@ -102,11 +102,16 @@ class OFATokenizer(BartTokenizer):
         *init_inputs,
         **kwargs,
     ):
+        num_bins = kwargs.pop('num_bins', 1000)
         tokenizer = super().from_pretrained(
             pretrained_model_name_or_path,
             *init_inputs,
             **kwargs,
         )
+        length = len(tokenizer)
         tokenizer.add_tokens(['<code_{}>'.format(i) for i in range(8192)])
-        tokenizer.add_tokens(['<bin_{}>'.format(i) for i in range(1000)])
+        tokenizer.code_offset = length
+        tokenizer.add_tokens(['<bin_{}>'.format(i) for i in range(num_bins)])
+        tokenizer.bin_offset = length + 8192
+        tokenizer.num_bins = num_bins
         return tokenizer
