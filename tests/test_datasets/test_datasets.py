@@ -1712,36 +1712,27 @@ class TestSUN397(TestBaseDataset):
         cls.root = tmpdir.name
         cls.train_file = 'Training_01.txt'
         cls.test_file = 'Testing_01.txt'
-        cls.invalid_file = 'invalid.txt'
         cls.data_prefix = 'SUN397'
 
         cls.DEFAULT_ARGS = dict(
             data_root=cls.root,
             test_mode=False,
             data_prefix=cls.data_prefix,
-            ann_file=cls.train_file,
-            invalid=cls.invalid_file)
+            ann_file=cls.train_file)
 
         with open(osp.join(cls.root, cls.train_file), 'w') as f:
             f.write('\n'.join([
                 '/a/abbey/sun_aqswjsnjlrfzzhiz.jpg',
                 '/a/airplane_cabin/sun_blczihbhbntqccux.jpg',
-                '/a/airport_terminal/sun_aieubuwceahatwug.jpg',
+                '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg',  # invalid
             ]))
 
         with open(osp.join(cls.root, cls.test_file), 'w') as f:
             f.write('\n'.join([
                 '/a/abbey/sun_ajkqrqitspwywirx.jpg',
                 '/a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg',
-                '/a/airport_terminal/sun_awypniiblpimkhvb.jpg',
-                '/y/youth_hostel/sun_aryrnilsvqzvzkew.jpg',
-            ]))
-
-        with open(osp.join(cls.root, cls.invalid_file), 'w') as f:
-            f.write('\n'.join([
-                '/a/airport_terminal/sun_aieubuwceahatwug.jpg',
-                '/a/airport_terminal/sun_awypniiblpimkhvb.jpg',
-                '/y/youth_hostel/sun_aryrnilsvqzvzkew.jpg',
+                '/a/auto_factory/sun_apfsprenzdnzbhmt.jpg',  # invalid
+                '/b/baggage_claim/sun_avittiqqaiibgcau.jpg',  # invalid
             ]))
 
     def test_load_data_list(self):
@@ -1770,32 +1761,6 @@ class TestSUN397(TestBaseDataset):
             osp.join(self.root, self.data_prefix,
                      'a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg'))
         self.assertEqual(data_info['gt_label'], 1)
-
-        # Test invalid=None
-        cfg = {**self.DEFAULT_ARGS, 'invalid': None}
-        dataset = dataset_class(**cfg)
-        self.assertEqual(len(dataset), 3)
-        data_info = dataset[0]
-        self.assertEqual(
-            data_info['img_path'],
-            osp.join(self.root, self.data_prefix,
-                     'a/abbey/sun_aqswjsnjlrfzzhiz.jpg'))
-        self.assertEqual(data_info['gt_label'], 0)
-
-        # Test with test_mode=True
-        cfg = {
-            **self.DEFAULT_ARGS, 'test_mode': True,
-            'ann_file': self.test_file,
-            'invalid': None
-        }
-        dataset = dataset_class(**cfg)
-        self.assertEqual(len(dataset), 4)
-        data_info = dataset[-1]
-        self.assertEqual(
-            data_info['img_path'],
-            osp.join(self.root, self.data_prefix,
-                     'y/youth_hostel/sun_aryrnilsvqzvzkew.jpg'))
-        self.assertEqual(data_info['gt_label'], 396)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
