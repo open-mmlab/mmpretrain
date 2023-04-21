@@ -118,9 +118,6 @@ __all__ = [
     'Vig',
     'PyramidVig',
     'XCiT',
-<<<<<<< 07f4ad5a25e02ece517f676d234ffe2d790d1536
     'ViTSAM',
-=======
->>>>>>> feat: add eva02 backbone
     'EVA02',
 ]
