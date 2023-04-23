@@ -1671,7 +1671,7 @@ class TestFood101(TestBaseDataset):
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
-            osp.join(self.root, self.image_folder, 'apple_pie/0001.jpg'))
+            osp.join(self.root, self.image_folder, 'apple_pie', '0001.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
         # Test with test_mode=True
@@ -1685,7 +1685,8 @@ class TestFood101(TestBaseDataset):
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
-            osp.join(self.root, self.image_folder, 'beef_carpaccio/0004.jpg'))
+            osp.join(self.root, self.image_folder, 'beef_carpaccio',
+                     '0004.jpg'))
         self.assertEqual(data_info['gt_label'], 3)
 
     def test_extra_repr(self):
