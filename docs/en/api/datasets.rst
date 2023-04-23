@@ -81,3 +81,44 @@ The dataset wrappers in the MMEngine can be directly used in MMPreTrain.
      - A wrapper of repeated dataset.
    * - :class:`~mmengine.dataset.ClassBalancedDataset`
      - A wrapper of class balanced dataset.
+
+Caltech101
+----------------
+
+.. autoclass:: Caltech101
+
+Food101
+----------------
+
+.. autoclass:: Food101
+
+DescribableTexture (DTD)
+----------------
+
+.. autoclass:: DescribableTexture
+
+FGVC_Aircraft
+----------------
+
+.. autoclass:: FGVC_Aircraft
+
+
+Oxford102Flowers
+----------------
+
+.. autoclass:: Oxford102Flowers
+
+StanfordCars
+----------------
+
+.. autoclass:: StanfordCars
+
+Oxford_IIIT_Pets
+----------------
+
+.. autoclass:: Oxford_IIIT_Pets
+
+SUN397
+----------------
+
+.. autoclass:: SUN397
