@@ -18,6 +18,7 @@ class StanfordCars(BaseDataset):
     Therefore, after downloading and decompression, the dataset directory structure is as follows.
 
     Stanford Cars dataset directory: ::
+
         Stanford Cars (data_root)
         ├── car_ims
         │   ├── 00001.jpg
@@ -26,6 +27,8 @@ class StanfordCars(BaseDataset):
         └── cars_annos.mat
 
     or
+
+    Stanford Cars dataset directory: ::
 
         Stanford Cars (data_root)
         ├── cars_train (data_prefix)
@@ -54,7 +57,7 @@ class StanfordCars(BaseDataset):
             ``data_root``. Defaults to None.
 
     Examples:
-        # first way
+        >>> # first way
         >>> from mmpretrain.datasets import StanfordCars
         >>> car_train_cfg = dict(data_root='data/Stanford_Cars')
         >>> car_train = StanfordCars(**car_train_cfg)
@@ -71,7 +74,7 @@ class StanfordCars(BaseDataset):
             Number of categories:       196
             Root of dataset:    data/Stanford_Cars
 
-        # second way
+        >>> # second way
         >>> from mmpretrain.datasets import StanfordCars
         >>> car_train_cfg = dict(data_root='data/Stanford_Cars',
         ... ann_file='devkit/cars_train_annos.mat', data_prefix='cars_train')

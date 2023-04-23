@@ -12,7 +12,7 @@ from .categories import CALTECH101_CATEGORIES
 class Caltech101(BaseDataset):
     """The Caltech101 Dataset.
 
-    Support the `Caltech101 <https://data.caltech.edu/records/mzrjq-6wc02>`_Dataset.
+    Support the `Caltech101 <https://data.caltech.edu/records/mzrjq-6wc02>`_ Dataset.
     After downloading and decompression, the dataset directory structure is as follows.
 
     Caltech dataset directory: ::
