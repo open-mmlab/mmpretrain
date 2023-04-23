@@ -1142,7 +1142,7 @@ PLACES205_CATEGORIES = (
     'waiting_room', 'water_tower', 'watering_hole', 'wheat_field', 'wind_farm',
     'windmill', 'yard')
 
-OXFORD_IIIT_PETS_CATEGORIES = (
+OxfordIIITPet_CATEGORIES = (
     'Abyssinian', 'american_bulldog', 'american_pit_bull_terrier',
     'basset_hound', 'beagle', 'Bengal', 'Birman', 'Bombay', 'boxer',
     'British_Shorthair', 'chihuahua', 'Egyptian_Mau', 'english_cocker_spaniel',
@@ -1164,7 +1164,7 @@ DTD_CATEGORIES = ('banded', 'blotchy', 'braided', 'bubbly', 'bumpy',
                   'striped', 'studded', 'swirly', 'veined', 'waffled', 'woven',
                   'wrinkled', 'zigzagged')
 
-FGVC_AIRCRAFT_CATEGORIES = (
+FGVCAIRCRAFT_CATEGORIES = (
     '707-320', '727-200', '737-200', '737-300', '737-400', '737-500',
     '737-600', '737-700', '737-800', '737-900', '747-100', '747-200',
     '747-300', '747-400', '757-200', '757-300', '767-200', '767-300',
@@ -1183,7 +1183,7 @@ FGVC_AIRCRAFT_CATEGORIES = (
     'PA-28', 'SR-20', 'Saab 2000', 'Saab 340', 'Spitfire', 'Tornado', 'Tu-134',
     'Tu-154', 'Yak-42')
 
-STANFORD_CARS_CATEGORIES = (
+STANFORDCARS_CATEGORIES = (
     'AM General Hummer SUV 2000', 'Acura RL Sedan 2012', 'Acura TL Sedan 2012',
     'Acura TL Type-S 2008', 'Acura TSX Sedan 2012',
     'Acura Integra Type R 2001', 'Acura ZDX Hatchback 2012',

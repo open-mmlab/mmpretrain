@@ -1116,7 +1116,7 @@ class TestInShop(TestBaseDataset):
 
 
 class TestOxford102Flowers(TestBaseDataset):
-    DATASET_TYPE = 'Oxford102Flowers'
+    DATASET_TYPE = 'Flowers102'
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1208,7 +1208,7 @@ class TestOxford102Flowers(TestBaseDataset):
 
 
 class TestOxfordIIITPet(TestBaseDataset):
-    DATASET_TYPE = 'Oxford_IIIT_Pets'
+    DATASET_TYPE = 'OxfordIIITPet'
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1278,7 +1278,7 @@ class TestOxfordIIITPet(TestBaseDataset):
 
 
 class TestDescribableTexture(TestBaseDataset):
-    DATASET_TYPE = 'DescribableTexture'
+    DATASET_TYPE = 'DTD'
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -1374,7 +1374,7 @@ class TestDescribableTexture(TestBaseDataset):
 
 
 class TestFGVCAircraft(TestBaseDataset):
-    DATASET_TYPE = 'FGVC_Aircraft'
+    DATASET_TYPE = 'FGVCAircraft'
 
     @classmethod
     def setUpClass(cls) -> None:

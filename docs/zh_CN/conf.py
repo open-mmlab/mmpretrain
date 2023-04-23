@@ -233,7 +233,7 @@ napoleon_custom_sections = [
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['rich', 'attr', 'einops']
+autodoc_mock_imports = ['rich', 'attr', 'einops', 'mat4py']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 

@@ -15,9 +15,9 @@ class Caltech101(BaseDataset):
     Support the `Caltech101 <https://data.caltech.edu/records/mzrjq-6wc02>`_ Dataset.
     After downloading and decompression, the dataset directory structure is as follows.
 
-    Caltech dataset directory: ::
+    Caltech101 dataset directory: ::
 
-        Caltech (data_root)/
+        Caltech101 (data_root)/
         ├── 101_ObjectCategories (data_prefix)
         │   ├── class_x
         │   │   ├── xx1.jpg

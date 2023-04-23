@@ -92,31 +92,31 @@ Food101
 
 .. autoclass:: Food101
 
-DescribableTexture (DTD)
+DTD
 ----------------
 
-.. autoclass:: DescribableTexture
+.. autoclass:: DTD
 
-FGVC_Aircraft
+FGVCAircraft
 ----------------
 
-.. autoclass:: FGVC_Aircraft
+.. autoclass:: FGVCAircraft
 
 
-Oxford102Flowers
+Flowers102
 ----------------
 
-.. autoclass:: Oxford102Flowers
+.. autoclass:: Flowers102
 
 StanfordCars
 ----------------
 
 .. autoclass:: StanfordCars
 
-Oxford_IIIT_Pets
+OxfordIIITPet
 ----------------
 
-.. autoclass:: Oxford_IIIT_Pets
+.. autoclass:: OxfordIIITPet
 
 SUN397
 ----------------

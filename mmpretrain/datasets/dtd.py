@@ -10,7 +10,7 @@ from .categories import DTD_CATEGORIES
 
 
 @DATASETS.register_module()
-class DescribableTexture(BaseDataset):
+class DTD(BaseDataset):
     """The Describable Texture Dataset (DTD).
 
     Support the `Describable Texture Dataset <https://www.robots.ox.ac.uk/~vgg/data/dtd/>`_ Dataset.
@@ -45,18 +45,18 @@ class DescribableTexture(BaseDataset):
             ``data_root``. Defaults to 'jpg'.
 
     Examples:
-        >>> from mmpretrain.datasets import DescribableTexture as DTD
+        >>> from mmpretrain.datasets import DTD
         >>> dtd_train_cfg = dict(data_root='data/dtd', mode='trainval')
         >>> dtd_train = DTD(**dtd_train_cfg)
         >>> dtd_train
-        Dataset DescribableTexture
+        Dataset DTD
             Number of samples:  3760
             Number of categories:       47
             Root of dataset:    data/dtd
         >>> dtd_test_cfg = dict(data_root='data/dtd', mode='test')
         >>> dtd_test = DTD(**dtd_test_cfg)
         >>> dtd_test
-        Dataset DescribableTexture
+        Dataset DTD
             Number of samples:  1880
             Number of categories:       47
             Root of dataset:    data/dtd
@@ -75,7 +75,7 @@ class DescribableTexture(BaseDataset):
         self.backend = get_file_backend(data_root, enable_singleton=True)
         self.mode = mode
         test_mode = mode == 'test'
-        super(DescribableTexture, self).__init__(
+        super(DTD, self).__init__(
             ann_file=ann_file,
             data_root=data_root,
             data_prefix=data_prefix,
