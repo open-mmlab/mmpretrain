@@ -14,6 +14,7 @@ from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
 
 from mmpretrain.registry import TRANSFORMS
+from .wrappers import enable_list_transform
 
 try:
     import albumentations
@@ -704,6 +705,8 @@ class EfficientNetCenterCrop(BaseTransform):
 
 
 @TRANSFORMS.register_module()
+@enable_list_transform(
+    required_key='img', modified_keys=['img_shape', 'scale', 'scale_factor'])
 class ResizeEdge(BaseTransform):
     """Resize images along the specified edge.
 

@@ -117,6 +117,9 @@ def coco_caption_eval(results_file, ann_file):
     # create coco_eval object by taking coco and coco_result
     coco_eval = COCOEvalCap(coco, coco_result)
 
+    # make sure the image ids are the same
+    coco_eval.params['image_id'] = coco_result.getImgIds()
+
     # This will take some times at the first run
     coco_eval.evaluate()
 

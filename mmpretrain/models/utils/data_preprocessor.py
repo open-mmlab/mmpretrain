@@ -583,31 +583,39 @@ class MultiModalDataPreprocessor(BaseDataPreprocessor):
         data = self.cast_data(data)
 
         imgs = data['inputs']
-        if not isinstance(imgs, torch.Tensor):
-            raise TypeError('`MultiModalDataPreprocessor` requires a tensor '
-                            'of batch images as the `imgs` data.')
 
-        # ------ To RGB ------
-        if self.to_rgb and imgs.size(1) == 3:
-            imgs = imgs.flip(1)
+        def _process_img(img):
+            # ------ To RGB ------
+            if self.to_rgb and img.size(1) == 3:
+                img = img.flip(1)
 
-        # -- Normalization ---
-        imgs = imgs.float()
-        if self._enable_normalize:
-            imgs = (imgs - self.mean) / self.std
+            # -- Normalization ---
+            img = img.float()
+            if self._enable_normalize:
+                img = (img - self.mean) / self.std
 
-        # ------ Padding -----
-        if self.pad_size_divisor > 1:
-            h, w = imgs.shape[-2:]
+            # ------ Padding -----
+            if self.pad_size_divisor > 1:
+                h, w = img.shape[-2:]
 
-            target_h = math.ceil(
-                h / self.pad_size_divisor) * self.pad_size_divisor
-            target_w = math.ceil(
-                w / self.pad_size_divisor) * self.pad_size_divisor
-            pad_h = target_h - h
-            pad_w = target_w - w
-            imgs = F.pad(imgs, (0, pad_w, 0, pad_h), 'constant',
-                         self.pad_value)
+                target_h = math.ceil(
+                    h / self.pad_size_divisor) * self.pad_size_divisor
+                target_w = math.ceil(
+                    w / self.pad_size_divisor) * self.pad_size_divisor
+                pad_h = target_h - h
+                pad_w = target_w - w
+                img = F.pad(img, (0, pad_w, 0, pad_h), 'constant',
+                            self.pad_value)
+            return img
+
+        if isinstance(imgs, torch.Tensor):
+            imgs = _process_img(imgs)
+        elif isinstance(imgs, Sequence):
+            # B, T, C, H, W
+            imgs = torch.stack([_process_img(img)
+                                for img in imgs]).transpose(0, 1)
+        else:
+            raise ValueError(f'{type(imgs)} is not supported for imgs inputs.')
 
         data_samples = data.get('data_samples', None)
 

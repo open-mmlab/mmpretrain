@@ -1,12 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
-from transformers import AutoTokenizer, BartTokenizer, BertTokenizer
+from mmengine.registry import Registry
+from transformers import (AutoModelForCausalLM, AutoTokenizer, BartTokenizer,
+                          BertTokenizer, LlamaTokenizer)
 
-from mmpretrain.registry import TOKENIZER
+from mmpretrain.registry import MODELS, TOKENIZER
 
 
-def register_hf_tokenizer(cls: Optional[type] = None):
+def register_hf_tokenizer(cls: Optional[type] = None,
+                          registry: Registry = TOKENIZER):
     """Register HuggingFace-style tokenizer class."""
     if cls is None:
 
@@ -29,12 +32,13 @@ def register_hf_tokenizer(cls: Optional[type] = None):
                                   kwargs.pop('name_or_path'))
         return cls.from_pretrained(name_or_path, **kwargs)
 
-    TOKENIZER._register_module(
-        module=from_pretrained, module_name=cls.__name__)
+    registry._register_module(module=from_pretrained, module_name=cls.__name__)
     return cls
 
 
 register_hf_tokenizer(AutoTokenizer)
+register_hf_tokenizer(LlamaTokenizer)
+register_hf_tokenizer(AutoModelForCausalLM, registry=MODELS)
 
 
 @register_hf_tokenizer()

@@ -15,7 +15,7 @@ from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
                          RandomErasing, RandomResizedCrop, ResizeEdge,
                          SimMIMMaskGenerator)
-from .wrappers import MultiView
+from .wrappers import ApplyToList, MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
           RandomGrayscale, RandomResize, Resize):
@@ -32,5 +32,5 @@ __all__ = [
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
     'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
-    'CleanCaption'
+    'CleanCaption', 'ApplyToList'
 ]

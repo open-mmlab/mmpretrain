@@ -6,7 +6,7 @@ from .attention import (BEiTAttention, ChannelMultiheadAttention,
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .batch_shuffle import batch_shuffle_ddp, batch_unshuffle_ddp
 from .channel_shuffle import channel_shuffle
-from .clip_generator_helper import build_clip_model
+from .clip_generator_helper import QuickGELU, build_clip_model
 from .data_preprocessor import (ClsDataPreprocessor,
                                 MultiModalDataPreprocessor,
                                 SelfSupDataPreprocessor,
@@ -75,4 +75,5 @@ __all__ = [
     'BLIPTokenizer',
     'OFATokenizer',
     'MultiModalDataPreprocessor',
+    'QuickGELU',
 ]
