@@ -18,61 +18,51 @@ class Flowers102(BaseDataset):
     Flowers102 dataset directory: ::
 
         Flowers102 (data_root)/
-        ├── jpg (data_prefix)
+        ├── jpg
         │   ├── image_00001.jpg
         │   ├── image_00002.jpg
         │   └── ...
-        ├── imagelabels.mat (ann_file)
-        ├── setid.mat (train_test_split_file)
+        ├── imagelabels.mat
+        ├── setid.mat
         └── ...
 
     Args:
         data_root (str): The root directory for Oxford 102 Flowers dataset.
-        split (str): The part of the dataset. The value can be chosen in the 'train',
-            'val', 'trainval', and 'test'. Defaults to 'trainval'.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'imagelabels.mat'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'jpg'.
-        train_test_split_file (str): The split file  to split train
-            and test dataset, path relative to ``data_root``.
-            Defaults to 'setid.mat'.
+        split (str, optional): The dataset split, supports "train",
+            "val", "trainval", and "test". Default to "trainval".
 
     Examples:
         >>> from mmpretrain.datasets import Flowers102
-        >>> flower_train_cfg = dict(data_root='data/Flowers102', split='trainval',
-        ... ann_file='imagelabels.mat', data_prefix='jpg',
-        ... train_test_split_file='setid.mat')
-        >>> flower_train = Flowers102(**flower_train_cfg)
-        >>> flower_train
+        >>> train_cfg = dict(data_root='data/Flowers102', split='trainval')
+        >>> train = Flowers102(**train_cfg)
+        >>> train
         Dataset Flowers102
             Number of samples:  2040
             Root of dataset:    data/Flowers102
-        >>> flower_test_cfg = dict(data_root='data/Flowers102', split='test',
-        ... ann_file='imagelabels.mat', data_prefix='jpg',
-        ... train_test_split_file='setid.mat')
-        >>> flower_test = Flowers102(**flower_test_cfg)
-        >>> flower_test
+        >>> test_cfg = dict(data_root='data/Flowers102', split='test')
+        >>> test = Flowers102(**test_cfg)
+        >>> test
         Dataset Flowers102
             Number of samples:  6149
             Root of dataset:    data/Flowers102
     """  # noqa: E501
 
-    def __init__(self,
-                 data_root: str,
-                 split: str = 'trainval',
-                 ann_file: str = 'imagelabels.mat',
-                 data_prefix: str = 'jpg',
-                 train_test_split_file: str = 'setid.mat',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'trainval', **kwargs):
         splits = ['train', 'val', 'trainval', 'test']
         assert split in splits, \
             f'Split {split} is not in default splits {splits}'
-        self.backend = get_file_backend(data_root, enable_singleton=True)
         self.split = split
+
+        ann_file = 'imagelabels.mat'
+        data_prefix = 'jpg'
+        train_test_split_file = 'setid.mat'
         test_mode = split == 'test'
+
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+
         self.train_test_split_file = self.backend.join_path(
             data_root, train_test_split_file)
+
         super(Flowers102, self).__init__(
             ann_file=ann_file,
             data_root=data_root,

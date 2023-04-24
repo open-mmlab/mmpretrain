@@ -18,7 +18,7 @@ class OxfordIIITPet(BaseDataset):
     OxfordIIITPet_CATEGORIES dataset directory: ::
 
         OxfordIIITPet_CATEGORIES (data_root)/
-        ├── images (data_prefix)
+        ├── images
         │   ├── Abyssinian_1.jpg
         │   ├── Abyssinian_2.jpg
         │   └── ...
@@ -31,27 +31,21 @@ class OxfordIIITPet(BaseDataset):
 
     Args:
         data_root (str): The root directory for Oxford-IIIT Pets dataset.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'annotations/trainval.txt'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'images'.
+        split (str, optional): The dataset split, supports "trainval" and "test".
+            Default to "trainval".
 
     Examples:
         >>> from mmpretrain.datasets import OxfordIIITPet
-        >>> pet_train_cfg = dict(data_root='data/Oxford-IIIT_Pets',
-        ... ann_file='annotations/trainval.txt', data_prefix='images')
-        >>> pet_train = OxfordIIITPet(**pet_train_cfg)
-        >>> pet_train
+        >>> train_cfg = dict(data_root='data/Oxford-IIIT_Pets', split='trainval')
+        >>> train = OxfordIIITPet(**train_cfg)
+        >>> train
         Dataset OxfordIIITPet
             Number of samples:  3680
             Number of categories:       37
             Root of dataset:    data/Oxford-IIIT_Pets
-        >>> pet_test_cfg = dict(data_root='data/Oxford-IIIT_Pets',
-        ... test_mode=True, ann_file='annotations/test.txt', data_prefix='images')
-        >>> pet_test = OxfordIIITPet(**pet_test_cfg)
-        >>> pet_test
+        >>> test_cfg = dict(data_root='data/Oxford-IIIT_Pets', split='test')
+        >>> test = OxfordIIITPet(**test_cfg)
+        >>> test
         Dataset OxfordIIITPet
             Number of samples:  3669
             Number of categories:       37
@@ -60,12 +54,20 @@ class OxfordIIITPet(BaseDataset):
 
     METAINFO = {'classes': OxfordIIITPet_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 test_mode: bool = False,
-                 ann_file: str = 'annotations/trainval.txt',
-                 data_prefix: str = 'images',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'trainval', **kwargs):
+
+        splits = ['trainval', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
+        self.split = split
+
+        if split == 'trainval':
+            ann_file = 'annotations/trainval.txt'
+        else:
+            ann_file = 'annotations/test.txt'
+
+        data_prefix = 'images'
+        test_mode = split == 'test'
         self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(OxfordIIITPet, self).__init__(

@@ -31,11 +31,11 @@ class StanfordCars(BaseDataset):
     Stanford Cars dataset directory: ::
 
         Stanford Cars (data_root)
-        ├── cars_train (data_prefix)
+        ├── cars_train
         │   ├── 00001.jpg
         │   ├── 00002.jpg
         │   └── ...
-        ├── cars_test (data_prefix)
+        ├── cars_test
         │   ├── 00001.jpg
         │   ├── 00002.jpg
         │   └── ...
@@ -49,47 +49,21 @@ class StanfordCars(BaseDataset):
 
     Args:
         data_root (str): The root directory for Stanford Cars dataset.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set. Defaults to False.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'cars_annos.mat'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to None.
+        split (str, optional): The dataset split, supports "train"
+            and "test". Default to "train".
 
     Examples:
-        >>> # first way
         >>> from mmpretrain.datasets import StanfordCars
-        >>> car_train_cfg = dict(data_root='data/Stanford_Cars',
-        ... ann_file='cars_annos.mat')
-        >>> car_train = StanfordCars(**car_train_cfg)
-        >>> car_train
+        >>> train_cfg = dict(data_root='data/Stanford_Cars', split='train')
+        >>> train = StanfordCars(**train_cfg)
+        >>> train
         Dataset StanfordCars
             Number of samples:  8144
             Number of categories:       196
             Root of dataset:    data/Stanford_Cars
-        >>> car_test_cfg = dict(data_root='data/Stanford_Cars',
-        ... ann_file='cars_annos.mat', test_mode=True)
-        >>> car_test = StanfordCars(**car_test_cfg)
-        >>> car_test
-        Dataset StanfordCars
-            Number of samples:  8041
-            Number of categories:       196
-            Root of dataset:    data/Stanford_Cars
-
-        >>> # second way
-        >>> from mmpretrain.datasets import StanfordCars
-        >>> car_train_cfg = dict(data_root='data/Stanford_Cars',
-        ... ann_file='devkit/cars_train_annos.mat', data_prefix='cars_train')
-        >>> car_train = StanfordCars(**car_train_cfg)
-        >>> car_train
-        Dataset StanfordCars
-            Number of samples:  8144
-            Number of categories:       196
-            Root of dataset:    data/Stanford_Cars
-        >>> car_test_cfg = dict(data_root='data/Stanford_Cars', test_mode=True,
-        ... ann_file='devkit/cars_test_annos_withlabels.mat', data_prefix='cars_test')
-        >>> car_test = StanfordCars(**car_test_cfg)
-        >>> car_test
+        >>> test_cfg = dict(data_root='data/Stanford_Cars', split='test')
+        >>> test = StanfordCars(**test_cfg)
+        >>> test
         Dataset StanfordCars
             Number of samples:  8041
             Number of categories:       196
@@ -98,14 +72,30 @@ class StanfordCars(BaseDataset):
 
     METAINFO = {'classes': STANFORDCARS_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 test_mode: bool = False,
-                 ann_file: str = 'cars_annos.mat',
-                 data_prefix: str = '',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'train', **kwargs):
 
+        splits = ['train', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
+        self.split = split
+
+        test_mode = split == 'test'
         self.backend = get_file_backend(data_root, enable_singleton=True)
+
+        anno_file_path = self.backend.join_path(data_root, 'cars_annos.mat')
+        if self.backend.exists(anno_file_path):
+            ann_file = 'cars_annos.mat'
+            data_prefix = ''
+        else:
+            if test_mode:
+                ann_file = self.backend.join_path(
+                    'devkit', 'cars_test_annos_withlabels.mat')
+                data_prefix = 'cars_test'
+            else:
+                ann_file = self.backend.join_path('devkit',
+                                                  'cars_train_annos.mat')
+                data_prefix = 'cars_train'
+
         super(StanfordCars, self).__init__(
             ann_file=ann_file,
             data_root=data_root,

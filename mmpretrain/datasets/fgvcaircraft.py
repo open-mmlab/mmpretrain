@@ -18,7 +18,7 @@ class FGVCAircraft(BaseDataset):
     FGVC Aircraft dataset directory: ::
 
         fgvc-aircraft-2013b/data (data_root)/
-        ├── images (data_prefix)
+        ├── images
         │   ├── 1.jpg
         │   ├── 2.jpg
         │   └── ...
@@ -31,27 +31,21 @@ class FGVCAircraft(BaseDataset):
 
     Args:
         data_root (str): The root directory for FGVC_Aircraft dataset.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'images_variant_trainval.txt'.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set. Defaults to False.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'images'.
+        split (str, optional): The dataset split, supports "train",
+            "val", "trainval", and "test". Default to "trainval".
 
     Examples:
         >>> from mmpretrain.datasets import FGVCAircraft
-        >>> aircraft_train_cfg = dict(data_root='data/fgvc-aircraft-2013b/data',
-        ... ann_file='images_variant_trainval.txt', test_mode=False, data_prefix='images')
-        >>> aircraft_train = FGVCAircraft(**aircraft_train_cfg)
-        >>> aircraft_train
+        >>> train_cfg = dict(data_root='data/fgvc-aircraft-2013b/data', split='trainval')
+        >>> train = FGVCAircraft(**train_cfg)
+        >>> train
         Dataset FGVCAircraft
             Number of samples:  6667
             Number of categories:       100
             Root of dataset:    data/fgvc-aircraft-2013b/data
-        >>> aircraft_test_cfg = dict(data_root='data/fgvc-aircraft-2013b/data',
-        ... ann_file='images_variant_test.txt', test_mode=True, data_prefix='images')
-        >>> aircraft_test = FGVCAircraft(**aircraft_test_cfg)
-        >>> aircraft_test
+        >>> test_cfg = dict(data_root='data/fgvc-aircraft-2013b/data', split='test')
+        >>> test = FGVCAircraft(**test_cfg)
+        >>> test
         Dataset FGVCAircraft
             Number of samples:  3333
             Number of categories:       100
@@ -60,12 +54,25 @@ class FGVCAircraft(BaseDataset):
 
     METAINFO = {'classes': FGVCAIRCRAFT_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 ann_file: str = 'images_variant_trainval.txt',
-                 test_mode: bool = False,
-                 data_prefix: str = 'images',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'trainval', **kwargs):
+
+        splits = ['train', 'val', 'trainval', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
+        self.split = split
+
+        if split == 'train':
+            ann_file = 'images_variant_train.txt'
+        elif split == 'val':
+            ann_file = 'images_variant_val.txt'
+        elif split == 'test':
+            ann_file = 'images_variant_test.txt'
+        else:
+            ann_file = 'images_variant_trainval.txt'
+
+        data_prefix = 'images'
+        test_mode = split == 'test'
+
         self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(FGVCAircraft, self).__init__(

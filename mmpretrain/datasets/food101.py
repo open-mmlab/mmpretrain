@@ -18,7 +18,7 @@ class Food101(BaseDataset):
     Food101 dataset directory: ::
 
         food-101 (data_root)/
-        ├── images (data_prefix)
+        ├── images
         │   ├── class_x
         │   │   ├── xx1.jpg
         │   │   ├── xx2.jpg
@@ -35,27 +35,21 @@ class Food101(BaseDataset):
 
     Args:
         data_root (str): The root directory for Food101 dataset.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'meta/train.txt'.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set. Defaults to False.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'images'.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
 
     Examples:
         >>> from mmpretrain.datasets import Food101
-        >>> food_train_cfg = dict(data_root='data/food-101',
-        ... ann_file='meta/train.txt', test_mode=False, data_prefix='images')
-        >>> food_train = Food101(**food_train_cfg)
-        >>> food_train
+        >>> train_cfg = dict(data_root='data/food-101', split='train')
+        >>> train = Food101(**train_cfg)
+        >>> train
         Dataset Food101
             Number of samples:  75750
             Number of categories:       101
             Root of dataset:    data/food-101
-        >>> food_test_cfg = dict(data_root='data/food-101',
-        ... ann_file='meta/test.txt', test_mode=True, data_prefix='images')
-        >>> food_test = Food101(**food_test_cfg)
-        >>> food_test
+        >>> test_cfg = dict(data_root='data/food-101', split='test')
+        >>> test = Food101(**test_cfg)
+        >>> test
         Dataset Food101
             Number of samples:  25250
             Number of categories:       101
@@ -64,12 +58,21 @@ class Food101(BaseDataset):
 
     METAINFO = {'classes': FOOD101_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 ann_file: str = 'meta/train.txt',
-                 test_mode: bool = False,
-                 data_prefix: str = 'images',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'train', **kwargs):
+
+        splits = ['train', 'test']
+        if split == 'train':
+            ann_file = 'meta/train.txt'
+        elif split == 'test':
+            ann_file = 'meta/test.txt'
+        else:
+            raise ValueError(
+                f'Split {split} is not in default splits {splits}')
+        self.split = split
+
+        test_mode = split == 'test'
+        data_prefix = 'images'
+
         self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(Food101, self).__init__(

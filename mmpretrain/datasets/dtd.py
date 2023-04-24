@@ -19,7 +19,7 @@ class DTD(BaseDataset):
     DTD dataset directory: ::
 
         dtd (data_root)/
-        ├── images (data_prefix)
+        ├── images
         │   ├── banded
         |   |   ├──banded_0002.jpg
         |   |   ├──banded_0004.jpg
@@ -37,27 +37,21 @@ class DTD(BaseDataset):
 
     Args:
         data_root (str): The root directory for Describable Texture dataset.
-        split (str): The part of the dataset. The value can be chosen in the 'train',
-            'val', 'trainval', and 'test'. Defaults to 'trainval'.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'imdb/imdb.mat'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'jpg'.
+        split (str, optional): The dataset split, supports "train",
+            "val", "trainval", and "test". Default to "trainval".
 
     Examples:
         >>> from mmpretrain.datasets import DTD
-        >>> dtd_train_cfg = dict(data_root='data/dtd', split='trainval',
-        ... ann_file='imdb/imdb.mat', data_prefix='images')
-        >>> dtd_train = DTD(**dtd_train_cfg)
-        >>> dtd_train
+        >>> train_cfg = dict(data_root='data/dtd', split='trainval')
+        >>> train = DTD(**train_cfg)
+        >>> train
         Dataset DTD
             Number of samples:  3760
             Number of categories:       47
             Root of dataset:    data/dtd
-        >>> dtd_test_cfg = dict(data_root='data/dtd', split='test',
-        ... ann_file='imdb/imdb.mat', data_prefix='images')
-        >>> dtd_test = DTD(**dtd_test_cfg)
-        >>> dtd_test
+        >>> test_cfg = dict(data_root='data/dtd', split='test')
+        >>> test = DTD(**test_cfg)
+        >>> test
         Dataset DTD
             Number of samples:  1880
             Number of categories:       47
@@ -66,18 +60,19 @@ class DTD(BaseDataset):
 
     METAINFO = {'classes': DTD_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 split: str = 'trainval',
-                 ann_file: str = 'imdb/imdb.mat',
-                 data_prefix: str = 'images',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'trainval', **kwargs):
+
         splits = ['train', 'val', 'trainval', 'test']
         assert split in splits, \
             f'Split {split} is not in default splits {splits}'
-        self.backend = get_file_backend(data_root, enable_singleton=True)
         self.split = split
+
+        ann_file = 'imdb/imdb.mat'
+        data_prefix = 'images'
         test_mode = split == 'test'
+
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+
         super(DTD, self).__init__(
             ann_file=ann_file,
             data_root=data_root,

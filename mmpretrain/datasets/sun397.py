@@ -136,7 +136,7 @@ class SUN397(BaseDataset):
     SUN397 dataset directory: ::
 
         SUN397 (data_root)
-        ├── SUN397 (data_prefix)
+        ├── SUN397
         │   ├── a
         │   │   ├── abbey
         │   |   |   ├── sun_aaalbzqrimafwbiv.jpg
@@ -158,24 +158,19 @@ class SUN397(BaseDataset):
 
     Args:
         data_root (str): The root directory for Stanford Cars dataset.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set. Defaults to False.
-        ann_file (str): Annotation file path, path relative to
-            ``data_root``. Defaults to 'Partitions/Training_01.txt'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'images'.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
 
     Examples:
         >>> from mmpretrain.datasets import SUN397
-        >>> train_cfg = dict(data_root='data/SUN397')
-        >>> train = SUN397(**train_cfg, ann_file='Partitions/Training_01.txt')
+        >>> train_cfg = dict(data_root='data/SUN397', split='train')
+        >>> train = SUN397(**train_cfg)
         >>> train
         Dataset SUN397
             Number of samples:  19824
             Number of categories:       397
             Root of dataset:    data/SUN397
-        >>> test_cfg = dict(data_root='data/SUN397', test_mode=True,
-        ... ann_file='Partitions/Testing_01.txt')
+        >>> test_cfg = dict(data_root='data/SUN397', split='test')
         >>> test = SUN397(**test_cfg)
         >>> test
         Dataset SUN397
@@ -186,13 +181,20 @@ class SUN397(BaseDataset):
 
     METAINFO = {'classes': SUN397_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 test_mode: bool = False,
-                 data_prefix: str = 'SUN397',
-                 ann_file: str = 'Partitions/Training_01.txt',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'train', **kwargs):
 
+        splits = ['train', 'test']
+        if split == 'train':
+            ann_file = 'Partitions/Training_01.txt'
+        elif split == 'test':
+            ann_file = 'Partitions/Testing_01.txt'
+        else:
+            raise ValueError(
+                f'Split {split} is not in default splits {splits}')
+        self.split = split
+
+        data_prefix = 'SUN397'
+        test_mode = split == 'test'
         self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(SUN397, self).__init__(

@@ -18,7 +18,7 @@ class Caltech101(BaseDataset):
     Caltech101 dataset directory: ::
 
         Caltech101 (data_root)/
-        ├── 101_ObjectCategories (data_prefix)
+        ├── 101_ObjectCategories
         │   ├── class_x
         │   │   ├── xx1.jpg
         │   │   ├── xx2.jpg
@@ -40,26 +40,20 @@ class Caltech101(BaseDataset):
     The download link for annotations: <https://xxxx>.
 
     Args:
-        data_root (str): The root directory for CUB-200-2011 dataset.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'images.txt'.
-        data_prefix (str): Prefix for images, path relative to
-            ``data_root``. Defaults to 'images'.
+        data_root (str): The root directory for the Caltech101 dataset.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
 
     Examples:
         >>> from mmpretrain.datasets import Caltech101
-        >>> train_cfg = dict(data_root='data/Caltech', test_mode=False,
-        ... ann_file='meta/train.txt', data_prefix='101_ObjectCategories')
+        >>> train_cfg = dict(data_root='data/Caltech', split='train')
         >>> train = Caltech101(**train_cfg)
         >>> train
         Dataset Caltech101
             Number of samples:  3060
             Number of categories:       102
             Root of dataset:    data/Caltech
-        >>> test_cfg = dict(data_root='data/Caltech', test_mode=True,
-        ... ann_file='meta/test.txt', data_prefix='101_ObjectCategories')
+        >>> test_cfg = dict(data_root='data/Caltech', split='test')
         >>> test = Caltech101(**test_cfg)
         >>> test
         Dataset Caltech101
@@ -70,13 +64,23 @@ class Caltech101(BaseDataset):
 
     METAINFO = {'classes': CALTECH101_CATEGORIES}
 
-    def __init__(self,
-                 data_root: str,
-                 test_mode: bool = False,
-                 ann_file: str = 'meta/train.txt',
-                 data_prefix: str = '101_ObjectCategories',
-                 **kwargs):
+    def __init__(self, data_root: str, split: str = 'train', **kwargs):
+
+        splits = ['train', 'test']
+
+        if split == 'train':
+            ann_file = 'meta/train.txt'
+        elif split == 'test':
+            ann_file = 'meta/test.txt'
+        else:
+            raise ValueError(
+                f'Split {split} is not in default splits {splits}')
+        self.split = split
+
+        data_prefix = '101_ObjectCategories'
+        test_mode = split == 'test'
         self.backend = get_file_backend(data_root, enable_singleton=True)
+
         super(Caltech101, self).__init__(
             ann_file=ann_file,
             data_root=data_root,
