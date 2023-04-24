@@ -66,11 +66,17 @@ Import:
   - configs/cae/metafile.yml
   - configs/maskfeat/metafile.yml
   - configs/milan/metafile.yml
+<<<<<<< 6beb4cfbb50c463fac45ecd282b1d8a74db674c4
 <<<<<<< 79a10eeef5756594a5a7601069254a045b8a57fb
   - configs/riformer/metafile.yml
   - configs/sam/metafile.yml
   - configs/glip/metafile.yml
   - configs/dinov2/metafile.yml
 =======
+=======
+  - configs/riformer/metafile.yml
+  - configs/sam/metafile.yml
+  - configs/glip/metafile.yml
+>>>>>>> rebase
   - configs/eva02/metafile.yml
 >>>>>>> feat: add eva02 backbone
