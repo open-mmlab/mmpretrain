@@ -120,7 +120,6 @@ class RetrievalTestLoop(TestLoop):
                         data_preprocessor = self.runner.model.module.data_preprocessor  # noqa: E501
                     else:
                         data_preprocessor = self.runner.model.data_preprocessor
-
                     # get features for retrieval instead of data samples
                     data_batch = data_preprocessor(data_batch, False)
                     feats = self.runner.model._run_forward(

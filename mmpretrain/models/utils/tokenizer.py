@@ -62,6 +62,25 @@ class BLIPTokenizer(BertTokenizer):
 
 
 @register_hf_tokenizer()
+class BLIP2Tokenizer(BertTokenizer):
+
+    @classmethod
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path,
+        *init_inputs,
+        **kwargs,
+    ):
+        tokenizer = super().from_pretrained(
+            pretrained_model_name_or_path,
+            *init_inputs,
+            **kwargs,
+        )
+        tokenizer.add_special_tokens({'bos_token': '[DEC]'})
+        return tokenizer
+
+
+@register_hf_tokenizer()
 class OFATokenizer(BartTokenizer):
 
     vocab_files_names = {

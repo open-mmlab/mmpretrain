@@ -2,9 +2,9 @@
 from typing import List
 
 from mmengine.fileio import load
-from mmmultimodal.registry import DATASETS
 
-from ..base_dataset import BaseDataset
+from mmpretrain.registry import DATASETS
+from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()

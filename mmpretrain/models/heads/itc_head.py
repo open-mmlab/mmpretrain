@@ -35,20 +35,24 @@ class ITCHead(BaseModule):
                  alpha: float = 0.4,
                  init_cfg: Optional[dict] = None):
         super(ITCHead, self).__init__(init_cfg=init_cfg)
-        # create the queue
-        self.register_buffer('image_queue', torch.randn(embed_dim, queue_size))
-        self.register_buffer('text_queue', torch.randn(embed_dim, queue_size))
-        self.register_buffer('idx_queue', torch.full((1, queue_size), -100))
-        self.register_buffer('queue_ptr', torch.zeros(1, dtype=torch.long))
-
-        self.image_queue = F.normalize(self.image_queue, dim=0)
-        self.text_queue = F.normalize(self.text_queue, dim=0)
-
-        self.queue_size = queue_size
         self.temp = nn.Parameter(temperature * torch.ones([]))
         self.use_distill = use_distill
-        # This value will be warmup by `WarmupParamHook`
-        self.alpha = alpha
+        if self.use_distill:
+            # create the queue
+            self.register_buffer('image_queue',
+                                 torch.randn(embed_dim, queue_size))
+            self.register_buffer('text_queue',
+                                 torch.randn(embed_dim, queue_size))
+            self.register_buffer('idx_queue', torch.full((1, queue_size),
+                                                         -100))
+            self.register_buffer('queue_ptr', torch.zeros(1, dtype=torch.long))
+
+            self.image_queue = F.normalize(self.image_queue, dim=0)
+            self.text_queue = F.normalize(self.text_queue, dim=0)
+
+            self.queue_size = queue_size
+            # This value will be warmup by `WarmupParamHook`
+            self.alpha = alpha
 
     def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""

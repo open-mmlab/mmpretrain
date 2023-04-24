@@ -66,7 +66,7 @@ train_dataloader = dict(
     dataset=dict(
         type='COCORetrieval',
         data_root='data/coco',
-        ann_file='annotations/caption_karpathy_val2014_50imgs.json',
+        ann_file='annotations/caption_karpathy_train.json',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
@@ -79,7 +79,7 @@ val_dataloader = dict(
     dataset=dict(
         type='COCORetrieval',
         data_root='data/coco',
-        ann_file='annotations/caption_karpathy_val2014_50imgs.json',
+        ann_file='annotations/caption_karpathy_val.json',
         pipeline=test_pipeline,
         # This is required for evaluation
         is_eval=True,

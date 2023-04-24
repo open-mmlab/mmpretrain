@@ -84,6 +84,10 @@ class ITMHead(BaseModule):
         # The part can be traced by torch.fx
         itm_logits = self(feats)
 
+        # deal with query
+        if itm_logits.ndim == 3:
+            itm_logits = itm_logits.mean(dim=1)
+
         # The part can not be traced by torch.fx
         losses = self._get_loss(itm_logits, data_samples, **kwargs)
         return losses

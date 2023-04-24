@@ -128,6 +128,7 @@ class PackInputs(BaseTransform):
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data."""
+
         packed_results = dict()
         if self.input_key in results:
             input_ = results[self.input_key]
