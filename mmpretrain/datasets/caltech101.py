@@ -50,7 +50,8 @@ class Caltech101(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Caltech101
-        >>> train_cfg = dict(data_root='data/Caltech', test_mode=False)
+        >>> train_cfg = dict(data_root='data/Caltech', test_mode=False,
+        ... ann_file='meta/train.txt', data_prefix='101_ObjectCategories')
         >>> train = Caltech101(**train_cfg)
         >>> train
         Dataset Caltech101
@@ -58,7 +59,7 @@ class Caltech101(BaseDataset):
             Number of categories:       102
             Root of dataset:    data/Caltech
         >>> test_cfg = dict(data_root='data/Caltech', test_mode=True,
-        ... ann_file='meta/test.txt')
+        ... ann_file='meta/test.txt', data_prefix='101_ObjectCategories')
         >>> test = Caltech101(**test_cfg)
         >>> test
         Dataset Caltech101

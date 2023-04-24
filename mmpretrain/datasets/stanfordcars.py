@@ -59,14 +59,16 @@ class StanfordCars(BaseDataset):
     Examples:
         >>> # first way
         >>> from mmpretrain.datasets import StanfordCars
-        >>> car_train_cfg = dict(data_root='data/Stanford_Cars')
+        >>> car_train_cfg = dict(data_root='data/Stanford_Cars',
+        ... ann_file='cars_annos.mat')
         >>> car_train = StanfordCars(**car_train_cfg)
         >>> car_train
         Dataset StanfordCars
             Number of samples:  8144
             Number of categories:       196
             Root of dataset:    data/Stanford_Cars
-        >>> car_test_cfg = dict(data_root='data/Stanford_Cars', test_mode=True)
+        >>> car_test_cfg = dict(data_root='data/Stanford_Cars',
+        ... ann_file='cars_annos.mat', test_mode=True)
         >>> car_test = StanfordCars(**car_test_cfg)
         >>> car_test
         Dataset StanfordCars

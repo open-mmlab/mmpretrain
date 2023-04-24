@@ -40,14 +40,16 @@ class FGVCAircraft(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import FGVCAircraft
-        >>> aircraft_train_cfg = dict(data_root='data/fgvc-aircraft-2013b/data')
+        >>> aircraft_train_cfg = dict(data_root='data/fgvc-aircraft-2013b/data',
+        ... ann_file='images_variant_trainval.txt', test_mode=False, data_prefix='images')
         >>> aircraft_train = FGVCAircraft(**aircraft_train_cfg)
         >>> aircraft_train
         Dataset FGVCAircraft
             Number of samples:  6667
             Number of categories:       100
             Root of dataset:    data/fgvc-aircraft-2013b/data
-        >>> aircraft_test_cfg = dict(data_root='data/fgvc-aircraft-2013b/data', ann_file='images_variant_test.txt')
+        >>> aircraft_test_cfg = dict(data_root='data/fgvc-aircraft-2013b/data',
+        ... ann_file='images_variant_test.txt', test_mode=True, data_prefix='images')
         >>> aircraft_test = FGVCAircraft(**aircraft_test_cfg)
         >>> aircraft_test
         Dataset FGVCAircraft

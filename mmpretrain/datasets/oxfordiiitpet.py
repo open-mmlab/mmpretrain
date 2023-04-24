@@ -40,7 +40,8 @@ class OxfordIIITPet(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import OxfordIIITPet
-        >>> pet_train_cfg = dict(data_root='data/Oxford-IIIT_Pets')
+        >>> pet_train_cfg = dict(data_root='data/Oxford-IIIT_Pets',
+        ... ann_file='annotations/trainval.txt', data_prefix='images')
         >>> pet_train = OxfordIIITPet(**pet_train_cfg)
         >>> pet_train
         Dataset OxfordIIITPet
@@ -48,7 +49,7 @@ class OxfordIIITPet(BaseDataset):
             Number of categories:       37
             Root of dataset:    data/Oxford-IIIT_Pets
         >>> pet_test_cfg = dict(data_root='data/Oxford-IIIT_Pets',
-        ... test_mode=True, ann_file='annotations/test.txt')
+        ... test_mode=True, ann_file='annotations/test.txt', data_prefix='images')
         >>> pet_test = OxfordIIITPet(**pet_test_cfg)
         >>> pet_test
         Dataset OxfordIIITPet

@@ -37,7 +37,7 @@ class DTD(BaseDataset):
 
     Args:
         data_root (str): The root directory for Describable Texture dataset.
-        mode (str): The part of the dataset. The value can be chosen in the 'train',
+        split (str): The part of the dataset. The value can be chosen in the 'train',
             'val', 'trainval', and 'test'. Defaults to 'trainval'.
         ann_file (str, optional): Annotation file path, path relative to
             ``data_root``. Defaults to 'imdb/imdb.mat'.
@@ -46,14 +46,16 @@ class DTD(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import DTD
-        >>> dtd_train_cfg = dict(data_root='data/dtd', mode='trainval')
+        >>> dtd_train_cfg = dict(data_root='data/dtd', split='trainval',
+        ... ann_file='imdb/imdb.mat', data_prefix='images')
         >>> dtd_train = DTD(**dtd_train_cfg)
         >>> dtd_train
         Dataset DTD
             Number of samples:  3760
             Number of categories:       47
             Root of dataset:    data/dtd
-        >>> dtd_test_cfg = dict(data_root='data/dtd', mode='test')
+        >>> dtd_test_cfg = dict(data_root='data/dtd', split='test',
+        ... ann_file='imdb/imdb.mat', data_prefix='images')
         >>> dtd_test = DTD(**dtd_test_cfg)
         >>> dtd_test
         Dataset DTD
@@ -66,15 +68,16 @@ class DTD(BaseDataset):
 
     def __init__(self,
                  data_root: str,
-                 mode: str = 'trainval',
+                 split: str = 'trainval',
                  ann_file: str = 'imdb/imdb.mat',
                  data_prefix: str = 'images',
                  **kwargs):
-        modes = ['train', 'val', 'trainval', 'test']
-        assert mode in modes, f'Mode {mode} is not in default modes {modes}'
+        splits = ['train', 'val', 'trainval', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
         self.backend = get_file_backend(data_root, enable_singleton=True)
-        self.mode = mode
-        test_mode = mode == 'test'
+        self.split = split
+        test_mode = split == 'test'
         super(DTD, self).__init__(
             ann_file=ann_file,
             data_root=data_root,
@@ -92,11 +95,11 @@ class DTD(BaseDataset):
         num = len(names)
         assert num == len(labels) == len(parts), 'get error ann file'
 
-        if self.mode == 'train':
+        if self.split == 'train':
             target_set = {1}
-        elif self.mode == 'val':
+        elif self.split == 'val':
             target_set = {2}
-        elif self.mode == 'test':
+        elif self.split == 'test':
             target_set = {3}
         else:
             target_set = {1, 2}

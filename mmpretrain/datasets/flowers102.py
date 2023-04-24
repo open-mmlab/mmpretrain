@@ -28,7 +28,7 @@ class Flowers102(BaseDataset):
 
     Args:
         data_root (str): The root directory for Oxford 102 Flowers dataset.
-        mode (str): The part of the dataset. The value can be chosen in the 'train',
+        split (str): The part of the dataset. The value can be chosen in the 'train',
             'val', 'trainval', and 'test'. Defaults to 'trainval'.
         ann_file (str, optional): Annotation file path, path relative to
             ``data_root``. Defaults to 'imagelabels.mat'.
@@ -40,13 +40,17 @@ class Flowers102(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Flowers102
-        >>> flower_train_cfg = dict(data_root='data/Flowers102', mode='trainval')
+        >>> flower_train_cfg = dict(data_root='data/Flowers102', split='trainval',
+        ... ann_file='imagelabels.mat', data_prefix='jpg',
+        ... train_test_split_file='setid.mat')
         >>> flower_train = Flowers102(**flower_train_cfg)
         >>> flower_train
         Dataset Flowers102
             Number of samples:  2040
             Root of dataset:    data/Flowers102
-        >>> flower_test_cfg = dict(data_root='data/Flowers102', mode='test')
+        >>> flower_test_cfg = dict(data_root='data/Flowers102', split='test',
+        ... ann_file='imagelabels.mat', data_prefix='jpg',
+        ... train_test_split_file='setid.mat')
         >>> flower_test = Flowers102(**flower_test_cfg)
         >>> flower_test
         Dataset Flowers102
@@ -56,16 +60,17 @@ class Flowers102(BaseDataset):
 
     def __init__(self,
                  data_root: str,
-                 mode: str = 'trainval',
+                 split: str = 'trainval',
                  ann_file: str = 'imagelabels.mat',
                  data_prefix: str = 'jpg',
                  train_test_split_file: str = 'setid.mat',
                  **kwargs):
-        modes = ['train', 'val', 'trainval', 'test']
-        assert mode in modes, f'Mode {mode} is not in default modes {modes}'
+        splits = ['train', 'val', 'trainval', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
         self.backend = get_file_backend(data_root, enable_singleton=True)
-        self.mode = mode
-        test_mode = mode == 'test'
+        self.split = split
+        test_mode = split == 'test'
         self.train_test_split_file = self.backend.join_path(
             data_root, train_test_split_file)
         super(Flowers102, self).__init__(
@@ -81,11 +86,11 @@ class Flowers102(BaseDataset):
         label_dict = mat4py.loadmat(self.ann_file)['labels']
         split_list = mat4py.loadmat(self.train_test_split_file)
 
-        if self.mode == 'train':
+        if self.split == 'train':
             split_list = split_list['trnid']
-        elif self.mode == 'val':
+        elif self.split == 'val':
             split_list = split_list['valid']
-        elif self.mode == 'test':
+        elif self.split == 'test':
             split_list = split_list['tstid']
         else:
             train_ids = split_list['trnid']

@@ -44,7 +44,8 @@ class Food101(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Food101
-        >>> food_train_cfg = dict(data_root='data/food-101')
+        >>> food_train_cfg = dict(data_root='data/food-101',
+        ... ann_file='meta/train.txt', test_mode=False, data_prefix='images')
         >>> food_train = Food101(**food_train_cfg)
         >>> food_train
         Dataset Food101
@@ -52,7 +53,7 @@ class Food101(BaseDataset):
             Number of categories:       101
             Root of dataset:    data/food-101
         >>> food_test_cfg = dict(data_root='data/food-101',
-        ... ann_file='meta/test.txt', test_mode=True)
+        ... ann_file='meta/test.txt', test_mode=True, data_prefix='images')
         >>> food_test = Food101(**food_test_cfg)
         >>> food_test
         Dataset Food101

@@ -1125,7 +1125,7 @@ class TestOxford102Flowers(TestBaseDataset):
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
         cls.root = tmpdir.name
-        cls.DEFAULT_ARGS = dict(data_root=cls.root, mode='train')
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
         cls.ann_file = osp.join(cls.root, 'imagelabels.mat')
         cls.train_test_split_file = osp.join(cls.root, 'setid.mat')
 
@@ -1140,26 +1140,26 @@ class TestOxford102Flowers(TestBaseDataset):
     def test_initialize(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test invalid mode
-        with self.assertRaisesRegex(AssertionError, 'not in default modes'):
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
             cfg = {**self.DEFAULT_ARGS}
-            cfg['mode'] = 'unknown'
+            cfg['split'] = 'unknown'
             dataset_class(**cfg)
 
-        # Test valid modes
-        modes = ['train', 'val', 'trainval', 'test']
-        for mode in modes:
+        # Test valid splits
+        splits = ['train', 'val', 'trainval', 'test']
+        for split in splits:
             cfg = {**self.DEFAULT_ARGS}
-            cfg['mode'] = mode
+            cfg['split'] = split
             dataset = dataset_class(**cfg)
-            self.assertEqual(dataset.mode, mode)
+            self.assertEqual(dataset.split, split)
             self.assertEqual(dataset.data_root, self.root)
             self.assertEqual(dataset.ann_file, self.ann_file)
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test with mode=train
+        # Test with split=train
         cfg = {**self.DEFAULT_ARGS}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
@@ -1168,8 +1168,8 @@ class TestOxford102Flowers(TestBaseDataset):
                          os.path.join(self.root, 'jpg', 'image_00001.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
-        # Test with mode=val
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'val'}
+        # Test with split=val
+        cfg = {**self.DEFAULT_ARGS, 'split': 'val'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 2)
         data_info = dataset[0]
@@ -1177,8 +1177,8 @@ class TestOxford102Flowers(TestBaseDataset):
                          os.path.join(self.root, 'jpg', 'image_00007.jpg'))
         self.assertEqual(data_info['gt_label'], 2)
 
-        # Test with mode=trainval
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'trainval'}
+        # Test with split=trainval
+        cfg = {**self.DEFAULT_ARGS, 'split': 'trainval'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 5)
         data_info = dataset[2]
@@ -1186,8 +1186,8 @@ class TestOxford102Flowers(TestBaseDataset):
                          os.path.join(self.root, 'jpg', 'image_00005.jpg'))
         self.assertEqual(data_info['gt_label'], 1)
 
-        # Test with mode=test
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'test'}
+        # Test with split=test
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 5)
         data_info = dataset[2]
@@ -1288,7 +1288,7 @@ class TestDescribableTexture(TestBaseDataset):
         cls.tmpdir = tmpdir
         cls.root = tmpdir.name
         cls.DEFAULT_ARGS = dict(
-            data_root=cls.root, mode='train', ann_file='imdb.mat')
+            data_root=cls.root, split='train', ann_file='imdb.mat')
         cls.ann_file = osp.join(cls.root, 'imdb.mat')
 
         mat4py.savemat(
@@ -1306,26 +1306,26 @@ class TestDescribableTexture(TestBaseDataset):
     def test_initialize(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test invalid mode
-        with self.assertRaisesRegex(AssertionError, 'not in default modes'):
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
             cfg = {**self.DEFAULT_ARGS}
-            cfg['mode'] = 'unknown'
+            cfg['split'] = 'unknown'
             dataset_class(**cfg)
 
-        # Test valid modes
-        modes = ['train', 'val', 'trainval', 'test']
-        for mode in modes:
+        # Test valid splits
+        splits = ['train', 'val', 'trainval', 'test']
+        for split in splits:
             cfg = {**self.DEFAULT_ARGS}
-            cfg['mode'] = mode
+            cfg['split'] = split
             dataset = dataset_class(**cfg)
-            self.assertEqual(dataset.mode, mode)
+            self.assertEqual(dataset.split, split)
             self.assertEqual(dataset.data_root, self.root)
             self.assertEqual(dataset.ann_file, self.ann_file)
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test with mode=train
+        # Test with split=train
         cfg = {**self.DEFAULT_ARGS}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 4)
@@ -1334,8 +1334,8 @@ class TestDescribableTexture(TestBaseDataset):
                          os.path.join(self.root, 'images', '1.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
-        # Test with mode=val
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'val'}
+        # Test with split=val
+        cfg = {**self.DEFAULT_ARGS, 'split': 'val'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
@@ -1343,8 +1343,8 @@ class TestDescribableTexture(TestBaseDataset):
                          os.path.join(self.root, 'images', '2.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
-        # Test with mode=trainval
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'trainval'}
+        # Test with split=trainval
+        cfg = {**self.DEFAULT_ARGS, 'split': 'trainval'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 7)
         data_info = dataset[2]
@@ -1352,8 +1352,8 @@ class TestDescribableTexture(TestBaseDataset):
                          os.path.join(self.root, 'images', '4.jpg'))
         self.assertEqual(data_info['gt_label'], 1)
 
-        # Test with mode=test
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'test'}
+        # Test with split=test
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
