@@ -96,6 +96,13 @@ class StanfordCars(BaseDataset):
                                                   'cars_train_annos.mat')
                 data_prefix = 'cars_train'
 
+            if not self.backend.exists(
+                    self.backend.join_path(data_root, ann_file)):
+                doc_url = 'https://mmpretrain.readthedocs.io/en/latest/api/datasets.html#stanfordcars'  # noqa: E501
+                raise RuntimeError(
+                    f'The dataset is incorrectly organized, please \
+                    refer to {doc_url} and reorganize your folders.')
+
         super(StanfordCars, self).__init__(
             ann_file=ann_file,
             data_root=data_root,

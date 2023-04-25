@@ -863,19 +863,14 @@ class TestCUB(TestBaseDataset):
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
         cls.root = tmpdir.name
-        cls.ann_file = 'ann_file.txt'
+        cls.ann_file = 'images.txt'
         cls.image_folder = 'images'
-        cls.image_class_labels_file = 'classes.txt'
-        cls.train_test_split_file = 'split.txt'
-        cls.train_test_split_file2 = 'split2.txt'
+        cls.image_class_labels_file = 'image_class_labels.txt'
+        cls.train_test_split_file = 'train_test_split.txt'
+        # cls.train_test_split_file2 = 'split2.txt'
+
         cls.DEFAULT_ARGS = dict(
-            data_root=cls.root,
-            test_mode=False,
-            data_prefix=cls.image_folder,
-            pipeline=[],
-            ann_file=cls.ann_file,
-            image_class_labels_file=cls.image_class_labels_file,
-            train_test_split_file=cls.train_test_split_file)
+            data_root=cls.root, split='train', test_mode=False)
 
         with open(osp.join(cls.root, cls.ann_file), 'w') as f:
             f.write('\n'.join([
@@ -898,11 +893,40 @@ class TestCUB(TestBaseDataset):
                 '3 1',
             ]))
 
-        with open(osp.join(cls.root, cls.train_test_split_file2), 'w') as f:
-            f.write('\n'.join([
-                '1 0',
-                '2 1',
-            ]))
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with invalid split
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test with valid split
+        splits = ['train', 'test']
+        test_modes = [False, True]
+
+        for split in splits:
+            for test_mode in test_modes:
+                cfg = {**self.DEFAULT_ARGS}
+                cfg['split'] = split
+                cfg['test_mode'] = test_mode
+
+                if split == 'train' and test_mode:
+                    with self.assertRaisesRegex(RuntimeWarning, 'Please set'):
+                        dataset = dataset_class(**cfg)
+                        self.assertEqual(dataset.split, split)
+                        self.assertEqual(dataset.test_mode, test_mode)
+                        self.assertEqual(dataset.data_root, self.root)
+                        self.assertEqual(dataset.ann_file,
+                                         osp.join(self.root, self.ann_file))
+                else:
+                    dataset = dataset_class(**cfg)
+                    self.assertEqual(dataset.split, split)
+                    self.assertEqual(dataset.test_mode, test_mode)
+                    self.assertEqual(dataset.data_root, self.root)
+                    self.assertEqual(dataset.ann_file,
+                                     osp.join(self.root, self.ann_file))
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
@@ -916,8 +940,8 @@ class TestCUB(TestBaseDataset):
                          osp.join(self.root, self.image_folder, '2.txt'))
         self.assertEqual(data_info['gt_label'], 3 - 1)
 
-        # Test with test_mode=True
-        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        # # Test with split='test'
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 1)
 
@@ -925,15 +949,6 @@ class TestCUB(TestBaseDataset):
         self.assertEqual(data_info['img_path'],
                          osp.join(self.root, self.image_folder, '1.txt'))
         self.assertEqual(data_info['gt_label'], 2 - 1)
-
-        # Test if the numbers of line are not match
-        cfg = {
-            **self.DEFAULT_ARGS, 'train_test_split_file':
-            self.train_test_split_file2
-        }
-        with self.assertRaisesRegex(AssertionError,
-                                    'sample_ids should be same'):
-            dataset_class(**cfg)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
@@ -1612,6 +1627,24 @@ class TestStanfordCars(TestBaseDataset):
         self.assertEqual(dataset.ann_file,
                          osp.join(self.meta_folder, self.test_ann_file))
 
+        # wrong dataset organization
+        os.rename(self.train_ann_file, self.train_ann_file + 'copy')
+        os.rename(self.test_ann_file, self.test_ann_file + 'copy')
+
+        with self.assertRaisesRegex(RuntimeError,
+                                    'The dataset is incorrectly organized'):
+            cfg = {**self.DEFAULT_ARGS}
+            dataset_class(**cfg)
+
+        with self.assertRaisesRegex(RuntimeError,
+                                    'The dataset is incorrectly organized'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'test'
+            dataset_class(**cfg)
+
+        os.rename(self.train_ann_file + 'copy', self.train_ann_file)
+        os.rename(self.test_ann_file + 'copy', self.test_ann_file)
+
         os.rename(self.ann_file + 'copy', self.ann_file)
 
     def test_load_data_list(self):
@@ -1619,7 +1652,8 @@ class TestStanfordCars(TestBaseDataset):
 
         # Test first way
         # Test default behavior
-        assert osp.exists(osp.join(self.root, 'cars_annos.mat'))
+        assert osp.exists(osp.join(self.root, 'cars_annos.mat')), osp.join(
+            self.root, 'cars_annos.mat')
         dataset = dataset_class(**self.DEFAULT_ARGS)
         self.assertEqual(len(dataset), 2)
 
