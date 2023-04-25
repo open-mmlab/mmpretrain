@@ -1,15 +1,18 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 if '_base_':
     from .._base_.datasets.imagenet_bs32_simclr import *
     from .._base_.schedules.imagenet_lars_coslr_200e import *
     from .._base_.default_runtime import *
-from mmpretrain.models.selfsup.simclr import SimCLR
+
+from mmengine.hooks.checkpoint_hook import CheckpointHook
+from mmengine.optim.optimizer.optimizer_wrapper import OptimWrapper
+
+from mmpretrain.engine.optimizers.lars import LARS
 from mmpretrain.models.backbones.resnet import ResNet
-from mmpretrain.models.necks.nonlinear_neck import NonLinearNeck
 from mmpretrain.models.heads.contrastive_head import ContrastiveHead
 from mmpretrain.models.losses.cross_entropy_loss import CrossEntropyLoss
-from mmengine.optim.optimizer.optimizer_wrapper import OptimWrapper
-from mmpretrain.engine.optimizers.lars import LARS
-from mmengine.hooks.checkpoint_hook import CheckpointHook
+from mmpretrain.models.necks.nonlinear_neck import NonLinearNeck
+from mmpretrain.models.selfsup.simclr import SimCLR
 
 # dataset settings
 train_dataloader.merge(dict(batch_size=256))

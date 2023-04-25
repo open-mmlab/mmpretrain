@@ -3,11 +3,12 @@ if '_base_':
     from .._base_.models.mae_vit_base_p16 import *
     from .._base_.datasets.imagenet_bs512_mae import *
     from .._base_.default_runtime import *
-from mmengine.optim.optimizer.amp_optimizer_wrapper import AmpOptimWrapper
-from torch.optim.adamw import AdamW
-from mmengine.optim.scheduler.lr_scheduler import LinearLR, CosineAnnealingLR
-from mmengine.runner.loops import EpochBasedTrainLoop
+
 from mmengine.hooks.checkpoint_hook import CheckpointHook
+from mmengine.optim.optimizer.amp_optimizer_wrapper import AmpOptimWrapper
+from mmengine.optim.scheduler.lr_scheduler import CosineAnnealingLR, LinearLR
+from mmengine.runner.loops import EpochBasedTrainLoop
+from torch.optim.adamw import AdamW
 
 # optimizer wrapper
 optim_wrapper = dict(
