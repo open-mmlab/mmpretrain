@@ -398,8 +398,8 @@ To implement your own dataset class for some special formats, please see the [Ad
 
 The following datawrappers are supported in MMEngine, you can refer to {external+mmengine:doc}`MMEngine tutorial <advanced_tutorials/basedataset>` to learn how to use it.
 
-- [ConcatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#concatdataset)
-- [RepeatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#repeatdataset)
-- [ClassBalanced](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#classbalanceddataset)
+- {external:py:class}`~mmengine.dataset.ConcatDataset`
+- {external:py:class}`~mmengine.dataset.RepeatDataset`
+- {external:py:class}`~mmengine.dataset.ClassBalancedDataset`
 
 The MMPretrain also support [KFoldDataset](mmpretrain.datasets.KFoldDataset), please use it with `tools/kfold-cross-valid.py`.
