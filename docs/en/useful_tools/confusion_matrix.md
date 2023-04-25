@@ -45,7 +45,7 @@ python tools/analysis_tools/confusion_matrix.py \
 
 ```python
 >>> import torch
->>> from mmcls.evaluation import ConfusionMatrix
+>>> from mmpretrain.evaluation import ConfusionMatrix
 >>> y_pred = [0, 1, 1, 3]
 >>> y_true = [0, 2, 1, 3]
 >>> ConfusionMatrix.calculate(y_pred, y_true, num_classes=4)
@@ -66,11 +66,11 @@ tensor([[1, 0, 0, 0],
 
 ```python
 >>> import torch
->>> from mmcls.evaluation import ConfusionMatrix
->>> from mmcls.structures import ClsDataSample
+>>> from mmpretrain.evaluation import ConfusionMatrix
+>>> mmpretrain.structures import DataSample
 >>> from mmengine.evaluator import Evaluator
 >>> data_samples = [
-...     ClsDataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
+...     DataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
 ...     for i in range(1000)
 ... ]
 >>> evaluator = Evaluator(metrics=ConfusionMatrix())
