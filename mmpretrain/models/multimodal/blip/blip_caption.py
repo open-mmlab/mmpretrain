@@ -73,7 +73,7 @@ class BLIPCaptioner(BaseModel):
 
     def forward(
         self,
-        inputs: torch.Tensor,
+        images: torch.Tensor,
         data_samples: Optional[List] = None,
         mode: str = 'loss',
     ):
@@ -89,8 +89,9 @@ class BLIPCaptioner(BaseModel):
         optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
-            inputs (torch.Tensor): pre_processed img tensor  (N, C, ...).
-            data_samples (List[DataSample], optional):
+            images (torch.Tensor): pre_processed img tensor  (N, C, ...).
+            data_samples (List[DataSample], optional): Data samples with
+                additional infos.
             mode (str): Return what kind of value. Defaults to 'loss'.
 
         Returns:
@@ -98,17 +99,17 @@ class BLIPCaptioner(BaseModel):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'loss':
-            return self.loss(inputs, data_samples)
+            return self.loss(images, data_samples)
         elif mode == 'predict':
-            return self.predict(inputs, data_samples)
+            return self.predict(images, data_samples)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    def predict(self, inputs, data_samples=None, **kwargs):
+    def predict(self, images, data_samples=None, **kwargs):
         """Predict captions from a batch of inputs.
 
         Args:
-            inputs (torch.Tensor): The input tensor with shape
+            images (torch.Tensor): The input images tensor with shape
                 (N, C, ...) in general.
             data_samples (List[DataSample], optional): The annotation
                 data of every samples. Defaults to None.
@@ -118,10 +119,8 @@ class BLIPCaptioner(BaseModel):
         Returns:
             List[DataSample]: Return list of data samples.
         """
-        imgs = inputs['imgs']
-
         # prepare inputs for decoder generation.
-        image_embeds = self.visual_encoder(imgs)[0]
+        image_embeds = self.visual_encoder(images)[0]
         image_embeds = torch.repeat_interleave(image_embeds, self.num_captions,
                                                0)
 
@@ -157,11 +156,11 @@ class BLIPCaptioner(BaseModel):
 
         return out_data_samples
 
-    def loss(self, inputs, data_samples):
-        """Calculate losses from a batch of inputs and data samples.
+    def loss(self, images, data_samples):
+        """Calculate losses from a batch of images and data samples.
 
         Args:
-            inputs (torch.Tensor): The input tensor with shape
+            images (torch.Tensor): The input images tensor with shape
                 (N, C, ...) in general.
             data_samples (List[ImageTextDataSample]): The annotation data of
                 every samples.
@@ -169,9 +168,7 @@ class BLIPCaptioner(BaseModel):
         Returns:
             dict[str, Tensor]: a dictionary of loss components.
         """
-        imgs = inputs['imgs']
-
-        image_embeds = self.visual_encoder(imgs)[0]
+        image_embeds = self.visual_encoder(images)[0]
         raw_text = [self.prompt + ds.gt_caption for ds in data_samples]
 
         text = self.tokenizer(
