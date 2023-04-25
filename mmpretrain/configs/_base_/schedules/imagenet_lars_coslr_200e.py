@@ -1,7 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmengine.optim.optimizer.optimizer_wrapper import OptimWrapper
-from mmpretrain.engine.optimizers.lars import LARS
-from mmengine.optim.scheduler.lr_scheduler import LinearLR, CosineAnnealingLR
+from mmengine.optim.scheduler.lr_scheduler import CosineAnnealingLR, LinearLR
 from mmengine.runner.loops import EpochBasedTrainLoop
+
+from mmpretrain.engine.optimizers.lars import LARS
+
 # optimizer wrapper
 optim_wrapper = dict(
     type=OptimWrapper,
