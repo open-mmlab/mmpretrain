@@ -9,8 +9,8 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
-                     to_2tuple)
+from ..utils import (LayerScale, MultiheadAttention, build_norm_layer,
+                     resize_pos_embed, to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -63,6 +63,9 @@ class TransformerEncoderLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
 
+        self.ls1 = LayerScale(
+            dim, init_values=init_values) if init_values else nn.Identity()
+
         self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
         self.ffn = FFN(
@@ -72,6 +75,9 @@ class TransformerEncoderLayer(BaseModule):
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
+
+        self.ls2 = LayerScale(
+            dim, init_values=init_values) if init_values else nn.Identity()
 
     @property
     def norm1(self):
