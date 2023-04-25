@@ -13,7 +13,7 @@ from mmengine.runner.loops import EpochBasedTrainLoop
 from mmengine.hooks.checkpoint_hook import CheckpointHook
 
 # dataset settings
-train_dataloader.merge(dict(batch_size=2))
+train_dataloader.merge(dict(batch_size=256))
 
 # model settings
 model.merge(
