@@ -61,14 +61,14 @@ class OxfordIIITPet(BaseDataset):
             f'Split {split} is not in default splits {splits}'
         self.split = split
 
+        self.backend = get_file_backend(data_root, enable_singleton=True)
         if split == 'trainval':
-            ann_file = 'annotations/trainval.txt'
+            ann_file = self.backend.join_path('annotations', 'trainval.txt')
         else:
-            ann_file = 'annotations/test.txt'
+            ann_file = self.backend.join_path('annotations', 'test.txt')
 
         data_prefix = 'images'
         test_mode = split == 'test'
-        self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(OxfordIIITPet, self).__init__(
             ann_file=ann_file,

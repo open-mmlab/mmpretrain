@@ -184,18 +184,18 @@ class SUN397(BaseDataset):
     def __init__(self, data_root: str, split: str = 'train', **kwargs):
 
         splits = ['train', 'test']
-        if split == 'train':
-            ann_file = 'Partitions/Training_01.txt'
-        elif split == 'test':
-            ann_file = 'Partitions/Testing_01.txt'
-        else:
-            raise ValueError(
-                f'Split {split} is not in default splits {splits}')
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
         self.split = split
+
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+        if split == 'train':
+            ann_file = self.backend.join_path('Partitions', 'Training_01.txt')
+        else:
+            ann_file = self.backend.join_path('Partitions', 'Testing_01.txt')
 
         data_prefix = 'SUN397'
         test_mode = split == 'test'
-        self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(SUN397, self).__init__(
             ann_file=ann_file,

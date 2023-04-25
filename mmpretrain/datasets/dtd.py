@@ -67,11 +67,11 @@ class DTD(BaseDataset):
             f'Split {split} is not in default splits {splits}'
         self.split = split
 
-        ann_file = 'imdb/imdb.mat'
         data_prefix = 'images'
         test_mode = split == 'test'
 
         self.backend = get_file_backend(data_root, enable_singleton=True)
+        ann_file = self.backend.join_path('imdb', 'imdb.mat')
 
         super(DTD, self).__init__(
             ann_file=ann_file,

@@ -1714,7 +1714,7 @@ class TestCaltech101(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(ValueError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1801,7 +1801,7 @@ class TestFood101(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(ValueError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1892,7 +1892,7 @@ class TestSUN397(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(ValueError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)

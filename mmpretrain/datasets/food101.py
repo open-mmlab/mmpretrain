@@ -61,19 +61,18 @@ class Food101(BaseDataset):
     def __init__(self, data_root: str, split: str = 'train', **kwargs):
 
         splits = ['train', 'test']
-        if split == 'train':
-            ann_file = 'meta/train.txt'
-        elif split == 'test':
-            ann_file = 'meta/test.txt'
-        else:
-            raise ValueError(
-                f'Split {split} is not in default splits {splits}')
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
         self.split = split
+
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+        if split == 'train':
+            ann_file = self.backend.join_path('meta', 'train.txt')
+        else:
+            ann_file = self.backend.join_path('meta', 'test.txt')
 
         test_mode = split == 'test'
         data_prefix = 'images'
-
-        self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(Food101, self).__init__(
             ann_file=ann_file,

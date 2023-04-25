@@ -67,19 +67,19 @@ class Caltech101(BaseDataset):
     def __init__(self, data_root: str, split: str = 'train', **kwargs):
 
         splits = ['train', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
+        self.split = split
+
+        self.backend = get_file_backend(data_root, enable_singleton=True)
 
         if split == 'train':
-            ann_file = 'meta/train.txt'
-        elif split == 'test':
-            ann_file = 'meta/test.txt'
+            ann_file = self.backend.join_path('meta', 'train.txt')
         else:
-            raise ValueError(
-                f'Split {split} is not in default splits {splits}')
-        self.split = split
+            ann_file = self.backend.join_path('meta', 'test.txt')
 
         data_prefix = '101_ObjectCategories'
         test_mode = split == 'test'
-        self.backend = get_file_backend(data_root, enable_singleton=True)
 
         super(Caltech101, self).__init__(
             ann_file=ann_file,
