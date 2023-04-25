@@ -21,7 +21,7 @@ class CIFAR10(BaseDataset):
     https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py
 
     Args:
-        data_root (str): The root directory the Dataset.
+        data_root (str): The root directory of the CIFAR Dataset.
         split (str, optional): The dataset split, supports "train" and "test".
             Default to "train".
         metainfo (dict, optional): Meta information for dataset, such as
