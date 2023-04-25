@@ -6,7 +6,7 @@ MMPretrain provides `tools/analysis_tools/confusion_matrix.py` tool to visualize
 
 **Command**：
 
-```bash
+```shell
 python tools/analysis_tools/confusion_matrix.py \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
@@ -30,7 +30,7 @@ python tools/analysis_tools/confusion_matrix.py \
 
 **Examples of use**:
 
-```python
+```shell
 python tools/analysis_tools/confusion_matrix.py \
     configs/resnet/resnet50_8xb16_cifar10.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \

@@ -6,7 +6,7 @@ MMPretrain 提供 `tools/analysis_tools/confusion_matrix.py` 工具来分析预�
 
 **命令行**：
 
-```bash
+```shell
 python tools/analysis_tools/confusion_matrix.py \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
@@ -29,7 +29,7 @@ python tools/analysis_tools/confusion_matrix.py \
 
 **使用示例**：
 
-```python
+```shell
 python tools/analysis_tools/confusion_matrix.py \
     configs/resnet/resnet50_8xb16_cifar10.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
@@ -44,7 +44,7 @@ python tools/analysis_tools/confusion_matrix.py \
 
 ```python
 >>> import torch
->>> from mmcls.evaluation import ConfusionMatrix
+>>> from mmpretrain.evaluation import ConfusionMatrix
 >>> y_pred = [0, 1, 1, 3]
 >>> y_true = [0, 2, 1, 3]
 >>> ConfusionMatrix.calculate(y_pred, y_true, num_classes=4)
@@ -65,11 +65,11 @@ tensor([[1, 0, 0, 0],
 
 ```python
 >>> import torch
->>> from mmcls.evaluation import ConfusionMatrix
->>> from mmcls.structures import ClsDataSample
+>>> from mmpretrain.evaluation import ConfusionMatrix
+>>> mmpretrain.structures import DataSample
 >>> from mmengine.evaluator import Evaluator
 >>> data_samples = [
-...     ClsDataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
+...     DataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
 ...     for i in range(1000)
 ... ]
 >>> evaluator = Evaluator(metrics=ConfusionMatrix())
