@@ -1,14 +1,15 @@
-from mmpretrain.models.utils.data_preprocessor import SelfSupDataPreprocessor
-from mmpretrain.datasets.transforms.processing import ColorJitter, RandomResizedCrop
-from mmcv.transforms.processing import RandomGrayscale, RandomFlip
-from mmcv.transforms.wrappers import RandomApply
-from mmpretrain.datasets.transforms.auto_augment import GaussianBlur
-from mmcv.transforms.loading import LoadImageFromFile
-from mmpretrain.datasets.transforms.wrappers import MultiView
-from mmpretrain.datasets.transforms.formatting import PackInputs
+# Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.transforms import (LoadImageFromFile, RandomApply, RandomFlip,
+                             RandomGrayscale)
 from mmengine.dataset.sampler import DefaultSampler
 from mmengine.dataset.utils import default_collate
+
 from mmpretrain.datasets.imagenet import ImageNet
+from mmpretrain.datasets.transforms import (ColorJitter, GaussianBlur,
+                                            MultiView, PackInputs,
+                                            RandomResizedCrop)
+from mmpretrain.models.utils.data_preprocessor import SelfSupDataPreprocessor
+
 # dataset settings
 dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
@@ -51,7 +52,7 @@ train_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=32,
+    batch_size=2,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type=DefaultSampler, shuffle=True),
@@ -59,6 +60,6 @@ train_dataloader = dict(
     dataset=dict(
         type=ImageNet,
         data_root=data_root,
-        ann_file='meta/train.txt',
+        # ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline))
