@@ -130,18 +130,6 @@ Models:
     Converted From:
       Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_B_pt_in21k_medft_in21k_p14.pt
       Code: https://github.com/baaivision/EVA/tree/master/EVA-02
-  - Name: eva02-base-p16_in21k-pre_3rdparty_in21k
-    Metadata:
-      FLOPs: 17605423104
-      Parameters: 85858560
-      Training Data:
-        - ImageNet-21k
-    In Collection: EVA02
-    Weights: null
-    Config: configs/eva02/eva02_base_p16_headless.py
-    Converted From:
-      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_B_pt_in21k_p14to16.pt
-      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
   - Name: eva02-large-p14_in21k-pre_3rdparty_in21k
     Metadata:
       FLOPs: 81146703792
@@ -194,18 +182,6 @@ Models:
     Config: configs/eva02/eva02_large_p14_8xb16_in1k.py
     Converted From:
       Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_L_pt_in21k_medft_in21k_p14.pt
-      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
-  - Name: eva02-large-p16_in21k-pre_3rdparty_in21k
-    Metadata:
-      FLOPs: 61656957552
-      Parameters: 303414208
-      Training Data:
-        - ImageNet-21k
-    In Collection: EVA02
-    Weights: null
-    Config: configs/eva02/eva02_large_p16_headless.py
-    Converted From:
-      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_L_pt_in21k_p14to16.pt
       Code: https://github.com/baaivision/EVA/tree/master/EVA-02
   - Name: eva02-large-p14_m38m-pre_3rdparty_m38m
     Metadata:
@@ -260,16 +236,4 @@ Models:
     Config: configs/eva02/eva02_large_p14_8xb16_in1k.py
     Converted From:
       Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_L_pt_m38m_medft_in21k_p14.pt
-      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
-  - Name: eva02-large-p16_m38m-pre_3rdparty_m38m
-    Metadata:
-      FLOPs: 61656957552
-      Parameters: 303414208
-      Training Data:
-        - Merged-38M
-    In Collection: EVA02
-    Weights: null
-    Config: configs/eva02/eva02_large_p16_headless.py
-    Converted From:
-      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_L_pt_m38m_p14to16.pt
       Code: https://github.com/baaivision/EVA/tree/master/EVA-02
