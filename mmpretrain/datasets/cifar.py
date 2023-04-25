@@ -21,13 +21,11 @@ class CIFAR10(BaseDataset):
     https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py
 
     Args:
-        data_prefix (str): Prefix for data.
-        test_mode (bool): ``test_mode=True`` means in test phase.
-            It determines to use the training set or test set.
+        data_root (str): The root directory the Dataset.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str): The root directory for ``data_prefix``.
-            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
@@ -56,12 +54,28 @@ class CIFAR10(BaseDataset):
     METAINFO = {'classes': CIFAR10_CATEGORIES}
 
     def __init__(self,
-                 data_prefix: str,
-                 test_mode: bool,
-                 metainfo: Optional[dict] = None,
                  data_root: str = '',
+                 split: str = 'train',
+                 metainfo: Optional[dict] = None,
                  download: bool = True,
+                 data_prefix: str = '',
+                 test_mode: bool = False,
                  **kwargs):
+
+        splits = ['train', 'test']
+        assert split in splits, \
+            f'Split {split} is not in default splits {splits}'
+        self.split = split
+
+        if split == 'train' and test_mode:
+            raise RuntimeWarning(
+                'split="train" but test_mode=True. The training set will be used.\
+                Please set split="test" (test) or test_mode=False (train).')
+
+        if not data_root and not data_prefix:
+            raise RuntimeError('Please set ``data_root`` or ``data_prefix`` \
+                to specify the dataset path')
+
         self.download = download
         super().__init__(
             # The CIFAR dataset doesn't need specify annotation file
@@ -96,7 +110,7 @@ class CIFAR10(BaseDataset):
             'Download failed or shared storage is unavailable. Please ' \
             f'download the dataset manually through {self.url}.'
 
-        if not self.test_mode:
+        if self.split == 'train':
             downloaded_list = self.train_list
         else:
             downloaded_list = self.test_list

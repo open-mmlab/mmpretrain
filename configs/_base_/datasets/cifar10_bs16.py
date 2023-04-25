@@ -23,8 +23,8 @@ train_dataloader = dict(
     num_workers=2,
     dataset=dict(
         type=dataset_type,
-        data_prefix='data/cifar10',
-        test_mode=False,
+        data_root='data/cifar10',
+        split='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -34,8 +34,8 @@ val_dataloader = dict(
     num_workers=2,
     dataset=dict(
         type=dataset_type,
-        data_prefix='data/cifar10/',
-        test_mode=True,
+        data_root='data/cifar10/',
+        split='test',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )

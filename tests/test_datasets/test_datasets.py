@@ -385,12 +385,11 @@ class TestCIFAR10(TestBaseDataset):
 
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
-        data_prefix = tmpdir.name
-        cls.DEFAULT_ARGS = dict(
-            data_prefix=data_prefix, pipeline=[], test_mode=False)
+        cls.root = tmpdir.name
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
 
         dataset_class = DATASETS.get(cls.DATASET_TYPE)
-        base_folder = osp.join(data_prefix, dataset_class.base_folder)
+        base_folder = osp.join(cls.root, dataset_class.base_folder)
         os.mkdir(base_folder)
 
         cls.fake_imgs = np.random.randint(
@@ -426,6 +425,38 @@ class TestCIFAR10(TestBaseDataset):
     def test_initialize(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
+        # Test with invalid split
+        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test with valid split
+        splits = ['train', 'test']
+        test_modes = [False, True]
+
+        for split in splits:
+            for test_mode in test_modes:
+                cfg = {**self.DEFAULT_ARGS}
+                cfg['split'] = split
+                cfg['test_mode'] = test_mode
+
+                if split == 'train' and test_mode:
+                    with self.assertRaisesRegex(RuntimeWarning, 'Please set'):
+                        dataset = dataset_class(**cfg)
+                        self.assertEqual(dataset.split, split)
+                        self.assertEqual(dataset.test_mode, test_mode)
+                        self.assertEqual(dataset.data_root, self.root)
+                else:
+                    dataset = dataset_class(**cfg)
+                    self.assertEqual(dataset.split, split)
+                    self.assertEqual(dataset.test_mode, test_mode)
+                    self.assertEqual(dataset.data_root, self.root)
+
+        # Test without dataset path
+        with self.assertRaisesRegex(RuntimeError, 'specify the dataset path'):
+            dataset = dataset_class()
+
         # Test overriding metainfo by `metainfo` argument
         cfg = {**self.DEFAULT_ARGS, 'metainfo': {'classes': ('bus', 'car')}}
         dataset = dataset_class(**cfg)
@@ -460,8 +491,8 @@ class TestCIFAR10(TestBaseDataset):
         np.testing.assert_equal(data_info['img'], fake_img)
         np.testing.assert_equal(data_info['gt_label'], self.fake_labels[0])
 
-        # Test with test_mode=True
-        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        # Test with split='test'
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 2)
 
@@ -487,7 +518,7 @@ class TestCIFAR10(TestBaseDataset):
         # Test automatically download
         with patch('mmpretrain.datasets.cifar.download_and_extract_archive'
                    ) as mock:
-            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'split': 'test'}
             dataset = dataset_class(**cfg)
             dataset.test_list = [['invalid_batch', None]]
             with self.assertRaisesRegex(AssertionError, 'Download failed'):
@@ -501,7 +532,7 @@ class TestCIFAR10(TestBaseDataset):
         with self.assertRaisesRegex(RuntimeError, '`download=True`'):
             cfg = {
                 **self.DEFAULT_ARGS, 'lazy_init': True,
-                'test_mode': True,
+                'split': 'test',
                 'download': False
             }
             dataset = dataset_class(**cfg)
@@ -867,7 +898,6 @@ class TestCUB(TestBaseDataset):
         cls.image_folder = 'images'
         cls.image_class_labels_file = 'image_class_labels.txt'
         cls.train_test_split_file = 'train_test_split.txt'
-        # cls.train_test_split_file2 = 'split2.txt'
 
         cls.DEFAULT_ARGS = dict(
             data_root=cls.root, split='train', test_mode=False)

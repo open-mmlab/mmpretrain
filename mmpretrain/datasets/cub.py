@@ -39,10 +39,6 @@ class CUB(BaseDataset):
         data_root (str): The root directory for CUB-200-2011 dataset.
         split (str, optional): The dataset split, supports "train" and "test".
             Default to "train".
-        test_mode (bool): In the previous version, it determines to use the
-            training set (``test_mode=False``) or test set (``test_mode=True``).
-            Please use ``split`` to specify dataset split. Default to False.
-
 
     Examples:
         >>> from mmpretrain.datasets import CUB
