@@ -2,7 +2,7 @@
 from typing import Dict, List, Optional, Tuple
 
 import torch
-from mmengine.model import BaseModule
+import torch.nn as nn
 from mmengine.runner.checkpoint import _load_checkpoint
 
 from mmpretrain.registry import MODELS
@@ -13,7 +13,7 @@ from .mae import MAEViT
 
 
 @MODELS.register_module()
-class CLIPGenerator(BaseModule):
+class CLIPGenerator(nn.Module):
     """Get the features and attention from the last layer of CLIP.
 
     This module is used to generate target features in masked image modeling.
@@ -25,10 +25,6 @@ class CLIPGenerator(BaseModule):
     def __init__(self, tokenizer_path: str) -> None:
         super().__init__()
         self.tokenizer_path = tokenizer_path
-        self.tokenizer = None
-
-    def init_weights(self):
-        super().init_weights()
         self.tokenizer = build_clip_model(
             _load_checkpoint(self.tokenizer_path), False)
 
