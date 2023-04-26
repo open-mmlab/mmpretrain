@@ -9,8 +9,8 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
-                     to_2tuple, SwiGLUFFNFused)
+from ..utils import (MultiheadAttention, SwiGLUFFNFused, build_norm_layer,
+                     resize_pos_embed, to_2tuple)
 from .base_backbone import BaseBackbone
 
 

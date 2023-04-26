@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional
 
 import torch
@@ -9,7 +10,7 @@ from .layer_scale import LayerScale
 
 class SwiGLUFFN(nn.Module):
     """SwiGLU FFN layer.
-    
+
     Modified from https://github.com/facebookresearch/dinov2/blob/main/dinov2/layers/swiglu_ffn.py
     """  # noqa
 
@@ -49,7 +50,7 @@ class SwiGLUFFN(nn.Module):
 
 class SwiGLUFFNFused(SwiGLUFFN):
     """SwiGLU FFN layer with fusing.
-    
+
     Modified from https://github.com/facebookresearch/dinov2/blob/main/dinov2/layers/swiglu_ffn.py
     """  # noqa
 
