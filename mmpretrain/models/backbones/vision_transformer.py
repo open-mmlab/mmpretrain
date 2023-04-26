@@ -9,8 +9,8 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
-from ..utils import (LayerScale, MultiheadAttention, build_norm_layer,
-                     resize_pos_embed, to_2tuple)
+from ..utils import (MultiheadAttention, build_norm_layer, resize_pos_embed,
+                     to_2tuple, SwiGLUFFNFused)
 from .base_backbone import BaseBackbone
 
 
@@ -31,6 +31,7 @@ class TransformerEncoderLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        ffn_type (str): Select the type of ffn layers. Defaults to 'origin'.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
@@ -49,6 +50,7 @@ class TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
+                 ffn_type='origin',
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
@@ -64,22 +66,27 @@ class TransformerEncoderLayer(BaseModule):
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            qkv_bias=qkv_bias)
-
-        self.gamma1 = LayerScale(
-            dim=embed_dims, layer_scale_init_value=layer_scale_init_value
-        ) if layer_scale_init_value else nn.Identity()
+            qkv_bias=qkv_bias,
+            layer_scale_init_value=layer_scale_init_value)
 
         self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
-        self.ffn = FFN(
-            embed_dims=embed_dims,
-            feedforward_channels=feedforward_channels,
-            num_fcs=num_fcs,
-            ffn_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg,
-            layer_scale_init_value=layer_scale_init_value)
+        if ffn_type == 'origin':
+            self.ffn = FFN(
+                embed_dims=embed_dims,
+                feedforward_channels=feedforward_channels,
+                num_fcs=num_fcs,
+                ffn_drop=drop_rate,
+                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+                act_cfg=act_cfg,
+                layer_scale_init_value=layer_scale_init_value)
+        elif ffn_type == 'swiglu_fused':
+            self.ffn = SwiGLUFFNFused(
+                embed_dims=embed_dims,
+                feedforward_channels=feedforward_channels,
+                layer_scale_init_value=layer_scale_init_value)
+        else:
+            raise NotImplementedError
 
     @property
     def norm1(self):
@@ -97,7 +104,7 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = x + self.gamma1(self.attn(self.ln1(x)))
+        x = x + self.attn(self.ln1(x))
         x = self.ffn(self.ln2(x), identity=x)
         return x
 
@@ -155,6 +162,8 @@ class VisionTransformer(BaseBackbone):
             -1 means not freezing any parameters. Defaults to -1.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
+        layer_scale_init_value (float or torch.Tensor): Init value of layer
+            scale. Defaults to 0.
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
