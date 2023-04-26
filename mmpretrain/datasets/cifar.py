@@ -6,6 +6,7 @@ import mmengine.dist as dist
 import numpy as np
 from mmengine.fileio import (LocalBackend, exists, get, get_file_backend,
                              join_path)
+from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -68,9 +69,11 @@ class CIFAR10(BaseDataset):
         self.split = split
 
         if split == 'train' and test_mode:
-            raise RuntimeWarning(
-                'split="train" but test_mode=True. The training set will be used.\
-                Please set split="test" (test) or test_mode=False (train).')
+            logger = MMLogger.get_current_instance()
+            logger.warning(
+                'split="train" but test_mode=True. The training set '
+                'will be used. Please set split="test" (test) or '
+                'test_mode=False (train).')
 
         if not data_root and not data_prefix:
             raise RuntimeError('Please set ``data_root`` or ``data_prefix`` \

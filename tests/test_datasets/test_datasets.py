@@ -442,11 +442,13 @@ class TestCIFAR10(TestBaseDataset):
                 cfg['test_mode'] = test_mode
 
                 if split == 'train' and test_mode:
-                    with self.assertRaisesRegex(RuntimeWarning, 'Please set'):
+                    logger = MMLogger.get_current_instance()
+                    with self.assertLogs(logger, 'WARN') as log:
                         dataset = dataset_class(**cfg)
                         self.assertEqual(dataset.split, split)
                         self.assertEqual(dataset.test_mode, test_mode)
                         self.assertEqual(dataset.data_root, self.root)
+                    self.assertIn('Please set', log.output[0])
                 else:
                     dataset = dataset_class(**cfg)
                     self.assertEqual(dataset.split, split)
@@ -943,13 +945,15 @@ class TestCUB(TestBaseDataset):
                 cfg['test_mode'] = test_mode
 
                 if split == 'train' and test_mode:
-                    with self.assertRaisesRegex(RuntimeWarning, 'Please set'):
-                        dataset = dataset_class(**cfg)
+                    logger = MMLogger.get_current_instance()
+                    with self.assertLogs(logger, 'WARN') as log:
+                        dataset = dataset = dataset_class(**cfg)
                         self.assertEqual(dataset.split, split)
                         self.assertEqual(dataset.test_mode, test_mode)
                         self.assertEqual(dataset.data_root, self.root)
                         self.assertEqual(dataset.ann_file,
                                          osp.join(self.root, self.ann_file))
+                    self.assertIn('Please set', log.output[0])
                 else:
                     dataset = dataset_class(**cfg)
                     self.assertEqual(dataset.split, split)

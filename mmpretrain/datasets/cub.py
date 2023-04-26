@@ -2,6 +2,7 @@
 from typing import List
 
 from mmengine import get_file_backend, list_from_file
+from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -72,9 +73,11 @@ class CUB(BaseDataset):
         self.split = split
 
         if split == 'train' and test_mode:
-            raise RuntimeWarning(
-                'split="train" but test_mode=True. The training set will be used.\
-                Please set split="test" (test) or test_mode=False (train).')
+            logger = MMLogger.get_current_instance()
+            logger.warning(
+                'split="train" but test_mode=True. The training set '
+                'will be used. Please set split="test" (test) or '
+                'test_mode=False (train).')
 
         ann_file = 'images.txt'
         data_prefix = 'images'
