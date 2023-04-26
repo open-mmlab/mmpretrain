@@ -23,6 +23,7 @@ from .position_encoding import (ConditionalPositionEncoding,
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
 from .vector_quantizer import NormEMAVectorQuantizer
+from .swiglu_ffn import SwiGLUFFN, SwiGLUFFNFused
 
 __all__ = [
     'channel_shuffle',
@@ -69,4 +70,6 @@ __all__ = [
     'VideoDataPreprocessor',
     'CosineEMA',
     'ResLayerExtraNorm',
+    'SwiGLUFFN',
+    'SwiGLUFFNFused',
 ]
