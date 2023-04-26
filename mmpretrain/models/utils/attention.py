@@ -528,6 +528,7 @@ class MultiheadAttention(BaseModule):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        use_layer_scale (bool): Whether to use layer scale. Defaults to False.
         layer_scale_init_value (float or torch.Tensor): Init value of layer
             scale. Defaults to 0.
         init_cfg (dict, optional): The Config for initialization.
@@ -545,6 +546,7 @@ class MultiheadAttention(BaseModule):
                  qk_scale=None,
                  proj_bias=True,
                  v_shortcut=False,
+                 use_layer_scale=False,
                  layer_scale_init_value=0.,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
@@ -569,7 +571,8 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        if layer_scale_init_value > 0:
+        if use_layer_scale or layer_scale_init_value > 0:
+            layer_scale_init_value = layer_scale_init_value or 1e-5
             self.gamma1 = LayerScale(
                 embed_dims, layer_scale_init_value=layer_scale_init_value)
         else:
