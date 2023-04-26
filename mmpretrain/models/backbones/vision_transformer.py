@@ -21,6 +21,8 @@ class TransformerEncoderLayer(BaseModule):
         embed_dims (int): The feature dimension
         num_heads (int): Parallel attention heads
         feedforward_channels (int): The hidden dimension for FFNs
+        layer_scale_init_value (float or torch.Tensor): Init value of layer
+            scale. Defaults to 0.
         drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Defaults to 0.
         attn_drop_rate (float): The drop out rate for attention output weights.
@@ -41,6 +43,7 @@ class TransformerEncoderLayer(BaseModule):
                  embed_dims,
                  num_heads,
                  feedforward_channels,
+                 layer_scale_init_value=0.,
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
@@ -63,8 +66,9 @@ class TransformerEncoderLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
 
-        self.ls1 = LayerScale(
-            dim, init_values=init_values) if init_values else nn.Identity()
+        self.gamma1 = LayerScale(
+            dim=embed_dims, layer_scale_init_value=layer_scale_init_value
+        ) if layer_scale_init_value else nn.Identity()
 
         self.ln2 = build_norm_layer(norm_cfg, self.embed_dims)
 
@@ -74,10 +78,8 @@ class TransformerEncoderLayer(BaseModule):
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg)
-
-        self.ls2 = LayerScale(
-            dim, init_values=init_values) if init_values else nn.Identity()
+            act_cfg=act_cfg,
+            layer_scale_init_value=layer_scale_init_value)
 
     @property
     def norm1(self):
@@ -95,7 +97,7 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = x + self.attn(self.ln1(x))
+        x = x + self.gamma1(self.attn(self.ln1(x)))
         x = self.ffn(self.ln2(x), identity=x)
         return x
 
@@ -209,7 +211,7 @@ class VisionTransformer(BaseBackbone):
                 'feedforward_channels': 192 * 4
             }),
         **dict.fromkeys(
-            ['deit-s', 'deit-small'], {
+            ['deit-s', 'deit-small', 'dinov2-s', 'dinov2-small'], {
                 'embed_dims': 384,
                 'num_layers': 12,
                 'num_heads': 6,
@@ -221,6 +223,13 @@ class VisionTransformer(BaseBackbone):
                 'num_layers': 12,
                 'num_heads': 12,
                 'feedforward_channels': 768 * 4
+            }),
+        **dict.fromkeys(
+            ['dinov2-g', 'dinov2-giant'], {
+                'embed_dims': 1536,
+                'num_layers': 40,
+                'num_heads': 24,
+                'feedforward_channels': 6144
             }),
     }
     num_extra_tokens = 1  # class token
@@ -241,6 +250,7 @@ class VisionTransformer(BaseBackbone):
                  with_cls_token=True,
                  frozen_stages=-1,
                  interpolate_mode='bicubic',
+                 layer_scale_init_value=0.,
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
                  pre_norm=False,
@@ -328,6 +338,7 @@ class VisionTransformer(BaseBackbone):
                 num_heads=self.arch_settings['num_heads'],
                 feedforward_channels=self.
                 arch_settings['feedforward_channels'],
+                layer_scale_init_value=layer_scale_init_value,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
