@@ -1,5 +1,7 @@
 # DINOv2
+
 > [DINOv2: Learning Robust Visual Features without Supervision](https://arxiv.org/abs/2304.07193)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -29,23 +31,23 @@ feats = model.extract_feat(inputs)
 print(type(feats))
 ```
 
-
 <!-- [TABS-END] -->
 
 ## Models and results
 
 ### Pretrained models
 
-| Model                                 | Params (M) | Flops (G) |                     Config                     |                                                        Download                                                        |
-| :------------------------------------ | :--------: | :-------: | :--------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------: |
+| Model                                 | Params (M) | Flops (G) |                     Config                     |                                              Download                                              |
+| :------------------------------------ | :--------: | :-------: | :--------------------------------------------: | :------------------------------------------------------------------------------------------------: |
 | `vit-small-p14_dinov2-pre_3rdparty`\* |   22.06    |   46.76   | [config](vit-small-p14_dinov2-pre_headless.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-small-p14_dinov2-pre_3rdparty_20230426-5641ca5a.pth) |
-| `vit-base-p14_dinov2-pre_3rdparty`\*  |   86.58    |  152.00   | [config](vit-base-p14_dinov2-pre_headless.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-base-p14_dinov2-pre_3rdparty_20230426-ba246503.pth)  |
+| `vit-base-p14_dinov2-pre_3rdparty`\*  |   86.58    |  152.00   | [config](vit-base-p14_dinov2-pre_headless.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-base-p14_dinov2-pre_3rdparty_20230426-ba246503.pth) |
 | `vit-large-p14_dinov2-pre_3rdparty`\* |   304.00   |  507.00   | [config](vit-large-p14_dinov2-pre_headless.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-large-p14_dinov2-pre_3rdparty_20230426-f3302d9e.pth) |
 | `vit-giant-p14_dinov2-pre_3rdparty`\* |  1136.00   |  1784.00  | [config](vit-giant-p14_dinov2-pre_headless.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-giant-p14_dinov2-pre_3rdparty_20230426-2934a630.pth) |
 
-*Models with \* are converted from the [official repo](https://github.com/facebookresearch/dinov2). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/dinov2). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
+
 ```bibtex
 @misc{oquab2023dinov2,
   title={DINOv2: Learning Robust Visual Features without Supervision},
@@ -54,4 +56,3 @@ print(type(feats))
   year={2023}
 }
 ```
-

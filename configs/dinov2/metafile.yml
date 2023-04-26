@@ -40,7 +40,7 @@ Models:
     Results: null
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-base-p14_dinov2-pre_3rdparty_20230426-ba246503.pth
     Config: configs/dinov2/vit-base-p14_dinov2-pre_headless.py
-    Converted From: 
+    Converted From:
       Weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_pretrain.pth
       Code: https://github.com/facebookresearch/dinov2
 
