@@ -571,7 +571,7 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        if use_layer_scale or layer_scale_init_value > 0:
+        if use_layer_scale or (layer_scale_init_value > 0):
             layer_scale_init_value = layer_scale_init_value or 1e-5
             self.gamma1 = LayerScale(
                 embed_dims, layer_scale_init_value=layer_scale_init_value)
@@ -1063,9 +1063,19 @@ class PromptMultiheadAttention(MultiheadAttention):
                  v_shortcut: bool = False,
                  use_layer_scale: bool = False,
                  init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
-        super().__init__(embed_dims, num_heads, input_dims, attn_drop,
-                         proj_drop, dropout_layer, qkv_bias, qk_scale,
-                         proj_bias, v_shortcut, use_layer_scale, init_cfg)
+        super().__init__(
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            input_dims=input_dims,
+            attn_drop=attn_drop,
+            proj_drop=proj_drop,
+            dropout_layer=dropout_layer,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            proj_bias=proj_bias,
+            v_shortcut=v_shortcut,
+            use_layer_scale=use_layer_scale,
+            init_cfg=init_cfg)
         # no longer need qkv
         del self.qkv
 
