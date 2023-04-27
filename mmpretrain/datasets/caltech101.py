@@ -17,7 +17,7 @@ class Caltech101(BaseDataset):
 
     Caltech101 dataset directory: ::
 
-        Caltech101 (data_root)/
+        caltech-101
         ├── 101_ObjectCategories
         │   ├── class_x
         │   │   ├── xx1.jpg
@@ -26,6 +26,11 @@ class Caltech101(BaseDataset):
         │   ├── class_y
         │   │   ├── yy1.jpg
         │   │   ├── yy2.jpg
+        │   │   └── ...
+        │   └── ...
+        ├── Annotations
+        │   ├── class_x
+        │   │   ├── xx1.mat
         │   │   └── ...
         │   └── ...
         ├── meta
@@ -37,7 +42,7 @@ class Caltech101(BaseDataset):
     test set, you can use the train.txt and text.txt provided by us or
     create your own annotation files.
 
-    The download link for annotations: <https://xxxx>.
+    The download link for annotations: `<https://xxxx>`_.
 
     Args:
         data_root (str): The root directory for the Caltech101 dataset.
@@ -46,20 +51,18 @@ class Caltech101(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Caltech101
-        >>> train_cfg = dict(data_root='data/Caltech', split='train')
-        >>> train = Caltech101(**train_cfg)
-        >>> train
+        >>> train_dataset = Caltech101(data_root='data/caltech-101', split='train')
+        >>> train_dataset
         Dataset Caltech101
             Number of samples:  3060
             Number of categories:       102
-            Root of dataset:    data/Caltech
-        >>> test_cfg = dict(data_root='data/Caltech', split='test')
-        >>> test = Caltech101(**test_cfg)
-        >>> test
+            Root of dataset:    data/caltech-101
+        >>> test_dataset = Caltech101(data_root='data/caltech-101', split='test')
+        >>> test_dataset
         Dataset Caltech101
             Number of samples:  6728
             Number of categories:       102
-            Root of dataset:    data/Caltech
+            Root of dataset:    data/caltech-101
     """  # noqa: E501
 
     METAINFO = {'classes': CALTECH101_CATEGORIES}
@@ -68,7 +71,7 @@ class Caltech101(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         self.backend = get_file_backend(data_root, enable_singleton=True)

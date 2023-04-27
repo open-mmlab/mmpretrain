@@ -66,22 +66,6 @@ Base classes
 
 .. autoclass:: MultiLabelDataset
 
-Dataset Wrappers
-----------------
-
-.. autoclass:: KFoldDataset
-
-The dataset wrappers in the MMEngine can be directly used in MMPreTrain.
-
-.. list-table::
-
-   * - :class:`~mmengine.dataset.ConcatDataset`
-     - A wrapper of concatenated dataset.
-   * - :class:`~mmengine.dataset.RepeatDataset`
-     - A wrapper of repeated dataset.
-   * - :class:`~mmengine.dataset.ClassBalancedDataset`
-     - A wrapper of class balanced dataset.
-
 Caltech101
 ----------------
 
@@ -122,3 +106,19 @@ SUN397
 ----------------
 
 .. autoclass:: SUN397
+
+Dataset Wrappers
+----------------
+
+.. autoclass:: KFoldDataset
+
+The dataset wrappers in the MMEngine can be directly used in MMPreTrain.
+
+.. list-table::
+
+   * - :class:`~mmengine.dataset.ConcatDataset`
+     - A wrapper of concatenated dataset.
+   * - :class:`~mmengine.dataset.RepeatDataset`
+     - A wrapper of repeated dataset.
+   * - :class:`~mmengine.dataset.ClassBalancedDataset`
+     - A wrapper of class balanced dataset.

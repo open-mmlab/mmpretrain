@@ -17,7 +17,7 @@ class Flowers102(BaseDataset):
 
     Flowers102 dataset directory: ::
 
-        Flowers102 (data_root)/
+        Flowers102
         ├── jpg
         │   ├── image_00001.jpg
         │   ├── image_00002.jpg
@@ -33,15 +33,13 @@ class Flowers102(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Flowers102
-        >>> train_cfg = dict(data_root='data/Flowers102', split='trainval')
-        >>> train = Flowers102(**train_cfg)
-        >>> train
+        >>> train_dataset = Flowers102(data_root='data/Flowers102', split='trainval')
+        >>> train_dataset
         Dataset Flowers102
             Number of samples:  2040
             Root of dataset:    data/Flowers102
-        >>> test_cfg = dict(data_root='data/Flowers102', split='test')
-        >>> test = Flowers102(**test_cfg)
-        >>> test
+        >>> test_dataset = Flowers102(data_root='data/Flowers102', split='test')
+        >>> test_dataset
         Dataset Flowers102
             Number of samples:  6149
             Root of dataset:    data/Flowers102
@@ -50,7 +48,7 @@ class Flowers102(BaseDataset):
     def __init__(self, data_root: str, split: str = 'trainval', **kwargs):
         splits = ['train', 'val', 'trainval', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         ann_file = 'imagelabels.mat'

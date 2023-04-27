@@ -15,9 +15,9 @@ class OxfordIIITPet(BaseDataset):
     Support the `Oxford-IIIT Pets Dataset <https://www.robots.ox.ac.uk/~vgg/data/pets/>`_ Dataset.
     After downloading and decompression, the dataset directory structure is as follows.
 
-    OxfordIIITPet_CATEGORIES dataset directory: ::
+    Oxford-IIIT_Pets dataset directory: ::
 
-        OxfordIIITPet_CATEGORIES (data_root)/
+        Oxford-IIIT_Pets
         ├── images
         │   ├── Abyssinian_1.jpg
         │   ├── Abyssinian_2.jpg
@@ -36,16 +36,14 @@ class OxfordIIITPet(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import OxfordIIITPet
-        >>> train_cfg = dict(data_root='data/Oxford-IIIT_Pets', split='trainval')
-        >>> train = OxfordIIITPet(**train_cfg)
-        >>> train
+        >>> train_dataset = OxfordIIITPet(data_root='data/Oxford-IIIT_Pets', split='trainval')
+        >>> train_dataset
         Dataset OxfordIIITPet
             Number of samples:  3680
             Number of categories:       37
             Root of dataset:    data/Oxford-IIIT_Pets
-        >>> test_cfg = dict(data_root='data/Oxford-IIIT_Pets', split='test')
-        >>> test = OxfordIIITPet(**test_cfg)
-        >>> test
+        >>> test_dataset = OxfordIIITPet(data_root='data/Oxford-IIIT_Pets', split='test')
+        >>> test_dataset
         Dataset OxfordIIITPet
             Number of samples:  3669
             Number of categories:       37
@@ -58,7 +56,7 @@ class OxfordIIITPet(BaseDataset):
 
         splits = ['trainval', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         self.backend = get_file_backend(data_root, enable_singleton=True)

@@ -18,7 +18,7 @@ class DTD(BaseDataset):
 
     DTD dataset directory: ::
 
-        dtd (data_root)/
+        dtd
         ├── images
         │   ├── banded
         |   |   ├──banded_0002.jpg
@@ -42,16 +42,14 @@ class DTD(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import DTD
-        >>> train_cfg = dict(data_root='data/dtd', split='trainval')
-        >>> train = DTD(**train_cfg)
-        >>> train
+        >>> train_dataset = DTD(data_root='data/dtd', split='trainval')
+        >>> train_dataset
         Dataset DTD
             Number of samples:  3760
             Number of categories:       47
             Root of dataset:    data/dtd
-        >>> test_cfg = dict(data_root='data/dtd', split='test')
-        >>> test = DTD(**test_cfg)
-        >>> test
+        >>> test_dataset = DTD(data_root='data/dtd', split='test')
+        >>> test_dataset
         Dataset DTD
             Number of samples:  1880
             Number of categories:       47
@@ -64,7 +62,7 @@ class DTD(BaseDataset):
 
         splits = ['train', 'val', 'trainval', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         data_prefix = 'images'

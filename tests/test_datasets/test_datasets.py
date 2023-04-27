@@ -426,7 +426,7 @@ class TestCIFAR10(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test with invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -448,7 +448,7 @@ class TestCIFAR10(TestBaseDataset):
                         self.assertEqual(dataset.split, split)
                         self.assertEqual(dataset.test_mode, test_mode)
                         self.assertEqual(dataset.data_root, self.root)
-                    self.assertIn('Please set', log.output[0])
+                    self.assertIn('training set will be used', log.output[0])
                 else:
                     dataset = dataset_class(**cfg)
                     self.assertEqual(dataset.split, split)
@@ -929,7 +929,7 @@ class TestCUB(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test with invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -953,7 +953,7 @@ class TestCUB(TestBaseDataset):
                         self.assertEqual(dataset.data_root, self.root)
                         self.assertEqual(dataset.ann_file,
                                          osp.join(self.root, self.ann_file))
-                    self.assertIn('Please set', log.output[0])
+                    self.assertIn('training set will be used', log.output[0])
                 else:
                     dataset = dataset_class(**cfg)
                     self.assertEqual(dataset.split, split)
@@ -1190,7 +1190,7 @@ class TestFlowers102(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1294,7 +1294,7 @@ class TestOxfordIIITPet(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1378,7 +1378,7 @@ class TestDTD(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1454,11 +1454,14 @@ class TestFGVCAircraft(TestBaseDataset):
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
         cls.root = tmpdir.name
-        cls.train_file = 'images_variant_train.txt'
-        cls.val_file = 'images_variant_val.txt'
-        cls.trainval_file = 'images_variant_trainval.txt'
-        cls.test_file = 'images_variant_test.txt'
-        cls.image_folder = 'images'
+
+        os.makedirs(osp.join(cls.root, 'data'))
+
+        cls.train_file = osp.join('data', 'images_variant_train.txt')
+        cls.val_file = osp.join('data', 'images_variant_val.txt')
+        cls.trainval_file = osp.join('data', 'images_variant_trainval.txt')
+        cls.test_file = osp.join('data', 'images_variant_test.txt')
+        cls.image_folder = osp.join('data', 'images')
 
         cls.DEFAULT_ARGS = dict(data_root=cls.root, split='trainval')
 
@@ -1492,7 +1495,7 @@ class TestFGVCAircraft(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1500,8 +1503,7 @@ class TestFGVCAircraft(TestBaseDataset):
         # Test valid splits
         splits = ['train', 'val', 'trainval', 'test']
         ann_files = [
-            'images_variant_train.txt', 'images_variant_val.txt',
-            'images_variant_trainval.txt', 'images_variant_test.txt'
+            self.train_file, self.val_file, self.trainval_file, self.test_file
         ]
         for i, split in enumerate(splits):
             cfg = {**self.DEFAULT_ARGS}
@@ -1620,7 +1622,7 @@ class TestStanfordCars(TestBaseDataset):
 
         # Test first way
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1638,7 +1640,7 @@ class TestStanfordCars(TestBaseDataset):
         # Test second way
         os.rename(self.ann_file, self.ann_file + 'copy')
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1782,7 +1784,7 @@ class TestCaltech101(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1869,7 +1871,7 @@ class TestFood101(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)
@@ -1960,7 +1962,7 @@ class TestSUN397(TestBaseDataset):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test invalid split
-        with self.assertRaisesRegex(AssertionError, 'not in default splits'):
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
             cfg = {**self.DEFAULT_ARGS}
             cfg['split'] = 'unknown'
             dataset_class(**cfg)

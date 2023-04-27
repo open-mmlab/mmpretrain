@@ -17,7 +17,7 @@ class Food101(BaseDataset):
 
     Food101 dataset directory: ::
 
-        food-101 (data_root)/
+        food-101
         ├── images
         │   ├── class_x
         │   │   ├── xx1.jpg
@@ -40,16 +40,14 @@ class Food101(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import Food101
-        >>> train_cfg = dict(data_root='data/food-101', split='train')
-        >>> train = Food101(**train_cfg)
-        >>> train
+        >>> train_dataset = Food101(data_root='data/food-101', split='train')
+        >>> train_dataset
         Dataset Food101
             Number of samples:  75750
             Number of categories:       101
             Root of dataset:    data/food-101
-        >>> test_cfg = dict(data_root='data/food-101', split='test')
-        >>> test = Food101(**test_cfg)
-        >>> test
+        >>> test_dataset = Food101(data_root='data/food-101', split='test')
+        >>> test_dataset
         Dataset Food101
             Number of samples:  25250
             Number of categories:       101
@@ -62,7 +60,7 @@ class Food101(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         self.backend = get_file_backend(data_root, enable_singleton=True)

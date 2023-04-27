@@ -15,19 +15,20 @@ class FGVCAircraft(BaseDataset):
     Support the `FGVC_Aircraft Dataset <https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/>`_ Dataset.
     After downloading and decompression, the dataset directory structure is as follows.
 
-    FGVC Aircraft dataset directory: ::
+    FGVC_Aircraft dataset directory: ::
 
-        fgvc-aircraft-2013b/data (data_root)/
-        ├── images
-        │   ├── 1.jpg
-        │   ├── 2.jpg
-        │   └── ...
-        ├── images_variant_train.txt
-        ├── images_variant_test.txt
-        ├── images_variant_trainval.txt
-        ├── images_variant_val.txt
-        ├── variants.txt
-        └── ....
+        fgvc-aircraft-2013b
+        └── data
+            ├── images
+            │   ├── 1.jpg
+            │   ├── 2.jpg
+            │   └── ...
+            ├── images_variant_train.txt
+            ├── images_variant_test.txt
+            ├── images_variant_trainval.txt
+            ├── images_variant_val.txt
+            ├── variants.txt
+            └── ....
 
     Args:
         data_root (str): The root directory for FGVC_Aircraft dataset.
@@ -36,20 +37,18 @@ class FGVCAircraft(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import FGVCAircraft
-        >>> train_cfg = dict(data_root='data/fgvc-aircraft-2013b/data', split='trainval')
-        >>> train = FGVCAircraft(**train_cfg)
-        >>> train
+        >>> train_dataset = FGVCAircraft(data_root='data/fgvc-aircraft-2013b', split='trainval')
+        >>> train_dataset
         Dataset FGVCAircraft
             Number of samples:  6667
             Number of categories:       100
-            Root of dataset:    data/fgvc-aircraft-2013b/data
-        >>> test_cfg = dict(data_root='data/fgvc-aircraft-2013b/data', split='test')
-        >>> test = FGVCAircraft(**test_cfg)
-        >>> test
+            Root of dataset:    data/fgvc-aircraft-2013b
+        >>> test_dataset = FGVCAircraft(data_root='data/fgvc-aircraft-2013b', split='test')
+        >>> test_dataset
         Dataset FGVCAircraft
             Number of samples:  3333
             Number of categories:       100
-            Root of dataset:    data/fgvc-aircraft-2013b/data
+            Root of dataset:    data/fgvc-aircraft-2013b
     """  # noqa: E501
 
     METAINFO = {'classes': FGVCAIRCRAFT_CATEGORIES}
@@ -58,22 +57,14 @@ class FGVCAircraft(BaseDataset):
 
         splits = ['train', 'val', 'trainval', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
-        if split == 'train':
-            ann_file = 'images_variant_train.txt'
-        elif split == 'val':
-            ann_file = 'images_variant_val.txt'
-        elif split == 'test':
-            ann_file = 'images_variant_test.txt'
-        else:
-            ann_file = 'images_variant_trainval.txt'
-
-        data_prefix = 'images'
-        test_mode = split == 'test'
-
         self.backend = get_file_backend(data_root, enable_singleton=True)
+        ann_file = self.backend.join_path('data',
+                                          f'images_variant_{split}.txt')
+        data_prefix = self.backend.join_path('data', 'images')
+        test_mode = split == 'test'
 
         super(FGVCAircraft, self).__init__(
             ann_file=ann_file,

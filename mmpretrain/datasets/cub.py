@@ -20,7 +20,7 @@ class CUB(BaseDataset):
 
     CUB dataset directory: ::
 
-        CUB-200-2011 (data_root)/
+        CUB_200_2011
         ├── images
         │   ├── class_x
         │   │   ├── xx1.jpg
@@ -43,16 +43,14 @@ class CUB(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import CUB
-        >>> cub_train_cfg = dict(data_root='data/CUB_200_2011', split='train')
-        >>> cub_train = CUB(**cub_train_cfg)
-        >>> cub_train
+        >>> train_dataset = CUB(data_root='data/CUB_200_2011', split='train')
+        >>> train_dataset
         Dataset CUB
             Number of samples:  5994
             Number of categories:       200
             Root of dataset:    data/CUB_200_2011
-        >>> cub_test_cfg = dict(data_root='data/CUB_200_2011', split='test')
-        >>> cub_test = CUB(**cub_test_cfg)
-        >>> cub_test
+        >>> test_dataset = CUB(data_root='data/CUB_200_2011', split='test')
+        >>> test_dataset
         Dataset CUB
             Number of samples:  5794
             Number of categories:       200
@@ -69,15 +67,14 @@ class CUB(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
+        # To handle the BC-breaking
         if split == 'train' and test_mode:
             logger = MMLogger.get_current_instance()
-            logger.warning(
-                'split="train" but test_mode=True. The training set '
-                'will be used. Please set split="test" (test) or '
-                'test_mode=False (train).')
+            logger.warning('split="train" but test_mode=True. '
+                           'The training set will be used.')
 
         ann_file = 'images.txt'
         data_prefix = 'images'

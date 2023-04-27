@@ -19,18 +19,16 @@ class StanfordCars(BaseDataset):
 
     Stanford Cars dataset directory: ::
 
-        Stanford Cars (data_root)
+        Stanford_Cars
         ├── car_ims
         │   ├── 00001.jpg
         │   ├── 00002.jpg
         │   └── ...
         └── cars_annos.mat
 
-    or
+    or ::
 
-    Stanford Cars dataset directory: ::
-
-        Stanford Cars (data_root)
+        Stanford_Cars
         ├── cars_train
         │   ├── 00001.jpg
         │   ├── 00002.jpg
@@ -54,16 +52,14 @@ class StanfordCars(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import StanfordCars
-        >>> train_cfg = dict(data_root='data/Stanford_Cars', split='train')
-        >>> train = StanfordCars(**train_cfg)
-        >>> train
+        >>> train_dataset = StanfordCars(data_root='data/Stanford_Cars', split='train')
+        >>> train_dataset
         Dataset StanfordCars
             Number of samples:  8144
             Number of categories:       196
             Root of dataset:    data/Stanford_Cars
-        >>> test_cfg = dict(data_root='data/Stanford_Cars', split='test')
-        >>> test = StanfordCars(**test_cfg)
-        >>> test
+        >>> test_dataset = StanfordCars(data_root='data/Stanford_Cars', split='test')
+        >>> test_dataset
         Dataset StanfordCars
             Number of samples:  8041
             Number of categories:       196
@@ -76,7 +72,7 @@ class StanfordCars(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         test_mode = split == 'test'

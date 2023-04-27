@@ -65,19 +65,18 @@ class CIFAR10(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
+        # To handle the BC-breaking
         if split == 'train' and test_mode:
             logger = MMLogger.get_current_instance()
-            logger.warning(
-                'split="train" but test_mode=True. The training set '
-                'will be used. Please set split="test" (test) or '
-                'test_mode=False (train).')
+            logger.warning('split="train" but test_mode=True. '
+                           'The training set will be used.')
 
         if not data_root and not data_prefix:
-            raise RuntimeError('Please set ``data_root`` or ``data_prefix`` \
-                to specify the dataset path')
+            raise RuntimeError('Please set ``data_root`` to'
+                               'specify the dataset path')
 
         self.download = download
         super().__init__(
@@ -182,13 +181,11 @@ class CIFAR100(CIFAR10):
     """`CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
 
     Args:
-        data_prefix (str): Prefix for data.
-        test_mode (bool): ``test_mode=True`` means in test phase.
-            It determines to use the training set or test set.
+        data_root (str): The root directory of the CIFAR Dataset.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str): The root directory for ``data_prefix``.
-            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.

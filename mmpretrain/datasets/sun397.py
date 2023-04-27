@@ -135,7 +135,7 @@ class SUN397(BaseDataset):
 
     SUN397 dataset directory: ::
 
-        SUN397 (data_root)
+        SUN397
         ├── SUN397
         │   ├── a
         │   │   ├── abbey
@@ -163,16 +163,14 @@ class SUN397(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import SUN397
-        >>> train_cfg = dict(data_root='data/SUN397', split='train')
-        >>> train = SUN397(**train_cfg)
-        >>> train
+        >>> train_dataset = SUN397(data_root='data/SUN397', split='train')
+        >>> train_dataset
         Dataset SUN397
             Number of samples:  19824
             Number of categories:       397
             Root of dataset:    data/SUN397
-        >>> test_cfg = dict(data_root='data/SUN397', split='test')
-        >>> test = SUN397(**test_cfg)
-        >>> test
+        >>> test_dataset = SUN397(data_root='data/SUN397', split='test')
+        >>> test_dataset
         Dataset SUN397
             Number of samples:  19829
             Number of categories:       397
@@ -185,7 +183,7 @@ class SUN397(BaseDataset):
 
         splits = ['train', 'test']
         assert split in splits, \
-            f'Split {split} is not in default splits {splits}'
+            f"The split must be one of {splits}, but get '{split}'"
         self.split = split
 
         self.backend = get_file_backend(data_root, enable_singleton=True)
