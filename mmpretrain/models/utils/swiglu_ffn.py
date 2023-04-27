@@ -23,11 +23,12 @@ class SwiGLUFFN(nn.Module):
         bias: bool = True,
     ) -> None:
         super().__init__()
-        out_dims = out_dims or embed_dims
+        self.embed_dims = embed_dims
+        self.out_dims = out_dims or embed_dims
         hidden_dims = feedforward_channels or embed_dims
 
-        self.w12 = nn.Linear(embed_dims, 2 * hidden_dims, bias=bias)
-        self.w3 = nn.Linear(hidden_dims, out_dims, bias=bias)
+        self.w12 = nn.Linear(self.embed_dims, 2 * hidden_dims, bias=bias)
+        self.w3 = nn.Linear(hidden_dims, self.out_dims, bias=bias)
 
         if layer_scale_init_value > 0:
             self.gamma2 = LayerScale(
@@ -43,6 +44,10 @@ class SwiGLUFFN(nn.Module):
         hidden = F.silu(x1) * x2
         out = self.w3(hidden)
         out = self.gamma2(out)
+        if self.out_dims != self.embed_dims:
+            # due to the dimension inconsistence, noto apply residual operation
+            return out
+
         if identity is None:
             identity = x
         return identity + out
