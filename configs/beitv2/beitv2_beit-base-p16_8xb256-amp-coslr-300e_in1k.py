@@ -37,6 +37,7 @@ model = dict(
         out_indices=[-4, -1],
         drop_path_rate=drop_path_rate,
         final_norm=False,
+        out_type='raw',
         layer_scale_init_value=layer_scale_init_value,
         init_cfg=[
             dict(type='TruncNormal', std=0.02, layer='Linear'),
