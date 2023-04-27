@@ -53,6 +53,7 @@ from .vgg import VGG
 from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
 from .xcit import XCiT
+from .hivit import HiViT
 
 __all__ = [
     'LeNet5',
@@ -116,4 +117,5 @@ __all__ = [
     'Vig',
     'PyramidVig',
     'XCiT',
+    'HiViT',
 ]
