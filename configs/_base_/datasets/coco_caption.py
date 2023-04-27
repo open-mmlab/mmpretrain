@@ -47,7 +47,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=16,
     num_workers=5,
     dataset=dict(
         type='COCOCaption',

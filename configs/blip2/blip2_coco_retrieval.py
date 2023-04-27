@@ -64,7 +64,7 @@ test_pipeline = [
         meta_keys=['image_id']),
 ]
 
-val_dataloader = dict(dataset=dict(pipeline=test_pipeline), )
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = val_dataloader
 
 # optimizer
@@ -80,5 +80,3 @@ val_cfg = dict(type='RetrievalValLoop')
 test_cfg = dict(type='RetrievalTestLoop')
 
 randomness = dict(seed=42)
-
-default_hooks = dict(logger=dict(interval=1), )

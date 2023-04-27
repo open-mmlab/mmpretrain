@@ -109,7 +109,6 @@ def save_result(result, result_dir, filename, remove_duplicate=''):
 
 def coco_caption_eval(results_file, ann_file):
     """Evaluation between gt json and prediction json files."""
-
     # create coco object and coco_result object
     coco = COCO(ann_file)
     coco_result = coco.loadRes(results_file)
