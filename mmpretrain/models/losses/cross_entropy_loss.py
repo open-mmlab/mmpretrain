@@ -108,17 +108,13 @@ def binary_cross_entropy(pred,
     # Ensure that the size of class_weight is consistent with pred and label to
     # avoid automatic boracast,
     assert pred.dim() == label.dim()
-    # Avoid error when batch augmentations is not used since 
-    # 'binary_cross_entropy_with_logits' takes target with
-    # float dtype only.
-    label = label.float()
 
     if class_weight is not None:
         N = pred.size()[0]
         class_weight = class_weight.repeat(N, 1)
     loss = F.binary_cross_entropy_with_logits(
         pred,
-        label,
+        label.float(),  # only accepts float type tensor
         weight=class_weight,
         pos_weight=pos_weight,
         reduction='none')
