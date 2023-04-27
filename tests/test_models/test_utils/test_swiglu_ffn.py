@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from unittest import TestCase
+
 import torch
 import torch.nn as nn
-from unittest import TestCase
 
 from mmpretrain.models.utils import LayerScale, SwiGLUFFN, SwiGLUFFNFused
 
