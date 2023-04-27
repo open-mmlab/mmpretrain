@@ -67,7 +67,7 @@ tensor([[1, 0, 0, 0],
 ```python
 >>> import torch
 >>> from mmpretrain.evaluation import ConfusionMatrix
->>> mmpretrain.structures import DataSample
+>>> from mmpretrain.structures import DataSample
 >>> from mmengine.evaluator import Evaluator
 >>> data_samples = [
 ...     DataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
