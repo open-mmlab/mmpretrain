@@ -1,4 +1,4 @@
-# 混淆矩阵可视化
+# 混淆矩阵
 
 MMPretrain 提供 `tools/analysis_tools/confusion_matrix.py` 工具来分析预测结果的混淆矩阵。关于混淆矩阵的介绍，可参考[链接](https://zh.wikipedia.org/zh-cn/%E6%B7%B7%E6%B7%86%E7%9F%A9%E9%98%B5)。
 

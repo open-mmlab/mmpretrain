@@ -1,6 +1,6 @@
-# Confusion Matrix Visualization
+# Confusion Matrix
 
-MMPretrain provides `tools/analysis_tools/confusion_matrix.py` tool to visualize the confusion matrix. For an introduction to the confusion matrix, see [link](https://en.wikipedia.org/wiki/Confusion_matrix).
+MMPretrain provides `tools/analysis_tools/confusion_matrix.py` tool to calculate and visualize the confusion matrix. For an introduction to the confusion matrix, see [link](https://en.wikipedia.org/wiki/Confusion_matrix).
 
 ## Command-line Usage
 
