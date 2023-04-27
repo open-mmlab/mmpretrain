@@ -40,9 +40,9 @@ class Caltech101(BaseDataset):
 
     Please note that since there is no official splitting for training and
     test set, you can use the train.txt and text.txt provided by us or
-    create your own annotation files.
-
-    The download link for annotations: `<https://xxxx>`_.
+    create your own annotation files. Here is the download
+    `link <https://download.openmmlab.com/mmpretrain/datasets/caltech_meta.zip>`_
+    for the annotations.
 
     Args:
         data_root (str): The root directory for the Caltech101 dataset.
