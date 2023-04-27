@@ -304,15 +304,35 @@ class BertSelfAttention(nn.Module):
 
 class BertSelfOutput(nn.Module):
 
-    def __init__(self, config):
+    def __init__(self, config, twin=False, merge=False):
         super().__init__()
-        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.LayerNorm = nn.LayerNorm(
             config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        if twin:
+            self.dense0 = nn.Linear(config.hidden_size, config.hidden_size)
+            self.dense1 = nn.Linear(config.hidden_size, config.hidden_size)
+        else:
+            self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        if merge:
+            self.act = ACT2FN[config.hidden_act]
+            self.merge_layer = nn.Linear(config.hidden_size * 2,
+                                         config.hidden_size)
+            self.merge = True
+        else:
+            self.merge = False
 
     def forward(self, hidden_states, input_tensor):
-        hidden_states = self.dense(hidden_states)
+        if type(hidden_states) == list:
+            hidden_states0 = self.dense0(hidden_states[0])
+            hidden_states1 = self.dense1(hidden_states[1])
+            if self.merge:
+                hidden_states = self.merge_layer(
+                    torch.cat([hidden_states0, hidden_states1], dim=-1))
+            else:
+                hidden_states = (hidden_states0 + hidden_states1) / 2
+        else:
+            hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
         hidden_states = self.LayerNorm(hidden_states + input_tensor)
         return hidden_states
@@ -320,10 +340,19 @@ class BertSelfOutput(nn.Module):
 
 class BertAttention(nn.Module):
 
-    def __init__(self, config, is_cross_attention=False):
+    def __init__(self, config, is_cross_attention=False, layer_num=-1):
         super().__init__()
-        self.self = BertSelfAttention(config, is_cross_attention)
-        self.output = BertSelfOutput(config)
+        is_nlvr = is_cross_attention and getattr(config, 'nlvr', False)
+        if is_nlvr:
+            self.self0 = BertSelfAttention(config, is_nlvr)
+            self.self1 = BertSelfAttention(config, is_nlvr)
+        else:
+            self.self = BertSelfAttention(config, is_cross_attention)
+        self.output = BertSelfOutput(
+            config,
+            twin=is_nlvr,
+            merge=(is_nlvr and layer_num >= 6),
+        )
         self.pruned_heads = set()
 
     def prune_heads(self, heads):
@@ -359,18 +388,43 @@ class BertAttention(nn.Module):
         past_key_value=None,
         output_attentions=False,
     ):
-        self_outputs = self.self(
-            hidden_states,
-            attention_mask,
-            head_mask,
-            encoder_hidden_states,
-            encoder_attention_mask,
-            past_key_value,
-            output_attentions,
-        )
-        attention_output = self.output(self_outputs[0], hidden_states)
-        outputs = (attention_output,
-                   ) + self_outputs[1:]  # add attentions if we output them
+        if type(encoder_hidden_states) == list:
+            self_outputs0 = self.self0(
+                hidden_states,
+                attention_mask,
+                head_mask,
+                encoder_hidden_states[0],
+                encoder_attention_mask[0],
+                past_key_value,
+                output_attentions,
+            )
+            self_outputs1 = self.self1(
+                hidden_states,
+                attention_mask,
+                head_mask,
+                encoder_hidden_states[1],
+                encoder_attention_mask[1],
+                past_key_value,
+                output_attentions,
+            )
+            attention_output = self.output(
+                [self_outputs0[0], self_outputs1[0]], hidden_states)
+
+            outputs = (attention_output, ) + self_outputs0[
+                1:]  # add attentions if we output them
+        else:
+            self_outputs = self.self(
+                hidden_states,
+                attention_mask,
+                head_mask,
+                encoder_hidden_states,
+                encoder_attention_mask,
+                past_key_value,
+                output_attentions,
+            )
+            attention_output = self.output(self_outputs[0], hidden_states)
+            outputs = (attention_output,
+                       ) + self_outputs[1:]  # add attentions if we output them
         return outputs
 
 
@@ -430,9 +484,12 @@ class BertLayer(nn.Module):
             add_cross_attention = self.config.add_cross_attention
 
         # if self.config.add_cross_attention:
-        if add_cross_attention:
+        if self.config.add_cross_attention:
             self.crossattention = BertAttention(
-                config, is_cross_attention=self.config.add_cross_attention)
+                config,
+                is_cross_attention=self.config.add_cross_attention,
+                layer_num=layer_num,
+            )
         self.intermediate = BertIntermediate(config)
         self.output = BertOutput(config)
 
@@ -470,33 +527,17 @@ class BertLayer(nn.Module):
                 encoder_hidden_states is not None
             ), 'encoder_hidden_states must be given for cross-attention layers'
 
-            if isinstance(encoder_hidden_states, list):
-                cross_attention_outputs = self.crossattention(
-                    attention_output,
-                    attention_mask,
-                    head_mask,
-                    encoder_hidden_states[(self.layer_num - self.fusion_layer)
-                                          % len(encoder_hidden_states)],
-                    encoder_attention_mask[(self.layer_num - self.fusion_layer)
-                                           % len(encoder_hidden_states)],
-                    output_attentions=output_attentions,
-                )
-                attention_output = cross_attention_outputs[0]
-                outputs = outputs + cross_attention_outputs[1:-1]
-
-            else:
-                cross_attention_outputs = self.crossattention(
-                    attention_output,
-                    attention_mask,
-                    head_mask,
-                    encoder_hidden_states,
-                    encoder_attention_mask,
-                    output_attentions=output_attentions,
-                )
-                attention_output = cross_attention_outputs[0]
-                outputs = (
-                    outputs + cross_attention_outputs[1:-1]
-                )  # add cross attentions if we output attention weights
+            cross_attention_outputs = self.crossattention(
+                attention_output,
+                attention_mask,
+                head_mask,
+                encoder_hidden_states,
+                encoder_attention_mask,
+                output_attentions=output_attentions,
+            )
+            attention_output = cross_attention_outputs[0]
+            outputs = (outputs + cross_attention_outputs[1:-1]
+                       )  # add cross attentions if we output attention weights
         layer_output = apply_chunking_to_forward(
             self.feed_forward_chunk,
             self.chunk_size_feed_forward,
@@ -695,6 +736,7 @@ class BertOnlyMLMHead(nn.Module):
         return prediction_scores
 
 
+@MODELS.register_module()
 class BertModel(BertPreTrainedModel):
     """The model can behave as an encoder (with only self-attention) as well as
     a decoder, in which case a layer of cross-attention is added between the
@@ -709,6 +751,9 @@ class BertModel(BertPreTrainedModel):
     """
 
     def __init__(self, config, add_pooling_layer=True):
+        if not isinstance(config, BertConfig):
+            config = BertConfig.from_dict(config)
+
         super().__init__(config)
         self.config = config
 

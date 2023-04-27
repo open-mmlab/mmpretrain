@@ -14,6 +14,7 @@ from .inshop import InShop
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .multi_task import MultiTaskDataset
+from .nlvr2 import NLVR2
 from .places205 import Places205
 from .refcoco import RefCOCO
 from .samplers import *  # noqa: F401,F403
@@ -25,5 +26,5 @@ __all__ = [
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
     'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
     'Places205', 'COCOCaption', 'COCOVQA', 'COCORetrieval', 'RefCOCO',
-    'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA'
+    'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA', 'NLVR2'
 ]

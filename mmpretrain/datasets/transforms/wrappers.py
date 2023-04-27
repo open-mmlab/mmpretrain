@@ -97,6 +97,7 @@ class MultiView(BaseTransform):
         return repr_str
 
 
+@TRANSFORMS.register_module()
 class ApplyToList(BaseTransform):
     """A transform wrapper to apply the wrapped transforms to a list of items.
     For example, to load and resize a list of images.
@@ -127,7 +128,7 @@ class ApplyToList(BaseTransform):
             scattered_results = []
             for item in scatter_field:
                 single_results = copy.deepcopy(results)
-                single_results[scatter_field] = item
+                single_results[self.scatter_key] = item
                 scattered_results.append(self.transforms(single_results))
 
             final_output = scattered_results[0]

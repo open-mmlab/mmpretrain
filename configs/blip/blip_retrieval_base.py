@@ -54,7 +54,7 @@ model = dict(
         hidden_size=768,
         with_pooler=False,
     ),
-    topk=2,
+    topk=256,
     max_txt_len=35,
 )
 
