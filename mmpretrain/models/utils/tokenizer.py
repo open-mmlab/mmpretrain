@@ -53,7 +53,7 @@ class BLIPTokenizer(BertTokenizerFast):
         *init_inputs,
         **kwargs,
     ):
-        os.environ['TOKENIZERS_PARALLELISM'] = "true"
+        os.environ['TOKENIZERS_PARALLELISM'] = 'true'
 
         tokenizer = super().from_pretrained(
             pretrained_model_name_or_path,

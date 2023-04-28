@@ -13,7 +13,7 @@ class DumpVQAResult(DumpResults):
     """Dump model predictions to a pickle/json file for offline evaluation.
 
     Compare to `DumpResults` in MMEngine, this class allows to dump json file.
-    
+
     Args:
         out_file_path (str): Path of the dumped file. Must end with '.pkl',
             '.pickle' or '.json'.
@@ -267,7 +267,7 @@ class VQAAcc(BaseMetric):
 
         Args:
             results (dict): The processed results of each batch.
-        
+
         Returns:
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.

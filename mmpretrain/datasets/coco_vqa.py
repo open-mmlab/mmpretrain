@@ -11,10 +11,10 @@ from mmpretrain.registry import DATASETS
 
 @DATASETS.register_module()
 class COCOVQA(BaseDataset):
-    """ COCO VQA dataset """
+    """COCO VQA dataset."""
 
     def load_data_list(self) -> List[dict]:
-        """ Load data list. """
+        """Load data list."""
 
         img_prefix = self.data_prefix['img_path']
         annotations = mmengine.load(self.ann_file)
