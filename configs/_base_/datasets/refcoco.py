@@ -1,7 +1,6 @@
 # data settings
 
 data_preprocessor = dict(
-    type='MultiModalDataPreprocessor',
     mean=[122.770938, 116.7460125, 104.09373615],
     std=[68.5005327, 66.6321579, 70.32316305],
     to_rgb=True,
@@ -41,10 +40,12 @@ train_dataloader = dict(
     dataset=dict(
         type='RefCOCO',
         data_root='data/coco',
-        ann_file='annotations/refcoco_train.json',
+        data_prefix='train2014',
+        ann_file='refcoco/instances.json',
+        split_file='refcoco/refs(unc).p',
+        split='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
     drop_last=True,
 )
 
@@ -54,22 +55,14 @@ val_dataloader = dict(
     dataset=dict(
         type='RefCOCO',
         data_root='data/coco',
-        ann_file='annotations/refcoco_val.json',
-        pipeline=test_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
-)
-
-test_dataloader = dict(
-    batch_size=16,
-    num_workers=8,
-    dataset=dict(
-        type='RefCOCO',
-        data_root='data/coco',
-        ann_file='annotations/refcoco_test.json',
+        data_prefix='train2014',
+        ann_file='refcoco/instances.json',
+        split_file='refcoco/refs(unc).p',
+        split='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
+test_dataloader = val_dataloader
 
 # TODO: add visual grounding mAP metrics
 val_evaluator = []
