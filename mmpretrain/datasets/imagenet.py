@@ -56,6 +56,8 @@ class ImageNet(CustomDataset):
             ``ann_file``. Defaults to ''.
         split (str): The dataset split, supports "train" and "val".
             Default to ''.
+        data_prefix (str | dict): Prefix for training data. Defaults to ''.
+        ann_file (str): Annotation file path. Defaults to ''.
         metainfo (dict, optional): Meta information for dataset, such as class
             information. Defaults to None.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
