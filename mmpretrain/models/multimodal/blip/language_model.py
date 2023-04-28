@@ -1264,8 +1264,8 @@ class XBertLMHeadDecoder(BertLMHeadModel):
     """
 
     def __init__(self, med_config):
-        med_config = BertConfig.from_dict(med_config)
-        super(XBertLMHeadDecoder, self).__init__(config=med_config)
+        self.med_config = BertConfig.from_dict(med_config)
+        super(XBertLMHeadDecoder, self).__init__(config=self.med_config)
 
     def generate_from_encoder(self,
                               tokenized_prompt,

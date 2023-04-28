@@ -2,9 +2,10 @@
 from .blip_caption import BLIPCaptioner
 from .blip_nlvr import BLIPNLVR
 from .blip_retrieval import BLIPRetriever
-from .language_model import BertModel, XBertEncoder, XBertLMHeadDecoder
+from .blip_vqa import BlipVQAModel
+from .language_model import BertLMHeadModel, XBertEncoder, XBertLMHeadDecoder
 
 __all__ = [
-    'BLIPCaptioner', 'XBertLMHeadDecoder', 'BLIPRetriever', 'XBertEncoder',
-    'BertModel', 'BLIPNLVR'
+    'BLIPCaptioner', 'BLIPRetriever', 'BlipVQAModel', 'XBertLMHeadDecoder',
+    'BertLMHeadModel', 'XBertEncoder', 'BLIPNLVR', 'BlipVQAModel'
 ]

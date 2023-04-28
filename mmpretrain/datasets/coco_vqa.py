@@ -11,19 +11,11 @@ from mmpretrain.registry import DATASETS
 
 @DATASETS.register_module()
 class COCOVQA(BaseDataset):
-    """COCO VQA dataset. All VQA dataset used in BLIP:
-
-    TODO: annotation will be converted to OpenMMLab style in the future:
-        1.add 'metainfo', put current annotations into 'data_list'.
-        2.change the path of 'image', delete path and only keep filename.
-    """
+    """ COCO VQA dataset """
 
     def load_data_list(self) -> List[dict]:
-        """Load data list.
+        """ Load data list. """
 
-        Compare to BaseDataset, the only difference is that coco_vqa annotation
-        file is already a list of data. There is no 'metainfo'.
-        """
         img_prefix = self.data_prefix['img_path']
         annotations = mmengine.load(self.ann_file)
         file_backend = get_file_backend(img_prefix)

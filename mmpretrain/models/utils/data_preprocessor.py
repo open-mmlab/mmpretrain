@@ -519,7 +519,7 @@ class VideoDataPreprocessor(BaseDataPreprocessor):
 
 @MODELS.register_module()
 class MultiModalDataPreprocessor(BaseDataPreprocessor):
-    """Data pre-processor for caption tasks.
+    """Data pre-processor for image-text multimodality tasks.
 
     It provides the data pre-processing as follows
 
@@ -530,7 +530,6 @@ class MultiModalDataPreprocessor(BaseDataPreprocessor):
     - Stack inputs to batch_inputs.
     - Convert inputs from bgr to rgb if the shape of input is (3, H, W).
     - Normalize image with defined std and mean.
-    - Do batch augmentations like Mixup and Cutmix during training.
 
     Args:
         mean (Sequence[Number], optional): The pixel mean of R, G, B channels.

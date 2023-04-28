@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
 from typing import Optional
 
 from mmengine.registry import Registry
 from transformers import (AutoModelForCausalLM, AutoTokenizer, BartTokenizer,
-                          BertTokenizer, LlamaTokenizer)
+                          BertTokenizer, BertTokenizerFast, LlamaTokenizer)
 
 from mmpretrain.registry import MODELS, TOKENIZER
 
@@ -42,7 +43,8 @@ register_hf_tokenizer(AutoModelForCausalLM, registry=MODELS)
 
 
 @register_hf_tokenizer()
-class BLIPTokenizer(BertTokenizer):
+class BLIPTokenizer(BertTokenizerFast):
+    """"BLIPTokenizer inherit BertTokenizerFast (fast, Rust-based)."""
 
     @classmethod
     def from_pretrained(
@@ -51,6 +53,8 @@ class BLIPTokenizer(BertTokenizer):
         *init_inputs,
         **kwargs,
     ):
+        os.environ['TOKENIZERS_PARALLELISM'] = "true"
+
         tokenizer = super().from_pretrained(
             pretrained_model_name_or_path,
             *init_inputs,

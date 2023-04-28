@@ -1234,4 +1234,11 @@ RANDAUG_POLICIES = {
         dict(type='Translate', magnitude_range=(0, 0.45), direction='horizontal'),
         dict(type='Translate', magnitude_range=(0, 0.45), direction='vertical'),
     ],
+    'simple_increasing': [
+        dict(type='AutoContrast'),
+        dict(type='Equalize'),
+        dict(type='Rotate', magnitude_range=(0, 30)),
+        dict(type='Shear', magnitude_range=(0, 0.3), direction='horizontal'),
+        dict(type='Shear', magnitude_range=(0, 0.3), direction='vertical'),
+    ],
 }

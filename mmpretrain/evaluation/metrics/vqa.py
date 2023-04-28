@@ -1,11 +1,46 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Partly adopted from https://github.com/GT-Vision-Lab/VQA
 # Copyright (c) 2014, Aishwarya Agrawal
-from typing import List, Optional
+from typing import Any, List, Optional, Sequence
 
-from mmengine.evaluator import BaseMetric
+from mmengine.evaluator import BaseMetric, DumpResults
 
 from mmpretrain.registry import METRICS
+
+
+@METRICS.register_module()
+class DumpVQAResult(DumpResults):
+    """Dump model predictions to a pickle/json file for offline evaluation.
+
+    Compare to `DumpResults` in MMEngine, this class allows to dump json file.
+    
+    Args:
+        out_file_path (str): Path of the dumped file. Must end with '.pkl',
+            '.pickle' or '.json'.
+        collect_device (str): Device name used for collecting results from
+            different ranks during distributed training. Must be 'cpu' or
+            'gpu'. Defaults to 'cpu'.
+    """
+
+    def __init__(self,
+                 out_file_path: str,
+                 collect_device: str = 'cpu',
+                 prefix: Optional[str] = 'VQA') -> None:
+        super(DumpResults, self).__init__(
+            collect_device=collect_device, prefix=prefix)
+        if not out_file_path.endswith(('.pkl', '.pickle', '.json')):
+            raise ValueError('The output file must be a pkl or json file.')
+        self.out_file_path = out_file_path
+
+    def process(self, data_batch: Any, predictions: Sequence[dict]) -> None:
+        """transfer tensors in predictions to CPU."""
+        dumped_predictions = []
+        for prediction in predictions:
+            dumped_predictions.append({
+                'question_id': prediction['question_id'],
+                'answer': prediction['pred_answer']
+            })
+        super().process(data_batch, dumped_predictions)
 
 
 def _processPunctuation(inText):
@@ -232,7 +267,7 @@ class VQAAcc(BaseMetric):
 
         Args:
             results (dict): The processed results of each batch.
-
+        
         Returns:
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.
