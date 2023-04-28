@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
+from mmengine import get_file_backend
 from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
@@ -12,18 +13,69 @@ from .custom import CustomDataset
 class ImageNet(CustomDataset):
     """`ImageNet <http://www.image-net.org>`_ Dataset.
 
-    The dataset supports two kinds of annotation format. More details can be
-    found in :class:`CustomDataset`.
+    The dataset supports two kinds of directory format,
+
+    ::
+
+        imagenet
+        ├── train
+        │   ├──class_x
+        |   |   ├── x1.jpg
+        |   |   ├── x2.jpg
+        |   |   └── ...
+        │   ├── class_y
+        |   |   ├── y1.jpg
+        |   |   ├── y2.jpg
+        |   |   └── ...
+        |   └── ...
+        └── val
+            ├──class_x
+            |   └── ...
+            ├── class_y
+            |   └── ...
+            └── ...
+
+    or ::
+
+        imagenet
+        ├── train
+        │   ├── x1.jpg
+        │   ├── y1.jpg
+        │   └── ...
+        ├── val
+        │   ├── x3.jpg
+        │   ├── y3.jpg
+        │   └── ...
+        └── meta
+            ├── train.txt
+            └── val.txt
+
 
     Args:
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
-        data_prefix (str | dict): Prefix for training data. Defaults to ''.
-        ann_file (str): Annotation file path. Defaults to ''.
+        split (str): The dataset split, supports "train" and "val".
+            Default to ''.
         metainfo (dict, optional): Meta information for dataset, such as class
             information. Defaults to None.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
             :class:`BaseDataset`.
+
+
+    Examples:
+        >>> from mmpretrain.datasets import ImageNet
+        >>> train_dataset = ImageNet(data_root='data/imagenet', split='train')
+        >>> train_dataset
+        Dataset ImageNet
+            Number of samples:  1281167
+            Number of categories:       1000
+            Root of dataset:    data/imagenet
+        >>> test_dataset = ImageNet(data_root='data/imagenet', split='val')
+        >>> test_dataset
+        Dataset ImageNet
+            Number of samples:  50000
+            Number of categories:       1000
+            Root of dataset:    data/imagenet
     """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
@@ -31,17 +83,41 @@ class ImageNet(CustomDataset):
 
     def __init__(self,
                  data_root: str = '',
+                 split: str = '',
                  data_prefix: Union[str, dict] = '',
                  ann_file: str = '',
                  metainfo: Optional[dict] = None,
                  **kwargs):
         kwargs = {'extensions': self.IMG_EXTENSIONS, **kwargs}
+
+        if split:
+            splits = ['train', 'val']
+            assert split in splits, \
+                f"The split must be one of {splits}, but get '{split}'"
+            self.split = split
+            data_prefix = split if data_prefix == '' else data_prefix
+
+            if ann_file == '':
+                self.backend = get_file_backend(
+                    data_root, enable_singleton=True)
+                annotation = self.backend.join_path(data_root, 'meta',
+                                                    f'{split}.txt')
+                if self.backend.exists(annotation):
+                    ann_file = annotation
+
         super().__init__(
             data_root=data_root,
             data_prefix=data_prefix,
             ann_file=ann_file,
             metainfo=metainfo,
             **kwargs)
+
+    def extra_repr(self) -> List[str]:
+        """The extra repr information of the dataset."""
+        body = [
+            f'Root of dataset: \t{self.data_root}',
+        ]
+        return body
 
 
 @DATASETS.register_module()

@@ -290,31 +290,94 @@ class TestCustomDataset(TestBaseDataset):
 class TestImageNet(TestCustomDataset):
     DATASET_TYPE = 'ImageNet'
 
-    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='ann.txt')
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.meta_folder = 'meta'
+        cls.train_file = 'train.txt'
+        cls.val_file = 'val.txt'
+        cls.categories = ['cat', 'dog']
+
+        os.mkdir(osp.join(cls.root, cls.meta_folder))
+
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.train_file),
+                  'w') as f:
+            f.write('\n'.join([
+                '1.jpg 0',
+                '2.jpg 1',
+                '3.jpg 1',
+            ]))
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.val_file), 'w') as f:
+            f.write('\n'.join([
+                '11.jpg 0',
+                '22.jpg 1',
+            ]))
+
+    def test_initialize(self):
+        super().test_initialize()
+
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid splits
+        splits = ['train', 'val']
+        for split in splits:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = split
+            cfg['classes'] = self.categories
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.split, split)
+            self.assertEqual(dataset.data_root, self.root)
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # test classes number
-        cfg = {
-            **self.DEFAULT_ARGS,
-            'data_prefix': ASSETS_ROOT,
-            'ann_file': '',
-        }
-        with self.assertRaisesRegex(
-                AssertionError, r"\(2\) doesn't match .* classes \(1000\)"):
-            dataset_class(**cfg)
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'train', '1.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test split="val"
+        cfg = {**self.DEFAULT_ARGS, 'split': 'val'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'val', '11.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
 
         # test override classes
         cfg = {
             **self.DEFAULT_ARGS,
-            'data_prefix': ASSETS_ROOT,
             'classes': ['cat', 'dog'],
-            'ann_file': '',
         }
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         self.assertEqual(dataset.CLASSES, ('cat', 'dog'))
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
 
 
 class TestImageNet21k(TestCustomDataset):
