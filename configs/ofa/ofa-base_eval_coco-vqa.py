@@ -51,7 +51,7 @@ test_pipeline = [
         algorithm_keys=[
             'question', 'gt_answer', 'gt_answer_weight', 'decoder_prompt'
         ],
-        meta_keys=['question_id'],
+        meta_keys=['question_id', 'image_id'],
     ),
 ]
 

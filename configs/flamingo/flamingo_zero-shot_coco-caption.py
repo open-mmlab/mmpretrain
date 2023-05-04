@@ -2,6 +2,11 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+zeroshot_prompt = (
+    'Output:A child holding a flowered umbrella and petting a yak.<|endofchunk|>'  # noqa: E501
+    'Output:The child is holding a brush close to his mouth.<|endofchunk|>'  # noqa: E501
+)
+
 # model settings
 model = dict(
     type='Flamingo',
@@ -12,11 +17,12 @@ model = dict(
         arch='l',
         patch_size=14,
         pre_norm=True,
-        init_cfg=dict(type='Pretrained', checkpoint='clip_vit_l_14.pth'),
         norm_cfg=dict(type='LN', eps=1e-5),
         layer_cfgs=dict(act_cfg=dict(type='QuickGELU')),
         final_norm=False,
-        out_type='raw'),
+        out_type='raw',
+        pretrained='/mnt/HDD/ckpt/clip_vit_l_14.pth',
+    ),
     lang_encoder=dict(
         base=dict(
             type='AutoModelForCausalLM',
@@ -29,7 +35,10 @@ model = dict(
             use_media_placement_augmentation=False),
     ),
     task='caption',
-    generation_cfg=dict(num_beams=3, max_new_tokens=20, length_penalty=-2.0))
+    zeroshot_prompt=zeroshot_prompt,
+    final_prompt_tmpl='<image>Output:',
+    generation_cfg=dict(num_beams=3, max_new_tokens=20, length_penalty=-2.0),
+)
 
 # data settings
 data_preprocessor = dict(
@@ -40,24 +49,18 @@ data_preprocessor = dict(
 )
 
 test_pipeline = [
+    dict(type='LoadImageFromFile'),
     dict(
-        type='ApplyToList',
-        # Flamingo requires to load multiple images during few-shot inference.
-        scatter_key='img_path',
-        transforms=[
-            dict(type='LoadImageFromFile'),
-            dict(
-                type='ResizeEdge',
-                scale=224,
-                interpolation='bicubic',
-                backend='pillow'),
-            dict(type='CenterCrop', crop_size=(224, 224)),
-        ],
-        collate_keys=['img', 'scale_factor', 'ori_shape'],
-    ),
+        type='ResizeEdge',
+        scale=224,
+        interpolation='bicubic',
+        backend='pillow'),
+    dict(type='CenterCrop', crop_size=(224, 224)),
     dict(
         type='PackInputs',
-        algorithm_keys=('text', 'image_id', 'nshot_prompt')),
+        algorithm_keys=['gt_caption'],
+        meta_keys=['image_id'],
+    ),
 ]
 
 val_dataloader = dict(
@@ -67,6 +70,7 @@ val_dataloader = dict(
         type='FlamingoEvalCOCOCaption',
         data_root='data/coco',
         ann_file='annotations/captions_train2014.json',
+        data_prefix=dict(img_path='train2014'),
         pipeline=test_pipeline,
         num_shots=0,
         num_support_examples=2048,

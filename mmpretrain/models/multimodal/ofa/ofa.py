@@ -257,10 +257,11 @@ class OFA(BaseModel):
             prompt = self.prompt or ' what does the image describe?'
             prompts = [prompt] * batch_size
             prompts = self.tokenizer(prompts, return_tensors='pt')
-            return prompt.input_ids.to(device)
+            return prompts.input_ids.to(device)
         elif self.task == 'vqa':
             prompts = []
             for sample in data_samples:
+                assert 'question' in sample
                 prompt = ' ' + sample.get('question')
                 prompts.append(prompt)
             prompts = self.tokenizer(
@@ -271,6 +272,7 @@ class OFA(BaseModel):
                 ' which region does the text " {} " describe?'
             prompts = []
             for sample in data_samples:
+                assert 'text' in sample
                 prompt = prompt_template.format(sample.get('text'))
                 prompts.append(prompt)
             prompts = self.tokenizer(

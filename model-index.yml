@@ -68,3 +68,6 @@ Import:
   - configs/milan/metafile.yml
   - configs/ofa/metafile.yml
   - configs/riformer/metafile.yml
+  - configs/blip/metafile.yml
+  - configs/flamingo/metafile.yml
+  - configs/blip2/metafile.yml

@@ -70,8 +70,7 @@ optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
 param_scheduler = [dict(type='CosineAnnealingLR', by_epoch=True)]
 
 # [Online Test] dump for official server (eval.ai), no need gt_answer
-test_evaluator = dict(
-    type='DumpVQAResult', out_file_path='work_dirs/vqa_result.json')
+test_evaluator = dict(type='ReportVQA', file_path='vqa_test.json')
 
 # # [Offline Test] need gt_answer, here we use 'vqa_val.json' as example
 # test_evaluator = dict(type='VQAAcc')

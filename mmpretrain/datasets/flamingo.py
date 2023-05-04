@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import random
 from abc import abstractmethod
 from collections import Counter
@@ -8,9 +7,10 @@ from typing import List
 import mmengine
 import numpy as np
 from mmengine.dataset import BaseDataset
-from mmengine.fileio import get_file_backend
+from pycocotools.coco import COCO
 
 from mmpretrain.registry import DATASETS
+from .coco_vqa import COCOVQA
 
 
 class FlamingoFewShotMixin:
@@ -41,7 +41,6 @@ class FlamingoFewShotMixin:
         self.num_shots = num_shots
         self.num_support_examples = num_support_examples
         self.num_query_examples = num_query_examples
-        self.num_effective_examples = num_shots if num_shots > 0 else 2
         self.incontext_prompt_temp = incontext_prompt_temp
         self.final_prompt_temp = final_prompt_temp
         super().__init__(**kwarg)
@@ -68,10 +67,14 @@ class FlamingoFewShotMixin:
 
 
 @DATASETS.register_module()
-class FlamingoEvalCOCOVQA(FlamingoFewShotMixin, BaseDataset):
+class FlamingoEvalCOCOVQA(FlamingoFewShotMixin, COCOVQA):
     """Flamingo few shot VQAv2 dataset.
 
     Args:
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``.
+        ann_file (str): Annotation file path.
+        question_file (str): Question file path.
         num_shots (int): Number of shots to perform evaluation.
             Defaults to 0.
             Note: 0 does not mean a strict zero-shot in Flamingo setting.
@@ -80,33 +83,27 @@ class FlamingoEvalCOCOVQA(FlamingoFewShotMixin, BaseDataset):
             few shots from. Defaults to 2048.
         num_query_examples (int): Number of query examples to perform the
             final evaluation. Defaults to 5000.
-        incontext_prompt_temp (str): In context prompt template for few shot
-            examples.
-            Defaults to '<image>Question:{} Short Answer:{}<|endofchunk|>'.
-        final_prompt_temp (str): Final query prompt template.
-            Defaults to '<image>Question:{} Short Answer:'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
 
     def __init__(self,
-                 question_file,
+                 data_root: str,
+                 question_file: str,
+                 ann_file: str = '',
                  num_shots: int = 0,
                  num_support_examples: int = 2048,
                  num_query_examples: int = 5000,
-                 incontext_prompt_temp:
-                 str = '<image>Question:{} Short Answer:{}<|endofchunk|>',
-                 final_prompt_temp: str = '<image>Question:{} Short Answer:',
                  **kwarg):
-        self.question_file = question_file
         super().__init__(
+            data_root=data_root,
+            question_file=question_file,
+            ann_file=ann_file,
             num_shots=num_shots,
             num_support_examples=num_support_examples,
             num_query_examples=num_query_examples,
-            incontext_prompt_temp=incontext_prompt_temp,
-            final_prompt_temp=final_prompt_temp,
             **kwarg)
 
-    def parse_basic_anno(self, anno: dict) -> dict:
+    def parse_basic_anno(self, ann: dict) -> dict:
         """Parse basic annotation for support and query set.
 
         Args:
@@ -115,20 +112,19 @@ class FlamingoEvalCOCOVQA(FlamingoFewShotMixin, BaseDataset):
         Return:
             dict: Parsed annotation for single example.
         """
-        new_anno = {}
-        img_prefix = self.data_prefix['img_path']
-        new_anno[
-            'img_path'] = f"{img_prefix}/train2014/COCO_train2014_{anno['image_id']:012d}.jpg"  # noqa
-        answer = [a['answer'] for a in anno['answers']]
-        count = Counter(answer)
-        new_anno['gt_answer'] = list(count.keys())
-        new_anno['gt_answer_weight'] = anno.get(
-            'answer_weight',
-            [i / len(answer) for i in count.values()],
-        )
-        return new_anno
+        if ann is None:
+            return {}
 
-    def parse_fewshot_anno(self, anno: dict, support_list: List) -> dict:
+        answers = [a['answer'] for a in ann['answers']]
+        count = Counter(answers)
+        answer_weight = [i / len(answers) for i in count.values()]
+        answer_info = {
+            'gt_answer': list(count.keys()),
+            'gt_answer_weight': answer_weight
+        }
+        return answer_info
+
+    def parse_fewshot_anno(self, query: dict, support_list: List) -> dict:
         """Parse fewshot related annotation for query set with support list.
 
         Args:
@@ -139,61 +135,62 @@ class FlamingoEvalCOCOVQA(FlamingoFewShotMixin, BaseDataset):
             dict: Parsed annotation for single example.
         """
         # prepare n shots examples
-        anno_support = random.sample(support_list, self.num_effective_examples)
+        shots = random.sample(support_list, self.num_shots)
 
         # append image path for n shots
-        anno['img_path'] = [shot['img_path']
-                            for shot in anno_support] + [anno['img_path']]
-        anno['nshot_prompt'] = ''.join([
-            self.incontext_prompt_temp.format(shot['question'],
-                                              shot['gt_answer'][0])
-            for shot in anno_support
-        ])
+        img_path = [shot['img_path'] for shot in shots]
+        img_path.append(query['img_path'])
+        query['img_path'] = img_path
 
-        # remove image related shots when perform zero-shot
-        if self.num_shots == 0:
-            # get the final image path when zero-shot
-            anno['img_path'] = anno['img_path'][-1:]
-            anno['nshot_prompt'] = anno['nshot_prompt'].replace('<image>', '')
-
-        # add final prompt
-        anno['nshot_prompt'] += self.final_prompt_temp.format(anno['question'])
-        return anno
+        query['shots'] = [
+            dict(
+                question=item['question'],
+                answer=item['gt_answer'][0],
+            ) for item in shots
+        ]
+        return query
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
-        img_prefix = self.data_prefix['img_path']
-        file_backend = get_file_backend(img_prefix)
-        annotations = mmengine.load(self.ann_file)['annotations']
-        # additional file path should be joined manually
-        questions = mmengine.load(
-            file_backend.join_path(img_prefix,
-                                   self.question_file))['questions']
+        questions = mmengine.load(self.question_file)['questions']
+        if self.ann_file:
+            annotations = mmengine.load(self.ann_file)['annotations']
+            assert len(questions) == len(annotations)
+        else:
+            annotations = [None] * len(questions)
+            if self.num_shots > 0:
+                raise ValueError('Unable to construct few-shot examples '
+                                 'since no annotation file.')
 
-        assert len(questions) == len(annotations)
-        num_data = len(annotations)
+        # The original VQAv2 annotation file and question file includes
+        # only image id but no image file paths.
+        self.image_index = self._create_image_index()
+
+        num_data = len(questions)
         support_idx, query_idx = self.get_subset_idx(num_data)
 
         # prepare support subset
-        support_list = []
-        for idx in support_idx:
-            question = questions[idx]
-            answers = annotations[idx]
-            anno = copy.deepcopy(question)
-            anno = {**anno, **self.parse_basic_anno(answers)}
-            support_list.append(anno)
+        if self.num_shots > 0:
+            support_list = []
+            for idx in support_idx:
+                question = questions[idx]
+                ann = annotations[idx]
+                support = {**question, **self.parse_basic_anno(ann)}
+                support['img_path'] = self.image_index[question['image_id']]
+                support_list.append(support)
 
         # prepare query subset
-        query_list = []
+        data_list = []
         for idx in query_idx:
             question = questions[idx]
-            answers = annotations[idx]
-            anno = copy.deepcopy(question)
-            anno = {**anno, **self.parse_basic_anno(answers)}
-            anno = self.parse_fewshot_anno(anno, support_list)
-            query_list.append(anno)
+            ann = annotations[idx]
+            data_info = {**question, **self.parse_basic_anno(ann)}
+            data_info['img_path'] = self.image_index[question['image_id']]
+            if self.num_shots > 0:
+                data_info = self.parse_fewshot_anno(data_info, support_list)
+            data_list.append(data_info)
 
-        return query_list
+        return data_list
 
 
 @DATASETS.register_module()
@@ -201,102 +198,98 @@ class FlamingoEvalCOCOCaption(FlamingoFewShotMixin, BaseDataset):
     """Flamingo few shot COCO Caption dataset.
 
     Args:
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``.
+        ann_file (str): Annotation file path.
+        data_prefix (dict): Prefix for data field. Defaults to
+            ``dict(img_path='')``.
         num_shots (int): Number of shots to perform evaluation.
             Defaults to 0.
-            Note: 0 does not mean a strict zero-shot in Flamingo setting.
-            It will use 2 only-text prompt without in context images.
         num_support_examples (int): Number of support examples to get the
             few shots from. Defaults to 2048.
         num_query_examples (int): Number of query examples to perform the
             final evaluation. Defaults to 5000.
-        incontext_prompt_temp (str): In context prompt template for few shot
-            examples. Defaults to '<image>Output:{}<|endofchunk|>'.
-        final_prompt_temp (str): Final query prompt template.
-            Defaults to '<image>Output:'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
 
     def __init__(self,
+                 data_root: str,
+                 ann_file: str,
                  num_shots: int = 0,
                  num_support_examples: int = 2048,
                  num_query_examples: int = 5000,
-                 incontext_prompt_temp: str = '<image>Output:{}<|endofchunk|>',
-                 final_prompt_temp: str = '<image>Output:',
                  **kwarg):
         super().__init__(
+            data_root=data_root,
+            ann_file=ann_file,
             num_shots=num_shots,
             num_support_examples=num_support_examples,
             num_query_examples=num_query_examples,
-            incontext_prompt_temp=incontext_prompt_temp,
-            final_prompt_temp=final_prompt_temp,
             **kwarg)
 
-    def parse_basic_anno(self, anno: dict) -> dict:
+    def parse_basic_anno(self, ann: dict, coco: COCO) -> dict:
         """Parse basic annotation for support and query set.
 
         Args:
             anno (dict): Annotation for single example.
+            coco (COCO): The coco dataset.
 
         Return:
             dict: Parsed annotation for single example.
         """
         img_prefix = self.data_prefix['img_path']
-        anno[
-            'img_path'] = f"{img_prefix}/train2014/COCO_train2014_{anno['image_id']:012d}.jpg"  # noqa
-        anno['text'] = anno.pop('caption')
-        return anno
+        img = coco.imgs[ann['image_id']]
+        data_info = dict(
+            img_path=mmengine.join_path(img_prefix, img['file_name']),
+            gt_caption=ann['caption'],
+            image_id=ann['image_id'],
+        )
+        return data_info
 
-    def parse_fewshot_anno(self, anno: dict, support_list: List) -> dict:
+    def parse_fewshot_anno(self, query: dict, support_list: List) -> dict:
         """Parse fewshot related annotation for query set with support list.
 
         Args:
-            anno (dict): Annotation for single example.
+            query (dict): Annotation for single example.
             support_list (List): List of support subset to subsample few shots.
+            coco (COCO): The coco dataset.
 
         Return:
             dict: Parsed annotation for single example.
         """
         # prepare n shots examples
-        anno_support = random.sample(support_list, self.num_effective_examples)
+        shots = random.sample(support_list, self.num_shots)
 
         # append image path for n shots
-        anno['img_path'] = [shot['img_path']
-                            for shot in anno_support] + [anno['img_path']]
-        anno['nshot_prompt'] = ''.join([
-            self.incontext_prompt_temp.format(shot['text'])
-            for shot in anno_support
-        ])
+        img_path = [shot['img_path'] for shot in shots]
+        img_path.append(query['img_path'])
+        query['img_path'] = img_path
 
-        # remove image related shots when perform zero-shot
-        if self.num_shots == 0:
-            # get the final image path when zero-shot
-            anno['img_path'] = anno['img_path'][-1:]
-            anno['nshot_prompt'] = anno['nshot_prompt'].replace('<image>', '')
-
-        # add final prompt
-        anno['nshot_prompt'] += self.final_prompt_temp
-        return anno
+        query['shots'] = [dict(caption=item['gt_caption']) for item in shots]
+        return query
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
-        annotations = mmengine.load(self.ann_file)['annotations']
+        with mmengine.get_local_path(self.ann_file) as ann_file:
+            coco = COCO(ann_file)
 
-        num_data = len(annotations)
+        num_data = len(coco.anns)
         support_idx, query_idx = self.get_subset_idx(num_data)
+        ann_ids = list(coco.anns)
 
         # prepare support subset
-        support_list = []
-        for idx in support_idx:
-            anno = annotations[idx]
-            anno = self.parse_basic_anno(anno)
-            support_list.append(anno)
+        if self.num_shots > 0:
+            support_list = []
+            for idx in support_idx:
+                support = self.parse_basic_anno(coco.anns[ann_ids[idx]], coco)
+                support_list.append(support)
 
         # prepare query subset
         query_list = []
         for idx in query_idx:
-            anno = annotations[idx]
-            anno = self.parse_basic_anno(anno)
-            anno = self.parse_fewshot_anno(anno, support_list)
-            query_list.append(anno)
+            data_info = self.parse_basic_anno(coco.anns[ann_ids[idx]], coco)
+            if self.num_shots > 0:
+                data_info = self.parse_fewshot_anno(data_info, support_list)
+            query_list.append(data_info)
 
         return query_list

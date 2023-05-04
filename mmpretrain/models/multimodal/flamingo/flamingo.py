@@ -33,6 +33,9 @@ class Flamingo(BaseModel):
                  lang_encoder: dict,
                  tokenizer: dict,
                  task: str = 'caption',
+                 zeroshot_prompt='<image>Output:',
+                 shot_prompt_tmpl='<image>Output:{caption}<|endofchunk|>',
+                 final_prompt_tmpl='<image>Output:',
                  generation_cfg: dict = dict(),
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
@@ -55,14 +58,25 @@ class Flamingo(BaseModel):
         # add Flamingo special tokens to the tokenizer
         self.tokenizer.add_special_tokens(
             {'additional_special_tokens': ['<|endofchunk|>', '<image>']})
+        self.tokenizer.bos_token_id = 1
         if self.tokenizer.pad_token is None:
             # Issue: GPT models don't have a pad token, which we use to
             # modify labels for the loss.
             self.tokenizer.add_special_tokens({'pad_token': '<PAD>'})
 
+        # Template to format the prompt input
+        self.zeroshot_prompt = zeroshot_prompt
+        self.shot_prompt_tmpl = shot_prompt_tmpl
+        self.final_prompt_tmpl = final_prompt_tmpl
+
         # init vision encoder related modules
+        vision_encoder_weight = vision_encoder.pop('pretrained', None)
         self.vision_encoder = MODELS.build(vision_encoder)
-        self.vision_encoder.init_weights()
+        if vision_encoder_weight is not None:
+            from mmengine.runner.checkpoint import load_checkpoint
+            load_checkpoint(
+                self.vision_encoder, vision_encoder_weight, map_location='cpu')
+
         self.perceiver = PerceiverResampler(dim=self.vision_encoder.embed_dims)
 
         # init language encoder related modules
@@ -86,6 +100,9 @@ class Flamingo(BaseModel):
             'early_stopping': False,
             **generation_cfg,
         }
+
+        if hasattr(self, 'register_load_state_dict_post_hook'):
+            self.register_load_state_dict_post_hook(self._load_adapter_hook)
 
     def forward(
         self,
@@ -132,6 +149,9 @@ class Flamingo(BaseModel):
         Returns:
             torch.Tensor: Return extracted features.
         """
+        if images.ndim == 4:
+            # (B, C, H, W) -> (B, 1, C, H, W) for zero-shot.
+            images = images.unsqueeze(1)
         b, T = images.shape[:2]
         # b T c h w -> (b T) c h w
         images = images.view(b * T, *images.shape[-3:])
@@ -175,16 +195,7 @@ class Flamingo(BaseModel):
         for layer in self.lang_encoder._get_decoder_layers():
             layer.condition_vis_x(vision_x)
 
-        # get nshot prompt for prediction and tokenize
-        prompt = [ds.nshot_prompt for ds in data_samples]
-        self.tokenizer.padding_side = 'left'
-        input_text = self.tokenizer(
-            prompt,
-            padding='longest',
-            truncation=True,
-            return_tensors='pt',
-            max_length=2000,
-        ).to(images.device)
+        input_text = self.preprocess_text(data_samples, device=images.device)
 
         outputs = self.lang_encoder.generate(
             input_text.input_ids,
@@ -199,6 +210,33 @@ class Flamingo(BaseModel):
         outputs = outputs[:, len(input_text.input_ids[0]):]
 
         return self.post_process(outputs, data_samples)
+
+    def preprocess_text(self, data_samples, device):
+
+        prompts = []
+        for sample in data_samples:
+            if 'shots' in sample:
+                # few-shot
+                shot_prompt = ''.join([
+                    self.shot_prompt_tmpl.format(**shot)
+                    for shot in sample.get('shots')
+                ])
+            else:
+                # zero-shot
+                shot_prompt = self.zeroshot_prompt
+
+            final_prompt = self.final_prompt_tmpl.format(**sample.to_dict())
+            prompts.append(shot_prompt + final_prompt)
+
+        self.tokenizer.padding_side = 'left'
+        input_text = self.tokenizer(
+            prompts,
+            padding='longest',
+            truncation=True,
+            return_tensors='pt',
+            max_length=2000,
+        ).to(device)
+        return input_text
 
     def post_process(
             self, outputs: torch.Tensor,
@@ -229,3 +267,22 @@ class Flamingo(BaseModel):
                                                    1)[0]
 
         return data_samples
+
+    @staticmethod
+    def _load_adapter_hook(module, incompatible_keys):
+        """Avoid warning missing keys except adapter keys."""
+        import re
+
+        adapter_patterns = [
+            '^perceiver',
+            'lang_encoder.*embed_tokens',
+            'lang_encoder.*gated_cross_attn_layers',
+            'lang_encoder.*rotary_emb',
+        ]
+        for key in list(incompatible_keys.missing_keys):
+            if not any(re.match(pattern, key) for pattern in adapter_patterns):
+                incompatible_keys.missing_keys.remove(key)
+
+        for key in list(incompatible_keys.unexpected_keys):
+            if 'position_ids' in key:
+                incompatible_keys.unexpected_keys.remove(key)

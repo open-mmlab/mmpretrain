@@ -581,7 +581,7 @@ class MultiModalDataPreprocessor(BaseDataPreprocessor):
         """
         data = self.cast_data(data)
 
-        imgs = data['inputs']
+        imgs = data.get('inputs', None)
 
         def _process_img(img):
             # ------ To RGB ------
@@ -611,9 +611,8 @@ class MultiModalDataPreprocessor(BaseDataPreprocessor):
             imgs = _process_img(imgs)
         elif isinstance(imgs, Sequence):
             # B, T, C, H, W
-            imgs = torch.stack([_process_img(img)
-                                for img in imgs]).transpose(0, 1)
-        else:
+            imgs = torch.stack([_process_img(img) for img in imgs], dim=1)
+        elif imgs is not None:
             raise ValueError(f'{type(imgs)} is not supported for imgs inputs.')
 
         data_samples = data.get('data_samples', None)

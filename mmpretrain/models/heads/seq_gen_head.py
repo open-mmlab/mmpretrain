@@ -21,12 +21,14 @@ class SeqGenerationHead(BaseModule):
     def __init__(
         self,
         decoder: dict,
+        ignore_index=-100,
+        loss: dict = dict(type='LabelSmoothLoss', label_smooth_val=0.1),
         init_cfg: Optional[dict] = None,
     ) -> None:
         super(SeqGenerationHead, self).__init__(init_cfg=init_cfg)
         self.decoder = MODELS.build(decoder)
-        self.loss_fn = torch.nn.CrossEntropyLoss(
-            reduction='mean', label_smoothing=0.1, ignore_index=-100)
+        self.loss_fn = MODELS.build(loss)
+        self.ignore_index = ignore_index
 
     def forward(self, input_ids: torch.Tensor,
                 encoder_hidden_states: torch.Tensor,
@@ -83,9 +85,23 @@ class SeqGenerationHead(BaseModule):
         labels = labels[:, 1:].contiguous()
 
         vocab_size = prediction_scores.shape[-1]
+
+        # mask ignored index
+        if (labels == self.ignore_index).any():
+            labels = labels.view(-1).clone()
+            ignore_mask = (labels == self.ignore_index)
+            labels.masked_fill_(ignore_mask, 0)
+            weight = torch.logical_not(ignore_mask)
+            avg_factor = max(weight.sum(), 1)
+        else:
+            weight = None
+            avg_factor = labels.size(0)
+
         lm_loss = self.loss_fn(
             shifted_prediction_scores.view(-1, vocab_size),
-            labels.view(-1),
+            labels,
+            weight=weight,
+            avg_factor=avg_factor,
         )
         losses = {
             'seq_gen_lm_loss': lm_loss,

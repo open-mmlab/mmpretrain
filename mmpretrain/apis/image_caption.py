@@ -1,26 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 import numpy as np
-import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
 
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
-from .base import BaseInferencer, InputType, ModelType
+from .base import BaseInferencer, InputType
 from .model import list_models
 
 
-class ImageClassificationInferencer(BaseInferencer):
-    """The inferencer for image classification.
+class ImageCaptionInferencer(BaseInferencer):
+    """The inferencer for image caption.
 
     Args:
         model (BaseModel | str | Config): A model name or a path to the config
             file, or a :obj:`BaseModel` object. The model name can be found
-            by ``ImageClassificationInferencer.list_models()`` and you can also
+            by ``ImageCaptionInferencer.list_models()`` and you can also
             query it in :doc:`/modelzoo_statistics`.
         pretrained (str, optional): Path to the checkpoint. If None, it will
             try to find a pre-defined weight from the model you specified
@@ -31,65 +30,29 @@ class ImageClassificationInferencer(BaseInferencer):
             the ``model`` is a model name).
 
     Example:
-        1. Use a pre-trained model in MMPreTrain to inference an image.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')
-           >>> inferencer('demo/demo.JPEG')
-           [{'pred_score': array([...]),
-             'pred_label': 65,
-             'pred_score': 0.6649367809295654,
-             'pred_class': 'sea snake'}]
-
-        2. Use a config file and checkpoint to inference multiple images on GPU,
-           and save the visualization results in a folder.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer(
-                   model='configs/resnet/resnet50_8xb32_in1k.py',
-                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
-                   device='cuda')
-           >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
+        >>> from mmpretrain import ImageCaptionInferencer
+        >>> inferencer = ImageCaptionInferencer('blip-base_3rdparty_coco-caption')
+        >>> inferencer('demo/cat-dog.png')[0]
+        {'pred_caption': 'a puppy and a cat sitting on a blanket'}
     """  # noqa: E501
 
-    visualize_kwargs: set = {
-        'resize', 'rescale_factor', 'draw_score', 'show', 'show_dir',
-        'wait_time'
-    }
-
-    def __init__(self,
-                 model: ModelType,
-                 pretrained: Union[bool, str] = True,
-                 device: Union[str, torch.device, None] = None,
-                 classes=None,
-                 **kwargs) -> None:
-        super().__init__(
-            model=model, pretrained=pretrained, device=device, **kwargs)
-
-        if classes is not None:
-            self.classes = classes
-        else:
-            self.classes = getattr(self.model, '_dataset_meta',
-                                   {}).get('classes')
+    visualize_kwargs: set = {'resize', 'show', 'show_dir', 'wait_time'}
 
     def __call__(self,
-                 inputs: InputType,
+                 images: InputType,
                  return_datasamples: bool = False,
                  batch_size: int = 1,
                  **kwargs) -> dict:
         """Call the inferencer.
 
         Args:
-            inputs (str | array | list): The image path or array, or a list of
+            images (str | array | list): The image path or array, or a list of
                 images.
             return_datasamples (bool): Whether to return results as
                 :obj:`DataSample`. Defaults to False.
             batch_size (int): Batch size. Defaults to 1.
             resize (int, optional): Resize the short edge of the image to the
                 specified length before visualization. Defaults to None.
-            rescale_factor (float, optional): Rescale the image by the rescale
-                factor for visualization. This is helpful when the image is too
-                large or too small for visualization. Defaults to None.
             draw_score (bool): Whether to draw the prediction scores
                 of prediction categories. Defaults to True.
             show (bool): Whether to display the visualization result in a
@@ -102,11 +65,8 @@ class ImageClassificationInferencer(BaseInferencer):
         Returns:
             list: The inference results.
         """
-        return super().__call__(
-            inputs,
-            return_datasamples=return_datasamples,
-            batch_size=batch_size,
-            **kwargs)
+        return super().__call__(images, return_datasamples, batch_size,
+                                **kwargs)
 
     def _init_pipeline(self, cfg: Config) -> Callable:
         test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
@@ -140,8 +100,6 @@ class ImageClassificationInferencer(BaseInferencer):
                   show: bool = False,
                   wait_time: int = 0,
                   resize: Optional[int] = None,
-                  rescale_factor: Optional[float] = None,
-                  draw_score=True,
                   show_dir=None):
         if not show and show_dir is None:
             return None
@@ -167,17 +125,12 @@ class ImageClassificationInferencer(BaseInferencer):
             else:
                 out_file = None
 
-            self.visualizer.visualize_cls(
+            self.visualizer.visualize_image_caption(
                 image,
                 data_sample,
-                classes=self.classes,
                 resize=resize,
                 show=show,
                 wait_time=wait_time,
-                rescale_factor=rescale_factor,
-                draw_gt=False,
-                draw_pred=True,
-                draw_score=draw_score,
                 name=name,
                 out_file=out_file)
             visualization.append(self.visualizer.get_image())
@@ -194,17 +147,7 @@ class ImageClassificationInferencer(BaseInferencer):
 
         results = []
         for data_sample in preds:
-            pred_scores = data_sample.pred_score
-            pred_score = float(torch.max(pred_scores).item())
-            pred_label = torch.argmax(pred_scores).item()
-            result = {
-                'pred_scores': pred_scores.detach().cpu().numpy(),
-                'pred_label': pred_label,
-                'pred_score': pred_score,
-            }
-            if self.classes is not None:
-                result['pred_class'] = self.classes[pred_label]
-            results.append(result)
+            results.append({'pred_caption': data_sample.get('pred_caption')})
 
         return results
 
@@ -218,4 +161,4 @@ class ImageClassificationInferencer(BaseInferencer):
         Returns:
             List[str]: a list of model names.
         """
-        return list_models(pattern=pattern, task='Image Classification')
+        return list_models(pattern=pattern, task='Image Caption')

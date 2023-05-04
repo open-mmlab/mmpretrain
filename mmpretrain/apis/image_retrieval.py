@@ -7,57 +7,56 @@ import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import BaseDataset, Compose, default_collate
-from mmengine.device import get_device
-from mmengine.infer import BaseInferencer
-from mmengine.model import BaseModel
-from mmengine.runner import load_checkpoint
 
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
-from .model import get_model, list_models
-
-ModelType = Union[BaseModel, str, Config]
-InputType = Union[str, np.ndarray, list]
+from .base import BaseInferencer, InputType, ModelType
+from .model import list_models
 
 
 class ImageRetrievalInferencer(BaseInferencer):
     """The inferencer for image to image retrieval.
 
     Args:
-        model (BaseModel | str | Config): A model name or a path to the confi
+        model (BaseModel | str | Config): A model name or a path to the config
             file, or a :obj:`BaseModel` object. The model name can be found
-            by ``ImageClassificationInferencer.list_models()`` and you can also
+            by ``ImageRetrievalInferencer.list_models()`` and you can also
             query it in :doc:`/modelzoo_statistics`.
-        weights (str, optional): Path to the checkpoint. If None, it will try
-            to find a pre-defined weight from the model you specified
+        prototype (str | list | dict | DataLoader, BaseDataset): The images to
+            be retrieved. It can be the following types:
+
+            - str: The directory of the the images.
+            - list: A list of path of the images.
+            - dict: A config dict of the a prototype dataset.
+            - BaseDataset: A prototype dataset.
+            - DataLoader: A data loader to load the prototype data.
+
+        prototype_cache (str, optional): The path of the generated prototype
+            features. If exists, directly load the cache instead of re-generate
+            the prototype features. If not exists, save the generated features
+            to the path. Defaults to None.
+        pretrained (str, optional): Path to the checkpoint. If None, it will
+            try to find a pre-defined weight from the model you specified
             (only work if the ``model`` is a model name). Defaults to None.
-        device (str, optional): Device to run inference. If None, use CPU or
-            the device of the input model. Defaults to None.
+        device (str, optional): Device to run inference. If None, the available
+            device will be automatically used. Defaults to None.
+        **kwargs: Other keyword arguments to initialize the model (only work if
+            the ``model`` is a model name).
 
     Example:
-        1. Use a pre-trained model in MMPreTrain to inference an image.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')
-           >>> inferencer('demo/demo.JPEG')
-           [{'pred_score': array([...]),
-             'pred_label': 65,
-             'pred_score': 0.6649367809295654,
-             'pred_class': 'sea snake'}]
-
-        2. Use a config file and checkpoint to inference multiple images on GPU,
-           and save the visualization results in a folder.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer(
-                   model='configs/resnet/resnet50_8xb32_in1k.py',
-                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
-                   device='cuda')
-           >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
+        >>> from mmpretrain import ImageRetrievalInferencer
+        >>> inferencer = ImageRetrievalInferencer(
+        ...     'resnet50-arcface_8xb32_inshop',
+        ...     prototype='./demo/',
+        ...     prototype_cache='img_retri.pth')
+        >>> inferencer('demo/cat-dog.png', topk=2)[0][1]
+        {'match_score': tensor(0.4088, device='cuda:0'),
+         'sample_idx': 3,
+         'sample': {'img_path': './demo/dog.jpg'}}
     """  # noqa: E501
 
     visualize_kwargs: set = {
-        'draw_score', 'resize', 'show_dir', 'show', 'wait_time'
+        'draw_score', 'resize', 'show_dir', 'show', 'wait_time', 'topk'
     }
     postprocess_kwargs: set = {'topk'}
 
@@ -65,36 +64,19 @@ class ImageRetrievalInferencer(BaseInferencer):
         self,
         model: ModelType,
         prototype,
-        prototype_vecs=None,
+        prototype_cache=None,
         prepare_batch_size=8,
         pretrained: Union[bool, str] = True,
         device: Union[str, torch.device, None] = None,
+        **kwargs,
     ) -> None:
-        device = device or get_device()
-
-        if isinstance(model, BaseModel):
-            if isinstance(pretrained, str):
-                load_checkpoint(model, pretrained, map_location='cpu')
-            model = model.to(device)
-        else:
-            model = get_model(model, pretrained, device)
-
-        model.eval()
-
-        self.config = model.config
-        self.model = model
-        self.pipeline = self._init_pipeline(self.config)
-        self.collate_fn = default_collate
-        self.visualizer = None
+        super().__init__(
+            model=model, pretrained=pretrained, device=device, **kwargs)
 
         self.prototype_dataset = self._prepare_prototype(
-            prototype, prototype_vecs, prepare_batch_size)
+            prototype, prototype_cache, prepare_batch_size)
 
-        # An ugly hack to escape from the duplicated arguments check in the
-        # base class
-        self.visualize_kwargs.add('topk')
-
-    def _prepare_prototype(self, prototype, prototype_vecs=None, batch_size=8):
+    def _prepare_prototype(self, prototype, cache=None, batch_size=8):
         from mmengine.dataset import DefaultSampler
         from torch.utils.data import DataLoader
 
@@ -102,23 +84,30 @@ class ImageRetrievalInferencer(BaseInferencer):
             return DataLoader(
                 dataset,
                 batch_size=batch_size,
-                collate_fn=self.collate_fn,
+                collate_fn=default_collate,
                 sampler=DefaultSampler(dataset, shuffle=False),
                 persistent_workers=False,
             )
 
-        test_pipeline = self.config.test_dataloader.dataset.pipeline
-
         if isinstance(prototype, str):
             # A directory path of images
-            from mmpretrain.datasets import CustomDataset
-            dataset = CustomDataset(
-                data_root=prototype, pipeline=test_pipeline, with_label=False)
+            prototype = dict(
+                type='CustomDataset', with_label=False, data_root=prototype)
+
+        if isinstance(prototype, list):
+            test_pipeline = [dict(type='LoadImageFromFile'), self.pipeline]
+            dataset = BaseDataset(
+                lazy_init=True, serialize_data=False, pipeline=test_pipeline)
+            dataset.data_list = [{
+                'sample_idx': i,
+                'img_path': file
+            } for i, file in enumerate(prototype)]
+            dataset._fully_initialized = True
             dataloader = build_dataloader(dataset)
         elif isinstance(prototype, dict):
             # A config of dataset
             from mmpretrain.registry import DATASETS
-            prototype.setdefault('pipeline', test_pipeline)
+            test_pipeline = [dict(type='LoadImageFromFile'), self.pipeline]
             dataset = DATASETS.build(prototype)
             dataloader = build_dataloader(dataset)
         elif isinstance(prototype, DataLoader):
@@ -130,25 +119,25 @@ class ImageRetrievalInferencer(BaseInferencer):
         else:
             raise TypeError(f'Unsupported prototype type {type(prototype)}.')
 
-        if prototype_vecs is not None and Path(prototype_vecs).exists():
-            self.model.prototype = prototype_vecs
+        if cache is not None and Path(cache).exists():
+            self.model.prototype = cache
         else:
             self.model.prototype = dataloader
         self.model.prepare_prototype()
 
         from mmengine.logging import MMLogger
         logger = MMLogger.get_current_instance()
-        if prototype_vecs is None:
+        if cache is None:
             logger.info('The prototype has been prepared, you can use '
-                        '`save_prototype_vecs` to dump it into a pickle '
+                        '`save_prototype` to dump it into a pickle '
                         'file for the future usage.')
-        elif not Path(prototype_vecs).exists():
-            self.save_prototype_vecs(prototype_vecs)
-            logger.info(f'The prototype has been saved at {prototype_vecs}.')
+        elif not Path(cache).exists():
+            self.save_prototype(cache)
+            logger.info(f'The prototype has been saved at {cache}.')
 
         return dataset
 
-    def save_prototype_vecs(self, path):
+    def save_prototype(self, path):
         self.model.dump_prototype(path)
 
     def __call__(self,
@@ -205,7 +194,7 @@ class ImageRetrievalInferencer(BaseInferencer):
         pipeline = Compose([load_image, self.pipeline])
 
         chunked_data = self._get_chunk_data(map(pipeline, inputs), batch_size)
-        yield from map(self.collate_fn, chunked_data)
+        yield from map(default_collate, chunked_data)
 
     def visualize(self,
                   ori_inputs: List[InputType],
@@ -294,49 +283,3 @@ class ImageRetrievalInferencer(BaseInferencer):
             List[str]: a list of model names.
         """
         return list_models(pattern=pattern, task='Image Retrieval')
-
-    def _dispatch_kwargs(self, **kwargs):
-        """Dispatch kwargs to preprocess(), forward(), visualize() and
-        postprocess() according to the actual demands.
-
-        Override this method to allow same argument for different methods.
-
-        Returns:
-            Tuple[Dict, Dict, Dict, Dict]: kwargs passed to preprocess,
-            forward, visualize and postprocess respectively.
-        """
-        method_kwargs = set.union(
-            self.preprocess_kwargs,
-            self.forward_kwargs,
-            self.visualize_kwargs,
-            self.postprocess_kwargs,
-        )
-
-        union_kwargs = method_kwargs | set(kwargs.keys())
-        if union_kwargs != method_kwargs:
-            unknown_kwargs = union_kwargs - method_kwargs
-            raise ValueError(
-                f'unknown argument {unknown_kwargs} for `preprocess`, '
-                '`forward`, `visualize` and `postprocess`')
-
-        preprocess_kwargs = {}
-        forward_kwargs = {}
-        visualize_kwargs = {}
-        postprocess_kwargs = {}
-
-        for key, value in kwargs.items():
-            if key in self.preprocess_kwargs:
-                preprocess_kwargs[key] = value
-            if key in self.forward_kwargs:
-                forward_kwargs[key] = value
-            if key in self.visualize_kwargs:
-                visualize_kwargs[key] = value
-            if key in self.postprocess_kwargs:
-                postprocess_kwargs[key] = value
-
-        return (
-            preprocess_kwargs,
-            forward_kwargs,
-            visualize_kwargs,
-            postprocess_kwargs,
-        )

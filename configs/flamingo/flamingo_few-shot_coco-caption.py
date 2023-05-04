@@ -12,11 +12,12 @@ model = dict(
         arch='l',
         patch_size=14,
         pre_norm=True,
-        init_cfg=dict(type='Pretrained', checkpoint='clip_vit_l_14.pth'),
         norm_cfg=dict(type='LN', eps=1e-5),
         layer_cfgs=dict(act_cfg=dict(type='QuickGELU')),
         final_norm=False,
-        out_type='raw'),
+        out_type='raw',
+        pretrained='/mnt/HDD/ckpt/clip_vit_l_14.pth',
+    ),
     lang_encoder=dict(
         base=dict(
             type='AutoModelForCausalLM',
@@ -28,12 +29,13 @@ model = dict(
             cross_attn_every_n_layers=4,
             use_media_placement_augmentation=False),
     ),
-    task='vqa',
-    generation_cfg=dict(num_beams=3, max_new_tokens=5, length_penalty=-2.0))
+    task='caption',
+    shot_prompt_tmpl='<image>Output:{caption}<|endofchunk|>',
+    final_prompt_tmpl='<image>Output:',
+    generation_cfg=dict(num_beams=3, max_new_tokens=20, length_penalty=-2.0))
 
 # data settings
 data_preprocessor = dict(
-    type='MultiModalDataPreprocessor',
     mean=[122.770938, 116.7460125, 104.09373615],
     std=[68.5005327, 66.6321579, 70.32316305],
     to_rgb=True,
@@ -57,9 +59,7 @@ test_pipeline = [
     ),
     dict(
         type='PackInputs',
-        algorithm_keys=[
-            'question', 'gt_answer', 'gt_answer_weight', 'nshot_prompt'
-        ],
+        algorithm_keys=['gt_caption', 'shots'],
         meta_keys=['image_id']),
 ]
 
@@ -67,13 +67,12 @@ val_dataloader = dict(
     batch_size=8,
     num_workers=8,
     dataset=dict(
-        type='FlamingoEvalCOCOVQA',
+        type='FlamingoEvalCOCOCaption',
         data_root='data/coco',
-        ann_file='annotations/v2_mscoco_train2014_annotations.json',
-        question_file=  # noqa: E251
-        'annotations/v2_OpenEnded_mscoco_train2014_questions.json',
+        ann_file='annotations/captions_train2014.json',
+        data_prefix=dict(img_path='train2014'),
         pipeline=test_pipeline,
-        num_shots=0,
+        num_shots=2,
         num_support_examples=2048,
         num_query_examples=5000,
     ),
@@ -81,7 +80,9 @@ val_dataloader = dict(
     persistent_workers=True,
 )
 
-val_evaluator = dict(type='VQAAcc')
+val_evaluator = dict(
+    type='COCOCaption',
+    ann_file='data/coco/annotations/captions_train2014.json')
 
 # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader

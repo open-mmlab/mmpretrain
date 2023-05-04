@@ -1,60 +1,43 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, List, Optional, Union
 
-import numpy as np
 import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
-from mmengine.device import get_device
-from mmengine.infer import BaseInferencer
-from mmengine.model import BaseModel
-from mmengine.runner import load_checkpoint
 
 from mmpretrain.registry import TRANSFORMS
-from .model import get_model, list_models
-
-ModelType = Union[BaseModel, str, Config]
-InputType = Union[str, np.ndarray, list]
+from .base import BaseInferencer, InputType
+from .model import list_models
 
 
 class FeatureExtractor(BaseInferencer):
     """The inferencer for extract features.
 
     Args:
-        model (BaseModel | str | Config): A model name or a path to the confi
+        model (BaseModel | str | Config): A model name or a path to the config
             file, or a :obj:`BaseModel` object. The model name can be found
-            by ``FeatureExtractor.list_models()``.
-        pretrained (bool | str): When use name to specify model, you can
-            use ``True`` to load the pre-defined pretrained weights. And you
-            can also use a string to specify the path or link of weights to
-            load. Defaults to True.
-        device (str, optional): Device to run inference. If None, use CPU or
-            the device of the input model. Defaults to None.
-    """
+            by ``FeatureExtractor.list_models()`` and you can also query it in
+            :doc:`/modelzoo_statistics`.
+        pretrained (str, optional): Path to the checkpoint. If None, it will
+            try to find a pre-defined weight from the model you specified
+            (only work if the ``model`` is a model name). Defaults to None.
+        device (str, optional): Device to run inference. If None, the available
+            device will be automatically used. Defaults to None.
+        **kwargs: Other keyword arguments to initialize the model (only work if
+            the ``model`` is a model name).
 
-    def __init__(
-        self,
-        model: ModelType,
-        pretrained: Union[bool, str] = True,
-        device: Union[str, torch.device, None] = None,
-    ) -> None:
-        device = device or get_device()
-
-        if isinstance(model, BaseModel):
-            if isinstance(pretrained, str):
-                load_checkpoint(model, pretrained, map_location='cpu')
-            model = model.to(device)
-        else:
-            model = get_model(model, pretrained, device)
-
-        model.eval()
-
-        self.config = model.config
-        self.model = model
-        self.pipeline = self._init_pipeline(self.config)
-        self.collate_fn = default_collate
-        self.visualizer = None
+    Example:
+        >>> from mmpretrain import FeatureExtractor
+        >>> inferencer = FeatureExtractor('resnet50_8xb32_in1k', backbone=dict(out_indices=(0, 1, 2, 3)))
+        >>> feats = inferencer('demo/demo.JPEG', stage='backbone')[0]
+        >>> for feat in feats:
+        >>>     print(feat.shape)
+        torch.Size([256, 56, 56])
+        torch.Size([512, 28, 28])
+        torch.Size([1024, 14, 14])
+        torch.Size([2048, 7, 7])
+    """  # noqa: E501
 
     def __call__(self,
                  inputs: InputType,
@@ -122,7 +105,7 @@ class FeatureExtractor(BaseInferencer):
         pipeline = Compose([load_image, self.pipeline])
 
         chunked_data = self._get_chunk_data(map(pipeline, inputs), batch_size)
-        yield from map(self.collate_fn, chunked_data)
+        yield from map(default_collate, chunked_data)
 
     def visualize(self):
         raise NotImplementedError(

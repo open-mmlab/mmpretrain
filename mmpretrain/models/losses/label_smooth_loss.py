@@ -62,7 +62,9 @@ class LabelSmoothLoss(nn.Module):
                  use_sigmoid=None,
                  mode='original',
                  reduction='mean',
-                 loss_weight=1.0):
+                 loss_weight=1.0,
+                 class_weight=None,
+                 pos_weight=None):
         super().__init__()
         self.num_classes = num_classes
         self.loss_weight = loss_weight
@@ -101,7 +103,11 @@ class LabelSmoothLoss(nn.Module):
             use_sigmoid = False if use_sigmoid is None else use_sigmoid
 
         self.ce = CrossEntropyLoss(
-            use_sigmoid=use_sigmoid, use_soft=not use_sigmoid)
+            use_sigmoid=use_sigmoid,
+            use_soft=not use_sigmoid,
+            reduction=reduction,
+            class_weight=class_weight,
+            pos_weight=pos_weight)
 
     def generate_one_hot_like_label(self, label):
         """This function takes one-hot or index label vectors and computes one-

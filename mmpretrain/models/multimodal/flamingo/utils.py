@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmpretrain
 from mmpretrain.registry import MODELS
 
 
@@ -10,7 +9,7 @@ class ExtendModule:
         if isinstance(base, dict):
             base = MODELS.build(base)
 
-        adapter_module = getattr(mmpretrain.models, adapter.pop('type'))
+        adapter_module = MODELS.get(adapter.pop('type'))
         cls.extend_instance(base, adapter_module)
         return adapter_module.extend_init(base, **adapter)
 

@@ -141,4 +141,4 @@ class ApplyToList(BaseTransform):
                     ]
             return final_output
         else:
-            return self.transforms(self, results)
+            return self.transforms(results)

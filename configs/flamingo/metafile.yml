@@ -1,0 +1,40 @@
+Collections:
+  - Name: Flamingo
+    Metadata:
+      Architecture:
+        - Transformer
+        - Gated Cross-Attention Dense
+    Paper:
+      Title: 'Flamingo: a Visual Language Model for Few-Shot Learning'
+      URL: https://arxiv.org/abs/2204.14198
+    README: configs/flamingo/README.md
+
+Models:
+  - Name: flamingo_3rdparty_coco-caption
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Flamingo
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics: null
+    Weights: /mnt/HDD/ckpt/adapter.pth
+    Config: configs/flamingo/flamingo_zero-shot_coco-caption.py
+    Converted From:
+      Weights: null
+      Code: null
+  - Name: flamingo_3rdparty_coco-vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Flamingo
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics: null
+    Weights: /mnt/HDD/ckpt/adapter.pth
+    Config: configs/flamingo/flamingo_zero-shot_coco-vqa.py
+    Converted From:
+      Weights: null
+      Code: null

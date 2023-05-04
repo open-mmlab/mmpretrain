@@ -173,7 +173,10 @@ def generate_summary_table(task, model_result_pairs, title=None):
             continue
         name = model.name
         params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
-        flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
+        if model.metadata.flops is not None:
+            flops = f'{model.metadata.flops / 1e9:.2f}'  # Flops
+        else:
+            flops = None
         readme = Path(model.collection.filepath).parent.with_suffix('.md').name
         page = f'[link]({PAPERS_ROOT / readme})'
         model_metrics = []

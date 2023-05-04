@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import itertools
 from collections import ChainMap
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
@@ -9,12 +8,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model import BaseModel
-from mmengine.utils import track_iter_progress
 from torch import distributed as torch_dist
-from torch.utils.data import DataLoader
 
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
+from mmpretrain.utils import track_on_main_process
 
 
 def all_gather_concat(data: torch.Tensor) -> torch.Tensor:
@@ -82,26 +80,17 @@ class BLIPRetriever(BaseModel):
             ranks for image text matching in training. Defaults to True.
         temperature (float): Temperature parameter that controls the
             concentration level of the distribution. Defaults to 0.07.
+        fast_match (bool): If False, select topk similarity as candidates and
+            compute the matching score. If True, return the similarity as the
+            matching score directly. Defaults to False.
         topk (int): Select topk similarity as candidates for compute matching
             scores. Notice that this is not the topk in evaluation.
             Defaults to 256.
-        train_cfg (Optional[dict]): The training setting. The acceptable
-            fields are:
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmmultimodal.model.utils.augment`.
-            Defaults to None.
         data_preprocessor (Optional[dict]): The config for preprocessing input
             data. If None or no specified type, it will use
             "MutimodalDataPreprocessor" as type.
             See :class:`MutimodalDataPreprocessor` for more details.
             Defaults to None.
-        prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
-            retrieved. The following four types are supported.
-            - DataLoader: The original dataloader serves as the prototype.
-            - dict: The configuration to construct Dataloader.
-            - str: The path of the saved vector.
-            - torch.Tensor: The saved tensor whose dimension should be dim.
         init_cfg (Optional[dict]): the config to control the initialization.
             Defaults to None.
     """
@@ -118,20 +107,16 @@ class BLIPRetriever(BaseModel):
                  momentum: float = .995,
                  negative_all_rank: bool = True,
                  temperature: float = 0.07,
+                 fast_match: bool = False,
                  topk: int = 256,
                  max_txt_len: int = 20,
-                 train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
-                 prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  init_cfg: Optional[dict] = None):
         if data_preprocessor is None:
             data_preprocessor = {}
             # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+            data_preprocessor.setdefault(
+                'type', 'mmpretrain.MultiModalDataPreprocessor')
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -153,14 +138,6 @@ class BLIPRetriever(BaseModel):
 
         if multimodal_head is not None:
             self.multimodal_head = MODELS.build(multimodal_head)
-
-        assert isinstance(
-            prototype, (str, torch.Tensor, dict, DataLoader, type(None))), (
-                'The `prototype` in  `Retriever` must be a path, '
-                'a torch.Tensor, a dataloader, a dataloader dict format config'
-                ' or None.')
-        self.prototype = prototype
-        self.prototype_inited = False
 
         if tokenizer is not None:
             self.tokenizer = TOKENIZER.build(tokenizer)
@@ -191,6 +168,7 @@ class BLIPRetriever(BaseModel):
 
         # Notice that this topk is used for select k candidate to compute
         # image-text score, but not the final metric topk in evaluation.
+        self.fast_match = fast_match
         self.topk = topk
 
         self.max_txt_len = max_txt_len
@@ -272,14 +250,21 @@ class BLIPRetriever(BaseModel):
         self,
         images: torch.Tensor = None,
         data_samples: List[DataSample] = None,
+        return_texts=True,
+        return_embeds=None,
     ) -> Dict[str, torch.Tensor]:
         """Extract features from the input dict.
 
         Args:
-            inputs (dict): A batch of inputs. The input tensor with of
-                at least one modality. For image, the value is a tensor
-                of shape (N, C, ...) in general.
-                For text, the value is a dict of tokenized text inputs.
+            images (tensor, optional): The images to extract features.
+                Defaults to None.
+            data_samples (list, optional): The data samples containing texts
+                to extract features. Defaults to None.
+            return_texts (bool): Whether to return the tokenized text and the
+                corresponding attention masks. Defaults to True.
+            return_embeds (bool): Whether to return the text embedding and
+                image embedding. Defaults to None, which means to use
+                ``self.fast_match``.
 
         Returns:
             Tuple[torch.Tensor]: The output features.
@@ -294,18 +279,29 @@ class BLIPRetriever(BaseModel):
         assert images is not None or texts is not None, \
             'At least single modality should be passed as inputs.'
 
-        results = {
-            'text_ids': texts.input_ids,
-            'text_attn_mask': texts.attention_mask,
-        }
+        results = {}
+        if texts is not None and return_texts:
+            results.update({
+                'text_ids': texts.input_ids,
+                'text_attn_mask': texts.attention_mask,
+            })
+
+        if return_embeds is None:
+            return_embeds = not self.fast_match
 
         # extract image features
         if images is not None:
-            results.update(self._extract_feat(images, modality='images'))
+            output = self._extract_feat(images, modality='images')
+            results['image_feat'] = output['image_feat']
+            if return_embeds:
+                results['image_embeds'] = output['image_embeds']
 
         # extract text features
         if texts is not None:
-            results.update(self._extract_feat(texts, modality='texts'))
+            output = self._extract_feat(texts, modality='texts')
+            results['text_feat'] = output['text_feat']
+            if return_embeds:
+                results['text_embeds'] = output['text_embeds']
 
         return results
 
@@ -370,7 +366,7 @@ class BLIPRetriever(BaseModel):
             Dict[str, torch.tensor]: a dictionary of loss components of
                 both head and multimodal head.
         """
-        output = self.extract_feat(images, data_samples)
+        output = self.extract_feat(images, data_samples, return_embeds=True)
 
         text_ids = output['text_ids']
         text_attn_mask = output['text_attn_mask']
@@ -509,14 +505,17 @@ class BLIPRetriever(BaseModel):
         text_ids = feats['text_ids']
         text_ids[:, 0] = self.tokenizer.additional_special_tokens_ids[0]
         text_attn_mask = feats['text_attn_mask']
-        image_embeds = feats['image_embeds']
+        image_embeds = feats.get('image_embeds', None)
         image_feat = feats['image_feat']
         text_feat = feats['text_feat']
 
         num_images = num_images or image_feat.size(0)
         num_texts = num_texts or text_feat.size(0)
 
-        image_embeds_all = all_gather_concat(image_embeds)[:num_images]
+        if not self.fast_match:
+            image_embeds_all = all_gather_concat(image_embeds)[:num_images]
+        else:
+            image_embeds_all = None
         image_feat_all = all_gather_concat(image_feat)[:num_images]
         text_feat_all = all_gather_concat(text_feat)[:num_texts]
         text_ids_all = all_gather_concat(text_ids)[:num_texts]
@@ -566,10 +565,13 @@ class BLIPRetriever(BaseModel):
 
         # compute i2t sim matrix
         sim_matrix_i2t = img_feats @ text_feats.t()
+        if self.fast_match:
+            return sim_matrix_i2t
+
         score_matrix_i2t = torch.full((img_feats.size(0), text_feats.size(0)),
                                       -100.0).to(self.device)
-
-        for i in track_iter_progress(range(img_feats.size(0))):
+        for i in track_on_main_process(
+                range(img_feats.size(0)), 'Compute I2T scores...'):
             sims = sim_matrix_i2t[i]
             topk_sim, topk_idx = sims.topk(k=self.topk, dim=0)
 
@@ -610,10 +612,13 @@ class BLIPRetriever(BaseModel):
 
         # compute t2i sim matrix
         sim_matrix_t2i = text_feats @ img_feats.t()
+        if self.fast_match:
+            return sim_matrix_t2i
+
         score_matrix_t2i = torch.full((text_feats.size(0), img_feats.size(0)),
                                       -100.0).to(self.device)
-
-        for i in track_iter_progress(range(text_feats.size(0))):
+        for i in track_on_main_process(
+                range(text_feats.size(0)), 'Compute T2I scores...'):
             sims = sim_matrix_t2i[i]
             topk_sim, topk_idx = sims.topk(k=self.topk, dim=0)
 
@@ -655,33 +660,27 @@ class BLIPRetriever(BaseModel):
         # create data sample if not exists
         if data_samples is None:
             data_samples = [DataSample() for _ in range(result.size(0))]
-        elif len(data_samples) != result.size(0):
-            new_data_samples = [DataSample() for _ in range(result.size(0))]
-            gt_image_id_list = list(
-                itertools.chain(*[ds.gt_image_id for ds in data_samples]))
-            gt_text_id_list = list(
-                itertools.chain(*[ds.gt_text_id for ds in data_samples]))
-
-            assert len(gt_image_id_list) == len(gt_text_id_list) == len(
-                new_data_samples)
-            for ds, gt_image_id, gt_text_id in zip(new_data_samples,
-                                                   gt_image_id_list,
-                                                   gt_text_id_list):
-                if mode == 'i2t':
-                    ds.gt_label = gt_text_id
-                elif mode == 't2i':
-                    ds.gt_label = gt_image_id
+        elif mode == 't2i':
+            # Process data samples to align with the num of texts.
+            new_data_samples = []
+            for sample in data_samples:
+                if isinstance(sample.text, (list, tuple)):
+                    texts = sample.text
                 else:
-                    raise ValueError(f'Mode {mode} is not supported.')
+                    texts = [sample.text]
+                for i, text in enumerate(texts):
+                    new_sample = DataSample(text=text)
+                    if 'gt_image_id' in sample:
+                        new_sample.gt_label = sample.gt_image_id[i]
+                    new_data_samples.append(new_sample)
+            assert len(new_data_samples) == result.size(0)
             data_samples = new_data_samples
+        elif mode == 'i2t':
+            for sample in data_samples:
+                if 'gt_text_id' in sample:
+                    sample.gt_label = sample.gt_text_id
         else:
-            for ds in data_samples:
-                if mode == 'i2t':
-                    ds.gt_label = ds.gt_text_id
-                elif mode == 't2i':
-                    ds.gt_label = ds.gt_image_id
-                else:
-                    raise ValueError(f'Type {mode} is not supported.')
+            raise ValueError(f'Type {mode} is not supported.')
 
         for data_sample, score in zip(data_samples, result):
             idx = score.argmax(keepdim=True).detach()

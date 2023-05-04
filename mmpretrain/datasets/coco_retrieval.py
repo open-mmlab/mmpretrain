@@ -15,7 +15,7 @@ class COCORetrieval(BaseDataset):
 
     Args:
         ann_file (str): Annotation file path.
-        is_eval (bool): Whether dataset is used for evaluation. This will
+        test_mode (bool): Whether dataset is used for evaluation. This will
             decide the annotation format in data list annotations.
             Defaults to False.
         data_root (str): The root directory for ``data_prefix`` and
@@ -24,10 +24,6 @@ class COCORetrieval(BaseDataset):
         pipeline (Sequence): Processing pipeline. Defaults to an empty tuple.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
-
-    def __init__(self, *arg, is_eval=False, **kwarg):
-        self.is_eval = is_eval
-        super().__init__(*arg, **kwarg)
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
@@ -76,6 +72,6 @@ class COCORetrieval(BaseDataset):
         self.text_size = len(anno_info['annotations'])
 
         # return needed format data list
-        if self.is_eval:
+        if self.test_mode:
             return list(img_dict.values())
         return train_list

@@ -1,45 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from typing import Optional
 
-from mmengine.registry import Registry
-from transformers import (AutoModelForCausalLM, AutoTokenizer, BartTokenizer,
-                          BertTokenizer, BertTokenizerFast, LlamaTokenizer)
+from transformers import (AutoTokenizer, BartTokenizer, BertTokenizer,
+                          LlamaTokenizer, BertTokenizerFast)
 
-from mmpretrain.registry import MODELS, TOKENIZER
-
-
-def register_hf_tokenizer(cls: Optional[type] = None,
-                          registry: Registry = TOKENIZER):
-    """Register HuggingFace-style tokenizer class."""
-    if cls is None:
-
-        # use it as a decorator: @register_hf_tokenizer()
-        def _register(cls):
-            register_hf_tokenizer(cls=cls)
-            return cls
-
-        return _register
-
-    def from_pretrained(**kwargs):
-        if ('pretrained_model_name_or_path' not in kwargs
-                and 'name_or_path' not in kwargs):
-            raise TypeError(
-                f'{cls.__name__}.from_pretrained() missing required '
-                "argument 'pretrained_model_name_or_path' or 'name_or_path'.")
-        # `pretrained_model_name_or_path` is too long for config,
-        # add an alias name `name_or_path` here.
-        name_or_path = kwargs.pop('pretrained_model_name_or_path',
-                                  kwargs.pop('name_or_path'))
-        return cls.from_pretrained(name_or_path, **kwargs)
-
-    registry._register_module(module=from_pretrained, module_name=cls.__name__)
-    return cls
-
+from .huggingface import register_hf_tokenizer
 
 register_hf_tokenizer(AutoTokenizer)
 register_hf_tokenizer(LlamaTokenizer)
-register_hf_tokenizer(AutoModelForCausalLM, registry=MODELS)
 
 
 @register_hf_tokenizer()

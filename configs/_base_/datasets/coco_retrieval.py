@@ -82,7 +82,7 @@ val_dataloader = dict(
         ann_file='annotations/caption_karpathy_val2014.json',
         pipeline=test_pipeline,
         # This is required for evaluation
-        is_eval=True,
+        test_mode=True,
     ),
     sampler=dict(type='SequentialSampler', subsample_type='sequential'),
     persistent_workers=True,

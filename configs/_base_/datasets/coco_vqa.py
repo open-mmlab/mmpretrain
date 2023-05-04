@@ -1,7 +1,6 @@
 # data settings
 
 data_preprocessor = dict(
-    type='MultiModalDataPreprocessor',
     mean=[122.770938, 116.7460125, 104.09373615],
     std=[68.5005327, 66.6321579, 70.32316305],
     to_rgb=True,
@@ -17,7 +16,7 @@ train_pipeline = [
     dict(
         type='PackInputs',
         algorithm_keys=['question', 'gt_answer', 'gt_answer_weight'],
-        meta_keys=['question_id'],
+        meta_keys=['question_id', 'image_id'],
     ),
 ]
 
@@ -30,8 +29,8 @@ test_pipeline = [
         backend='pillow'),
     dict(
         type='PackInputs',
-        algorithm_keys=['question'],
-        meta_keys=['question_id'],
+        algorithm_keys=['question', 'gt_answer', 'gt_answer_weight'],
+        meta_keys=['question_id', 'image_id'],
     ),
 ]
 
@@ -41,7 +40,10 @@ train_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        ann_file='annotations/vqa_train.json',
+        data_prefix='train2014',
+        question_file=
+        'annotations/v2_OpenEnded_mscoco_train2014_questions.json',
+        ann_file='annotations/v2_mscoco_train2014_annotations.json',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
@@ -54,11 +56,14 @@ val_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        ann_file='annotations/vqa_val.json',
+        data_prefix='val2014',
+        question_file='annotations/v2_OpenEnded_mscoco_val2014_questions.json',
+        ann_file='annotations/v2_mscoco_val2014_annotations.json',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
+val_evaluator = dict(type='VQAAcc')
 
 test_dataloader = dict(
     batch_size=16,
@@ -66,10 +71,10 @@ test_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        ann_file='annotations/vqa_test.json',
+        data_prefix='test2015',
+        question_file=  # noqa: E251
+        'annotations/v2_OpenEnded_mscoco_test2015_questions.json',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
-
-val_evaluator = dict(type='VQAAcc')
-test_evaluator = val_evaluator
+test_evaluator = dict(type='ReportVQA', file_path='vqa_test.json')

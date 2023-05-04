@@ -29,28 +29,12 @@ model = dict(
 
 # data settings
 data_preprocessor = dict(
-    type='MultiModalDataPreprocessor',
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     to_rgb=True,
 )
 
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='Resize',
-        scale=(480, 480),
-        interpolation='bicubic',
-        backend='pillow'),
-    dict(
-        type='PackInputs',
-        algorithm_keys=['question', 'gt_answer', 'gt_answer_weight'],
-        meta_keys=['question_id'],
-    ),
-]
-
 train_dataloader = None  # Eval only
-test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
 # schedule settings
 train_cfg = None

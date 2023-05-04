@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmpretrain.utils.dependency import WITH_MULTIMODAL
 from .attention import (BEiTAttention, ChannelMultiheadAttention,
                         CrossMultiheadAttention, LeAttention,
                         MultiheadAttention, PromptMultiheadAttention,
@@ -24,7 +25,6 @@ from .position_encoding import (ConditionalPositionEncoding,
                                 build_2d_sincos_position_embedding)
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
-from .tokenizer import BLIP2Tokenizer, BLIPTokenizer, OFATokenizer
 from .vector_quantizer import NormEMAVectorQuantizer
 
 __all__ = [
@@ -72,9 +72,16 @@ __all__ = [
     'VideoDataPreprocessor',
     'CosineEMA',
     'ResLayerExtraNorm',
-    'BLIPTokenizer',
-    'OFATokenizer',
     'MultiModalDataPreprocessor',
     'QuickGELU',
-    'BLIP2Tokenizer',
 ]
+
+if WITH_MULTIMODAL:
+    from .huggingface import (no_load_hf_pretrained_model, register_hf_model,
+                              register_hf_tokenizer)
+    from .tokenizer import BLIP2Tokenizer, BLIPTokenizer, OFATokenizer
+
+    __all__ = [
+        'BLIPTokenizer', 'OFATokenizer', 'BLIP2Tokenizer', 'register_hf_model',
+        'register_hf_tokenizer', 'no_load_hf_pretrained_model'
+    ]

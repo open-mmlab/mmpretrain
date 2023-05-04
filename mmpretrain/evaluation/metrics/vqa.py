@@ -1,49 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Partly adopted from https://github.com/GT-Vision-Lab/VQA
 # Copyright (c) 2014, Aishwarya Agrawal
-from typing import Any, List, Optional, Sequence
+from typing import List, Optional
 
-from mmengine.evaluator import BaseMetric, DumpResults
+import mmengine
+from mmengine.evaluator import BaseMetric
+from mmengine.logging import MMLogger
 
 from mmpretrain.registry import METRICS
 
 
-@METRICS.register_module()
-class DumpVQAResult(DumpResults):
-    """Dump model predictions to a pickle/json file for offline evaluation.
-
-    Compare to `DumpResults` in MMEngine, this class allows to dump json file.
-
-    Args:
-        out_file_path (str): Path of the dumped file. Must end with '.pkl',
-            '.pickle' or '.json'.
-        collect_device (str): Device name used for collecting results from
-            different ranks during distributed training. Must be 'cpu' or
-            'gpu'. Defaults to 'cpu'.
-    """
-
-    def __init__(self,
-                 out_file_path: str,
-                 collect_device: str = 'cpu',
-                 prefix: Optional[str] = 'VQA') -> None:
-        super(DumpResults, self).__init__(
-            collect_device=collect_device, prefix=prefix)
-        if not out_file_path.endswith(('.pkl', '.pickle', '.json')):
-            raise ValueError('The output file must be a pkl or json file.')
-        self.out_file_path = out_file_path
-
-    def process(self, data_batch: Any, predictions: Sequence[dict]) -> None:
-        """transfer tensors in predictions to CPU."""
-        dumped_predictions = []
-        for prediction in predictions:
-            dumped_predictions.append({
-                'question_id': prediction['question_id'],
-                'answer': prediction['pred_answer']
-            })
-        super().process(data_batch, dumped_predictions)
-
-
-def _processPunctuation(inText):
+def _process_punctuation(inText):
     import re
     outText = inText
     punct = [
@@ -62,7 +29,7 @@ def _processPunctuation(inText):
     return outText
 
 
-def _processDigitArticle(inText):
+def _process_digit_article(inText):
     outText = []
     tempText = inText.lower().split()
     articles = ['a', 'an', 'the']
@@ -296,6 +263,53 @@ class VQAAcc(BaseMetric):
         answer = answer.replace('\n', ' ')
         answer = answer.replace('\t', ' ')
         answer = answer.strip()
-        answer = _processPunctuation(answer)
-        answer = _processDigitArticle(answer)
+        answer = _process_punctuation(answer)
+        answer = _process_digit_article(answer)
         return answer
+
+
+@METRICS.register_module()
+class ReportVQA(BaseMetric):
+    """Dump VQA result to the standard json format for VQA evaluation.
+
+    Args:
+        file_path (str): The file path to save the result file.
+        collect_device (str): Device name used for collecting results from
+            different ranks during distributed training. Must be 'cpu' or
+            'gpu'. Defaults to 'cpu'.
+        prefix (str, optional): The prefix that will be added in the metric
+            names to disambiguate homonymous metrics of different evaluators.
+            If prefix is not provided in the argument, self.default_prefix
+            will be used instead. Should be modified according to the
+            `retrieval_type` for unambiguous results. Defaults to TR.
+    """
+    default_prefix = 'VQA'
+
+    def __init__(self,
+                 file_path: str,
+                 collect_device: str = 'cpu',
+                 prefix: Optional[str] = None):
+        super().__init__(collect_device=collect_device, prefix=prefix)
+        if not file_path.endswith('.json'):
+            raise ValueError('The output file must be a json file.')
+        self.file_path = file_path
+
+    def process(self, data_batch, data_samples) -> None:
+        """transfer tensors in predictions to CPU."""
+        for sample in data_samples:
+            question_id = sample['question_id']
+            pred_answer = sample['pred_answer']
+
+            result = {
+                'question_id': int(question_id),
+                'answer': pred_answer,
+            }
+
+            self.results.append(result)
+
+    def compute_metrics(self, results: List):
+        """Dump the result to json file."""
+        mmengine.dump(results, self.file_path)
+        logger = MMLogger.get_current_instance()
+        logger.info(f'Results has been saved to {self.file_path}.')
+        return {}

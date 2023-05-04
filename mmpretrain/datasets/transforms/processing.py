@@ -1632,3 +1632,19 @@ class OFAAddObjects(BaseTransform):
             results['question'] = prompt
 
         return results
+
+
+@TRANSFORMS.register_module()
+class PrepareFewshotPrompt(BaseTransform):
+
+    def __init__(
+        self,
+        fewshot_tmpl,
+        final_tmpl,
+        zeroshot_tmpl=None,
+    ):
+        self.fewshot_tmpl = fewshot_tmpl
+        self.zeroshot_tmpl = zeroshot_tmpl
+
+    def transform(self, results: dict) -> dict:
+        return results

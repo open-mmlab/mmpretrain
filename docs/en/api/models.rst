@@ -121,6 +121,19 @@ Retrievers
    BaseRetriever
    ImageToImageRetriever
 
+.. module:: mmpretrain.models.multimodal
+
+Multi-Modality Algorithms
+--------------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   OFA
+   BLIPCaptioner
+   BLIPRetriever
+
 .. module:: mmpretrain.models.backbones
 
 Backbones

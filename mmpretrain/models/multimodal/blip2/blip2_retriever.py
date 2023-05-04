@@ -37,6 +37,9 @@ class BLIP2Retriever(BLIPRetriever):
             Defaults to None.
         temperature (float): Temperature parameter that controls the
             concentration level of the distribution. Defaults to 0.07.
+        fast_match (bool): If False, select topk similarity as candidates and
+            compute the matching score. If True, return the similarity as the
+            matching score directly. Defaults to False.
         topk (int): Select topk similarity as candidates for compute matching
             scores. Notice that this is not the topk in evaluation.
             Defaults to 256.
@@ -65,6 +68,7 @@ class BLIP2Retriever(BLIPRetriever):
                  multimodal_head: Optional[Union[List[dict], dict]] = None,
                  tokenizer: Optional[dict] = None,
                  temperature: float = 0.07,
+                 fast_match: bool = False,
                  topk: int = 256,
                  max_txt_len: int = 20,
                  train_cfg: Optional[dict] = None,
@@ -118,6 +122,7 @@ class BLIP2Retriever(BLIPRetriever):
 
         # Notice that this topk is used for select k candidate to compute
         # image-text score, but not the final metric topk in evaluation.
+        self.fast_match = fast_match
         self.topk = topk
 
         self.max_txt_len = max_txt_len
@@ -332,14 +337,17 @@ class BLIP2Retriever(BLIPRetriever):
                     cal_t2i=True):
         text_ids = feats['text_ids']
         text_attn_mask = feats['text_attn_mask']
-        image_embeds = feats['image_embeds']
+        image_embeds = feats.get('image_embeds', None)
         image_feat = feats['image_feat']
         text_feat = feats['text_feat']
 
         num_images = num_images or image_feat.size(0)
         num_texts = num_texts or text_feat.size(0)
 
-        image_embeds_all = all_gather_concat(image_embeds)[:num_images]
+        if not self.fast_match:
+            image_embeds_all = all_gather_concat(image_embeds)[:num_images]
+        else:
+            image_embeds_all = None
         image_feat_all = all_gather_concat(image_feat)[:num_images]
         text_feat_all = all_gather_concat(text_feat)[:num_texts]
         text_ids_all = all_gather_concat(text_ids)[:num_texts]
@@ -388,6 +396,9 @@ class BLIP2Retriever(BLIPRetriever):
         # compute i2t sim matrix
         # TODO: check correctness
         sim_matrix_i2t, _ = (img_feats @ text_feats.t()).max(1)
+        if self.fast_match:
+            return sim_matrix_i2t
+
         score_matrix_i2t = torch.full((img_feats.size(0), text_feats.size(0)),
                                       -100.0).to(self.device)
 
@@ -441,6 +452,9 @@ class BLIP2Retriever(BLIPRetriever):
         # TODO: check correctness
         sim_matrix_i2t, _ = (img_feats @ text_feats.t()).max(1)
         sim_matrix_t2i = sim_matrix_i2t.t()
+        if self.fast_match:
+            return sim_matrix_i2t
+
         score_matrix_t2i = torch.full((text_feats.size(0), img_feats.size(0)),
                                       -100.0).to(self.device)
 

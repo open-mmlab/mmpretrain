@@ -1,0 +1,34 @@
+Collections:
+  - Name: BLIP-2
+    Metadata:
+      Training Data:
+        - COCO
+        - VG
+        - CC3M
+        - CC12M
+        - SBU
+        - LAION-400M
+      Architecture:
+        - Transformer
+        - Q-Former
+    Paper:
+      Title: 'BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image
+        Encoders and Large Language Models'
+      URL: https://arxiv.org/abs/2301.12597
+    README: configs/blip2/README.md
+
+Models:
+  - Name: blip2_3rdparty_coco-retrieval
+    Metadata:
+      FLOPs: null
+      Parameters: 1173191358
+    In Collection: BLIP-2
+    Results:
+      - Task: Image-To-Text Retrieval
+        Dataset: COCO
+        Metrics: null
+      - Task: Text-To-Image Retrieval
+        Dataset: COCO
+        Metrics: null
+    Weights: null
+    Config: configs/blip2/blip2_8xb32_coco-retrieval.py

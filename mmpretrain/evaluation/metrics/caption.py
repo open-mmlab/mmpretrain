@@ -5,11 +5,17 @@ import tempfile
 from typing import List, Optional
 
 from mmengine.evaluator import BaseMetric
-from pycocoevalcap.eval import COCOEvalCap
-from pycocotools.coco import COCO
-from tqdm import tqdm
+from mmengine.utils import track_iter_progress
 
 from mmpretrain.registry import METRICS
+from mmpretrain.utils import require
+
+try:
+    from pycocoevalcap.eval import COCOEvalCap
+    from pycocotools.coco import COCO
+except ImportError:
+    COCOEvalCap = None
+    COCO = None
 
 
 @METRICS.register_module()
@@ -32,6 +38,7 @@ class COCOCaption(BaseMetric):
             `retrieval_type` for unambiguous results. Defaults to TR.
     """
 
+    @require('pycocoevalcap')
     def __init__(self,
                  ann_file: str,
                  collect_device: str = 'cpu',
@@ -94,7 +101,7 @@ def save_result(result, result_dir, filename, remove_duplicate=''):
     if remove_duplicate:
         result_new = []
         id_list = []
-        for res in tqdm(result):
+        for res in track_iter_progress(result):
             if res[remove_duplicate] not in id_list:
                 id_list.append(res[remove_duplicate])
                 result_new.append(res)

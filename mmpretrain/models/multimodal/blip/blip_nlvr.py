@@ -55,7 +55,8 @@ class BLIPNLVR(BaseModel):
         if data_preprocessor is None:
             data_preprocessor = {}
             # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor.setdefault(
+                'type', 'mmpretrain.MultiModalDataPreprocessor')
 
         if train_cfg is not None and 'augments' in train_cfg:
             # Set batch augmentations by `train_cfg`
@@ -168,10 +169,10 @@ class BLIPNLVR(BaseModel):
         outputs = self.head(multimodal_embeds.last_hidden_state[:, 0, :])
 
         pred_scores = F.softmax(outputs, dim=1)
-        pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
 
-        for pred_label, data_sample in zip(pred_labels, data_samples):
-            data_sample.pred_label = pred_label
+        for pred_score, data_sample in zip(pred_scores, data_samples):
+            data_sample.set_pred_score(pred_score)
+            data_sample.set_pred_label(pred_score.argmax(dim=0))
 
         return data_samples
 

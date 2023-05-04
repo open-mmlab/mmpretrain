@@ -3,24 +3,23 @@ from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 import numpy as np
-import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
 
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
-from .base import BaseInferencer, InputType, ModelType
+from .base import BaseInferencer
 from .model import list_models
 
 
-class ImageClassificationInferencer(BaseInferencer):
-    """The inferencer for image classification.
+class VisualGroundingInferencer(BaseInferencer):
+    """The inferencer for visual grounding.
 
     Args:
         model (BaseModel | str | Config): A model name or a path to the config
             file, or a :obj:`BaseModel` object. The model name can be found
-            by ``ImageClassificationInferencer.list_models()`` and you can also
+            by ``VisualGroundingInferencer.list_models()`` and you can also
             query it in :doc:`/modelzoo_statistics`.
         pretrained (str, optional): Path to the checkpoint. If None, it will
             try to find a pre-defined weight from the model you specified
@@ -31,65 +30,33 @@ class ImageClassificationInferencer(BaseInferencer):
             the ``model`` is a model name).
 
     Example:
-        1. Use a pre-trained model in MMPreTrain to inference an image.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')
-           >>> inferencer('demo/demo.JPEG')
-           [{'pred_score': array([...]),
-             'pred_label': 65,
-             'pred_score': 0.6649367809295654,
-             'pred_class': 'sea snake'}]
-
-        2. Use a config file and checkpoint to inference multiple images on GPU,
-           and save the visualization results in a folder.
-
-           >>> from mmpretrain import ImageClassificationInferencer
-           >>> inferencer = ImageClassificationInferencer(
-                   model='configs/resnet/resnet50_8xb32_in1k.py',
-                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
-                   device='cuda')
-           >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
+        >>> from mmpretrain import VisualGroundingInferencer
+        >>> inferencer = VisualGroundingInferencer('ofa-base_3rdparty_refcoco')
+        >>> inferencer('demo/cat-dog.png', 'dog')[0]
+        {'pred_bboxes': tensor([[ 36.6000,  29.6000, 355.8000, 395.2000]])}
     """  # noqa: E501
 
     visualize_kwargs: set = {
-        'resize', 'rescale_factor', 'draw_score', 'show', 'show_dir',
-        'wait_time'
+        'resize', 'show', 'show_dir', 'wait_time', 'line_width', 'bbox_color'
     }
 
-    def __init__(self,
-                 model: ModelType,
-                 pretrained: Union[bool, str] = True,
-                 device: Union[str, torch.device, None] = None,
-                 classes=None,
-                 **kwargs) -> None:
-        super().__init__(
-            model=model, pretrained=pretrained, device=device, **kwargs)
-
-        if classes is not None:
-            self.classes = classes
-        else:
-            self.classes = getattr(self.model, '_dataset_meta',
-                                   {}).get('classes')
-
     def __call__(self,
-                 inputs: InputType,
+                 images: Union[str, np.ndarray, list],
+                 texts: Union[str, list],
                  return_datasamples: bool = False,
                  batch_size: int = 1,
                  **kwargs) -> dict:
         """Call the inferencer.
 
         Args:
-            inputs (str | array | list): The image path or array, or a list of
+            images (str | array | list): The image path or array, or a list of
                 images.
+            texts (str | list): The text to do visual grounding.
             return_datasamples (bool): Whether to return results as
                 :obj:`DataSample`. Defaults to False.
             batch_size (int): Batch size. Defaults to 1.
             resize (int, optional): Resize the short edge of the image to the
                 specified length before visualization. Defaults to None.
-            rescale_factor (float, optional): Rescale the image by the rescale
-                factor for visualization. This is helpful when the image is too
-                large or too small for visualization. Defaults to None.
             draw_score (bool): Whether to draw the prediction scores
                 of prediction categories. Defaults to True.
             show (bool): Whether to display the visualization result in a
@@ -98,15 +65,24 @@ class ImageClassificationInferencer(BaseInferencer):
                 "forever".
             show_dir (str, optional): If not None, save the visualization
                 results in the specified directory. Defaults to None.
+            line_width (int): The line width of the bbox. Defaults to 3.
+            bbox_color (str | tuple): The color of the bbox.
+                Defaults to 'green'.
 
         Returns:
             list: The inference results.
         """
-        return super().__call__(
-            inputs,
-            return_datasamples=return_datasamples,
-            batch_size=batch_size,
-            **kwargs)
+        if not isinstance(images, (list, tuple)):
+            assert isinstance(texts, str)
+            inputs = [{'img': images, 'text': texts}]
+        else:
+            inputs = []
+            for i in range(len(images)):
+                input_ = {'img': images[i], 'text': texts[i]}
+                inputs.append(input_)
+
+        return super().__call__(inputs, return_datasamples, batch_size,
+                                **kwargs)
 
     def _init_pipeline(self, cfg: Config) -> Callable:
         test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
@@ -117,17 +93,13 @@ class ImageClassificationInferencer(BaseInferencer):
             [TRANSFORMS.build(t) for t in test_pipeline_cfg])
         return test_pipeline
 
-    def preprocess(self, inputs: List[InputType], batch_size: int = 1):
+    def preprocess(self, inputs: List[dict], batch_size: int = 1):
 
-        def load_image(input_):
-            img = imread(input_)
+        def load_image(input_: dict):
+            img = imread(input_['img'])
             if img is None:
                 raise ValueError(f'Failed to read image {input_}.')
-            return dict(
-                img=img,
-                img_shape=img.shape[:2],
-                ori_shape=img.shape[:2],
-            )
+            return {**input_, 'img': img}
 
         pipeline = Compose([load_image, self.pipeline])
 
@@ -135,13 +107,13 @@ class ImageClassificationInferencer(BaseInferencer):
         yield from map(default_collate, chunked_data)
 
     def visualize(self,
-                  ori_inputs: List[InputType],
+                  ori_inputs: List[dict],
                   preds: List[DataSample],
                   show: bool = False,
                   wait_time: int = 0,
                   resize: Optional[int] = None,
-                  rescale_factor: Optional[float] = None,
-                  draw_score=True,
+                  line_width: int = 3,
+                  bbox_color: Union[str, tuple] = 'green',
                   show_dir=None):
         if not show and show_dir is None:
             return None
@@ -152,11 +124,11 @@ class ImageClassificationInferencer(BaseInferencer):
 
         visualization = []
         for i, (input_, data_sample) in enumerate(zip(ori_inputs, preds)):
-            image = imread(input_)
-            if isinstance(input_, str):
+            image = imread(input_['img'])
+            if isinstance(input_['img'], str):
                 # The image loaded from path is BGR format.
                 image = image[..., ::-1]
-                name = Path(input_).stem
+                name = Path(input_['img']).stem
             else:
                 name = str(i)
 
@@ -167,17 +139,14 @@ class ImageClassificationInferencer(BaseInferencer):
             else:
                 out_file = None
 
-            self.visualizer.visualize_cls(
+            self.visualizer.visualize_visual_grounding(
                 image,
                 data_sample,
-                classes=self.classes,
                 resize=resize,
                 show=show,
                 wait_time=wait_time,
-                rescale_factor=rescale_factor,
-                draw_gt=False,
-                draw_pred=True,
-                draw_score=draw_score,
+                line_width=line_width,
+                bbox_color=bbox_color,
                 name=name,
                 out_file=out_file)
             visualization.append(self.visualizer.get_image())
@@ -194,17 +163,7 @@ class ImageClassificationInferencer(BaseInferencer):
 
         results = []
         for data_sample in preds:
-            pred_scores = data_sample.pred_score
-            pred_score = float(torch.max(pred_scores).item())
-            pred_label = torch.argmax(pred_scores).item()
-            result = {
-                'pred_scores': pred_scores.detach().cpu().numpy(),
-                'pred_label': pred_label,
-                'pred_score': pred_score,
-            }
-            if self.classes is not None:
-                result['pred_class'] = self.classes[pred_label]
-            results.append(result)
+            results.append({'pred_bboxes': data_sample.get('pred_bboxes')})
 
         return results
 
@@ -218,4 +177,4 @@ class ImageClassificationInferencer(BaseInferencer):
         Returns:
             List[str]: a list of model names.
         """
-        return list_models(pattern=pattern, task='Image Classification')
+        return list_models(pattern=pattern, task='Visual Grounding')

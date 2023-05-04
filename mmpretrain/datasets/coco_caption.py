@@ -14,10 +14,11 @@ class COCOCaption(BaseDataset):
     """COCO Caption dataset.
 
     Args:
-        ann_file (str): Annotation file path.
         data_root (str): The root directory for ``data_prefix`` and
-            ``ann_file``. Defaults to ''.
-        data_prefix (str | dict): Prefix for training data. Defaults to ''.
+            ``ann_file``..
+        ann_file (str): Annotation file path.
+        data_prefix (dict): Prefix for data field. Defaults to
+            ``dict(img_path='')``.
         pipeline (Sequence): Processing pipeline. Defaults to an empty tuple.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
