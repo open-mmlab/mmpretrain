@@ -170,9 +170,8 @@ class BlipVQAModel(BaseModel):
             answer.input_ids == self.tokenizer.pad_token_id, -100)
         for sample in data_samples:
             # follow BLIP setting, set answer_weight to 0.2 for VG dataset.
-            if hasattr(sample, 'dataset') and (sample.dataset == 'vg'):
-                sample.gt_answer_weight = 0.2 * torch.tensor(
-                    sample.gt_answer_weight)
+            if not hasattr(sample, 'gt_answer_weight'):
+                sample.gt_answer_weight = torch.tensor([0.2])
             else:
                 sample.gt_answer_weight = torch.tensor(sample.gt_answer_weight)
         answer_weight = torch.cat(

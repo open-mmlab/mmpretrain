@@ -19,6 +19,7 @@ from .places205 import Places205
 from .refcoco import RefCOCO
 from .samplers import *  # noqa: F401,F403
 from .transforms import *  # noqa: F401,F403
+from .visual_genome import VisualGenomeQA
 from .voc import VOC
 
 __all__ = [
@@ -26,5 +27,5 @@ __all__ = [
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
     'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
     'Places205', 'COCOCaption', 'COCOVQA', 'COCORetrieval', 'RefCOCO',
-    'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA', 'NLVR2'
+    'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA', 'NLVR2', 'VisualGenomeQA'
 ]

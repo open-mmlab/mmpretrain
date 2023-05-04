@@ -58,27 +58,19 @@ model = dict(
                 add_cross_attention=True),
         ),
         inference_method='rank',  # or 'generate'
-        answer_list_path='annotations/vqa_answer_list.json',
+        answer_list_path=
+        'https://storage.googleapis.com/sfr-vision-language-research/datasets/answer_list.json',  # noqa: E501
     ),
 )
 
-# optimizer
+# schedule settings
 optimizer = dict(type='AdamW', lr=2e-5, weight_decay=0.05)
 optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
 
-# learning rate scheduler
 param_scheduler = [dict(type='CosineAnnealingLR', by_epoch=True)]
 
-# [Online Test] dump for official server (eval.ai), no need gt_answer
-test_evaluator = dict(type='ReportVQA', file_path='vqa_test.json')
-
-# # [Offline Test] need gt_answer, here we use 'vqa_val.json' as example
-# test_evaluator = dict(type='VQAAcc')
-# test_dataloader = dict(dataset=dict(ann_file='annotations/vqa_val.json'))
-
-# runtime settings
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=10)
-val_cfg = dict()
+train_cfg = dict(max_epochs=10, by_epoch=True)
 test_cfg = dict()
 
+# runtime settings
 randomness = dict(seed=42)

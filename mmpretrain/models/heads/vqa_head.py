@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import json
-import os
 from typing import Optional, Union
 
+import mmengine
 import numpy as np
 import torch
 import torch.nn as nn
@@ -71,10 +70,10 @@ class VQAGenerationHead(BaseModule):
             assert isinstance(answer_list_path, str), \
                 'for VQA `rank` mode, `answer_list_path` must be set as ' \
                 'the path to `answer_list.json`.'
-            assert os.path.exists(answer_list_path), \
-                'answer_list_path does not exist!'
             self.num_beams = None
-            self.answer_list = json.load(open(answer_list_path))
+            self.answer_list = mmengine.load(answer_list_path)
+            if isinstance(self.answer_list, dict):
+                self.answer_list = list(self.answer_list.keys())
             assert isinstance(self.answer_list, list) and all(
                 isinstance(item, str) for item in self.answer_list), \
                 'for VQA `rank` mode, `answer_list.json` must be a list of str'

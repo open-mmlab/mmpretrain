@@ -23,24 +23,7 @@ train_pipeline = [
     dict(type='CleanCaption', keys=['question', 'gt_answer']),
     dict(
         type='PackInputs',
-        algorithm_keys=[
-            'question', 'gt_answer', 'gt_answer_weight', 'dataset'
-        ]),
-]
-
-val_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='Resize',
-        scale=(480, 480),
-        interpolation='bicubic',
-        backend='pillow'),
-    dict(type='CleanCaption', keys=['question', 'gt_answer']),
-    dict(
-        type='PackInputs',
-        algorithm_keys=[
-            'question', 'gt_answer', 'gt_answer_weight', 'dataset'
-        ]),
+        algorithm_keys=['question', 'gt_answer', 'gt_answer_weight']),
 ]
 
 test_pipeline = [
@@ -63,37 +46,38 @@ train_dataloader = dict(
     dataset=dict(
         type='ConcatDataset',
         datasets=[
+            # VQAv2 train
             dict(
                 type='COCOVQA',
                 data_root='data/coco',
-                ann_file='annotations/vqa_train.json',
-                pipeline=train_pipeline),
+                data_prefix='train2014',
+                question_file=
+                'annotations/v2_OpenEnded_mscoco_train2014_questions.json',
+                ann_file='annotations/v2_mscoco_train2014_annotations.json',
+                pipeline=train_pipeline,
+            ),
+            # VQAv2 val
             dict(
                 type='COCOVQA',
                 data_root='data/coco',
-                ann_file='annotations/vqa_val.json',
-                pipeline=train_pipeline),
+                data_prefix='val2014',
+                question_file=
+                'annotations/v2_OpenEnded_mscoco_val2014_questions.json',
+                ann_file='annotations/v2_mscoco_val2014_annotations.json',
+                pipeline=train_pipeline,
+            ),
+            # Visual Genome
             dict(
-                type='COCOVQA',
-                data_root='data/coco',
-                ann_file='annotations/vg_qa.json',
-                pipeline=train_pipeline),
+                type='VisualGenomeQA',
+                data_root='visual_genome',
+                data_prefix='image',
+                ann_file='question_answers.json',
+                pipeline=train_pipeline,
+            )
         ]),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
     drop_last=True,
-)
-
-val_dataloader = dict(
-    batch_size=32,
-    num_workers=8,
-    dataset=dict(
-        type='COCOVQA',
-        data_root='data/coco',
-        ann_file='annotations/vqa_val.json',
-        pipeline=val_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 
 test_dataloader = dict(
@@ -102,10 +86,11 @@ test_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        ann_file='annotations/vqa_test.json',
-        pipeline=test_pipeline),
+        data_prefix='test2015',
+        question_file=
+        'annotations/v2_OpenEnded_mscoco_test2015_questions.json',  # noqa: E501
+        pipeline=test_pipeline,
+    ),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
-
-val_evaluator = dict(type='VQAAcc')
+test_evaluator = dict(type='ReportVQA', file_path='vqa_test.json')
