@@ -8,6 +8,7 @@ from mmpretrain.registry import MODELS
 @MODELS.register_module()
 class SparKPretrainHead(BaseModule):
     """Pre-training head for SparK.
+
     Args:
         loss (dict): Config of loss.
         norm_pix (bool): Whether or not normalize target. Defaults to True.
@@ -26,6 +27,7 @@ class SparKPretrainHead(BaseModule):
 
     def patchify(self, imgs):
         """Split images into non-overlapped patches.
+
         Args:
             imgs (torch.Tensor): A batch of images, of shape B x C x H x W.
         Returns:
@@ -47,6 +49,7 @@ class SparKPretrainHead(BaseModule):
 
     def construct_target(self, target: torch.Tensor) -> torch.Tensor:
         """Construct the reconstruction target.
+
         In addition to splitting images into tokens, this module will also
         normalize the image according to ``norm_pix``.
         Args:
@@ -66,6 +69,7 @@ class SparKPretrainHead(BaseModule):
     def forward(self, pred: torch.Tensor, target: torch.Tensor,
                 active_mask: torch.Tensor) -> torch.Tensor:
         """Forward function of MAE head.
+
         Args:
             pred (torch.Tensor): The reconstructed image.
             target (torch.Tensor): The target image.

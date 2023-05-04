@@ -105,6 +105,7 @@ class SparseLayerNorm2D(nn.LayerNorm):
                 x: torch.Tensor,
                 data_format='channel_first') -> torch.Tensor:
         """Sparse layer norm forward function with 2D data.
+
         Args:
             x (torch.Tensor): The input tensor.
             data_format (str): The format of the input tensor. If

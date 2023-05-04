@@ -6,14 +6,15 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmengine.model import ModuleList, Sequential
 
-from .convnext import ConvNeXt, ConvNeXtBlock
+from mmpretrain.registry import MODELS
 from ..utils import (SparseAvgPooling, SparseConv2d, SparseHelper,
                      SparseMaxPooling, build_norm_layer)
-from mmpretrain.registry import MODELS
+from .convnext import ConvNeXt, ConvNeXtBlock
 
 
 class SparseConvNeXtBlock(ConvNeXtBlock):
     """Sparse ConvNeXt Block.
+
     Note:
         There are two equivalent implementations:
         1. DwConv -> SparseLayerNorm -> 1x1 Conv -> GELU -> 1x1 Conv;

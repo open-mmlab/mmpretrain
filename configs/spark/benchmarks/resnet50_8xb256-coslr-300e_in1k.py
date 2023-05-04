@@ -75,11 +75,10 @@ optim_wrapper = dict(
         type='Lamb',
         lr=0.016,
         weight_decay=0.02,
-        model_type='resnet',
-        layer_decay_rate=0.7,
     ),
-    constructor='mmselfsup.LearningRateDecayOptimWrapperConstructor',
+    constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
+        layer_decay_rate=0.7,
         custom_keys={
             'bias': dict(decay_mult=0.),
             'bn': dict(decay_mult=0.),

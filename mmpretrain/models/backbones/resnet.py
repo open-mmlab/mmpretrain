@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
+
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -673,6 +675,64 @@ class ResNet(BaseBackbone):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+    def get_layer_depth(self, param_name: str, prefix: str = ''):
+        """Get the layer id to set the different learning rates for ResNet.
+
+        ResNet stages:
+        50  :    [3, 4, 6, 3]
+        101 :    [3, 4, 23, 3]
+        152 :    [3, 8, 36, 3]
+        200 :    [3, 24, 36, 3]
+        eca269d: [3, 30, 48, 8]
+
+        Args:
+            param_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The layer-wise depth and the num of layers.
+        """
+        depths = self.stage_blocks
+        if depths[1] == 4 and depths[2] == 6:
+            blk2, blk3 = 2, 3
+        elif depths[1] == 4 and depths[2] == 23:
+            blk2, blk3 = 2, 3
+        elif depths[1] == 8 and depths[2] == 36:
+            blk2, blk3 = 4, 4
+        elif depths[1] == 24 and depths[2] == 36:
+            blk2, blk3 = 4, 4
+        elif depths[1] == 30 and depths[2] == 48:
+            blk2, blk3 = 5, 6
+        else:
+            raise NotImplementedError
+
+        N2, N3 = math.ceil(depths[1] / blk2 -
+                           1e-5), math.ceil(depths[2] / blk3 - 1e-5)
+        N = 2 + N2 + N3  # r50: 2 + 2 + 2 = 6
+        max_layer_id = N + 1  # r50: 2 + 2 + 2 + 1(like head) = 7
+
+        if not param_name.startswith(prefix):
+            # For subsequent module like head
+            return max_layer_id, max_layer_id + 1
+
+        if param_name.startswith('backbone.layer'):
+            stage_id = int(param_name.split('.')[1][5:])
+            block_id = int(param_name.split('.')[2])
+
+            if stage_id == 1:
+                layer_id = 1
+            elif stage_id == 2:
+                layer_id = 2 + block_id // blk2  # r50: 2, 3
+            elif stage_id == 3:
+                layer_id = 2 + N2 + block_id // blk3  # r50: 4, 5
+            else:  # stage_id == 4
+                layer_id = N  # r50: 6
+            return layer_id, max_layer_id + 1
+
+        else:
+            return 0, max_layer_id + 1
 
 
 @MODELS.register_module()

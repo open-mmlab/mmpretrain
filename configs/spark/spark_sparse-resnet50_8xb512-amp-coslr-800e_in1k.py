@@ -10,7 +10,7 @@ train_dataloader = dict(batch_size=512, num_workers=8)
 
 # optimizer wrapper
 optimizer = dict(
-    type='LAMB', lr=2e-4 * 4096 / 256, betas=(0.9, 0.95), weight_decay=0.04)
+    type='LAMB', lr=2e-4 * 4096 / 512, betas=(0.9, 0.95), weight_decay=0.04)
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     optimizer=optimizer,
