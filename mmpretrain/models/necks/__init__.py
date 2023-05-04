@@ -13,6 +13,7 @@ from .mixmim_neck import MixMIMPretrainDecoder
 from .mocov2_neck import MoCoV2Neck
 from .nonlinear_neck import NonLinearNeck
 from .simmim_neck import SimMIMLinearDecoder
+from .spark_neck import SparKLightDecoder
 from .swav_neck import SwAVNeck
 
 __all__ = [
@@ -32,4 +33,5 @@ __all__ = [
     'SimMIMLinearDecoder',
     'SwAVNeck',
     'iTPNPretrainDecoder',
+    'SparKLightDecoder',
 ]
