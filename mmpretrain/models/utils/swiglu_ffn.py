@@ -4,8 +4,10 @@ from typing import Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn.bricks.drop import build_dropout
 
 from .layer_scale import LayerScale
+from .norm import build_norm_layer
 
 
 class SwiGLUFFN(nn.Module):
@@ -21,6 +23,9 @@ class SwiGLUFFN(nn.Module):
         out_dims: Optional[int] = None,
         layer_scale_init_value: float = 0.,
         bias: bool = True,
+        dropout_layer: Optional[dict] = None,
+        norm_cfg: Optional[dict] = None,
+        add_identity: bool = True,
     ) -> None:
         super().__init__()
         self.embed_dims = embed_dims
@@ -28,6 +33,12 @@ class SwiGLUFFN(nn.Module):
         hidden_dims = feedforward_channels or embed_dims
 
         self.w12 = nn.Linear(self.embed_dims, 2 * hidden_dims, bias=bias)
+
+        if norm_cfg is not None:
+            self.norm = build_norm_layer(norm_cfg, hidden_dims)
+        else:
+            self.norm = nn.Identity()
+
         self.w3 = nn.Linear(hidden_dims, self.out_dims, bias=bias)
 
         if layer_scale_init_value > 0:
@@ -36,16 +47,24 @@ class SwiGLUFFN(nn.Module):
         else:
             self.gamma2 = nn.Identity()
 
+        self.dropout_layer = build_dropout(
+            dropout_layer) if dropout_layer else torch.nn.Identity()
+        self.add_identity = add_identity
+
     def forward(self,
                 x: torch.Tensor,
                 identity: Optional[torch.Tensor] = None) -> torch.Tensor:
         x12 = self.w12(x)
         x1, x2 = x12.chunk(2, dim=-1)
         hidden = F.silu(x1) * x2
+        hidden = self.norm(hidden)
         out = self.w3(hidden)
         out = self.gamma2(out)
-        if self.out_dims != self.embed_dims:
-            # due to the dimension inconsistence, noto apply residual operation
+        out = self.dropout_layer(out)
+
+        if self.out_dims != self.embed_dims or not self.add_identity:
+            # due to the dimension inconsistence or user setting
+            # not to apply residual operation
             return out
 
         if identity is None:
