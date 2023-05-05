@@ -70,7 +70,7 @@ Models:
       - Dataset: ImageNet-1k
         Task: Image Classification
         Metrics:
-          Top 1 Accuracy: 85.77
+          Top 1 Accuracy: 85.78
           Top 5 Accuracy: 97.60
     Weights: null
     Config: configs/eva02/eva02_small_p14_8xb16_in1k.py
@@ -104,7 +104,7 @@ Models:
       - Dataset: ImageNet-1k
         Task: Image Classification
         Metrics:
-          Top 1 Accuracy: 88.30
+          Top 1 Accuracy: 88.29
           Top 5 Accuracy: 98.53
     Weights: null
     Config: configs/eva02/eva02_base_p14_8xb16_in1k.py

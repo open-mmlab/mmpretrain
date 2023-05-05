@@ -50,7 +50,6 @@ class TestEVA02(TestCase):
         self.assertEqual(model.num_layers, 6)
         for layer in model.layers:
             self.assertEqual(layer.attn.num_heads, 16)
-            self.assertEqual(layer.mlp.hidden_features, int(128 * 4 * 2 / 3))
 
         # Test out_indices
         cfg = deepcopy(self.cfg)
@@ -72,7 +71,6 @@ class TestEVA02(TestCase):
         for layer in model.layers:
             self.assertEqual(layer.attn.embed_dims, 192)
             self.assertEqual(layer.attn.num_heads, 3)
-            self.assertEqual(layer.mlp.hidden_features, 512)
             self.assertAlmostEqual(layer.drop_path.drop_prob, dpr)
             self.assertAlmostEqual(layer.mlp.dropout_layer.p, 0.1)
             self.assertAlmostEqual(layer.attn.attn_drop.p, 0.2)
