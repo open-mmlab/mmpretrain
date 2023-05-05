@@ -35,6 +35,7 @@ class BLIP2Retriever(BLIPRetriever):
             See :mod:`mmmultimodal.models.heads`.
             Notice that if the head is not set, `loss` method cannot be used.
             Defaults to None.
+        tokenizer (Optional[dict]): The config for tokenizer. Defaults to None.
         temperature (float): Temperature parameter that controls the
             concentration level of the distribution. Defaults to 0.07.
         fast_match (bool): If False, select topk similarity as candidates and
@@ -70,10 +71,9 @@ class BLIP2Retriever(BLIPRetriever):
                  temperature: float = 0.07,
                  fast_match: bool = False,
                  topk: int = 256,
-                 max_txt_len: int = 20,
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
-                 init_cfg: Optional[dict] = None):
+                 init_cfg: Optional[dict] = None) -> None:
 
         if data_preprocessor is None:
             data_preprocessor = {}
@@ -124,8 +124,6 @@ class BLIP2Retriever(BLIPRetriever):
         # image-text score, but not the final metric topk in evaluation.
         self.fast_match = fast_match
         self.topk = topk
-
-        self.max_txt_len = max_txt_len
 
     def _extract_feat(self, inputs: Union[torch.Tensor, dict],
                       modality: str) -> Tuple[torch.Tensor]:
@@ -329,12 +327,27 @@ class BLIP2Retriever(BLIPRetriever):
             itc_loss=itc_loss, **loss_multimodal, lm_loss=lm_output.loss)
 
     def predict_all(self,
-                    feats,
-                    data_samples,
-                    num_images=None,
-                    num_texts=None,
-                    cal_i2t=True,
-                    cal_t2i=True):
+                    feats: Dict[str, torch.Tensor],
+                    data_samples: List[DataSample],
+                    num_images: int = None,
+                    num_texts: int = None,
+                    cal_i2t: bool = True,
+                    cal_t2i: bool = True) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Compute similarity matrix between images and texts across all ranks.
+
+        Args:
+            feats (Dict[str, torch.Tensor]): Features from the current rank.
+            data_samples (List[DataSample]): Data samples from the current rank.
+            num_images (int, optional): Number of images to use. Defaults to None.
+            num_texts (int, optional): Number of texts to use. Defaults to None.
+            cal_i2t (bool, optional): Whether to compute image-to-text similarity. 
+                Defaults to True.
+            cal_t2i (bool, optional): Whether to compute text-to-image similarity. 
+                Defaults to True.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: Image-to-text and text-to-image similarity matrices.
+        """
         text_ids = feats['text_ids']
         text_attn_mask = feats['text_attn_mask']
         image_embeds = feats.get('image_embeds', None)
@@ -376,14 +389,19 @@ class BLIP2Retriever(BLIPRetriever):
                 self._get_predictions(result_t2i, data_samples, mode='t2i'))
         return tuple(results)
 
-    def compute_score_matrix_i2t(self, img_feats, img_embeds, text_feats,
-                                 text_ids, text_atts):
+    def compute_score_matrix_i2t(self, img_feats: torch.Tensor,
+                                 img_embeds: List[torch.Tensor],
+                                 text_feats: torch.Tensor,
+                                 text_ids: torch.Tensor,
+                                 text_atts: torch.Tensor) -> torch.Tensor:
         """Compare the score matrix for image-to-text retrieval. Every image
         should compare to all the text features.
 
         Args:
             img_feats (torch.Tensor): The input tensor with shape (M, C).
                 M stands for numbers of samples on a single GPU.
+            img_embeds (List[torch.Tensor]): Image features from each layer of 
+                the vision backbone.
             text_feats (torch.Tensor): The input tensor with shape (N, C).
                 N stands for numbers of all samples on all GPUs.
             text_ids (torch.Tensor): The input tensor with shape (N, C).
@@ -431,19 +449,25 @@ class BLIP2Retriever(BLIPRetriever):
 
         return score_matrix_i2t
 
-    def compute_score_matrix_t2i(self, img_feats, img_embeds, text_feats,
-                                 text_ids, text_atts):
+    def compute_score_matrix_t2i(self, img_feats: torch.Tensor,
+                                 img_embeds: List[torch.Tensor],
+                                 text_feats: torch.Tensor,
+                                 text_ids: torch.Tensor,
+                                 text_atts: torch.Tensor) -> torch.Tensor:
         """Compare the score matrix for text-to-image retrieval.
 
-        Every text
-        should compare to all the image features.
+        Every text should compare to all the image features.
+
         Args:
             img_feats (torch.Tensor): The input tensor with shape (N, C).
                 N stands for numbers of all samples on all GPUs.
+            img_embeds (List[torch.Tensor]): Image features from each layer of
+                the vision backbone.
             text_feats (torch.Tensor): The input tensor with shape (M, C).
                 M stands for numbers of samples on a single GPU.
             text_ids (torch.Tensor): The input tensor with shape (M, C).
             text_atts (torch.Tensor): The input tensor with shape (M, C).
+
         Returns:
             torch.Tensor: Score matrix of text-to-image retrieval.
         """

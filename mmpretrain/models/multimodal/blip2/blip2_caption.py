@@ -13,10 +13,13 @@ from mmpretrain.structures import DataSample
 class BLIP2Captioner(BaseModel):
     """BLIP2 Caption.
 
+    Module for BLIP2 Caption task.
+
     Args:
-        vision_encoder (dict): Encoder for extracting image features.
-        decoder_head (dict): The decoder head module to forward and
-            calculate loss from processed features.
+        vision_backbone (dict): The config dict for vision backbone.
+        text_backbone (dict): The config dict for text backbone.
+        multimodal_backbone (dict): The config dict for multimodal backbone.
+        vision_neck (dict): The config dict for vision neck.
         tokenizer: (Optional[dict]): The config for tokenizer.
             Defaults to None.
         prompt (str): Prompt used for training and eval.
@@ -49,7 +52,7 @@ class BLIP2Captioner(BaseModel):
                  num_captions: int = 1,
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
-                 init_cfg: Optional[dict] = None):
+                 init_cfg: Optional[dict] = None) -> None:
 
         if data_preprocessor is None:
             data_preprocessor = {}
@@ -104,7 +107,7 @@ class BLIP2Captioner(BaseModel):
         images: torch.Tensor,
         data_samples: Optional[List] = None,
         mode: str = 'loss',
-    ):
+    ) -> List[DataSample]:
         """The unified entry for a forward process in both training and test.
         The method should accept two modes: "predict" and "loss":
 
@@ -132,7 +135,10 @@ class BLIP2Captioner(BaseModel):
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    def predict(self, images, data_samples=None, **kwargs):
+    def predict(self,
+                images: torch.Tensor,
+                data_samples: Optional[list] = None,
+                **kwargs) -> List[DataSample]:
         """Predict captions from a batch of inputs.
 
         Args:
