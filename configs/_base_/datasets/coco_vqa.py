@@ -28,6 +28,10 @@ test_pipeline = [
         interpolation='bicubic',
         backend='pillow'),
     dict(
+        type='CleanCaption',
+        keys=['question'],
+    ),
+    dict(
         type='PackInputs',
         algorithm_keys=['question', 'gt_answer', 'gt_answer_weight'],
         meta_keys=['question_id', 'image_id'],

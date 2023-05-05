@@ -51,9 +51,6 @@ class BLIP2Captioner(BaseModel):
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
 
-        super().__init__(
-            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
-
         if data_preprocessor is None:
             data_preprocessor = {}
             # The build process is in MMEngine, so we need to add scope here.
@@ -62,6 +59,9 @@ class BLIP2Captioner(BaseModel):
         if train_cfg is not None and 'augments' in train_cfg:
             # Set batch augmentations by `train_cfg`
             data_preprocessor['batch_augments'] = train_cfg
+
+        super().__init__(
+            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
         self.tokenizer = TOKENIZER.build(tokenizer)
         self.eos_token_id = self.tokenizer(
