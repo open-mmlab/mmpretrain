@@ -2,7 +2,7 @@
 import os
 
 from transformers import (AutoTokenizer, BartTokenizer, BertTokenizer,
-                          LlamaTokenizer, BertTokenizerFast)
+                          BertTokenizerFast, LlamaTokenizer)
 
 from .huggingface import register_hf_tokenizer
 

@@ -15,14 +15,23 @@ class FlamingoLMAdapter:
     @classmethod
     def extend_init(
         cls,
-        base,
-        vis_hidden_size,
-        cross_attn_every_n_layers,
-        use_media_placement_augmentation,
+        base: object,
+        vis_hidden_size: int,
+        cross_attn_every_n_layers: int,
+        use_media_placement_augmentation: bool,
     ):
         """Initialize Flamingo by adding a new gated cross attn to the decoder.
 
         Store the media token id for computing the media locations.
+
+        Args:
+            base (object): Base module could be any object that represent
+                a instance of language model.
+            vis_hidden_size: (int): Hidden size of vision embeddings.
+            cross_attn_every_n_layers: (int): Additional cross attn for
+                every n layers.
+            use_media_placement_augmentation: (bool): Whether to use media
+                placement augmentation.
         """
         base.set_decoder_layers_attr_name('model.layers')
         base.gated_cross_attn_layers = nn.ModuleList([
@@ -42,17 +51,20 @@ class FlamingoLMAdapter:
         return base
 
     def set_decoder_layers_attr_name(self, decoder_layers_attr_name):
+        """Set decoder layers attribute name."""
         self.decoder_layers_attr_name = decoder_layers_attr_name
 
     def _get_decoder_layers(self):
+        """Get decoder layers according to attribute name."""
         return getattr_recursive(self, self.decoder_layers_attr_name)
 
     def _set_decoder_layers(self, value):
+        """Set decoder layers according to attribute name."""
         setattr_recursive(self, self.decoder_layers_attr_name, value)
 
     def forward(self, *input, **kwargs):
-        """Condition the Flamingo layers on the media locations before
-        forward()"""
+        """Condition the Flamingo layers on the media locations before forward
+        function."""
         input_ids = kwargs['input_ids'] if 'input_ids' in kwargs else input[0]
         media_locations = input_ids == self.media_token_id
         attend_previous = ((random.random() < 0.5)
@@ -71,6 +83,7 @@ class FlamingoLMAdapter:
                    for layer in self._get_decoder_layers())
 
     def clear_conditioned_layers(self):
+        """Clear all conditional layers."""
         for layer in self._get_decoder_layers():
             layer.condition_vis_x(None)
             layer.condition_media_locations(None)

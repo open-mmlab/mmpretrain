@@ -20,25 +20,37 @@ class Flamingo(BaseModel):
         lang_encoder (dict): The config of the language encoder.
         tokenizer (dict): The tokenizer to encode the text.
         task (int): The task to perform prediction.
+        zeroshot_prompt (str): Prompt used for zero-shot inference.
+            Defaults to '<image>Output:'.
+        shot_prompt_tmpl (str): Prompt used for few-shot inference.
+            Defaults to '<image>Output:{caption}<|endofchunk|>'.
+        final_prompt_tmpl (str): Final part of prompt used for inference.
+            Defaults to '<image>Output:'.
         generation_cfg (dict): The extra generation config, accept the keyword
             arguments of [~`transformers.GenerationConfig`].
             Defaults to an empty dict.
+        data_preprocessor (Optional[dict]): The config for preprocessing input
+            data. If None or no specified type, it will use
+            "MutimodalDataPreprocessor" as type.
+            See :class:`MutimodalDataPreprocessor` for more details.
+            Defaults to None.
         init_cfg (dict, optional): The initialization config. Defaults to None.
     """
 
     support_tasks = {'caption', 'vqa'}
 
-    def __init__(self,
-                 vision_encoder: dict,
-                 lang_encoder: dict,
-                 tokenizer: dict,
-                 task: str = 'caption',
-                 zeroshot_prompt='<image>Output:',
-                 shot_prompt_tmpl='<image>Output:{caption}<|endofchunk|>',
-                 final_prompt_tmpl='<image>Output:',
-                 generation_cfg: dict = dict(),
-                 data_preprocessor: Optional[dict] = None,
-                 init_cfg: Optional[dict] = None):
+    def __init__(
+            self,
+            vision_encoder: dict,
+            lang_encoder: dict,
+            tokenizer: dict,
+            task: str = 'caption',
+            zeroshot_prompt: str = '<image>Output:',
+            shot_prompt_tmpl: str = '<image>Output:{caption}<|endofchunk|>',
+            final_prompt_tmpl: str = '<image>Output:',
+            generation_cfg: dict = dict(),
+            data_preprocessor: Optional[dict] = None,
+            init_cfg: Optional[dict] = None):
         if data_preprocessor is None:
             data_preprocessor = {}
         data_preprocessor.setdefault('type',
@@ -119,9 +131,9 @@ class Flamingo(BaseModel):
         optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
-            inputs (torch.Tensor, tuple): The input tensor with shape
-                (N, C, ...) in general.
-            data_samples (List[VQADataSample], optional): The annotation
+            images (torch.Tensor): The input image tensor with different ndim
+                according to the inputs.
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'loss'.
@@ -142,7 +154,8 @@ class Flamingo(BaseModel):
         """Extract vision features.
 
         Args:
-            images (torch.Tensor): The input images tensor with shape
+            images (torch.Tensor): For zero-shot, the input images tensor is
+                with shape (B, C, H, W), for few-shot, which is
                 (B, T_img, C, H, W) in general. Images in the same chunk
                 are collated along T_img. Video data is not supported yet.
 
@@ -172,7 +185,8 @@ class Flamingo(BaseModel):
         """Predict generation results from a batch of inputs.
 
         Args:
-            images (torch.Tensor): The input images tensor with shape
+            images (torch.Tensor): For zero-shot, the input images tensor is
+                with shape (B, C, H, W), for few-shot, which is
                 (B, T_img, C, H, W) in general. Images in the same chunk
                 are collated along T_img. Video data is not supported yet.
             data_samples (List[DataSample], optional): The annotation
@@ -211,8 +225,18 @@ class Flamingo(BaseModel):
 
         return self.post_process(outputs, data_samples)
 
-    def preprocess_text(self, data_samples, device):
+    def preprocess_text(self, data_samples: List[DataSample],
+                        device: torch.device) -> List[DataSample]:
+        """Preprocess text in advance before fed into language model.
 
+        Args:
+            data_samples (List[DataSample]): The annotation
+                data of every samples. Defaults to None.
+            device (torch.device): Device for text to put on.
+
+        Returns:
+            List[DataSample]: Return list of data samples.
+        """
         prompts = []
         for sample in data_samples:
             if 'shots' in sample:
@@ -225,6 +249,7 @@ class Flamingo(BaseModel):
                 # zero-shot
                 shot_prompt = self.zeroshot_prompt
 
+            # add final prompt
             final_prompt = self.final_prompt_tmpl.format(**sample.to_dict())
             prompts.append(shot_prompt + final_prompt)
 
@@ -246,7 +271,7 @@ class Flamingo(BaseModel):
         Args:
             outputs (torch.Tensor): The generated outputs.
             data_samples (List[DataSample], optional): The annotation
-                data of every samples
+                data of every samples.
 
         Returns:
             List[DataSample]: Return list of data samples.
@@ -271,8 +296,6 @@ class Flamingo(BaseModel):
     @staticmethod
     def _load_adapter_hook(module, incompatible_keys):
         """Avoid warning missing keys except adapter keys."""
-        import re
-
         adapter_patterns = [
             '^perceiver',
             'lang_encoder.*embed_tokens',

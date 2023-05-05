@@ -1,14 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """Taken from https://github.com/lucidrains/flamingo-pytorch."""
 
-# flake8: noqa
+from typing import Optional
 
 import torch
 from einops import rearrange, repeat
 from torch import einsum, nn
 
 
-def FeedForward(dim, mult=4):
+def FeedForward(dim, mult: int = 4):
+    """Feedforward layers.
+
+    Args:
+        mult (int): Layer expansion muliplier. Defaults to 4.
+    """
     inner_dim = int(dim * mult)
     return nn.Sequential(
         nn.LayerNorm(dim),
@@ -19,8 +24,15 @@ def FeedForward(dim, mult=4):
 
 
 class PerceiverAttention(nn.Module):
+    """Perceiver attetion layers.
 
-    def __init__(self, *, dim, dim_head=64, heads=8):
+    Args:
+        dim (int): Input dimensions.
+        dim_head (int): Number of dimension heads. Defaults to 64.
+        heads (int): Number of heads. Defaults to 8.
+    """
+
+    def __init__(self, *, dim: int, dim_head: int = 64, heads: int = 8):
         super().__init__()
         self.scale = dim_head**-0.5
         self.heads = heads
@@ -33,13 +45,12 @@ class PerceiverAttention(nn.Module):
         self.to_kv = nn.Linear(dim, inner_dim * 2, bias=False)
         self.to_out = nn.Linear(inner_dim, dim, bias=False)
 
-    def forward(self, x, latents):
-        """
+    def forward(self, x: torch.Tensor, latents: torch.Tensor):
+        """Forward function.
+
         Args:
-            x (torch.Tensor): image features
-                shape (b, T, n1, D)
-            latent (torch.Tensor): latent features
-                shape (b, T, n2, D)
+            x (torch.Tensor): image features of shape (b, T, n1, D).
+            latent (torch.Tensor): latent features of shape (b, T, n2, D).
         """
         x = self.norm_media(x)
         latents = self.norm_latents(latents)
@@ -65,18 +76,32 @@ class PerceiverAttention(nn.Module):
 
 
 class PerceiverResampler(nn.Module):
+    """Perceiver resampler layers.
+
+    Args:
+        dim (int): Input dimensions.
+        depth (int): Depth of resampler. Defaults to 6.
+        dim_head (int): Number of dimension heads. Defaults to 64.
+        heads (int): Number of heads. Defaults to 8.
+        num_latents (int): Number of latents. Defaults to 64.
+        max_num_media (int, optional): Max number of media.
+            Defaults to None.
+        max_num_frames (int, optional): Max number of frames.
+            Defaults to None.
+        ff_mult (int): Feed forward multiplier. Defaults to 4.
+    """
 
     def __init__(
         self,
         *,
-        dim,
-        depth=6,
-        dim_head=64,
-        heads=8,
-        num_latents=64,
-        max_num_media=None,
-        max_num_frames=None,
-        ff_mult=4,
+        dim: int,
+        depth: int = 6,
+        dim_head: int = 64,
+        heads: int = 8,
+        num_latents: int = 64,
+        max_num_media: Optional[int] = None,
+        max_num_frames: Optional[int] = None,
+        ff_mult: int = 4,
     ):
         super().__init__()
         self.latents = nn.Parameter(torch.randn(num_latents, dim))
@@ -98,13 +123,14 @@ class PerceiverResampler(nn.Module):
 
         self.norm = nn.LayerNorm(dim)
 
-    def forward(self, x):
-        """
+    def forward(self, x: torch.Tensor):
+        """Forward function for perceiver sampler.
+
         Args:
-            x (torch.Tensor): image features
-                shape (b, T, F, v, D)
+            x (torch.Tensor): image features of shape (b, T, F, v, D)
+
         Returns:
-            shape (b, T, n, D) where n is self.num_latents
+            torch.Tensor: shape (b, T, n, D) where n is self.num_latents
         """
         b, T, F, v = x.shape[:4]
 
@@ -127,15 +153,25 @@ class PerceiverResampler(nn.Module):
 
 
 class MaskedCrossAttention(nn.Module):
+    """Masked cross attention layers.
+
+    Args:
+        dim (int): Input text feature dimensions.
+        dim_visual (int): Input visual feature dimensions.
+        dim_head (int): Number of dimension heads. Defaults to 64.
+        heads (int): Number of heads. Defaults to 8.
+        only_attend_immediate_media (bool): Whether attend immediate media.
+            Defaults to True.
+    """
 
     def __init__(
         self,
         *,
-        dim,
-        dim_visual,
-        dim_head=64,
-        heads=8,
-        only_attend_immediate_media=True,
+        dim: int,
+        dim_visual: int,
+        dim_head: int = 64,
+        heads: int = 8,
+        only_attend_immediate_media: bool = True,
     ):
         super().__init__()
         self.scale = dim_head**-0.5
@@ -148,20 +184,26 @@ class MaskedCrossAttention(nn.Module):
         self.to_kv = nn.Linear(dim_visual, inner_dim * 2, bias=False)
         self.to_out = nn.Linear(inner_dim, dim, bias=False)
 
-        # whether for text to only attend to immediate preceding image, or all previous images
+        # whether for text to only attend to immediate preceding image
+        # or all previous images
         self.only_attend_immediate_media = only_attend_immediate_media
 
-    def forward(self, x, media, media_locations=None, attend_previous=True):
-        """
+    def forward(self,
+                x: torch.Tensor,
+                media: torch.Tensor,
+                media_locations: Optional[torch.Tensor] = None,
+                attend_previous: bool = True):
+        """Forward function for perceiver sampler.
+
         Args:
-            x (torch.Tensor): text features
-                shape (B, T_txt, D_txt)
-            media (torch.Tensor): image features
-                shape (B, T_img, n, D_img) where n is the dim of the latents
-            media_locations: boolean mask identifying the media tokens in x
-                shape (B, T_txt)
-            attend_previous: bool
-                If false, ignores immediately preceding image and starts attending when following image
+            x (torch.Tensor): text features of shape (B, T_txt, D_txt).
+            media (torch.Tensor): image features of shape
+                (B, T_img, n, D_img) where n is the dim of the latents.
+            media_locations (torch.Tensor, optional): boolean mask identifying
+                the media tokens in x of shape (B, T_txt). Defaults to None.
+            attend_previous (bool): If false, ignores immediately preceding
+                image and starts attending when following image.
+                Defaults to True.
         """
         _, T_img, n = media.shape[:3]
         h = self.heads
@@ -181,7 +223,8 @@ class MaskedCrossAttention(nn.Module):
         sim = einsum('... i d, ... j d -> ... i j', q, k)
 
         if media_locations is not None:
-            # at each boolean of True, increment the time counter (relative to media time)
+            # at each boolean of True, increment the time counter
+            # (relative to media time)
             text_time = media_locations.cumsum(dim=-1)
             media_time = torch.arange(T_img, device=x.device) + 1
 
@@ -194,9 +237,10 @@ class MaskedCrossAttention(nn.Module):
                     i=text_time.shape[1],
                 )] = 0
 
-            # text time must equal media time if only attending to most immediate image
-            # otherwise, as long as text time is greater than media time (if attending to all previous images / media)
-            mask_op = torch.eq if self.only_attend_immediate_media else torch.ge
+            # text time must equal media time if only attending to most
+            # immediate image otherwise, as long as text time is greater than
+            # media time (if attending to all previous images / media)
+            mask_op = torch.eq if self.only_attend_immediate_media else torch.ge  # noqa
 
             text_to_media_mask = mask_op(
                 rearrange(text_time, 'b i -> b 1 i 1'),
@@ -209,7 +253,8 @@ class MaskedCrossAttention(nn.Module):
         attn = sim.softmax(dim=-1)
 
         if media_locations is not None and self.only_attend_immediate_media:
-            # any text without a preceding media needs to have attention zeroed out
+            # any text without a preceding media needs to have
+            # attention zeroed out
             text_without_media_mask = text_time == 0
             text_without_media_mask = rearrange(text_without_media_mask,
                                                 'b i -> b 1 i 1')
@@ -221,16 +266,27 @@ class MaskedCrossAttention(nn.Module):
 
 
 class GatedCrossAttentionBlock(nn.Module):
+    """Gated cross attention layers.
+
+    Args:
+        dim (int): Input text feature dimensions.
+        dim_visual (int): Input visual feature dimensions.
+        dim_head (int): Number of dimension heads. Defaults to 64.
+        heads (int): Number of heads. Defaults to 8.
+        ff_mult (int): Feed forward multiplier. Defaults to 4.
+        only_attend_immediate_media (bool): Whether attend immediate media.
+            Defaults to True.
+    """
 
     def __init__(
         self,
         *,
-        dim,
-        dim_visual,
-        dim_head=64,
-        heads=8,
-        ff_mult=4,
-        only_attend_immediate_media=True,
+        dim: int,
+        dim_visual: int,
+        dim_head: int = 64,
+        heads: int = 8,
+        ff_mult: int = 4,
+        only_attend_immediate_media: bool = True,
     ):
         super().__init__()
         self.attn = MaskedCrossAttention(
@@ -245,13 +301,23 @@ class GatedCrossAttentionBlock(nn.Module):
         self.ff = FeedForward(dim, mult=ff_mult)
         self.ff_gate = nn.Parameter(torch.tensor([0.0]))
 
-    def forward(
-        self,
-        x,
-        media,
-        media_locations=None,
-        attend_previous=True,
-    ):
+    def forward(self,
+                x: torch.Tensor,
+                media: torch.Tensor,
+                media_locations: Optional[torch.Tensor] = None,
+                attend_previous: bool = True):
+        """Forward function for perceiver sampler.
+
+        Args:
+            x (torch.Tensor): text features of shape (B, T_txt, D_txt).
+            media (torch.Tensor): image features of shape
+                (B, T_img, n, D_img) where n is the dim of the latents.
+            media_locations (torch.Tensor, optional): boolean mask identifying
+                the media tokens in x of shape (B, T_txt). Defaults to None.
+            attend_previous (bool): If false, ignores immediately preceding
+                image and starts attending when following image.
+                Defaults to True.
+        """
         x = (
             self.attn(
                 x,
@@ -265,8 +331,15 @@ class GatedCrossAttentionBlock(nn.Module):
 
 
 class FlamingoLayer(nn.Module):
+    """Faminogo layers.
 
-    def __init__(self, gated_cross_attn_layer, decoder_layer):
+    Args:
+        gated_cross_attn_layer (nn.Module): Gated cross attention layer.
+        decoder_layer (nn.Module): Decoder layer.
+    """
+
+    def __init__(self, gated_cross_attn_layer: nn.Module,
+                 decoder_layer: nn.Module):
         super().__init__()
         self.gated_cross_attn_layer = gated_cross_attn_layer
         self.decoder_layer = decoder_layer
@@ -278,20 +351,31 @@ class FlamingoLayer(nn.Module):
         return self.vis_x is not None
 
     def condition_vis_x(self, vis_x):
+        """Set condition vision features."""
         self.vis_x = vis_x
 
     def condition_media_locations(self, media_locations):
+        """Set condition media locations."""
         self.media_locations = media_locations
 
     def condition_attend_previous(self, attend_previous):
+        """Set attend previous."""
         self.attend_previous = attend_previous
 
     def forward(
         self,
-        lang_x,
-        attention_mask=None,
+        lang_x: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
         **decoder_layer_kwargs,
     ):
+        """Forward function.
+
+        Args:
+            lang_x (torch.Tensor): language inputs.
+            attention_mask (torch.Tensor, optional): text attention mask.
+                Defaults to None.
+            **decoder_layer_kwargs: Other decoder layer keyword arguments.
+        """
         if self.gated_cross_attn_layer is None:
             return self.decoder_layer(
                 lang_x, attention_mask=attention_mask, **decoder_layer_kwargs)

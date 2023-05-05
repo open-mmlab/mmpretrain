@@ -10,6 +10,5 @@ from .vqa import ReportVQA, VQAAcc
 __all__ = [
     'Accuracy', 'SingleLabelMetric', 'MultiLabelMetric', 'AveragePrecision',
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
-    'ConfusionMatrix', 'RetrievalRecall', 'VQAAcc', 'ReportVQA',
-    'COCOCaption'
+    'ConfusionMatrix', 'RetrievalRecall', 'VQAAcc', 'ReportVQA', 'COCOCaption'
 ]

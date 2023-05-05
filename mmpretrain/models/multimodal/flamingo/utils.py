@@ -1,10 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Type
+
 from mmpretrain.registry import MODELS
 
 
 class ExtendModule:
+    """Combine the base language model with adapter. This module will create a
+    instance from base with extended functions in adapter.
 
-    def __new__(cls, base: dict, adapter: dict):
+    Args:
+        base (object): Base module could be any object that represent
+            a instance of language model or a dict that can build the
+            base module.
+        adapter: (dict): Dict to build the adapter.
+    """
+
+    def __new__(cls, base: object, adapter: dict):
 
         if isinstance(base, dict):
             base = MODELS.build(base)
@@ -14,8 +25,13 @@ class ExtendModule:
         return adapter_module.extend_init(base, **adapter)
 
     @classmethod
-    def extend_instance(cls, base, mixin):
-        """Apply mixins to a class instance after creation."""
+    def extend_instance(cls, base: object, mixin: Type[Any]):
+        """Apply mixins to a class instance after creation.
+
+        Args:
+            base (object): Base module instance.
+            mixin: (Type[Any]): Adapter class type to mixin.
+        """
         base_cls = base.__class__
         base_cls_name = base.__class__.__name__
         base.__class__ = type(
