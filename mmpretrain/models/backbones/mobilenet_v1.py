@@ -9,21 +9,29 @@ from .base_backbone import BaseBackbone
 
 @MODELS.register_module()
 class MobileNetV1(BaseBackbone):
+    """MobileNetV1 backbone for image classification.
 
-    def __init__(self,
-                 input_channels,
-                 conv_cfg=None,
-                 frozen_stages=-1,
-                 norm_cfg=dict(type='BN'),
-                 act_cfg=dict(type='ReLU'),
-                 norm_eval=False,
-                 with_cp=False,
+    Args:
+        input_channels (int): The input channels of the image tensor.
+        conv_cfg (dict): Config dict for convolution layer. Default: None.
+        frozen_stages (int): Stages to be frozen (all param fixed). -1 means not freezing any parameters.
+            Default: -1.
+        norm_cfg (dict): Config dict for normalization layer. Default: dict(type='BN').
+        act_cfg (dict): Config dict for activation layer. Default: dict(type='ReLU').
+        norm_eval (bool): Whether to set the normalization layer to evaluation mode. Default: False.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some memory while slowing down the
+            training speed. Default: False.
+        init_cfg (list[dict]): Initialization config dict. Default: [
+            dict(type='Kaiming', layer=['Conv2d']),
+            dict(type='Constant', val=1, layer=['_BatchNorm', 'GroupNorm'])
+        ].
+    """
+
+    def __init__(self, input_channels, conv_cfg=None, frozen_stages=-1, norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='ReLU'), norm_eval=False, with_cp=False,
                  init_cfg=[
                      dict(type='Kaiming', layer=['Conv2d']),
-                     dict(
-                         type='Constant',
-                         val=1,
-                         layer=['_BatchNorm', 'GroupNorm'])
+                     dict(type='Constant', val=1, layer=['_BatchNorm', 'GroupNorm'])
                  ]):
         super(MobileNetV1, self).__init__(init_cfg)
         self.arch_settings = [[32, 64, 1], [64, 128, 2], [128, 128, 1],
@@ -39,6 +47,8 @@ class MobileNetV1(BaseBackbone):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
         self.layers = []
+
+        # Add the first convolution layer to layers
         layer = ConvModule(
             in_channels=self.in_channels,
             out_channels=32,
@@ -49,6 +59,8 @@ class MobileNetV1(BaseBackbone):
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
         self.layers.append(layer)
+
+        # Add the rest of the convolution layers to layers according to self.arch_settings
         for layer_cfg in (self.arch_settings):
             in_ch, out_ch, stride = layer_cfg
             self.layers.append(
