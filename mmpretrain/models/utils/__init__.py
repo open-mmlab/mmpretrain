@@ -22,6 +22,7 @@ from .position_encoding import (ConditionalPositionEncoding,
                                 build_2d_sincos_position_embedding)
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
+from .swiglu_ffn import SwiGLUFFN, SwiGLUFFNFused
 from .vector_quantizer import NormEMAVectorQuantizer
 
 __all__ = [
@@ -69,4 +70,6 @@ __all__ = [
     'VideoDataPreprocessor',
     'CosineEMA',
     'ResLayerExtraNorm',
+    'SwiGLUFFN',
+    'SwiGLUFFNFused',
 ]
