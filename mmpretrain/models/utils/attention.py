@@ -572,9 +572,11 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        warnings.warn('The `use_layer_scale` in `MultiheadAttention` will be '
-                      'deprecated. Please use `layer_scale_init_value` to '
-                      'control whether using layer scale or not.')
+        if use_layer_scale:
+            warnings.warn('The `use_layer_scale` in `MultiheadAttention` will '
+                          'be deprecated. Please use `layer_scale_init_value` '
+                          'to control whether using layer scale or not.')
+
         if use_layer_scale or (layer_scale_init_value > 0):
             layer_scale_init_value = layer_scale_init_value or 1e-5
             self.gamma1 = LayerScale(
