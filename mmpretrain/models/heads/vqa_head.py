@@ -17,6 +17,7 @@ class VQAGenerationHead(BaseModule):
     Normally used for qa generation task (open-set)
 
     Args:
+        decoder (dict): Decoder for decoding answers.
         inference_method (str): Inference method. One of 'rank', 'generate'.
             - If 'rank', the model will return answers with the highest
                 probability from the answer list.

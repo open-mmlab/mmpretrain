@@ -12,8 +12,7 @@ from mmpretrain.structures import DataSample
 class BlipVQAModel(BaseModel):
     """BLIP VQA.
     Args:
-        tokenizer: (Optional[dict]): The config for tokenizer.
-            Defaults to None.
+        tokenizer: (dict): The config for tokenizer.
         vision_backbone (dict): Encoder for extracting image features.
         multimodal_backbone (dict): Backbone for extracting
             multi-modal features. We apply this part as VQA fusion module.
@@ -69,12 +68,13 @@ class BlipVQAModel(BaseModel):
         mode: str = 'loss',
     ):
         """The unified entry for a forward process in both training and test.
-        The method should accept only one mode "loss":
 
-        - "loss": Forward and return a dict of losses according to the given
-          inputs and data samples.
-        Note that this method doesn't handle neither back propagation nor
-        optimizer updating, which are done in the :meth:`train_step`.
+        - "loss": For training. Forward and return a dict of losses according
+          to the given inputs and data samples. Note that this method doesn't
+          handle neither back propagation nor optimizer updating, which are
+          done in the :meth:`train_step`.
+        - "predict": For testing. Forward and return a list of data_sample that
+          contains pred_answer for each question.
 
         Args:
             images (Tensor): A batch of images. The shape of it should be
@@ -86,6 +86,7 @@ class BlipVQAModel(BaseModel):
         Returns:
             The return type depends on ``mode``.
             - If ``mode="loss"``, return a dict of tensor.
+            - If ``mode="predict"``, return a list of `DataSample`
         """
 
         if mode == 'loss':
@@ -207,7 +208,7 @@ class BlipVQAModel(BaseModel):
         images: torch.Tensor,
         data_samples: Optional[List[DataSample]] = None,
     ):
-        """generate train_loss from the input tensor and data_samples.
+        """update data_samples that contain pred_answer for each question.
 
         Args:
             images (Tensor): A batch of images. The shape of it should be
