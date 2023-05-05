@@ -147,7 +147,7 @@ def get_model(model: Union[str, Config],
         config = copy.deepcopy(model)
         if pretrained is True and 'load_from' in config:
             pretrained = config.load_from
-    elif isinstance(model, (str, PathLike)) and Path(model).suffix:
+    elif isinstance(model, (str, PathLike)) and Path(model).suffix == '.py':
         config = Config.fromfile(model)
         if pretrained is True and 'load_from' in config:
             pretrained = config.load_from

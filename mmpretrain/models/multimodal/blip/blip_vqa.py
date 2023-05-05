@@ -11,6 +11,7 @@ from mmpretrain.structures import DataSample
 @MODELS.register_module()
 class BlipVQAModel(BaseModel):
     """BLIP VQA.
+
     Args:
         tokenizer: (dict): The config for tokenizer.
         vision_backbone (dict): Encoder for extracting image features.
@@ -18,12 +19,6 @@ class BlipVQAModel(BaseModel):
             multi-modal features. We apply this part as VQA fusion module.
         head (dict): The head module to calculate
             loss from processed features.
-        train_cfg (Optional[dict]): The training setting. The acceptable
-            fields are:
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmmultimodal.model.utils.augment`.
-            Defaults to None.
         data_preprocessor (Optional[dict]): The config for preprocessing input
             data. If None or no specified type, it will use
             `MutimodalDataPreprocessor` as type.
@@ -38,17 +33,14 @@ class BlipVQAModel(BaseModel):
                  vision_backbone: dict,
                  multimodal_backbone: dict,
                  head: dict,
-                 train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
 
         if data_preprocessor is None:
             data_preprocessor = {}
-            # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+        data_preprocessor = MODELS.build(data_preprocessor)
+
         super(BlipVQAModel, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 

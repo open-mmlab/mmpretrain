@@ -69,7 +69,7 @@ def register_hf_model(
         get_config = AutoConfig.from_pretrained
         from_config = cls.from_config
     elif issubclass(cls, PreTrainedModel):
-        get_config = cls.config_class.from_pretrain
+        get_config = cls.config_class.from_pretrained
         from_config = cls
     else:
         raise TypeError('Not auto model nor pretrained model of huggingface.')

@@ -94,8 +94,10 @@ def get_flops_params(config_path):
     from mmengine.registry import DefaultScope
 
     from mmpretrain.apis import get_model
+    from mmpretrain.models.utils import no_load_hf_pretrained_model
 
-    model = get_model(config_path, device='cpu')
+    with no_load_hf_pretrained_model():
+        model = get_model(config_path, device='cpu')
     model = revert_sync_batchnorm(model)
     model.eval()
     params = int(parameter_count(model)[''])

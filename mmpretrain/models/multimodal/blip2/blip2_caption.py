@@ -26,16 +26,10 @@ class BLIP2Captioner(BaseModel):
             Defaults to ''.
         max_txt_len (int): Max text length of input text.
         num_captions (int): Number of captions to be generated for each image.
-        train_cfg (Optional[dict]): The training setting. The acceptable
-            fields are:
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmmultimodal.model.utils.augment`.
-            Defaults to None.
         data_preprocessor (Optional[dict]): The config for preprocessing input
             data. If None or no specified type, it will use
-            "MutimodalDataPreprocessor" as type.
-            See :class:`MutimodalDataPreprocessor` for more details.
+            "MultiModalDataPreprocessor" as type.
+            See :class:`MultiModalDataPreprocessor` for more details.
             Defaults to None.
         init_cfg (Optional[dict]): the config to control the initialization.
             Defaults to None.
@@ -50,18 +44,13 @@ class BLIP2Captioner(BaseModel):
                  prompt: str = '',
                  max_txt_len: int = 20,
                  num_captions: int = 1,
-                 train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
 
         if data_preprocessor is None:
             data_preprocessor = {}
-            # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault('type', 'ClsDataPreprocessor')
-
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+        data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -101,6 +90,9 @@ class BLIP2Captioner(BaseModel):
         # freeze the text backbone
         for _, param in self.text_backbone.named_parameters():
             param.requires_grad = False
+
+        if hasattr(self, 'register_load_state_dict_post_hook'):
+            self.register_load_state_dict_post_hook(self._ignore_llm_keys_hook)
 
     def forward(
         self,
@@ -213,3 +205,12 @@ class BLIP2Captioner(BaseModel):
             out_data_samples.append(data_sample)
 
         return out_data_samples
+
+    @staticmethod
+    def _ignore_llm_keys_hook(module, incompatible_keys):
+        """Avoid warning missing keys of the LLM model."""
+        import re
+        llm_pattern = '^text_backbone'
+        for key in list(incompatible_keys.missing_keys):
+            if re.match(llm_pattern, key):
+                incompatible_keys.missing_keys.remove(key)

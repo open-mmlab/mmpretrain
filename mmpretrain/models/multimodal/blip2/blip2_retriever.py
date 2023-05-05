@@ -44,16 +44,10 @@ class BLIP2Retriever(BLIPRetriever):
         topk (int): Select topk similarity as candidates for compute matching
             scores. Notice that this is not the topk in evaluation.
             Defaults to 256.
-        train_cfg (Optional[dict]): The training setting. The acceptable
-            fields are:
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmmultimodal.model.utils.augment`.
-            Defaults to None.
         data_preprocessor (Optional[dict]): The config for preprocessing input
             data. If None or no specified type, it will use
-            "MutimodalDataPreprocessor" as type.
-            See :class:`MutimodalDataPreprocessor` for more details.
+            "MultiModalDataPreprocessor" as type.
+            See :class:`MultiModalDataPreprocessor` for more details.
             Defaults to None.
         init_cfg (Optional[dict]): the config to control the initialization.
             Defaults to None.
@@ -71,18 +65,12 @@ class BLIP2Retriever(BLIPRetriever):
                  temperature: float = 0.07,
                  fast_match: bool = False,
                  topk: int = 256,
-                 train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
-
         if data_preprocessor is None:
             data_preprocessor = {}
-            # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+        data_preprocessor = MODELS.build(data_preprocessor)
 
         # Skip BLIPRetriever init
         super(BLIPRetriever, self).__init__(
@@ -337,16 +325,20 @@ class BLIP2Retriever(BLIPRetriever):
 
         Args:
             feats (Dict[str, torch.Tensor]): Features from the current rank.
-            data_samples (List[DataSample]): Data samples from the current rank.
-            num_images (int, optional): Number of images to use. Defaults to None.
-            num_texts (int, optional): Number of texts to use. Defaults to None.
-            cal_i2t (bool, optional): Whether to compute image-to-text similarity. 
-                Defaults to True.
-            cal_t2i (bool, optional): Whether to compute text-to-image similarity. 
-                Defaults to True.
+            data_samples (List[DataSample]): Data samples from the current
+                rank.
+            num_images (int, optional): Number of images to use.
+                Defaults to None.
+            num_texts (int, optional): Number of texts to use.
+                Defaults to None.
+            cal_i2t (bool, optional): Whether to compute image-to-text
+                similarity. Defaults to True.
+            cal_t2i (bool, optional): Whether to compute text-to-image
+                similarity. Defaults to True.
 
         Returns:
-            Tuple[torch.Tensor, torch.Tensor]: Image-to-text and text-to-image similarity matrices.
+            Tuple[torch.Tensor, torch.Tensor]: Image-to-text and text-to-image
+            similarity matrices.
         """
         text_ids = feats['text_ids']
         text_attn_mask = feats['text_attn_mask']
@@ -400,7 +392,7 @@ class BLIP2Retriever(BLIPRetriever):
         Args:
             img_feats (torch.Tensor): The input tensor with shape (M, C).
                 M stands for numbers of samples on a single GPU.
-            img_embeds (List[torch.Tensor]): Image features from each layer of 
+            img_embeds (List[torch.Tensor]): Image features from each layer of
                 the vision backbone.
             text_feats (torch.Tensor): The input tensor with shape (N, C).
                 N stands for numbers of all samples on all GPUs.

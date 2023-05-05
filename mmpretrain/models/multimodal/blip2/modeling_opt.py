@@ -30,7 +30,7 @@ from transformers.utils import (add_code_sample_docstrings,
                                 add_start_docstrings_to_model_forward, logging,
                                 replace_return_docstrings)
 
-from mmpretrain.registry import MODELS
+from mmpretrain.models.utils import register_hf_model
 
 logger = logging.get_logger(__name__)
 
@@ -862,33 +862,6 @@ class OPTModel(OPTPreTrainedModel):
             hidden_states=decoder_outputs.hidden_states,
             attentions=decoder_outputs.attentions,
         )
-
-
-def register_hf_model(cls: Optional[type] = None):
-    """Register HuggingFace-style tokenizer class."""
-    if cls is None:
-
-        # use it as a decorator: @register_hf_tokenizer()
-        def _register(cls):
-            register_hf_model(cls=cls)
-            return cls
-
-        return _register
-
-    def from_pretrained(**kwargs):
-        if ('pretrained_model_name_or_path' not in kwargs
-                and 'name_or_path' not in kwargs):
-            raise TypeError(
-                f'{cls.__name__}.from_pretrained() missing required '
-                "argument 'pretrained_model_name_or_path' or 'name_or_path'.")
-        # `pretrained_model_name_or_path` is too long for config,
-        # add an alias name `name_or_path` here.
-        name_or_path = kwargs.pop('pretrained_model_name_or_path',
-                                  kwargs.pop('name_or_path'))
-        return cls.from_pretrained(name_or_path, **kwargs)
-
-    MODELS._register_module(module=from_pretrained, module_name=cls.__name__)
-    return cls
 
 
 @register_hf_model()
