@@ -13,6 +13,8 @@ def convert_eva02(ckpt):
     new_ckpt = OrderedDict()
     qkv_proj = {}
     qkv_bias = {}
+    w12_weight = {}
+    w12_bias = {}
 
     banned = {
         'mask_token',
@@ -35,28 +37,29 @@ def convert_eva02(ckpt):
                 new_k = k.replace('proj.', 'projection.')
 
             elif k.startswith('fc_norm') or k.startswith('norm'):
-                new_k = k.replace('norm.', 'ln1.')
-                new_k = k.replace('fc_norm.', 'ln1.')
+                new_k = k.replace('norm.', 'ln2.')
+                new_k = k.replace('fc_norm.', 'ln2.')
 
             elif k.startswith('blocks'):
                 new_k = k.replace('blocks.', 'layers.')
 
                 if 'mlp' in new_k:
-                    if 'w12' in new_k:
-                        # For tiny and small version, mlp is implemented with
-                        # swiglu in xformers, where w1 and w2 are integrated
+                    if 'w1.' in new_k or 'w2.' in new_k:
+                        # For base and large version, mlp is implemented with
+                        # 2 linears, where w1 and w2 are required to integrate
                         # into w12.
-                        out_dim = v.shape[0]
+                        s = new_k.split('.')  # e.g. layers.0.mlp.w1.weight
+                        idx = s[1]
                         if 'weight' in new_k:
-                            # w12.weight
-                            v = v.reshape(2, out_dim // 2, -1)
+                            # w1.weight or w2.weight
+                            if idx not in w12_weight:
+                                w12_weight[idx] = {}
+                            w12_weight[idx][s[-2]] = v
                         else:
-                            # w12.bias
-                            v = v.reshape(2, out_dim // 2)
-                        new_k = new_k.replace('w12.', 'w1.')
-                        new_ckpt['backbone.' + new_k] = v[0]
-                        new_k = new_k.replace('w1.', 'w2.')
-                        new_ckpt['backbone.' + new_k] = v[1]
+                            # w1.bias or w2.bias
+                            if idx not in w12_bias:
+                                w12_bias[idx] = {}
+                            w12_bias[idx][s[-2]] = v
                         continue
 
                     if 'ffn_ln' in new_k:
@@ -104,6 +107,20 @@ def convert_eva02(ckpt):
         v_bias = qkv_bias[idx]['v_bias']
         weight = torch.cat((q_bias, k_bias, v_bias))
         new_k = f'backbone.layers.{idx}.attn.qkv.bias'
+        new_ckpt[new_k] = weight
+
+    for idx in w12_weight:
+        w1 = w12_weight[idx]['w1']
+        w2 = w12_weight[idx]['w2']
+        weight = torch.cat((w1, w2))
+        new_k = f'backbone.layers.{idx}.mlp.w12.weight'
+        new_ckpt[new_k] = weight
+
+    for idx in w12_bias:
+        w1 = w12_bias[idx]['w1']
+        w2 = w12_bias[idx]['w2']
+        weight = torch.cat((w1, w2))
+        new_k = f'backbone.layers.{idx}.mlp.w12.bias'
         new_ckpt[new_k] = weight
 
     return new_ckpt

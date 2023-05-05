@@ -82,10 +82,8 @@ python tools/test.py configs/eva02/eva02_tiny_p14_8xb16_in1k.py /path/to/eva02_t
 | Model                                       |      Pretrain      | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   | Download |
 | :------------------------------------------ | :----------------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :------: |
 | `eva02-tiny-p14_in21k-pre_3rdparty_in1k`\*  | EVA02 ImageNet-21k |    5.76    |   4.68    |   80.69   |   95.54   | [config](./eva02_tiny_p14_8xb16_in1k.py)  |   N/A    |
-| `eva02-small-p14_in21k-pre_3rdparty_in1k`\* | EVA02 ImageNet-21k |   22.13    |   15.48   |   85.77   |   97.60   | [config](./eva02_small_p14_8xb16_in1k.py) |   N/A    |
+| `eva02-small-p14_in21k-pre_3rdparty_in1k`\* | EVA02 ImageNet-21k |   22.13    |   15.48   |   85.78   |   97.60   | [config](./eva02_small_p14_8xb16_in1k.py) |   N/A    |
 | `eva02-base-p14_in21k-pre_3rdparty_in1k`\*  | EVA02 ImageNet-21k |   87.13    |  107.11   |   88.29   |   98.53   | [config](./eva02_base_p14_8xb16_in1k.py)  |   N/A    |
-| `eva02-large-p14_in21k-pre_3rdparty_in1k`\* | EVA02 ImageNet-21k |   305.10   |  362.33   |   89.51   |   98.86   | [config](./eva02_large_p14_8xb16_in1k.py) |   N/A    |
-| `eva02-large-p14_m38m-pre_3rdparty_in1k`\*  |  EVA02 Merged-38M  |   305.10   |  362.33   |   89.39   |   98.80   | [config](./eva02_large_p14_8xb16_in1k.py) |   N/A    |
 
 *Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
@@ -94,7 +92,7 @@ python tools/test.py configs/eva02/eva02_tiny_p14_8xb16_in1k.py /path/to/eva02_t
 | Model                                                   |      Pretrain      | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   | Download |
 | :------------------------------------------------------ | :----------------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :------: |
 | `eva02-base-p14_in21k-pre_in21k-medft_3rdparty_in1k`\*  | EVA02 ImageNet-21k |   87.13    |  107.11   |   88.47   |   98.62   | [config](./eva02_base_p14_8xb16_in1k.py)  |   N/A    |
-| `eva02-large-p14_in21k-pre_in21k-medft_3rdparty_in1k`\* | EVA02 ImageNet-21k |   305.08   |  362.33   |   89.66   |   98.95   | [config](./eva02_large_p14_8xb16_in1k.py) |   N/A    |
+| `eva02-large-p14_in21k-pre_in21k-medft_3rdparty_in1k`\* | EVA02 ImageNet-21k |   305.08   |  362.33   |   89.65   |   98.95   | [config](./eva02_large_p14_8xb16_in1k.py) |   N/A    |
 | `eva02-large-p14_m38m-pre_in21k-medft_3rdparty_in1k`\*  |  EVA02 Merged-38M  |   305.10   |  362.33   |   89.83   |   99.00   | [config](./eva02_large_p14_8xb16_in1k.py) |   N/A    |
 
 *Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reprodcue the training results.*

@@ -12,6 +12,7 @@ model = dict(
         img_size=448,
         patch_size=14,
         sub_ln=True,
+        final_norm=False,
         out_type='avg_featmap'),
     neck=None,
     head=dict(

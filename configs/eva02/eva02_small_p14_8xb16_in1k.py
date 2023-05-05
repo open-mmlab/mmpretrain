@@ -11,6 +11,7 @@ model = dict(
         arch='s',
         img_size=336,
         patch_size=14,
+        final_norm=False,
         out_type='avg_featmap'),
     neck=None,
     head=dict(

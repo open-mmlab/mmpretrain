@@ -2,72 +2,13 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmengine.model import BaseModule, ModuleList
 
 from mmpretrain.registry import MODELS
-from ..utils import RotaryEmbeddingFast, build_norm_layer, resize_pos_embed
+from ..utils import (RotaryEmbeddingFast, SwiGLUFFN, build_norm_layer,
+                     resize_pos_embed)
 from .vision_transformer import VisionTransformer
-
-
-class SwiGLUFFN(BaseModule):
-    """Implements SwiGLU with sub layer norm.
-
-    Args:
-        in_features (int): The feature dimension.
-        hidden_features (int, optional): The hidden dimension of features,
-            and if None, use ``in_features``. Defaults to None.
-        out_features (int, optional): The dimension of outputs, and if None,
-            use ``in_features``. Defaults to None.
-        norm_cfg (dict, optional): Config dict for sub normalization layer.
-            Defaults to ``dict(type='LN')``.
-        act_cfg (dict): The activation config.
-            Defaults to ``dict(type='SiLU')``.
-        drop_rate (float): The dropout rate. Defaults to 0.
-        sub_ln (bool): Whether to add the sub layer normalization.
-            Defaults to False.
-        init_cfg (dict, optional): Initialization config dict.
-            Defaults to None.
-    """
-
-    def __init__(self,
-                 in_features,
-                 hidden_features=None,
-                 out_features=None,
-                 norm_cfg=dict(type='LN'),
-                 act_cfg=dict(type='SiLU'),
-                 drop_rate=0.,
-                 sub_ln=False,
-                 init_cfg=None):
-        super(SwiGLUFFN, self).__init__(init_cfg=init_cfg)
-
-        out_features = out_features or in_features
-        hidden_features = hidden_features or in_features
-        self.hidden_features = hidden_features
-
-        self.w1 = nn.Linear(in_features, hidden_features)
-        self.w2 = nn.Linear(in_features, hidden_features)
-
-        if sub_ln:
-            self.norm = build_norm_layer(norm_cfg, hidden_features)
-        else:
-            self.norm = nn.Identity()
-
-        self.act = build_activation_layer(act_cfg)
-
-        self.w3 = nn.Linear(hidden_features, out_features)
-
-        self.dropout_layer = nn.Dropout(drop_rate)
-
-    def forward(self, x):
-        x1 = self.w1(x)
-        x2 = self.w2(x)
-        hidden = self.act(x1) * x2
-        x = self.norm(hidden)
-        x = self.w3(x)
-        x = self.dropout_layer(x)
-        return x
 
 
 class AttentionWithRoPE(BaseModule):
@@ -221,12 +162,22 @@ class EVA02EndcoderLayer(BaseModule):
 
         self.norm2 = build_norm_layer(norm_cfg, embed_dims)
 
+        if drop_rate > 0:
+            dropout_layer = dict(type='Dropout', drop_prob=drop_rate)
+        else:
+            dropout_layer = None
+
+        if sub_ln:
+            ffn_norm = norm_cfg
+        else:
+            ffn_norm = None
+
         self.mlp = SwiGLUFFN(
-            in_features=embed_dims,
-            hidden_features=feedforward_channels,
-            sub_ln=sub_ln,
-            drop_rate=drop_rate,
-            norm_cfg=norm_cfg,
+            embed_dims=embed_dims,
+            feedforward_channels=feedforward_channels,
+            dropout_layer=dropout_layer,
+            norm_cfg=ffn_norm,
+            add_identity=False,
         )
 
     def forward(self, x, patch_resolution):
@@ -372,6 +323,7 @@ class EVA02(VisionTransformer):
         x, patch_resolution = self.patch_embed(x)
 
         if self.cls_token is not None:
+            # stole cls_tokens impl from Phil Wang, thanks
             cls_tokens = self.cls_token.expand(B, -1, -1)
             x = torch.cat((cls_tokens, x), dim=1)
 
@@ -389,19 +341,10 @@ class EVA02(VisionTransformer):
         for i, layer in enumerate(self.layers):
             x = layer(x, patch_resolution)
 
+            if i == len(self.layers) - 1 and self.final_norm:
+                x = self.ln1(x)
+
             if i in self.out_indices:
-                out = self._format_output(x, patch_resolution)
-
-                if i == len(self.layers) - 1:
-                    if self.out_type == 'featmap':
-                        if self.final_norm:
-                            out = out.permute(0, 2, 3, 1)
-                            out = self.ln1(out)
-                            out = out.permute(0, 3, 1, 2)
-                    else:
-                        if self.final_norm:
-                            out = self.ln1(out)
-
-                outs.append(out)
+                outs.append(self._format_output(x, patch_resolution))
 
         return tuple(outs)
