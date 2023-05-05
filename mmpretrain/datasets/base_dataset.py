@@ -49,7 +49,9 @@ class BaseDataset(_BaseDataset):
             when enabled, data loader workers can use shared RAM from master
             process instead of making a copy. Defaults to True.
         pipeline (Sequence): Processing pipeline. Defaults to an empty tuple.
-        test_mode (bool): ``test_mode=True`` means in test phase.
+        test_mode (bool, optional): ``test_mode=True`` means in test phase,
+            an error will be raised when getting an item fails, ``test_mode=False``
+            means in training phase, another item will be returned randomly.
             Defaults to False.
         lazy_init (bool): Whether to load annotation during instantiation.
             In some cases, such as visualization, only the meta information of
