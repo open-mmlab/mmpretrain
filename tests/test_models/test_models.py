@@ -30,6 +30,10 @@ test_list = [
         backbone=mmpretrain.models.ViTSAM,
         forward=False,
         backward=False),
+    Cfg(name='vit-base-p14_dinov2-pre_3rdparty',
+        backbone=mmpretrain.models.VisionTransformer,
+        forward=False,
+        backward=False),
 ]
 
 

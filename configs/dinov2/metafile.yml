@@ -1,0 +1,73 @@
+Collections:
+  - Name: DINOv2
+    Metadata:
+      Architecture:
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      Title: 'DINOv2: Learning Robust Visual Features without Supervision'
+      URL: https://arxiv.org/abs/2304.07193
+    README: configs/dinov2/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: vit-small-p14_dinov2-pre_3rdparty
+    Metadata:
+      FLOPs: 46762000000
+      Parameters: 22056000
+      Training Data:
+        - LVD-142M
+    In Collection: DINOv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-small-p14_dinov2-pre_3rdparty_20230426-5641ca5a.pth
+    Config: configs/dinov2/vit-small-p14_dinov2-pre_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vits14/dinov2_vits14_pretrain.pth
+      Code: https://github.com/facebookresearch/dinov2
+
+  - Name: vit-base-p14_dinov2-pre_3rdparty
+    Metadata:
+      FLOPs: 152000000000
+      Parameters: 86580000
+      Training Data:
+        - LVD-142M
+    In Collection: DINOv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-base-p14_dinov2-pre_3rdparty_20230426-ba246503.pth
+    Config: configs/dinov2/vit-base-p14_dinov2-pre_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vitb14/dinov2_vitb14_pretrain.pth
+      Code: https://github.com/facebookresearch/dinov2
+
+  - Name: vit-large-p14_dinov2-pre_3rdparty
+    Metadata:
+      FLOPs: 507000000000
+      Parameters: 304000000
+      Training Data:
+        - LVD-142M
+    In Collection: DINOv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-large-p14_dinov2-pre_3rdparty_20230426-f3302d9e.pth
+    Config: configs/dinov2/vit-large-p14_dinov2-pre_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vitl14/dinov2_vitl14_pretrain.pth
+      Code: https://github.com/facebookresearch/dinov2
+
+  - Name: vit-giant-p14_dinov2-pre_3rdparty
+    Metadata:
+      FLOPs: 1784000000000
+      Parameters: 1136000000
+      Training Data:
+        - LVD-142M
+    In Collection: DINOv2
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-giant-p14_dinov2-pre_3rdparty_20230426-2934a630.pth
+    Config: configs/dinov2/vit-giant-p14_dinov2-pre_headless.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/dinov2/dinov2_vitg14/dinov2_vitg14_pretrain.pth
+      Code: https://github.com/facebookresearch/dinov2

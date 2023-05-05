@@ -114,7 +114,7 @@ def binary_cross_entropy(pred,
         class_weight = class_weight.repeat(N, 1)
     loss = F.binary_cross_entropy_with_logits(
         pred,
-        label,
+        label.float(),  # only accepts float type tensor
         weight=class_weight,
         pos_weight=pos_weight,
         reduction='none')

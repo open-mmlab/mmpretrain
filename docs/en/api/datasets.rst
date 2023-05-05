@@ -66,6 +66,47 @@ Base classes
 
 .. autoclass:: MultiLabelDataset
 
+Caltech101
+----------------
+
+.. autoclass:: Caltech101
+
+Food101
+----------------
+
+.. autoclass:: Food101
+
+DTD
+----------------
+
+.. autoclass:: DTD
+
+FGVCAircraft
+----------------
+
+.. autoclass:: FGVCAircraft
+
+
+Flowers102
+----------------
+
+.. autoclass:: Flowers102
+
+StanfordCars
+----------------
+
+.. autoclass:: StanfordCars
+
+OxfordIIITPet
+----------------
+
+.. autoclass:: OxfordIIITPet
+
+SUN397
+----------------
+
+.. autoclass:: SUN397
+
 Dataset Wrappers
 ----------------
 

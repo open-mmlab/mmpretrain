@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+import warnings
 from functools import partial
 from typing import List, Optional, Union
 
@@ -528,6 +529,9 @@ class MultiheadAttention(BaseModule):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        use_layer_scale (bool): Whether to use layer scale. Defaults to False.
+        layer_scale_init_value (float or torch.Tensor): Init value of layer
+            scale. Defaults to 0.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -544,6 +548,7 @@ class MultiheadAttention(BaseModule):
                  proj_bias=True,
                  v_shortcut=False,
                  use_layer_scale=False,
+                 layer_scale_init_value=0.,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
 
@@ -568,7 +573,14 @@ class MultiheadAttention(BaseModule):
         self.out_drop = build_dropout(dropout_layer)
 
         if use_layer_scale:
-            self.gamma1 = LayerScale(embed_dims)
+            warnings.warn('The `use_layer_scale` in `MultiheadAttention` will '
+                          'be deprecated. Please use `layer_scale_init_value` '
+                          'to control whether using layer scale or not.')
+
+        if use_layer_scale or (layer_scale_init_value > 0):
+            layer_scale_init_value = layer_scale_init_value or 1e-5
+            self.gamma1 = LayerScale(
+                embed_dims, layer_scale_init_value=layer_scale_init_value)
         else:
             self.gamma1 = nn.Identity()
 
@@ -1057,9 +1069,19 @@ class PromptMultiheadAttention(MultiheadAttention):
                  v_shortcut: bool = False,
                  use_layer_scale: bool = False,
                  init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
-        super().__init__(embed_dims, num_heads, input_dims, attn_drop,
-                         proj_drop, dropout_layer, qkv_bias, qk_scale,
-                         proj_bias, v_shortcut, use_layer_scale, init_cfg)
+        super().__init__(
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            input_dims=input_dims,
+            attn_drop=attn_drop,
+            proj_drop=proj_drop,
+            dropout_layer=dropout_layer,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            proj_bias=proj_bias,
+            v_shortcut=v_shortcut,
+            use_layer_scale=use_layer_scale,
+            init_cfg=init_cfg)
         # no longer need qkv
         del self.qkv
 
