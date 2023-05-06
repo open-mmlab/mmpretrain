@@ -189,7 +189,7 @@ Backbones
    VisionTransformer
    ViTSAM
    XCiT
-   EVA02
+   ViTEVA02
 
 .. module:: mmpretrain.models.necks
 
