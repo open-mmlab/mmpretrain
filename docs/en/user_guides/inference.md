@@ -1,12 +1,10 @@
 # Inference with existing models
 
-This note will show how to use the following APIs：
+This tutorial will show how to use the following APIs：
 
-1. [**`list_models`**](mmpretrain.apis.list_models) & [**`get_model`**](mmpretrain.apis.get_model) ：list the model in MMPreTrain and get the model.
+1. [**`list_models`**](mmpretrain.apis.list_models) & [**`get_model`**](mmpretrain.apis.get_model) ：list models in MMPreTrain and get a specific model.
 2. [**`ImageClassificationInferencer`**](mmpretrain.apis.ImageClassificationInferencer): inference on given images.
 3. [**`FeatureExtractor`**](mmpretrain.apis.FeatureExtractor): extract features from the image files directly.
-
-For more details about the pre-trained models in MMPretrain, you can refer to [Model Zoo](../modelzoo_statistics.md).
 
 ## List models and Get model
 

@@ -6,8 +6,6 @@
 2. [**`ImageClassificationInferencer`**](mmpretrain.apis.ImageClassificationInferencer): 在给定图像上进行推理。
 3. [**`FeatureExtractor`**](mmpretrain.apis.FeatureExtractor): 从图像文件直接提取特征。
 
-关于MMPretrain中预训练模型的更多详细信息，您可以参考[模型库](../modelzoo_statistics.md)。
-
 ## 列出模型和获取模型
 
 列出 MMPreTrain 中的所有已支持的模型。
@@ -30,7 +28,7 @@
  'convnext-base_in21k-pre_3rdparty_in1k']
 ```
 
-了解了已经支持了哪些模型后，你可以使用 `get_model` 获取模型。
+了解了已经支持了哪些模型后，你可以使用 `get_model` 获取特定模型。
 
 ```
 >>> from mmpretrain import get_model
@@ -107,7 +105,7 @@ result 是一个包含 pred_label、pred_score、pred_scores 和 pred_class 的�
 
 ## 从图像中提取特征
 
-与 `model.extract_feat` 相比，`FeatureExtractor` 用于直接从图像文件中提取特征，而不是从一批张量中提取特征。换句话说，`model.extract_feat` 的输入是 `torch.Tensor`，`FeatureExtractor` 的输入是图像。
+与 `model.extract_feat` 相比，`FeatureExtractor` 用于直接从图像文件中提取特征，而不是从一批张量中提取特征。简单说，`model.extract_feat` 的输入是 `torch.Tensor`，`FeatureExtractor` 的输入是图像。
 
 ```
 >>> from mmpretrain import FeatureExtractor, get_model
