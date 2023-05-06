@@ -18,6 +18,7 @@ class CosineAnnealingWeightDecay(WeightDecaySchedulerMixin,
                                  CosineAnnealingParamScheduler):
     """Set the weight decay value of each parameter group using a cosine
     annealing schedule.
+
     If the weight decay was set to be 0 initially, the weight decay value will
     be 0 constantly during the training.
     """

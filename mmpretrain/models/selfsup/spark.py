@@ -17,6 +17,7 @@ from .base import BaseSelfSupervisor
 @MODELS.register_module()
 class SparK(BaseSelfSupervisor):
     """Implementation of SparK.
+
     Implementation of `Designing BERT for Convolutional Networks: Sparse and
     Hierarchical Masked Modeling <https://arxiv.org/abs/2301.03580>`_.
     """
@@ -101,6 +102,7 @@ class SparK(BaseSelfSupervisor):
              device: Union[torch.device, str],
              generator: Optional[torch.Generator] = None):
         """Mask generation.
+
         Args:
             shape (torch.Size): The shape of the input images.
             device (Union[torch.device, str]): The device of the tensor.
@@ -141,6 +143,7 @@ class SparK(BaseSelfSupervisor):
     def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.
+
         Args:
             inputs (List[torch.Tensor]): The input images.
             data_samples (List[DataSample]): All elements required

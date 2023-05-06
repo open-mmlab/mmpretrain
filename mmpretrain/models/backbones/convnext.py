@@ -386,7 +386,7 @@ class ConvNeXt(BaseBackbone):
             return max_layer_id + 1, max_layer_id + 2
 
         param_name = param_name[len(prefix):]
-        if param_name.startswith("downsample_layers"):
+        if param_name.startswith('downsample_layers'):
             stage_id = int(param_name.split('.')[1])
             if stage_id == 0:
                 layer_id = 0
@@ -395,7 +395,7 @@ class ConvNeXt(BaseBackbone):
             else:  # stage_id == 3:
                 layer_id = max_layer_id
 
-        elif param_name.startswith("stages"):
+        elif param_name.startswith('stages'):
             stage_id = int(param_name.split('.')[1])
             block_id = int(param_name.split('.')[2])
             if stage_id == 0 or stage_id == 1:

@@ -42,6 +42,8 @@ from .seresnet import SEResNet
 from .seresnext import SEResNeXt
 from .shufflenet_v1 import ShuffleNetV1
 from .shufflenet_v2 import ShuffleNetV2
+from .sparse_convnext import SparseConvNeXt
+from .sparse_resnet import SparseResNet
 from .swin_transformer import SwinTransformer
 from .swin_transformer_v2 import SwinTransformerV2
 from .t2t_vit import T2T_ViT
@@ -56,8 +58,6 @@ from .vision_transformer import VisionTransformer
 from .vit_eva02 import ViTEVA02
 from .vit_sam import ViTSAM
 from .xcit import XCiT
-from .sparse_resnet import SparseResNet
-from .sparse_convnext import SparseConvNeXt
 
 __all__ = [
     'LeNet5',

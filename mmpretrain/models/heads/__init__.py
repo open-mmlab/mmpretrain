@@ -25,6 +25,7 @@ from .multi_label_linear_head import MultiLabelLinearClsHead
 from .multi_task_head import MultiTaskHead
 from .seq_gen_head import SeqGenerationHead
 from .simmim_head import SimMIMHead
+from .spark_head import SparKPretrainHead
 from .stacked_head import StackedLinearClsHead
 from .swav_head import SwAVHead
 from .vig_head import VigClsHead
