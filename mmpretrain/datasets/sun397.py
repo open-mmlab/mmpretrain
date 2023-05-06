@@ -130,7 +130,7 @@ INVALID = [
 class SUN397(BaseDataset):
     """The SUN397 Dataset.
 
-    Support the `SUN397 Dataset <https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/>`_ Dataset.
+    Support the `SUN397 Dataset <https://vision.princeton.edu/projects/2010/SUN/>`_ Dataset.
     After downloading and decompression, the dataset directory structure is as follows.
 
     SUN397 dataset directory: ::

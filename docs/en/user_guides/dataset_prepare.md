@@ -261,69 +261,26 @@ val_dataloader = dict(
 test_dataloader = val_dataloader
 ```
 
-## CIFAR
+## Supported Datasets
 
-We support downloading the [`CIFAR10`](mmpretrain.datasets.CIFAR10) and [`CIFAR100`](mmpretrain.datasets.CIFAR100) datasets automatically, and you just need to specify the
-download folder in the `data_root` field. And please specify `split='train'` / `split='test'`
-to use training datasets or test datasets.
-
-```python
-train_dataloader = dict(
-    ...
-    # Training dataset configurations
-    dataset=dict(
-        type='CIFAR10',
-        data_root='data/cifar10',
-        split='train',
-        pipeline=...,
-    )
-)
-
-val_dataloader = dict(
-    ...
-    # Validation dataset configurations
-    dataset=dict(
-        type='CIFAR10',
-        data_root='data/cifar10',
-        split='test'
-        pipeline=...,
-    )
-)
-
-test_dataloader = val_dataloader
-```
-
-## MNIST
-
-We support downloading the [MNIST](mmpretrain.datasets.MNIST) and [Fashion-MNIST](mmpretrain.datasets.FashionMNIST) datasets automatically, and you just need to specify the
-download folder in the `data_root` field. And please specify `split='train'` / `split='test'`
-to use training datasets or test datasets.
-
-```python
-train_dataloader = dict(
-    ...
-    # Training dataset configurations
-    dataset=dict(
-        type='MNIST',
-        data_root='data/mnist',
-        split='train',
-        pipeline=...,
-    )
-)
-
-val_dataloader = dict(
-    ...
-    # Validation dataset configurations
-    dataset=dict(
-        type='MNIST',
-        data_root='data/mnist',
-        split='test'
-        pipeline=...,
-    )
-)
-
-test_dataloader = val_dataloader
-```
+| Datasets                                                                                | HomePage                                                                                  |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])       | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) Dataset.                      |
+| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])             | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                           |
+| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])           | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                          |
+| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                     | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) Dataset.             |
+| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                     | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) Dataset.  |
+| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...])  | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) Dataset.                |
+| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...])   | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) Dataset.            |
+| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])       | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) Dataset.          |
+| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])             | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) Dataset.           |
+| [`InShop`](mmpretrain.datasets.InShop)(data_root[, split, pipeline, ...])               | [InShop](https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html) Dataset. |
+| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])                | [MNIST](http://yann.lecun.com/exdb/mnist/) Dataset.                                       |
+| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) Dataset.                  |
+| [`Places205`](mmpretrain.datasets.Places205)(data_root[, split, pipeline, ...])         | [Places205](http://places.csail.mit.edu/downloadData.html) Dataset.                       |
+| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...])   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) Dataset.           |
+| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])               | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) Dataset.                        |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])            | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                            |
 
 ## OpenMMLab 2.0 Standard Dataset
 
