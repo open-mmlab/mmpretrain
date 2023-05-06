@@ -882,9 +882,9 @@ class TestMNIST(TestBaseDataset):
 
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
         data_prefix = tmpdir.name
-        cls.DEFAULT_ARGS = dict(
-            data_prefix=data_prefix, pipeline=[], test_mode=False)
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
 
         dataset_class = DATASETS.get(cls.DATASET_TYPE)
 
@@ -916,6 +916,39 @@ class TestMNIST(TestBaseDataset):
             with open(file, 'wb') as f:
                 f.write(data)
 
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test with valid split
+        splits = ['train', 'test']
+        test_modes = [False, True]
+
+        for split in splits:
+            for test_mode in test_modes:
+                cfg = {**self.DEFAULT_ARGS}
+                cfg['split'] = split
+                cfg['test_mode'] = test_mode
+
+                if split == 'train' and test_mode:
+                    logger = MMLogger.get_current_instance()
+                    with self.assertLogs(logger, 'WARN') as log:
+                        dataset = dataset_class(**cfg)
+                        self.assertEqual(dataset.split, split)
+                        self.assertEqual(dataset.test_mode, test_mode)
+                        self.assertEqual(dataset.data_root, self.root)
+                    self.assertIn('training set will be used', log.output[0])
+                else:
+                    dataset = dataset_class(**cfg)
+                    self.assertEqual(dataset.split, split)
+                    self.assertEqual(dataset.test_mode, test_mode)
+                    self.assertEqual(dataset.data_root, self.root)
+
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
@@ -928,8 +961,8 @@ class TestMNIST(TestBaseDataset):
         np.testing.assert_equal(data_info['img'], self.fake_img)
         np.testing.assert_equal(data_info['gt_label'], self.fake_label)
 
-        # Test with test_mode=True
-        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        # Test with split='test'
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 1)
 
@@ -940,7 +973,7 @@ class TestMNIST(TestBaseDataset):
         # Test automatically download
         with patch('mmpretrain.datasets.mnist.download_and_extract_archive'
                    ) as mock:
-            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'split': 'test'}
             dataset = dataset_class(**cfg)
             dataset.train_list = [['invalid_train_file', None]]
             dataset.test_list = [['invalid_test_file', None]]
@@ -963,7 +996,7 @@ class TestMNIST(TestBaseDataset):
         with self.assertRaisesRegex(RuntimeError, '`download=True`'):
             cfg = {
                 **self.DEFAULT_ARGS, 'lazy_init': True,
-                'test_mode': True,
+                'split': 'test',
                 'download': False
             }
             dataset = dataset_class(**cfg)
