@@ -13,7 +13,6 @@ from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .efficientnet_v2 import EfficientNetV2
-from .eva02 import EVA02
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -53,6 +52,7 @@ from .van import VAN
 from .vgg import VGG
 from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
+from .vit_eva02 import ViTEVA02
 from .vit_sam import ViTSAM
 from .xcit import XCiT
 
@@ -119,5 +119,5 @@ __all__ = [
     'PyramidVig',
     'XCiT',
     'ViTSAM',
-    'EVA02',
+    'ViTEVA02',
 ]

@@ -197,7 +197,7 @@ class EVA02EndcoderLayer(BaseModule):
 
 
 @MODELS.register_module()
-class EVA02(VisionTransformer):
+class ViTEVA02(VisionTransformer):
     """EVA02 Vision Transformer.
 
     A PyTorch implement of : `EVA-02: A Visual Representation for Neon Genesis
@@ -286,7 +286,7 @@ class EVA02(VisionTransformer):
             drop_path_rate=drop_path_rate,
             norm_cfg=norm_cfg,
             with_cls_token=with_cls_token)
-        super(EVA02, self).__init__(**kwargs)
+        super(ViTEVA02, self).__init__(**kwargs)
 
         self.num_heads = self.arch_settings['num_heads']
 

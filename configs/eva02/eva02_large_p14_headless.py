@@ -1,7 +1,7 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='EVA02',
+        type='ViTEVA02',
         arch='l',
         img_size=224,
         patch_size=14,
