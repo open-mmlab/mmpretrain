@@ -57,9 +57,8 @@ train_dataloader = dict(
     num_workers=4,
     dataset=dict(
         type=dataset_type,
-        data_root=r'E:\imagenet',
-        ann_file='meta/val.txt',
-        data_prefix='ILSVRC2012_img_val',
+        data_root='data/imagenet',
+        split='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -69,9 +68,8 @@ val_dataloader = dict(
     num_workers=4,
     dataset=dict(
         type=dataset_type,
-        data_root=r'E:\imagenet',
-        ann_file='meta/val.txt',
-        data_prefix='ILSVRC2012_img_val',
+        data_root='data/imagenet',
+        split='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
