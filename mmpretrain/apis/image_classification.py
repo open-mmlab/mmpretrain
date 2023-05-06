@@ -28,7 +28,7 @@ class ImageClassificationInferencer(BaseInferencer):
             file, or a :obj:`BaseModel` object. The model name can be found
             by ``ImageClassificationInferencer.list_models()`` and you can also
             query it in :doc:`/modelzoo_statistics`.
-        weights (str, optional): Path to the checkpoint. If None, it will try
+        pretrained (str, optional): Path to the checkpoint. If None, it will try
             to find a pre-defined weight from the model you specified
             (only work if the ``model`` is a model name). Defaults to None.
         device (str, optional): Device to run inference. If None, use CPU or
@@ -51,7 +51,7 @@ class ImageClassificationInferencer(BaseInferencer):
            >>> from mmpretrain import ImageClassificationInferencer
            >>> inferencer = ImageClassificationInferencer(
                    model='configs/resnet/resnet50_8xb32_in1k.py',
-                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
+                   pretrained='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
                    device='cuda')
            >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
     """  # noqa: E501
