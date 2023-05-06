@@ -71,13 +71,13 @@
 >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')
 >>> results = inferencer('https://github.com/open-mmlab/mmpretrain/raw/main/demo/demo.JPEG')
 >>> print(results[0]['pred_class'])
-海蛇
+sea snake
 ```
 
 result 是一个包含 pred_label、pred_score、pred_scores 和 pred_class 的字典，结果如下：
 
 ```{text}
-{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"海蛇", "pred_scores": [..., 0.6649366617202759, ...]}
+{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}
 ```
 
 如果你想使用自己的配置和权重：
@@ -100,7 +100,7 @@ result 是一个包含 pred_label、pred_score、pred_scores 和 pred_class 的�
 >>> imgs = ['https://github.com/open-mmlab/mmpretrain/raw/main/demo/demo.JPEG'] * 5
 >>> results = inferencer(imgs, batch_size=2)
 >>> print(results[1]['pred_class'])
-海蛇
+sea snake
 ```
 
 ## 从图像中提取特征
