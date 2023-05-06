@@ -70,7 +70,6 @@ __all__ = [
     'VideoDataPreprocessor',
     'CosineEMA',
     'ResLayerExtraNorm',
-    'RotaryEmbeddingFast',
     'SwiGLUFFN',
     'SwiGLUFFNFused',
     'RotaryEmbeddingFast',
