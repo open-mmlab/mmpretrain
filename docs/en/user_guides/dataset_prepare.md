@@ -154,7 +154,7 @@ the subfolder format, you please set `ann_file=''` in these config files.
 
 ### Subfolder Format
 
-Re-organize the dataset as below:
+We have provided a sample, which you can download and extract from this [link](https://download.openmmlab.com/mmpretrain/datasets/imagenet_1k.zip). The directory structure of the dataset should be as below:
 
 ```text
 data/imagenet/
@@ -186,8 +186,7 @@ train_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='data/imagenet',
-        data_prefix='train',
-        ann_file='',
+        split='train',
         pipeline=...,
     )
 )
@@ -198,8 +197,7 @@ val_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='data/imagenet',
-        data_prefix='val',
-        ann_file='',
+        split='val',
         pipeline=...,
     )
 )
@@ -243,9 +241,8 @@ train_dataloader = dict(
     # Training dataset configurations
     dataset=dict(
         type='ImageNet',
-        data_root='imagenet_folder',
-        data_prefix='train/',
-        ann_file='meta/train.txt',
+        data_root='data/imagenet/',
+        split='train',
         pipeline=...,
     )
 )
@@ -255,9 +252,8 @@ val_dataloader = dict(
     # Validation dataset configurations
     dataset=dict(
         type='ImageNet',
-        data_root='imagenet_folder',
-        data_prefix='val/',
-        ann_file='meta/val.txt',
+        data_root='data/imagenet/',
+        split='val',
         pipeline=...,
     )
 )
@@ -268,7 +264,7 @@ test_dataloader = val_dataloader
 ## CIFAR
 
 We support downloading the [`CIFAR10`](mmpretrain.datasets.CIFAR10) and [`CIFAR100`](mmpretrain.datasets.CIFAR100) datasets automatically, and you just need to specify the
-download folder in the `data_root` field. And please specify `test_mode=False` / `test_mode=True`
+download folder in the `data_root` field. And please specify `split='train'` / `split='test'`
 to use training datasets or test datasets.
 
 ```python
@@ -278,7 +274,7 @@ train_dataloader = dict(
     dataset=dict(
         type='CIFAR10',
         data_root='data/cifar10',
-        test_mode=False,
+        split='train',
         pipeline=...,
     )
 )
@@ -289,7 +285,7 @@ val_dataloader = dict(
     dataset=dict(
         type='CIFAR10',
         data_root='data/cifar10',
-        test_mode=True,
+        split='test'
         pipeline=...,
     )
 )
@@ -300,7 +296,7 @@ test_dataloader = val_dataloader
 ## MNIST
 
 We support downloading the [MNIST](mmpretrain.datasets.MNIST) and [Fashion-MNIST](mmpretrain.datasets.FashionMNIST) datasets automatically, and you just need to specify the
-download folder in the `data_root` field. And please specify `test_mode=False` / `test_mode=True`
+download folder in the `data_root` field. And please specify `split='train'` / `split='test'`
 to use training datasets or test datasets.
 
 ```python
@@ -310,7 +306,7 @@ train_dataloader = dict(
     dataset=dict(
         type='MNIST',
         data_root='data/mnist',
-        test_mode=False,
+        split='train',
         pipeline=...,
     )
 )
@@ -321,7 +317,7 @@ val_dataloader = dict(
     dataset=dict(
         type='MNIST',
         data_root='data/mnist',
-        test_mode=True,
+        split='test'
         pipeline=...,
     )
 )
