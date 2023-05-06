@@ -3,10 +3,10 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-# dataset 8 x 512
-train_dataloader = dict(batch_size=512, num_workers=8)
+# dataset 16 x 256
+train_dataloader = dict(batch_size=256, num_workers=8)
 
-# model settings
+# model settings, use ConvNeXt V2
 model = dict(
     type='SparK',
     input_size=224,
@@ -14,13 +14,17 @@ model = dict(
     mask_ratio=0.6,
     mask_ratio2=0.6,
     uniform=False,
-    enc_dec_norm_cfg=dict(type='SparseSyncBatchNorm2d'),
-    enc_dec_norm_dim=2048,
+    enc_dec_norm_cfg=dict(type='SparseLN2d', eps=1e-6),
+    enc_dec_norm_dim=768,
     backbone=dict(
-        type='SparseResNet',
-        depth=50,
+        type='SparseConvNeXt',
+        arch='tiny',
+        drop_path_rate=0.2,
         out_indices=(0, 1, 2, 3),
-        drop_path_rate=0.05),
+        gap_before_output=False,
+        layer_scale_init_value=0.,
+        use_grn=True,
+    ),
     neck=dict(
         type='SparKLightDecoder',
         feature_dim=512,
@@ -52,13 +56,13 @@ param_scheduler = [
         start_factor=1e-4,
         by_epoch=True,
         begin=0,
-        end=40,
+        end=20,
         convert_to_iter_based=True),
     dict(
         type='CosineAnnealingLR',
-        T_max=760,
+        T_max=780,
         by_epoch=True,
-        begin=40,
+        begin=20,
         end=800,
         convert_to_iter_based=True),
     dict(

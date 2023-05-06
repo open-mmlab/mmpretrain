@@ -1,9 +1,13 @@
 _base_ = [
-    '../../_base_/models/resnet50.py',
-    '../../_base_/datasets/imagenet_bs256_rsb_a12.py',
-    '../../_base_/default_runtime.py'
+    '../../_base_/datasets/imagenet_bs64_swin_224.py',
+    '../../_base_/default_runtime.py',
 ]
-# modification is based on ResNets RSB settings
+
+# dataset settings
+dataset_type = 'ImageNet'
+data_root = 'sproject:s3://openmmlab/datasets/classification/imagenet/'
+# data_root = 'data/imagenet/'
+
 data_preprocessor = dict(
     num_classes=1000,
     # RGB format normalization parameters
@@ -41,21 +45,35 @@ train_pipeline = [
         fill_std=bgr_std),
     dict(type='PackInputs'),
 ]
-train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 
-# model settings
+train_dataloader = dict(
+    dataset=dict(data_root=data_root, pipeline=train_pipeline),
+    sampler=dict(type='RepeatAugSampler', shuffle=True),
+)
+
+# Model settings
 model = dict(
+    type='ImageClassifier',
     backbone=dict(
-        norm_cfg=dict(type='SyncBN', requires_grad=True),
-        drop_path_rate=0.05,
+        type='ConvNeXt',
+        arch='small',
+        drop_path_rate=0.3,
+        layer_scale_init_value=0.,
+        use_grn=True,
     ),
     head=dict(
+        type='LinearClsHead',
+        num_classes=1000,
+        in_channels=768,
         loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, use_sigmoid=True)),
+            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+        init_cfg=dict(type='TruncNormal', layer='Linear', std=.02, bias=0.),
+    ),
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.1),
-        dict(type='CutMix', alpha=1.0)
-    ]))
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0),
+    ]),
+)
 
 custom_hooks = [
     dict(
@@ -69,10 +87,7 @@ custom_hooks = [
 # optimizer
 optim_wrapper = dict(
     optimizer=dict(
-        type='Lamb',
-        lr=0.016,
-        weight_decay=0.02,
-    ),
+        type='AdamW', lr=3.2e-3, betas=(0.9, 0.999), weight_decay=0.01),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
         layer_decay_rate=0.7,
@@ -88,27 +103,24 @@ param_scheduler = [
         start_factor=0.0001,
         by_epoch=True,
         begin=0,
-        end=5,
-        # update by iter
+        end=20,
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=295,
+        T_max=380,
         eta_min=1.0e-6,
         by_epoch=True,
-        begin=5,
-        end=300)
+        begin=20,
+        end=400)
 ]
-train_cfg = dict(by_epoch=True, max_epochs=300)
+train_cfg = dict(by_epoch=True, max_epochs=400)
 val_cfg = dict()
 test_cfg = dict()
 
 default_hooks = dict(
     # only keeps the latest 2 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=2))
-# randomness
-randomness = dict(seed=0, diff_rank_seed=True)
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.

@@ -16,7 +16,9 @@ from .resnet import ResNet
 @MODELS.register_module()
 class SparseResNet(ResNet):
     """ResNet with sparse module conversion function.
+
     Modified from https://github.com/keyu-tian/SparK/blob/main/encoder.py
+
     Args:
         depth (int): Network depth, from {18, 34, 50, 101, 152}.
         in_channels (int): Number of input image channels. Defaults to 3.

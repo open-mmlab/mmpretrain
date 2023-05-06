@@ -56,6 +56,8 @@ from .vision_transformer import VisionTransformer
 from .vit_eva02 import ViTEVA02
 from .vit_sam import ViTSAM
 from .xcit import XCiT
+from .sparse_resnet import SparseResNet
+from .sparse_convnext import SparseConvNeXt
 
 __all__ = [
     'LeNet5',
@@ -122,4 +124,6 @@ __all__ = [
     'ViTSAM',
     'ViTEVA02',
     'HiViT',
+    'SparseResNet',
+    'SparseConvNeXt',
 ]

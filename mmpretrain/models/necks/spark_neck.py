@@ -27,11 +27,11 @@ class ConvBlock2x(BaseModule):
         super().__init__(init_cfg=init_cfg)
 
         self.conv1 = nn.Conv2d(in_channels, mid_channels, 3, 1, 1, bias=False)
-        self.norm1 = build_norm_layer(norm_cfg, mid_channels)[1]
+        self.norm1 = build_norm_layer(norm_cfg, mid_channels)
         self.activate1 = MODELS.build(act_cfg)
 
         self.conv2 = nn.Conv2d(mid_channels, out_channels, 3, 1, 1, bias=False)
-        self.norm2 = build_norm_layer(norm_cfg, out_channels)[1]
+        self.norm2 = build_norm_layer(norm_cfg, out_channels)
         self.activate2 = MODELS.build(act_cfg) if last_act else nn.Identity()
 
     def forward(self, x: torch.Tensor):

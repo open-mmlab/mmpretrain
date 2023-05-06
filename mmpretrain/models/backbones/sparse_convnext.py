@@ -68,11 +68,13 @@ class SparseConvNeXtBlock(ConvNeXtBlock):
 @MODELS.register_module()
 class SparseConvNeXt(ConvNeXt):
     """ConvNeXt with sparse module conversion function.
+
     Modified from
     https://github.com/keyu-tian/SparK/blob/main/models/convnext.py
     and
     https://github.com/keyu-tian/SparK/blob/main/encoder.py
     To use ConvNeXt v2, please set ``use_grn=True`` and ``layer_scale_init_value=0.``.
+
     Args:
         arch (str | dict): The model's architecture. If string, it should be
             one of architecture in ``ConvNeXt.arch_settings``. And if dict, it
@@ -110,7 +112,7 @@ class SparseConvNeXt(ConvNeXt):
                  arch: str = 'small',
                  in_channels: int = 3,
                  stem_patch_size: int = 4,
-                 norm_cfg: dict = dict(type='mmselfsup.SparseLN2d', eps=1e-6),
+                 norm_cfg: dict = dict(type='SparseLN2d', eps=1e-6),
                  act_cfg: dict = dict(type='GELU'),
                  linear_pw_conv: bool = True,
                  use_grn: bool = False,
