@@ -2,7 +2,7 @@
 
 This note will show how to use the following APIs：
 
-1. [**`list_models`**](mmpretrain.apis.list_models) & [**`get_model`**](<(mmpretrain.apis.get_model)>) ：list the model in MMPreTrain and get the model.
+1. [**`list_models`**](mmpretrain.apis.list_models) & [**`get_model`**](mmpretrain.apis.get_model) ：list the model in MMPreTrain and get the model.
 2. [**`ImageClassificationInferencer`**](mmpretrain.apis.ImageClassificationInferencer): inference on given images.
 3. [**`FeatureExtractor`**](mmpretrain.apis.FeatureExtractor): extract features from the image files directly.
 4. [**`ImageRetrievalInferencer`**](mmpretrain.apis.ImageRetrievalInferencer): retrieve images from a folder.
@@ -42,7 +42,7 @@ you can use `get_model` get the model.
 # model without pre-trained weight
 >>> model = get_model("convnext-base_in21k-pre_3rdparty_in1k")
 
-# model with weight in MMPreTrain
+# model with default weight in MMPreTrain
 >>> model = get_model("convnext-base_in21k-pre_3rdparty_in1k", pretrained=True)
 
 # model with weight in local
@@ -59,7 +59,8 @@ Then you can do the forward:
 
 ```
 >>> import torch
->>> x = torch.rand((1, 3, 224, 224))
+>>> model = mmpretrain.get_model('eva02-tiny-p14_in21k-pre_3rdparty_in1k-336px', pretrained=True)
+>>> x = torch.rand((1, 3, 336, 336))
 >>> y = model(x)
 >>> print(type(y), y.shape)
 <class 'torch.Tensor'> torch.Size([1, 1000])
@@ -121,6 +122,6 @@ Compared with `model.extract_feat`, `FeatureExtractor` is used to extract featur
 >>> inference_model(
 ...     'resnet50-arcface_8xb32_inshop',
 ...     'demo/bird.JPEG',
-...     prototype='data/imagenet/train/',       # The folder of images to retrieve.
-...     prototype_vecs='proto.pkl')           # The path to save prototype vectors. And it will load this file in the next call.
+...     prototype='data/imagenet/train/',    # The folder of images to retrieve.
+...     prototype_vecs='proto.pkl')          # The path to save prototype vectors. And it will load this file in the next call.
 ```
