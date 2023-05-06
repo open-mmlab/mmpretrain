@@ -18,7 +18,7 @@ from .layer_scale import LayerScale
 from .make_divisible import make_divisible
 from .norm import GRN, LayerNorm2d, build_norm_layer
 from .position_encoding import (ConditionalPositionEncoding,
-                                PositionEncodingFourier,
+                                PositionEncodingFourier, RotaryEmbeddingFast,
                                 build_2d_sincos_position_embedding)
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
@@ -72,4 +72,5 @@ __all__ = [
     'ResLayerExtraNorm',
     'SwiGLUFFN',
     'SwiGLUFFNFused',
+    'RotaryEmbeddingFast',
 ]
