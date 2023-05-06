@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import torch
 
-from mmpretrain.models.backbones import EVA02
+from mmpretrain.models.backbones import ViTEVA02
 
 
 class TestEVA02(TestCase):
@@ -25,7 +25,7 @@ class TestEVA02(TestCase):
         with self.assertRaisesRegex(AssertionError, 'not in default archs'):
             cfg = deepcopy(self.cfg)
             cfg['arch'] = 'unknown'
-            EVA02(**cfg)
+            ViTEVA02(**cfg)
 
         # Test invalid custom arch
         with self.assertRaisesRegex(AssertionError, 'Custom arch needs'):
@@ -35,7 +35,7 @@ class TestEVA02(TestCase):
                 'num_heads': 16,
                 'feedforward_channels': int(24 * 4 * 2 / 3)
             }
-            EVA02(**cfg)
+            ViTEVA02(**cfg)
 
         # Test custom arch
         cfg = deepcopy(self.cfg)
@@ -45,7 +45,7 @@ class TestEVA02(TestCase):
             'num_heads': 16,
             'feedforward_channels': int(128 * 4 * 2 / 3)
         }
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         self.assertEqual(model.embed_dims, 128)
         self.assertEqual(model.num_layers, 6)
         for layer in model.layers:
@@ -55,14 +55,14 @@ class TestEVA02(TestCase):
         cfg = deepcopy(self.cfg)
         cfg['out_indices'] = {1: 1}
         with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
-            EVA02(**cfg)
+            ViTEVA02(**cfg)
         cfg['out_indices'] = [0, 13]
         with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 13'):
-            EVA02(**cfg)
+            ViTEVA02(**cfg)
 
         # Test model structure
         cfg = deepcopy(self.cfg)
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         self.assertEqual(len(model.layers), 12)
         self.assertEqual(model.cls_token.shape, (1, 1, 192))
         self.assertEqual(model.pos_embed.shape, (1, 577, 192))
@@ -80,7 +80,7 @@ class TestEVA02(TestCase):
         # Test model structure: final_norm
         cfg = deepcopy(self.cfg)
         cfg['final_norm'] = True
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         self.assertNotEqual(model.norm1.__class__, torch.nn.Identity)
 
     def test_forward(self):
@@ -91,12 +91,12 @@ class TestEVA02(TestCase):
         cfg['with_cls_token'] = False
         cfg['out_type'] = 'cls_token'
         with self.assertRaisesRegex(ValueError, 'must be True'):
-            EVA02(**cfg)
+            ViTEVA02(**cfg)
 
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
         cfg['out_type'] = 'raw'
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -106,7 +106,7 @@ class TestEVA02(TestCase):
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
         cfg['out_type'] = 'featmap'
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -116,7 +116,7 @@ class TestEVA02(TestCase):
         cfg = deepcopy(self.cfg)
         cfg['with_cls_token'] = False
         cfg['out_type'] = 'avg_featmap'
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -125,7 +125,7 @@ class TestEVA02(TestCase):
 
         # test with output cls_token
         cfg = deepcopy(self.cfg)
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -135,7 +135,7 @@ class TestEVA02(TestCase):
         # Test forward with multi out indices
         cfg = deepcopy(self.cfg)
         cfg['out_indices'] = [-3, -2, -1]
-        model = EVA02(**cfg)
+        model = ViTEVA02(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 3)
