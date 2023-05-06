@@ -105,7 +105,7 @@ class ImageNet(CustomDataset):
                 annotation = self.backend.join_path(data_root, 'meta',
                                                     f'{split}.txt')
                 if self.backend.exists(annotation):
-                    ann_file = annotation
+                    ann_file = self.backend.join_path('meta', f'{split}.txt')
 
         super().__init__(
             data_root=data_root,
@@ -126,9 +126,27 @@ class ImageNet(CustomDataset):
 class ImageNet21k(CustomDataset):
     """ImageNet21k Dataset.
 
-    Since the dataset ImageNet21k is extremely big, cantains 21k+ classes
+    Since the dataset ImageNet21k is extremely big, contains 21k+ classes
     and 1.4B files. We won't provide the default categories list. Please
     specify it from the ``classes`` argument.
+    The dataset directory structure is as follows,
+
+    ImageNet21k dataset directory ::
+
+        imagenet21k
+        ├── train
+        │   ├──class_x
+        |   |   ├── x1.jpg
+        |   |   ├── x2.jpg
+        |   |   └── ...
+        │   ├── class_y
+        |   |   ├── y1.jpg
+        |   |   ├── y2.jpg
+        |   |   └── ...
+        |   └── ...
+        └── meta
+            └── train.txt
+
 
     Args:
         data_root (str): The root directory for ``data_prefix`` and
@@ -141,12 +159,22 @@ class ImageNet21k(CustomDataset):
             Defaults to False.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
             :class:`BaseDataset`.
-    """
+
+    Examples:
+        >>> from mmpretrain.datasets import ImageNet21k
+        >>> train_dataset = ImageNet21k(data_root='data/imagenet21k', split='train')
+        >>> train_dataset
+        Dataset ImageNet21k
+            Number of samples:  14197088
+            Annotation file:    data/imagenet21k/meta/train.txt
+            Prefix of images:   data/imagenet21k/train
+    """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
 
     def __init__(self,
                  data_root: str = '',
+                 split: str = '',
                  data_prefix: Union[str, dict] = '',
                  ann_file: str = '',
                  metainfo: Optional[dict] = None,
@@ -156,6 +184,24 @@ class ImageNet21k(CustomDataset):
             raise NotImplementedError(
                 'The `multi_label` option is not supported by now.')
         self.multi_label = multi_label
+
+        if split:
+            splits = ['train']
+            assert split in splits, \
+                f"The split must be one of {splits}, but get '{split}'.\
+                If you want to specify your own validation set or test set,\
+                please set split to None."
+
+            self.split = split
+            data_prefix = split if data_prefix == '' else data_prefix
+
+            if not ann_file:
+                self.backend = get_file_backend(
+                    data_root, enable_singleton=True)
+                annotation = self.backend.join_path(data_root, 'meta',
+                                                    f'{split}.txt')
+                if self.backend.exists(annotation):
+                    ann_file = self.backend.join_path('meta', f'{split}.txt')
 
         logger = MMLogger.get_current_instance()
 
