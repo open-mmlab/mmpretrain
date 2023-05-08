@@ -333,7 +333,11 @@ class HiViT(BaseBackbone):
         **dict.fromkeys(['b', 'base'],
                         {'embed_dims': 512,
                          'depths': [2, 2, 24],
-                         'num_heads': 8})
+                         'num_heads': 8}),
+        **dict.fromkeys(['l', 'large'],
+                        {'embed_dims': 768,
+                         'depths': [2, 2, 40],
+                         'num_heads': 12}),
     }  # yapf: disable
 
     num_extra_tokens = 0
