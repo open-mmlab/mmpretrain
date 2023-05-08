@@ -352,7 +352,7 @@ class HiViT(BaseBackbone):
                  attn_drop_rate=0.,
                  drop_path_rate=0.0,
                  norm_cfg=dict(type='LN'),
-                 out_indices=None,
+                 out_indices=[23, ],
                  ape=True,
                  rpe=False,
                  patch_norm=True,
@@ -384,6 +384,9 @@ class HiViT(BaseBackbone):
         self.num_features = self.embed_dims
         self.mlp_ratio = mlp_ratio
         self.num_main_blocks = self.depths[-1]
+        self.out_indices = out_indices
+        self.out_indices[-1] = self.depths[-1] - 1
+
         img_size = to_2tuple(img_size) if not isinstance(img_size, tuple) else img_size
 
         embed_dim = self.embed_dims // 2 ** (self.num_stages - 1)
@@ -480,12 +483,19 @@ class HiViT(BaseBackbone):
         patch_pos_embed = patch_pos_embed.permute(0, 2, 3, 1).view(1, -1, dim)
         return patch_pos_embed
 
-    def forward_features(self, x):
+    def forward(self, x):
         B, C, H, W = x.shape
+        Hp, Wp = H // self.patch_size, W // self.patch_size
+
         x = self.patch_embed(x)
 
-        for blk in self.blocks[:-self.num_main_blocks]:
+        outs = []
+        for i, blk in enumerate(self.blocks[:-self.num_main_blocks]):
             x = blk(x)
+            if i in self.out_indices:
+                x = x.reshape(B, Hp, Wp, *x.shape[-3:]).permute(0, 5, 1, 3, 2, 4).reshape(
+                    B, -1, Hp * x.shape[-3], Wp * x.shape[-2]).contiguous()
+                outs.append(x)
 
         x = x[..., 0, 0, :]
         if self.ape:
@@ -494,16 +504,13 @@ class HiViT(BaseBackbone):
 
         rpe_index = True if self.rpe else None
 
-        for blk in self.blocks[-self.num_main_blocks:]:
+        for i, blk in enumerate(self.blocks[-self.num_main_blocks:]):
             x = blk(x, rpe_index)
+            if i in self.out_indices:
+                x = x.transpose(1, 2).view(B, -1, Hp, Wp).contiguous()
+                outs.append(x)
 
-        return x
-
-    def forward(self, x):
-        B, C, H, W = x.shape
-        x = self.forward_features(x)
-        x = x.transpose(1, 2).view(B, -1, H // self.patch_size, W // self.patch_size)
-        return tuple([x])
+        return tuple(outs)
 
     def _freeze_stages(self):
         # freeze position embedding
