@@ -3,56 +3,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model.weight_init import trunc_normal_
-from ..utils import build_norm_layer
-import collections.abc
-from itertools import repeat
+from ..utils import build_norm_layer, to_2tuple
 from mmpretrain.registry import MODELS
-
-
-# From PyTorch internals
-def _ntuple(n):
-    def parse(x):
-        if isinstance(x, collections.abc.Iterable) and not isinstance(x, str):
-            return tuple(x)
-        return tuple(repeat(x, n))
-
-    return parse
-
-
-to_2tuple = _ntuple(2)
-
-
-def drop_path(x, drop_prob: float = 0., training: bool = False, scale_by_keep: bool = True):
-    """Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks).
-    This is the same as the DropConnect impl I created for EfficientNet, etc networks, however,
-    the original name is misleading as 'Drop Connect' is a different form of dropout in a separate paper...
-    See discussion: https://github.com/tensorflow/tpu/issues/494#issuecomment-532968956 ... I've opted for
-    changing the layer and argument names to 'drop path' rather than mix DropConnect as a layer name and use
-    'survival rate' as the argument.
-    """
-    if drop_prob == 0. or not training:
-        return x
-    keep_prob = 1 - drop_prob
-    shape = (x.shape[0],) + (1,) * (x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
-    random_tensor = x.new_empty(shape).bernoulli_(keep_prob)
-    if keep_prob > 0.0 and scale_by_keep:
-        random_tensor.div_(keep_prob)
-    return x * random_tensor
-
-
-class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of residual blocks).
-    """
-
-    def __init__(self, drop_prob=None):
-        super(DropPath, self).__init__()
-        self.drop_prob = drop_prob
-
-    def forward(self, x):
-        return drop_path(x, self.drop_prob, self.training)
-
-    def extra_repr(self) -> str:
-        return 'p={}'.format(self.drop_prob)
+from mmcv.cnn.bricks import DropPath
+from .base_backbone import BaseBackbone
 
 
 class Mlp(nn.Module):
@@ -65,6 +19,7 @@ class Mlp(nn.Module):
         act_layer: MLP activation layer.
         drop (float): MLP dropout rate.
     """
+
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
         out_features = out_features or in_features
@@ -101,6 +56,7 @@ class Attention(nn.Module):
             rpe (bool): If True, add relative position embedding to
                 the patch embedding.
         """
+
     def __init__(self, input_size, dim, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., rpe=True):
         super().__init__()
         self.input_size = input_size
@@ -183,6 +139,7 @@ class BlockWithRPE(nn.Module):
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
     """
+
     def __init__(self, input_size, dim, num_heads=0., mlp_ratio=4., qkv_bias=True, qk_scale=None,
                  drop=0., attn_drop=0., drop_path=0., rpe=True, layer_scale_init_value=0.0,
                  act_layer=nn.GELU, norm_cfg=dict(type='LN')):
@@ -239,6 +196,7 @@ class PatchEmbed(nn.Module):
             kernel_size (int): Kernel size.
             pad_size (int): Pad size.
     """
+
     def __init__(
             self, img_size=224, patch_size=16, inner_patches=4, in_chans=3, embed_dim=128,
             norm_cfg=None, kernel_size=None, pad_size=None):
@@ -286,6 +244,7 @@ class PatchMerge(nn.Module):
             dim (int): Number of input channels.
             norm_cfg (dict): Config dict for normalization layer.
     """
+
     def __init__(self, dim, norm_cfg):
         super().__init__()
         self.norm = build_norm_layer(norm_cfg, dim * 4)
@@ -314,7 +273,7 @@ class PatchMerge(nn.Module):
 
 
 @MODELS.register_module()
-class HiViT(nn.Module):
+class HiViT(BaseBackbone):
     """
         HiViT
 
@@ -359,6 +318,8 @@ class HiViT(nn.Module):
             kernel_size (int): Kernel size.
             pad_size (int): Pad size.
             layer_scale_init_value (float): Layer-scale init values. Defaults to 0.
+            init_cfg (dict, optional): The extra config for initialization.
+                 Defaults to None.
     """
     arch_zoo = {
         **dict.fromkeys(['t', 'tiny'],
@@ -371,7 +332,7 @@ class HiViT(nn.Module):
                          'num_heads': 6}),
         **dict.fromkeys(['b', 'base'],
                         {'embed_dims': 512,
-                         'depths': [2, 2, 20],
+                         'depths': [2, 2, 24],
                          'num_heads': 8})
     }  # yapf: disable
 
@@ -383,9 +344,6 @@ class HiViT(nn.Module):
                  patch_size=16,
                  inner_patches=4,
                  in_chans=3,
-                 embed_dim=512,
-                 depths=[4, 4, 20],
-                 num_heads=8,
                  stem_mlp_ratio=3.,
                  mlp_ratio=4.,
                  qkv_bias=True,
@@ -394,14 +352,16 @@ class HiViT(nn.Module):
                  attn_drop_rate=0.,
                  drop_path_rate=0.0,
                  norm_cfg=dict(type='LN'),
+                 out_indices=None,
                  ape=True,
-                 rpe=True,
+                 rpe=False,
                  patch_norm=True,
                  frozen_stages=-1,
                  kernel_size=None,
                  pad_size=None,
-                 layer_scale_init_value=0.0):
-        super().__init__()
+                 layer_scale_init_value=0.0,
+                 init_cfg=None):
+        super(HiViT, self).__init__(init_cfg=init_cfg)
 
         if isinstance(arch, str):
             arch = arch.lower()
@@ -417,16 +377,16 @@ class HiViT(nn.Module):
         self.depths = self.arch_settings['depths']
         self.num_heads = self.arch_settings['num_heads']
 
-        self.num_stages = len(depths)
+        self.num_stages = len(self.depths)
         self.ape = ape
         self.rpe = rpe
         self.patch_size = patch_size
-        self.num_features = embed_dim
+        self.num_features = self.embed_dims
         self.mlp_ratio = mlp_ratio
-        self.num_main_blocks = depths[-1]
+        self.num_main_blocks = self.depths[-1]
         img_size = to_2tuple(img_size) if not isinstance(img_size, tuple) else img_size
 
-        embed_dim = embed_dim // 2 ** (self.num_stages - 1)
+        embed_dim = self.embed_dims // 2 ** (self.num_stages - 1)
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
             img_size=img_size, patch_size=patch_size, inner_patches=inner_patches, in_chans=in_chans,
@@ -434,7 +394,8 @@ class HiViT(nn.Module):
             pad_size=pad_size)
         num_patches = self.patch_embed.num_patches
         Hp, Wp = self.patch_embed.patches_resolution
-        assert (Hp == Wp and rpe == True), f'If you use rpe, make sure H == W of input size'
+
+        if rpe: assert Hp == Wp, f'If you use rpe, make sure H == W of input size'
 
         # absolute position embedding
         if ape:
@@ -459,13 +420,13 @@ class HiViT(nn.Module):
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         # stochastic depth
-        dpr = iter(x.item() for x in torch.linspace(0, drop_path_rate, sum(depths) + sum(depths[:-1])))
+        dpr = iter(x.item() for x in torch.linspace(0, drop_path_rate, sum(self.depths) + sum(self.depths[:-1])))
 
         # build blocks
         self.blocks = nn.ModuleList()
-        for stage_i, stage_depth in enumerate(depths):
+        for stage_i, stage_depth in enumerate(self.depths):
             is_main_stage = embed_dim == self.num_features
-            nhead = num_heads if is_main_stage else 0
+            nhead = self.num_heads if is_main_stage else 0
             ratio = mlp_ratio if is_main_stage else stem_mlp_ratio
             # every block not in main stage includes two mlp blocks
             stage_depth = stage_depth if is_main_stage else stage_depth * 2
@@ -498,14 +459,6 @@ class HiViT(nn.Module):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {'pos_embed'}
-
-    @torch.jit.ignore
-    def no_weight_decay_keywords(self):
-        return {'relative_position_bias_table'}
-
     def interpolate_pos_encoding(self, x, h, w):
         npatch = x.shape[1]
         N = self.pos_embed.shape[1]
@@ -527,7 +480,7 @@ class HiViT(nn.Module):
         patch_pos_embed = patch_pos_embed.permute(0, 2, 3, 1).view(1, -1, dim)
         return patch_pos_embed
 
-    def forward_features(self, x, mask=None):
+    def forward_features(self, x):
         B, C, H, W = x.shape
         x = self.patch_embed(x)
 
@@ -542,13 +495,13 @@ class HiViT(nn.Module):
         rpe_index = True if self.rpe else None
 
         for blk in self.blocks[-self.num_main_blocks:]:
-            x = blk(x, rpe_index, mask)
+            x = blk(x, rpe_index)
 
         return x
 
-    def forward(self, x, mask=None):
+    def forward(self, x):
         B, C, H, W = x.shape
-        x = self.forward_features(x, mask=mask)
+        x = self.forward_features(x)
         x = x.transpose(1, 2).view(B, -1, H // self.patch_size, W // self.patch_size)
         return tuple([x])
 
