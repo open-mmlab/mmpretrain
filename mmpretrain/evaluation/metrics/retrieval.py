@@ -200,7 +200,7 @@ class RetrievalAveragePrecision(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-    
+
     Note:
         If the ``mode`` set to 'IR', use the stanford AP calculation of
         information retrieval as in wikipedia page[1]; if set to 'integrate',
@@ -208,13 +208,13 @@ class RetrievalAveragePrecision(BaseMetric):
         by averaging two adjacent precision points, then multiplying by the
         recall step like mAP in Detection task. This is the convention for
         the Revisited Oxford/Paris datasets[2].
-    
+
     References:
         [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
         org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
         [2] `The Oxford Buildings Dataset
         <https://www.robots.ox.ac.uk/~vgg/data/oxbuildings/>`_
-    
+
     Examples:
         Use in code:
         >>> import torch
