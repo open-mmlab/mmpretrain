@@ -1,18 +1,18 @@
 exclude: ^tests/data/
 repos:
-  - repo: http://github.com/PyCQA/flake8
+  - repo: https://github.com/PyCQA/flake8
     rev: 4.0.1
     hooks:
       - id: flake8
-  - repo: http://github.com/PyCQA/isort
+  - repo: https://github.com/PyCQA/isort
     rev: 5.11.5
     hooks:
       - id: isort
-  - repo: http://github.com/pre-commit/mirrors-yapf
+  - repo: https://github.com/pre-commit/mirrors-yapf
     rev: v0.30.0
     hooks:
       - id: yapf
-  - repo: http://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.1.0
     hooks:
       - id: trailing-whitespace
@@ -25,7 +25,7 @@ repos:
         args: ["--remove"]
       - id: mixed-line-ending
         args: ["--fix=lf"]
-  - repo: http://github.com/executablebooks/mdformat
+  - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.9
     hooks:
       - id: mdformat
@@ -34,16 +34,16 @@ repos:
           - "mdformat-openmmlab>=0.0.4"
           - mdformat_frontmatter
           - linkify-it-py
-  - repo: http://github.com/codespell-project/codespell
+  - repo: https://github.com/codespell-project/codespell
     rev: v2.1.0
     hooks:
       - id: codespell
-  - repo: http://github.com/myint/docformatter
+  - repo: https://github.com/myint/docformatter
     rev: v1.3.1
     hooks:
       - id: docformatter
         args: ["--in-place", "--wrap-descriptions", "79"]
-  - repo: http://github.com/open-mmlab/pre-commit-hooks
+  - repo: https://github.com/open-mmlab/pre-commit-hooks
     rev: v0.4.0
     hooks:
     -   id: check-copyright
