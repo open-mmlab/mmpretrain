@@ -65,7 +65,8 @@ class RetrievalRecall(BaseMetric):
 
         .. code:: python
 
-            val/test_evaluator = dict(type='RetrievalRecall', topk=(1, 5))
+            val_evaluator = dict(type='RetrievalRecall', topk=(1, 5))
+            test_evaluator = val_evaluator
     """
     default_prefix: Optional[str] = 'retrieval'
 
@@ -186,6 +187,7 @@ class RetrievalRecall(BaseMetric):
 @METRICS.register_module()
 class RetrievalAveragePrecision(BaseMetric):
     r"""Calculate the average precision for image retrieval.
+
     Args:
         topk (int, optional): Predictions with the k-th highest scores are
             considered as positive.
@@ -198,6 +200,7 @@ class RetrievalAveragePrecision(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
+    
     Note:
         If the ``mode`` set to 'IR', use the stanford AP calculation of
         information retrieval as in wikipedia page[1]; if set to 'integrate',
@@ -205,11 +208,13 @@ class RetrievalAveragePrecision(BaseMetric):
         by averaging two adjacent precision points, then multiplying by the
         recall step like mAP in Detection task. This is the convention for
         the Revisited Oxford/Paris datasets[2].
+    
     References:
         [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
         org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
         [2] `The Oxford Buildings Dataset
         <https://www.robots.ox.ac.uk/~vgg/data/oxbuildings/>`_
+    
     Examples:
         Use in code:
         >>> import torch
@@ -225,7 +230,9 @@ class RetrievalAveragePrecision(BaseMetric):
         >>> target = torch.Tensor([[1, 0, 1, 0, 0, 1, 0, 0, 1, 1]] * 2)
         >>> RetrievalAveragePrecision.calculate(pred, target, 10)
         62.222222222222214
+
         Use in OpenMMLab config files:
+
         .. code:: python
             val_evaluator = dict(type='RetrievalAveragePrecision', topk=100)
             test_evaluator = val_evaluator
