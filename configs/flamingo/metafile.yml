@@ -10,7 +10,7 @@ Collections:
     README: configs/flamingo/README.md
 
 Models:
-  - Name: flamingo_3rdparty_coco-caption
+  - Name: flamingo_3rdparty-zeroshot_caption
     Metadata:
       FLOPs: null
       Parameters: 8220452880
@@ -18,13 +18,14 @@ Models:
     Results:
       - Task: Image Caption
         Dataset: COCO
-        Metrics: null
-    Weights: /mnt/HDD/ckpt/adapter.pth
-    Config: configs/flamingo/flamingo_zero-shot_coco-caption.py
+        Metrics:
+          CIDER: 65.50  # Report from the official repo
+    Weights: https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth
+    Config: configs/flamingo/flamingo_zeroshot_caption.py
     Converted From:
-      Weights: null
-      Code: null
-  - Name: flamingo_3rdparty_coco-vqa
+      Weights: https://huggingface.co/openflamingo/OpenFlamingo-9B
+      Code: https://github.com/mlfoundations/open_flamingo
+  - Name: flamingo_3rdparty-zeroshot_vqa
     Metadata:
       FLOPs: null
       Parameters: 8220452880
@@ -32,9 +33,10 @@ Models:
     Results:
       - Task: Visual Question Answering
         Dataset: VQAv2
-        Metrics: null
-    Weights: /mnt/HDD/ckpt/adapter.pth
-    Config: configs/flamingo/flamingo_zero-shot_coco-vqa.py
+        Metrics:
+          Accuracy: 43.50  # Report from the official repo
+    Weights: https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth
+    Config: configs/flamingo/flamingo_zeroshot_vqa.py
     Converted From:
-      Weights: null
-      Code: null
+      Weights: https://huggingface.co/openflamingo/OpenFlamingo-9B
+      Code: https://github.com/mlfoundations/open_flamingo

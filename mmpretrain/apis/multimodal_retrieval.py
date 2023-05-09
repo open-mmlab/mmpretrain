@@ -67,7 +67,7 @@ class TextToImageRetrievalInferencer(BaseInferencer):
     Example:
         >>> from mmpretrain import TextToImageRetrievalInferencer
         >>> inferencer = TextToImageRetrievalInferencer(
-        ...     'blip-base_3rdparty_coco-retrieval',
+        ...     'blip-base_3rdparty_retrieval',
         ...     prototype='./demo/',
         ...     prototype_cache='t2i_retri.pth')
         >>> inferencer('A cat and a dog.')[0]
@@ -358,7 +358,7 @@ class ImageToTextRetrievalInferencer(BaseInferencer):
     Example:
         >>> from mmpretrain import ImageToTextRetrievalInferencer
         >>> inferencer = ImageToTextRetrievalInferencer(
-        ...     'blip-base_3rdparty_coco-retrieval',
+        ...     'blip-base_3rdparty_retrieval',
         ...     prototype=['cat', 'dog', 'snake', 'bird'],
         ...     prototype_cache='i2t_retri.pth')
         >>> inferencer('demo/bird.JPEG')[0]

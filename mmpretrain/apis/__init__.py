@@ -8,6 +8,7 @@ from .model import (ModelHub, get_model, inference_model, init_model,
                     list_models)
 from .multimodal_retrieval import (ImageToTextRetrievalInferencer,
                                    TextToImageRetrievalInferencer)
+from .nlvr import NLVRInferencer
 from .visual_grounding import VisualGroundingInferencer
 from .visual_question_answering import VisualQuestionAnsweringInferencer
 
@@ -17,5 +18,5 @@ __all__ = [
     'FeatureExtractor', 'ImageCaptionInferencer',
     'TextToImageRetrievalInferencer', 'VisualGroundingInferencer',
     'VisualQuestionAnsweringInferencer', 'ImageToTextRetrievalInferencer',
-    'BaseInferencer'
+    'BaseInferencer', 'NLVRInferencer'
 ]

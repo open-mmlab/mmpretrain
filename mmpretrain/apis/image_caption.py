@@ -31,7 +31,7 @@ class ImageCaptionInferencer(BaseInferencer):
 
     Example:
         >>> from mmpretrain import ImageCaptionInferencer
-        >>> inferencer = ImageCaptionInferencer('blip-base_3rdparty_coco-caption')
+        >>> inferencer = ImageCaptionInferencer('blip-base_3rdparty_caption')
         >>> inferencer('demo/cat-dog.png')[0]
         {'pred_caption': 'a puppy and a cat sitting on a blanket'}
     """  # noqa: E501

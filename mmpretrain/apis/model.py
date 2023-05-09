@@ -316,7 +316,7 @@ def inference_model(model, *args, **kwargs):
     Here is the mapping from task to inferencer:
 
     - Image Classification: :class:`ImageClassificationInferencer`
-    - Image Retrieval: :class:`ImageToImageRetrievalInferencer`
+    - Image Retrieval: :class:`ImageRetrievalInferencer`
     - Image Caption: :class:`ImageCaptionInferencer`
     - Visual Question Answering: :class:`VisualQuestionAnsweringInferencer`
     - Visual Grounding: :class:`VisualGroundingInferencer`

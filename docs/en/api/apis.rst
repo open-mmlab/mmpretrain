@@ -33,6 +33,12 @@ Inference
 
    ImageClassificationInferencer
    ImageRetrievalInferencer
+   ImageCaptionInferencer
+   VisualQuestionAnsweringInferencer
+   VisualGroundingInferencer
+   TextToImageRetrievalInferencer
+   ImageToTextRetrievalInferencer
+   NLVRInferencer
    FeatureExtractor
 
 .. autosummary::

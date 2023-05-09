@@ -78,21 +78,34 @@ class OFA(BaseModel):
 
     Args:
         encoder_cfg (dict): The config of the encoder, accept the keyword
-            arguments of [`~OFAEncoder`].
+            arguments of :class:`OFAEncoder`.
         decoder_cfg (dict): The config of the decoder, accept the keyword
-            arguments of [`~OFADecoder`].
-        padding_idx (int): The index of the padding token.
+            arguments of :class:`OFADecoder`.
         vocab_size (int): The size of the vocabulary.
         embedding_dim (int): The embedding dimensions of both the encoder
             and the decoder.
         tokenizer (dict | PreTrainedTokenizer): The tokenizer to encode
             the text.
-        task (str):
-        prompt (str, optional):
-        ans2label (str | dict | None):
+        task (str): The task name, supported tasks are "caption", "vqa" and
+            "refcoco".
+        prompt (str, optional): The prompt template for the following tasks,
+            If None, use default prompt:
+
+            - **caption**: ' what does the image describe?'
+            - **refcoco**: ' which region does the text " {} " describe?'
+
+            Defaults to None
+        ans2label (str | Sequence | None): The answer to label mapping for
+            the vqa task. If a string, it should be a pickle or json file.
+            The sequence constrains the output answers. Defaults to None,
+            which means no constraint.
         generation_cfg (dict): The extra generation config, accept the keyword
-            arguments of [~`transformers.GenerationConfig`].
+            arguments of :class:`~transformers.GenerationConfig`.
             Defaults to an empty dict.
+        data_preprocessor (dict, optional): The config for preprocessing input
+            data. If None or no specified type, it will use
+            "MultiModalDataPreprocessor" as type. See :class:
+            `MultiModalDataPreprocessor` for more details. Defaults to None.
         init_cfg (dict, optional): The initialization config. Defaults to None.
     """
     support_tasks = {'caption', 'vqa', 'refcoco'}
@@ -168,30 +181,19 @@ class OFA(BaseModel):
         **kwargs,
     ):
         """The unified entry for a forward process in both training and test.
-        The method should accept only one mode "loss":
+        The method accepts the following modes:
 
-        - "loss": Forward and return a dict of losses according to the given
-          inputs and data samples.
-        Note that this method doesn't handle neither back propagation nor
-        optimizer updating, which are done in the :meth:`train_step`.
+        - "predict": Forward and return a list of data samples contain the
+          predict results.
 
         Args:
-            inputs (dict of torch.Tensor):
-                img: pre_processed img tensor  (N, C, ...).
-                text: tokenized text (N, L)
-            data_samples (List[CaptionDataSample], optional):
-            The annotation data of every samples.
-                'image': raw image data
-                'text' tokenized text
-            mode (str): Return what kind of value. Defaults to 'tensor'.
-
-        Returns:
-            The return type depends on ``mode``.
-            - If ``mode="loss"``, return a dict of tensor.
+            images (torch.Tensor): the preprocessed image tensor of shape
+                ``(N, C, H, W)``.
+            data_samples (List[DataSample], optional): The annotation data
+                of every samples. Defaults to None.
+            mode (str): Return what kind of value. Defaults to 'predict'.
         """
-        if mode == 'loss':
-            return self.loss(images, data_samples, **kwargs)
-        elif mode == 'predict':
+        if mode == 'predict':
             return self.predict(images, data_samples, **kwargs)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
@@ -303,11 +305,15 @@ class OFA(BaseModel):
                 # During training, the bbox is normalized by 512. It's related
                 # to the `max_image_size` config in the official repo.
                 bbox = bbox / self.tokenizer.num_bins * 512
-                scale_factor = data_sample.get('scale_factor')
-                if scale_factor is not None:
-                    bbox[::2] /= scale_factor[0]
-                    bbox[1::2] /= scale_factor[1]
+                scale_factor = data_sample.get('scale_factor', (1, 1))
+                bbox[0::2] /= scale_factor[0]
+                bbox[1::2] /= scale_factor[1]
                 data_sample.pred_bboxes = bbox.unsqueeze(0)
+                if 'gt_bboxes' in data_sample:
+                    gt_bboxes = bbox.new_tensor(data_sample.gt_bboxes)
+                    gt_bboxes[:, 0::2] /= scale_factor[0]
+                    gt_bboxes[:, 1::2] /= scale_factor[1]
+                    data_sample.gt_bboxes = gt_bboxes
             out_data_samples.append(data_sample)
 
         return out_data_samples

@@ -223,6 +223,8 @@ intersphinx_mapping = {
     'torch': ('https://pytorch.org/docs/stable/', None),
     'mmcv': ('https://mmcv.readthedocs.io/zh_CN/2.x/', None),
     'mmengine': ('https://mmengine.readthedocs.io/zh_CN/latest/', None),
+    'transformers':
+    ('https://huggingface.co/docs/transformers/main/zh/', None),
 }
 napoleon_custom_sections = [
     # Custom sections for data elements.

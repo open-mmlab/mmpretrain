@@ -1289,15 +1289,15 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
 
     Args:
         encoder_cfg (dict): The config of the encoder, accept the keyword
-            arguments of [`~OFAEncoder`].
+            arguments of :class:`OFAEncoder`.
         decoder_cfg (dict): The config of the decoder, accept the keyword
-            arguments of [`~OFADecoder`].
+            arguments of :class:`OFADecoder`.
         padding_idx (int): The index of the padding token.
         vocab_size (int): The size of the vocabulary.
         embedding_dim (int): The embedding dimensions of both the encoder
             and the decoder.
         generation_cfg (dict): The extra generation config, accept the keyword
-            arguments of [~`transformers.GenerationConfig`].
+            arguments of :class:`~transformers.GenerationConfig`.
             Defaults to an empty dict.
         init_cfg (dict, optional): The initialization config. Defaults to None.
     """
@@ -1406,7 +1406,8 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
         Args:
             input_ids (torch.Tensor): The indices of the input tokens in the
                 vocabulary, and padding will be ignored by default. The indices
-                can be obtained using [`~OFATokenizer`]. The shape is (B, L).
+                can be obtained using :class:`OFATokenizer`.
+                The shape is (B, L).
             images (torch.Tensor): The input images. The shape is (B, 3, H, W).
             images_mask (torch.Tensor): The mask of all available images. The
                 shape is (B, ).

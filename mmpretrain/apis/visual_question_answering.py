@@ -31,7 +31,7 @@ class VisualQuestionAnsweringInferencer(BaseInferencer):
 
     Example:
         >>> from mmpretrain import VisualQuestionAnsweringInferencer
-        >>> inferencer = VisualQuestionAnsweringInferencer('ofa-base_3rdparty-zeroshot_coco-vqa')
+        >>> inferencer = VisualQuestionAnsweringInferencer('ofa-base_3rdparty-zeroshot_vqa')
         >>> inferencer('demo/cat-dog.png', "What's the animal next to the dog?")[0]
         {'question': "What's the animal next to the dog?", 'pred_answer': 'cat'}
     """  # noqa: E501

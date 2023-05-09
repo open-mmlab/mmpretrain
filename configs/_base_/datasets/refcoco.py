@@ -86,7 +86,20 @@ val_dataloader = dict(
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
-test_dataloader = val_dataloader
 
 val_evaluator = dict(type='VisualGroundingMetric')
+
+test_dataloader = dict(
+    batch_size=16,
+    num_workers=8,
+    dataset=dict(
+        type='RefCOCO',
+        data_root='data/coco',
+        data_prefix='train2014',
+        ann_file='refcoco/instances.json',
+        split_file='refcoco/refs(unc).p',
+        split='testA',  # or 'testB'
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
 test_evaluator = val_evaluator
