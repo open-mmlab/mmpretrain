@@ -13,6 +13,7 @@ from mmpretrain.apis import (ImageCaptionInferencer,
                              TextToImageRetrievalInferencer,
                              VisualGroundingInferencer,
                              VisualQuestionAnsweringInferencer)
+from mmpretrain.utils.dependency import WITH_MULTIMODAL
 from mmpretrain.visualization import UniversalVisualizer
 
 mmpretrain.utils.progress.disable_progress_bar = True
@@ -443,15 +444,23 @@ if __name__ == '__main__':
         with gr.Tabs():
             with gr.TabItem('Image Classification'):
                 ImageClassificationTab()
-            with gr.TabItem('Image Caption'):
-                ImageCaptionTab()
             with gr.TabItem('Image-To-Image Retrieval'):
                 ImageRetrievalTab()
-            with gr.TabItem('Text-To-Image Retrieval'):
-                TextToImageRetrievalTab()
-            with gr.TabItem('Visual Grounding'):
-                VisualGroundingTab()
-            with gr.TabItem('Visual Question Answering'):
-                VisualQuestionAnsweringTab()
+            if WITH_MULTIMODAL:
+                with gr.TabItem('Image Caption'):
+                    ImageCaptionTab()
+                with gr.TabItem('Text-To-Image Retrieval'):
+                    TextToImageRetrievalTab()
+                with gr.TabItem('Visual Grounding'):
+                    VisualGroundingTab()
+                with gr.TabItem('Visual Question Answering'):
+                    VisualQuestionAnsweringTab()
+            else:
+                with gr.TabItem('Multi-modal tasks'):
+                    gr.Markdown(
+                        'To inference multi-modal models, please install '
+                        'the extra multi-modal dependencies, please refer '
+                        'to https://mmpretrain.readthedocs.io/en/latest/'
+                        'get_started.html#installation')
 
     demo.launch(server_name='0.0.0.0')

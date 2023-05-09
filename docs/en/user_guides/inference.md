@@ -36,3 +36,13 @@ result = inference_model(model, img_path)
 ```
 
 An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmpretrain/blob/main/demo/image_demo.py).
+
+## Inference by a Gradio demo
+
+We also provide a gradio demo for all supported tasks and you can find it in [projects/gradio_demo/launch.py](https://github.com/open-mmlab/mmpretrain/blob/main/projects/gradio_demo/launch.py).
+
+Please install `gradio` by `pip install -U gradio` at first.
+
+Here is the interface preview:
+
+<img src="https://user-images.githubusercontent.com/26739999/236147750-90ccb517-92c0-44e9-905e-1473677023b1.jpg" width="100%"/>

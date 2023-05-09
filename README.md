@@ -117,6 +117,12 @@ mim install -e .
 
 Please refer to [installation documentation](https://mmpretrain.readthedocs.io/en/latest/get_started.html) for more detailed installation and dataset preparation.
 
+For multi-modality models support, please install the extra dependencies by:
+
+```shell
+mim install -e ".[multimodal]"
+```
+
 ## User Guides
 
 We provided a series of tutorials about the basic usage of MMPreTrain for new users:

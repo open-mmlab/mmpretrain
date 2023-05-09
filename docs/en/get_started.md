@@ -70,6 +70,19 @@ pip install -U openmim && mim install "mmpretrain>=1.0.0rc7"
 `mim` is a light-weight command-line tool to setup appropriate environment for OpenMMLab repositories according to PyTorch and CUDA version. It also has some useful functions for deep-learning experiments.
 ```
 
+## Install multi-modality support (Optional)
+
+The multi-modality models in MMPretrain requires extra dependencies. To install these dependencies, you
+can add `[multimodal]` during the installation. For example:
+
+```shell
+# Install from source
+mim install -e ".[multimodal]"
+
+# Install as a Python package
+mim install "mmpretrain[multimodal]>=1.0.0rc7"
+```
+
 ## Verify the installation
 
 To verify whether MMPretrain is installed correctly, we provide some sample codes to run an inference demo.

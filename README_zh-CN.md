@@ -114,6 +114,12 @@ mim install -e .
 
 更详细的步骤请参考 [安装指南](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) 进行安装。
 
+如果需要多模态模型，请使用如下方式安装额外的依赖：
+
+```shell
+mim install -e ".[multimodal]"
+```
+
 ## 基础教程
 
 我们为新用户提供了一系列基础教程：

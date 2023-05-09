@@ -36,3 +36,13 @@ result = inference_model(model, img_path)
 ```
 
 演示可以在 [demo/image_demo.py](https://github.com/open-mmlab/mmpretrain/blob/main/demo/image_demo.py) 中找到。
+
+## 使用 Gradio 推理示例
+
+我们还提供了一个基于 gradio 的推理示例，提供了 MMPretrain 所支持的所有任务的推理展示功能，你可以在 [projects/gradio_demo/launch.py](https://github.com/open-mmlab/mmpretrain/blob/main/projects/gradio_demo/launch.py) 找到这一例程。
+
+请首先使用 `pip install -U gradio` 安装 `gradio` 库。
+
+这里是界面效果预览：
+
+<img src="https://user-images.githubusercontent.com/26739999/236147750-90ccb517-92c0-44e9-905e-1473677023b1.jpg" width="100%"/>
