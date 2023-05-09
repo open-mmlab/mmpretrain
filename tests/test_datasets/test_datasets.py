@@ -2090,7 +2090,7 @@ class TestSUN397(TestBaseDataset):
             f.write('\n'.join([
                 '/a/abbey/sun_aqswjsnjlrfzzhiz.jpg',
                 '/a/airplane_cabin/sun_blczihbhbntqccux.jpg',
-                '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg',  # invalid
+                '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg',
             ]))
 
         with open(osp.join(cls.root, cls.meta_folder, cls.test_file),
@@ -2098,8 +2098,8 @@ class TestSUN397(TestBaseDataset):
             f.write('\n'.join([
                 '/a/abbey/sun_ajkqrqitspwywirx.jpg',
                 '/a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg',
-                '/a/auto_factory/sun_apfsprenzdnzbhmt.jpg',  # invalid
-                '/b/baggage_claim/sun_avittiqqaiibgcau.jpg',  # invalid
+                '/a/auto_factory/sun_apfsprenzdnzbhmt.jpg',
+                '/b/baggage_claim/sun_avittiqqaiibgcau.jpg',
             ]))
 
     def test_initialize(self):
@@ -2125,7 +2125,7 @@ class TestSUN397(TestBaseDataset):
 
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
-        self.assertEqual(len(dataset), 3 - 1)
+        self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
@@ -2136,13 +2136,13 @@ class TestSUN397(TestBaseDataset):
         # Test with split='test'
         cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
-        self.assertEqual(len(dataset), 4 - 2)
+        self.assertEqual(len(dataset), 4)
         data_info = dataset[-1]
         self.assertEqual(
             data_info['img_path'],
             osp.join(self.root, self.data_prefix,
-                     'a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg'))
-        self.assertEqual(data_info['gt_label'], 1)
+                     'b/baggage_claim/sun_avittiqqaiibgcau.jpg'))
+        self.assertEqual(data_info['gt_label'], 26)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
