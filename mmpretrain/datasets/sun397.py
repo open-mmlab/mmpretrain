@@ -85,7 +85,7 @@ class SUN397(BaseDataset):
         else:
             ann_file = self.backend.join_path('Partitions', 'Testing_01.txt')
 
-        data_prefix = 'SUN397-raw'
+        data_prefix = 'SUN397'
         test_mode = split == 'test'
 
         super(SUN397, self).__init__(
