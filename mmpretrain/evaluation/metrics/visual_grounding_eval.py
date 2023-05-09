@@ -2,10 +2,25 @@
 from typing import List
 
 import torch
+import torchvision.ops.boxes as boxes
 from mmengine.evaluator import BaseMetric
-from torchvision.ops.boxes import box_iou
 
 from mmpretrain.registry import METRICS
+
+
+def aligned_box_iou(boxes1: torch.Tensor, boxes2: torch.Tensor):
+    area1 = boxes.box_area(boxes1)
+    area2 = boxes.box_area(boxes2)
+
+    lt = torch.max(boxes1[:, :2], boxes2[:, :2])  # (B, 2)
+    rb = torch.min(boxes1[:, 2:], boxes2[:, 2:])  # (B, 2)
+
+    wh = boxes._upcast(rb - lt).clamp(min=0)  # (B, 2)
+    inter = wh[:, 0] * wh[:, 1]  # (B, )
+
+    union = area1 + area2 - inter
+    iou = inter / union
+    return iou
 
 
 @METRICS.register_module()
@@ -61,7 +76,7 @@ class VisualGroundingMetric(BaseMetric):
         """
         pred_boxes = torch.stack([each['box'] for each in results])
         gt_boxes = torch.stack([each['box_target'] for each in results])
-        iou = box_iou(pred_boxes, gt_boxes)
+        iou = aligned_box_iou(pred_boxes, gt_boxes)
         accu_num = torch.sum(iou >= 0.5)
 
         miou = torch.mean(iou)
