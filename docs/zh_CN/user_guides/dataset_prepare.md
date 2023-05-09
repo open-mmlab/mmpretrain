@@ -143,13 +143,12 @@ ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.ima
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. 解压已下载的图片。
-4. 根据 [CustomDataset](#CustomDataset) 的格式约定重新组织图像文件
 
-```{note}
-在 MMPretrain 中，所有配置文件默认使用文本标注文件的数据集。因此，如果希望使用子文件夹格式，请在配置文件中设置 `ann_file=''`。
-```
+### ImageNet数据集目录结构
 
-### 子文件夹格式
+我们支持两种方式组织ImageNet数据集，子目录格式和文本注释文件格式。
+
+#### 子文件夹格式
 
 我们提供了一个样例，您可以从这个[链接](https://download.openmmlab.com/mmpretrain/datasets/imagenet_1k.zip)下载和解压。数据集的目录结构应如下所示：
 
@@ -174,35 +173,7 @@ data/imagenet/
 │   ├── ...
 ```
 
-然后，您可以使用具有以下配置的 [`ImageNet`](mmpretrain.datasets.ImageNet) 数据集：
-
-```python
-train_dataloader = dict(
-    ...
-    # 训练数据集配置
-    dataset=dict(
-        type='ImageNet',
-        data_root='data/imagenet',
-        split='train',
-        pipeline=...,
-    )
-)
-
-val_dataloader = dict(
-    ...
-    # 验证数据集配置
-    dataset=dict(
-        type='ImageNet',
-        data_root='data/imagenet',
-        split='val',
-        pipeline=...,
-    )
-)
-
-test_dataloader = val_dataloader
-```
-
-### 文本标注文件格式
+#### 文本标注文件格式
 
 您可以从[此链接](https://download.openmmlab.com/mmclassification/datasets/imagenet/meta/caffe_ilsvrc12.tar.gz)下载并解压元数据，然后组织文件夹如下：
 
@@ -230,7 +201,9 @@ data/imagenet/
 │   ├── ...
 ```
 
-然后，您可以使用具有以下配置的 [`ImageNet`](mmpretrain.datasets.ImageNet) 数据集：
+### 配置
+
+当您的数据集以上述方式组织时，您可以使用具有以下配置的 [`ImageNet`](mmpretrain.datasets.ImageNet) 数据集：
 
 ```python
 train_dataloader = dict(
@@ -260,23 +233,25 @@ test_dataloader = val_dataloader
 
 ## 支持的图像分类数据集
 
-| 数据集                                                                                  | 主页                                                                                   |
-| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])       | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) 数据集                     |
-| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])             | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                          |
-| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])           | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                         |
-| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                     | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) 数据集            |
-| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                     | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) 数据集 |
-| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...])  | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) 数据集               |
-| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...])   | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) 数据集           |
-| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])       | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) 数据集         |
-| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])             | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) 数据集          |
-| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])                | [MNIST](http://yann.lecun.com/exdb/mnist/) 数据集                                      |
-| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) 数据集                 |
-| [`Places205`](mmpretrain.datasets.Places205)(data_root[, split, pipeline, ...])         | [Places205](http://places.csail.mit.edu/downloadData.html) 数据集                      |
-| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...])   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) 数据集          |
-| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])               | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) 数据集                       |
-| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])            | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                           |
+| 数据集                                                                              | split                               | 主页                                                                               |
+| ----------------------------------------------------------------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------- |
+| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])   | ["train", "test"]                   | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) 数据集                 |
+| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])         | ["train", "test"]                   | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                      |
+| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])       | ["train", "test"]                   | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                     |
+| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                 | ["train", "test"]                   | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) 数据集        |
+| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                 | ["train", "val", "tranval", "test"] | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) 数据集 |
+| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...]) | ["train", "test"]                   | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) 数据集           |
+| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...]) | ["train", "val", "tranval", "test"] | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) 数据集       |
+| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])   | ["train", "val", "tranval", "test"] | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) 数据集     |
+| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])         | ["train", "test"]                   | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) 数据集      |
+| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])            | ["train", "test"]                   | [MNIST](http://yann.lecun.com/exdb/mnist/) 数据集                                  |
+| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | ["tranval", test"]                  | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) 数据集             |
+| [`Places205`](mmpretrain.datasets.Places205)(data_root[, pipeline, ...])            | -                                   | [Places205](http://places.csail.mit.edu/downloadData.html) 数据集                  |
+| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...]) | ["train", "test"]                   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) 数据集      |
+| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])           | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) 数据集                   |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])        | -                                   | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                       |
+
+有些数据集主页链接可能已经失效，您可以通过[OpenDataLab](https://opendatalab.com/)下载数据集，例如 [Stanford Cars](https://opendatalab.com/Stanford_Cars/download)数据集。
 
 ## OpenMMLab 2.0 标准数据集
 

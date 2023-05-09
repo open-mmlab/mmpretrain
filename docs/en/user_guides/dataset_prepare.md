@@ -145,14 +145,12 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
-4. Re-organize the image files according the format convention of [CustomDataset](#CustomDataset)
 
-```{note}
-In MMPretrain, we use the text annotation file format ImageNet in all provided config files. Therefore, to use
-the subfolder format, you please set `ann_file=''` in these config files.
-```
+### The Directory Structrue of the ImageNet dataset
 
-### Subfolder Format
+We support two ways of organizing the ImageNet dataset: Subfolder Format and Text Annotation File Format.
+
+#### Subfolder Format
 
 We have provided a sample, which you can download and extract from this [link](https://download.openmmlab.com/mmpretrain/datasets/imagenet_1k.zip). The directory structure of the dataset should be as below:
 
@@ -177,35 +175,7 @@ data/imagenet/
 │   ├── ...
 ```
 
-And then, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
-
-```python
-train_dataloader = dict(
-    ...
-    # Training dataset configurations
-    dataset=dict(
-        type='ImageNet',
-        data_root='data/imagenet',
-        split='train',
-        pipeline=...,
-    )
-)
-
-val_dataloader = dict(
-    ...
-    # Validation dataset configurations
-    dataset=dict(
-        type='ImageNet',
-        data_root='data/imagenet',
-        split='val',
-        pipeline=...,
-    )
-)
-
-test_dataloader = val_dataloader
-```
-
-### Text Annotation File Format
+#### Text Annotation File Format
 
 You can download and untar the meta data from this [link](https://download.openmmlab.com/mmclassification/datasets/imagenet/meta/caffe_ilsvrc12.tar.gz). And re-organize the dataset as below:
 
@@ -233,7 +203,9 @@ data/imagenet/
 │   ├── ...
 ```
 
-And then, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
+### Configuration
+
+Once your dataset is organized in the way described above, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
 
 ```python
 train_dataloader = dict(
@@ -241,7 +213,7 @@ train_dataloader = dict(
     # Training dataset configurations
     dataset=dict(
         type='ImageNet',
-        data_root='data/imagenet/',
+        data_root='data/imagenet',
         split='train',
         pipeline=...,
     )
@@ -252,7 +224,7 @@ val_dataloader = dict(
     # Validation dataset configurations
     dataset=dict(
         type='ImageNet',
-        data_root='data/imagenet/',
+        data_root='data/imagenet',
         split='val',
         pipeline=...,
     )
@@ -263,23 +235,25 @@ test_dataloader = val_dataloader
 
 ## Supported Image Classification Datasets
 
-| Datasets                                                                                | HomePage                                                                                 |
-| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])       | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) Dataset.                     |
-| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])             | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                          |
-| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])           | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                         |
-| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                     | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) Dataset.            |
-| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                     | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) Dataset. |
-| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...])  | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) Dataset.               |
-| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...])   | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) Dataset.           |
-| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])       | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) Dataset.         |
-| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])             | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) Dataset.          |
-| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])                | [MNIST](http://yann.lecun.com/exdb/mnist/) Dataset.                                      |
-| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) Dataset.                 |
-| [`Places205`](mmpretrain.datasets.Places205)(data_root[, split, pipeline, ...])         | [Places205](http://places.csail.mit.edu/downloadData.html) Dataset.                      |
-| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...])   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) Dataset.          |
-| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])               | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) Dataset.                       |
-| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])            | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                           |
+| Datasets                                                                           | split                               | HomePage                                                                            |
+| ---------------------------------------------------------------------------------- | :---------------------------------- | ----------------------------------------------------------------------------------- |
+| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])  | ["train", "test"]                   | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) Dataset.                |
+| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])        | ["train", "test"]                   | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                     |
+| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])      | ["train", "test"]                   | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) Dataset.                    |
+| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                | ["train", "test"]                   | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) Dataset.       |
+| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                | ["train", "val", "tranval", "test"] | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) Dataset. |
+| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...]) | ["train", "test"]                   | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) Dataset.          |
+| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...]) | ["train", "val", "tranval", "test"] | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) Dataset.      |
+| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])  | ["train", "val", "tranval", "test"] | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) Dataset.    |
+| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])        | ["train", "test"]                   | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) Dataset.     |
+| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])           | ["train", "test"]                   | [MNIST](http://yann.lecun.com/exdb/mnist/) Dataset.                                 |
+| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | ["tranval", test"]                  | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) Dataset.            |
+| [`Places205`](mmpretrain.datasets.Places205)(data_root[, pipeline, ...])           | -                                   | [Places205](http://places.csail.mit.edu/downloadData.html) Dataset.                 |
+| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...]) | ["train", "test"]                   | [Stanford Cars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) Dataset.    |
+| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])          | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) Dataset.                  |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])       | -                                   | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                      |
+
+Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [Stanford Cars](https://opendatalab.com/Stanford_Cars/download).
 
 ## OpenMMLab 2.0 Standard Dataset
 
