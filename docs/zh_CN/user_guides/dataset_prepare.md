@@ -151,7 +151,7 @@ ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.ima
 
 ### 子文件夹格式
 
-重新组织数据集如下：
+我们提供了一个样例，您可以从这个[链接](https://download.openmmlab.com/mmpretrain/datasets/imagenet_1k.zip)下载和解压。数据集的目录结构应如下所示：
 
 ```text
 data/imagenet/
@@ -183,8 +183,7 @@ train_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='data/imagenet',
-        data_prefix='train',
-        ann_file='',
+        split='train',
         pipeline=...,
     )
 )
@@ -195,8 +194,7 @@ val_dataloader = dict(
     dataset=dict(
         type='ImageNet',
         data_root='data/imagenet',
-        data_prefix='val',
-        ann_file='',
+        split='val',
         pipeline=...,
     )
 )
@@ -240,9 +238,8 @@ train_dataloader = dict(
     # 训练数据集配置
     dataset=dict(
         type='ImageNet',
-        data_root='imagenet_folder',
-        data_prefix='train/',
-        ann_file='meta/train.txt',
+        data_root='data/imagenet/',
+        split='train',
         pipeline=...,
     )
 )
@@ -252,9 +249,8 @@ val_dataloader = dict(
     # 验证数据集配置
     dataset=dict(
         type='ImageNet',
-        data_root='imagenet_folder',
-        data_prefix='val/',
-        ann_file='meta/val.txt',
+        data_root='data/imagenet/',
+        split='val',
         pipeline=...,
     )
 )
@@ -262,61 +258,25 @@ val_dataloader = dict(
 test_dataloader = val_dataloader
 ```
 
-## CIFAR
+## 支持的图像分类数据集
 
-我们支持自动下载 [`CIFAR10`](mmpretrain.datasets.CIFAR10) 和 [`CIFAR100`](mmpretrain.datasets.CIFAR100) 数据集，您只需在 `data_root` 字段中指定下载文件夹即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
-
-```python
-train_dataloader = dict(
-    ...
-    # 训练数据集配置
-    dataset=dict(
-        type='CIFAR10',
-        data_root='data/cifar10',
-        test_mode=False,
-        pipeline=...,
-    )
-)
-val_dataloader = dict(
-    ...
-    # 验证数据集配置
-    dataset=dict(
-        type='CIFAR10',
-        data_root='data/cifar10',
-        test_mode=True,
-        pipeline=...,
-    )
-)
-test_dataloader = val_dataloader
-```
-
-## MNIST
-
-我们支持自动下载 [MNIST](mmpretrain.datasets.MNIST) 和 [Fashion-MNIST](mmpretrain.datasets.FashionMNIST) 数据集，您只需指定 `data_root` 字段中的下载路径即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
-
-```python
-train_dataloader = dict(
-    ...
-    # 训练数据集配置
-    dataset=dict(
-        type='MNIST',
-        data_root='data/mnist',
-        test_mode=False,
-        pipeline=...,
-    )
-)
-val_dataloader = dict(
-    ...
-    # 验证数据集配置
-    dataset=dict(
-        type='MNIST',
-        data_root='data/mnist',
-        test_mode=True,
-        pipeline=...,
-    )
-)
-test_dataloader = val_dataloader
-```
+| 数据集                                                                                  | 主页                                                                                   |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`Calthch101`](mmpretrain.datasets.Caltech101)(data_root[, split, pipeline, ...])       | [Caltech 101](https://data.caltech.edu/records/mzrjq-6wc02) 数据集                     |
+| [`CIFAR10`](mmpretrain.datasets.CIFAR10)(data_root[, split, pipeline, ...])             | [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                          |
+| [`CIFAR100`](mmpretrain.datasets.CIFAR100)(data_root[, split, pipeline, ...])           | [CIFAR100](https://www.cs.toronto.edu/~kriz/cifar.html) 数据集                         |
+| [`CUB`](mmpretrain.datasets.CUB)(data_root[, split, pipeline, ...])                     | [CUB-200-2011](http://www.vision.caltech.edu/datasets/cub_200_2011/) 数据集            |
+| [`DTD`](mmpretrain.datasets.DTD)(data_root[, split, pipeline, ...])                     | [Describable Texture Dataset (DTD)](https://www.robots.ox.ac.uk/~vgg/data/dtd/) 数据集 |
+| [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) (data_root[, split, pipeline, ...])  | [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist) 数据集               |
+| [`FGVCAircraft`](mmpretrain.datasets.FGVCAircraft)(data_root[, split, pipeline, ...])   | [FGVC Aircraft](https://www.robots.ox.ac.uk/~vgg/data/fgvc-aircraft/) 数据集           |
+| [`Flowers102`](mmpretrain.datasets.Flowers102)(data_root[, split, pipeline, ...])       | [Oxford 102 Flower](https://www.robots.ox.ac.uk/~vgg/data/flowers/102/) 数据集         |
+| [`Food101`](mmpretrain.datasets.Food101)(data_root[, split, pipeline, ...])             | [Food101](https://data.vision.ee.ethz.ch/cvl/datasets_extra/food-101/) 数据集          |
+| [`MNIST`](mmpretrain.datasets.MNIST) (data_root[, split, pipeline, ...])                | [MNIST](http://yann.lecun.com/exdb/mnist/) 数据集                                      |
+| [`OxfordIIITPet`](mmpretrain.datasets.OxfordIIITPet)(data_root[, split, pipeline, ...]) | [Oxford-IIIT Pets](https://www.robots.ox.ac.uk/~vgg/data/pets/) 数据集                 |
+| [`Places205`](mmpretrain.datasets.Places205)(data_root[, split, pipeline, ...])         | [Places205](http://places.csail.mit.edu/downloadData.html) 数据集                      |
+| [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...])   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) 数据集          |
+| [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])               | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) 数据集                       |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])            | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                           |
 
 ## OpenMMLab 2.0 标准数据集
 
