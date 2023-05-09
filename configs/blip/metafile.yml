@@ -16,6 +16,17 @@ Collections:
     README: configs/blip/README.md
 
 Models:
+  - Name: blip-base_8xb16_refcoco
+    Metadata:
+      FLOPs: null
+      Parameters: 498488636
+    In Collection: BLIP
+    Results:
+      - Task: Visual Grounding
+        Dataset: RefCOCO
+        Metrics: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_8xb16_refcoco_20230508-d2d10f4c.pth
+    Config: configs/blip/blip-base_8xb16_refcoco.py
   - Name: blip-base_3rdparty_coco-caption
     Metadata:
       FLOPs: null

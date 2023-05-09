@@ -208,7 +208,7 @@ def fill_model_by_prompt(model: dict, defaults: dict):
     params = model.get('Metadata', {}).get('Parameters')
     if model.get('Config') is not None and (
             MMCLS_ROOT / model['Config']).exists() and (flops is None
-                                                        or params is None):
+                                                        and params is None):
         print('Automatically compute FLOPs and Parameters from config.')
         flops, params = get_flops_params(str(MMCLS_ROOT / model['Config']))
 
@@ -320,7 +320,7 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
     # Metadata.Flops, Metadata.Parameters
     flops = model.get('Metadata', {}).get('FLOPs')
     params = model.get('Metadata', {}).get('Parameters')
-    if config_updated or (flops is None or params is None):
+    if config_updated or (flops is None and params is None):
         print(f'Automatically compute FLOPs and Parameters of {model["Name"]}')
         flops, params = get_flops_params(str(MMCLS_ROOT / model['Config']))
 

@@ -1631,20 +1631,42 @@ class OFAAddObjects(BaseTransform):
             results['decoder_prompt'] = prompt
             results['question'] = prompt
 
-        return results
-
 
 @TRANSFORMS.register_module()
-class PrepareFewshotPrompt(BaseTransform):
+class RandomTranslatePad(BaseTransform):
 
-    def __init__(
-        self,
-        fewshot_tmpl,
-        final_tmpl,
-        zeroshot_tmpl=None,
-    ):
-        self.fewshot_tmpl = fewshot_tmpl
-        self.zeroshot_tmpl = zeroshot_tmpl
+    def __init__(self, size=640, aug_translate=False):
+        self.size = size
+        self.aug_translate = aug_translate
+
+    @cache_randomness
+    def rand_translate_params(self, dh, dw):
+        top = np.random.randint(0, dh)
+        left = np.random.randint(0, dw)
+        return top, left
 
     def transform(self, results: dict) -> dict:
+        img = results['img']
+        h, w = img.shape[:-1]
+        dw = self.size - w
+        dh = self.size - h
+        if self.aug_translate:
+            top, left = self.rand_translate_params(dh, dw)
+        else:
+            top = round(dh / 2.0 - 0.1)
+            left = round(dw / 2.0 - 0.1)
+
+        out_img = np.zeros((self.size, self.size, 3), dtype=np.float32)
+        out_img[top:top + h, left:left + w, :] = img
+        results['img'] = out_img
+        results['img_shape'] = (self.size, self.size)
+
+        # translate box
+        if 'gt_bboxes' in results.keys():
+            for i in range(len(results['gt_bboxes'])):
+                box = results['gt_bboxes'][i]
+                box[0], box[2] = box[0] + left, box[2] + left
+                box[1], box[3] = box[1] + top, box[3] + top
+                results['gt_bboxes'][i] = box
+
         return results

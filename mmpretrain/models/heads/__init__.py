@@ -7,6 +7,7 @@ from .conformer_head import ConformerHead
 from .contrastive_head import ContrastiveHead
 from .deit_head import DeiTClsHead
 from .efficientformer_head import EfficientFormerClsHead
+from .grounding_head import GroundingHead
 from .itc_head import ITCHead
 from .itm_head import ITMHead
 from .latent_heads import LatentCrossCorrelationHead, LatentPredictHead
@@ -60,4 +61,5 @@ __all__ = [
     'VQAGenerationHead',
     'ITCHead',
     'ITMHead',
+    'GroundingHead',
 ]

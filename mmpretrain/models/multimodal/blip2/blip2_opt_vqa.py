@@ -1,18 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
+
 import torch
 
 from mmpretrain.registry import MODELS
-from .blip2_caption import BLIP2Captioner
 from mmpretrain.structures import DataSample
+from .blip2_caption import BLIP2Captioner
 
 
 @MODELS.register_module()
 class BLIP2VQAModel(BLIP2Captioner):
     """BLIP2 VQA.
-    
-    Module for BLIP2 VQA task. For more details about the initialization params,
-    please refer to :class:`BLIP2Captioner`.
+
+    Module for BLIP2 VQA task. For more details about the initialization
+    params, please refer to :class:`BLIP2Captioner`.
     """
 
     def predict(self,
