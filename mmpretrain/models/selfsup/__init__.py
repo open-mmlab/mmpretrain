@@ -6,9 +6,8 @@ from .byol import BYOL
 from .cae import CAE, CAEPretrainViT, DALLEEncoder
 from .densecl import DenseCL
 from .eva import EVA
-from .hivit import MIMHiViT
 from .itpn import MIMiTPN, iTPN, ClipTargeter
-from .mae import MAE, MAEViT
+from .mae import MAE, MAEViT, MAEHiViT
 from .maskfeat import HOGGenerator, MaskFeat, MaskFeatViT
 from .milan import MILAN, CLIPGenerator, MILANViT
 from .mixmim import MixMIM, MixMIMPretrainTransformer
@@ -26,7 +25,7 @@ __all__ = [
     'CAEPretrainViT',
     'DALLEEncoder',
     'MAEViT',
-    'MIMHiViT',
+    'MAEHiViT',
     'MIMiTPN',
     'iTPN',
     'ClipTargeter',
