@@ -184,35 +184,3 @@ class MIMHiViT(HiViT):
                 x = blk(x)
 
             return (x, mask, ids_restore)
-
-
-@MODELS.register_module()
-class MAEHiViT(BaseSelfSupervisor):
-    """MAE for HiViT.
-
-    Implementation of ` HiViT: A Simple and More Efficient Design
-        of Hierarchical Vision Transformer`_.
-    """
-
-    def extract_feat(self, inputs: torch.Tensor):
-        return self.backbone(inputs, mask=None)
-
-    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
-             **kwargs) -> Dict[str, torch.Tensor]:
-        """The forward function in training.
-
-        Args:
-            inputs (torch.Tensor): The input images.
-            data_samples (List[DataSample]): All elements required
-                during the forward function.
-
-        Returns:
-            Dict[str, torch.Tensor]: A dictionary of loss components.
-        """
-        # ids_restore: the same as that in original repo, which is used
-        # to recover the original order of tokens in decoder.
-        latent, mask, ids_restore = self.backbone(inputs)
-        pred = self.neck(latent, ids_restore)
-        loss = self.head.loss(pred, inputs, mask)
-        losses = dict(loss=loss)
-        return losses
