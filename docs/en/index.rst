@@ -92,6 +92,7 @@ We always welcome *PRs* and *Issues* for the betterment of MMPretrain.
    useful_tools/dataset_visualization.md
    useful_tools/scheduler_visualization.md
    useful_tools/cam_visualization.md
+   useful_tools/t-sne_visualization.md
 
 .. _Analysis:
 .. toctree::
