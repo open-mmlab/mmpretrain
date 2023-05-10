@@ -251,7 +251,7 @@ test_dataloader = val_dataloader
 | [`Places205`](mmpretrain.datasets.Places205)(data_root[, pipeline, ...])           | -                                   | [Places205](http://places.csail.mit.edu/downloadData.html) Dataset.                 |
 | [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...]) | ["train", "test"]                   | [Stanford Cars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) Dataset.    |
 | [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])          | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) Dataset.                  |
-| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])       | -                                   | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                      |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])       | ["train", "val", "tranval", "test"] | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                      |
 
 Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [Stanford Cars](https://opendatalab.com/Stanford_Cars/download).
 

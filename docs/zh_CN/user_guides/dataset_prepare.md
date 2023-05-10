@@ -249,7 +249,7 @@ test_dataloader = val_dataloader
 | [`Places205`](mmpretrain.datasets.Places205)(data_root[, pipeline, ...])            | -                                   | [Places205](http://places.csail.mit.edu/downloadData.html) 数据集                  |
 | [`StanfordCars`](mmpretrain.datasets.StanfordCars)(data_root[, split, pipeline, ...]) | ["train", "test"]                   | [StanfordCars](https://ai.stanford.edu/~jkrause/cars/car_dataset.html) 数据集      |
 | [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])           | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) 数据集                   |
-| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])        | -                                   | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                       |
+| [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])        | ["train", "val", "tranval", "test"] | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                       |
 
 有些数据集主页链接可能已经失效，您可以通过[OpenDataLab](https://opendatalab.com/)下载数据集，例如 [Stanford Cars](https://opendatalab.com/Stanford_Cars/download)数据集。
 
