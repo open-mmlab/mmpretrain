@@ -461,8 +461,6 @@ class iTPN(BaseSelfSupervisor):
 
             img_latent = self.backbone(inputs[0], mask)
 
-            print('--------------', inputs[0].shape, inputs[1].shape)
-
             # inputs[1] is the target image
             with torch.no_grad():
                 target = self.target_generator(inputs[1])
