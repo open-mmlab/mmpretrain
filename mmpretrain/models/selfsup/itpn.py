@@ -145,7 +145,7 @@ class ClipTargeter(nn.Module):
 
 
 @MODELS.register_module()
-class MIMiTPN(HiViT):
+class iTPNHiViT(HiViT):
     """Vision Transformer for MAE pre-training using HiViT.
 
         A PyTorch implement of: `An Image is Worth 16x16 Words: Transformers
