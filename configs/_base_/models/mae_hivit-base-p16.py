@@ -1,6 +1,6 @@
 # model settings
 model = dict(
-    type='MAEHiViT',
+    type='MAE',
     backbone=dict(type='MIMHiViT', patch_size=16, arch='base', mask_ratio=0.75),
     neck=dict(
         type='MAEPretrainDecoder',
