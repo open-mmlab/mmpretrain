@@ -7,6 +7,7 @@ from .conformer_head import ConformerHead
 from .contrastive_head import ContrastiveHead
 from .deit_head import DeiTClsHead
 from .efficientformer_head import EfficientFormerClsHead
+from .itpn_clip_head import iTPNClipHead
 from .latent_heads import LatentCrossCorrelationHead, LatentPredictHead
 from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
@@ -52,4 +53,5 @@ __all__ = [
     'MoCoV3Head',
     'MIMHead',
     'SimMIMHead',
+    'iTPNClipHead',
 ]
