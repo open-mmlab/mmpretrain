@@ -10,6 +10,7 @@ from .efficientformer_head import EfficientFormerClsHead
 from .grounding_head import GroundingHead
 from .itc_head import ITCHead
 from .itm_head import ITMHead
+from .itpn_clip_head import iTPNClipHead
 from .latent_heads import LatentCrossCorrelationHead, LatentPredictHead
 from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
@@ -62,4 +63,5 @@ __all__ = [
     'ITCHead',
     'ITMHead',
     'GroundingHead',
+    'iTPNClipHead',
 ]
