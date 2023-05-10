@@ -212,11 +212,13 @@ class RetrievalAveragePrecision(BaseMetric):
     References:
         [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
         org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
+
         [2] `The Oxford Buildings Dataset
         <https://www.robots.ox.ac.uk/~vgg/data/oxbuildings/>`_
 
     Examples:
         Use in code:
+
         >>> import torch
         >>> import numpy as np
         >>> from mmcls.evaluation import RetrievalAveragePrecision
@@ -327,7 +329,7 @@ class RetrievalAveragePrecision(BaseMetric):
                 category index labels. Defaults to False.
             mode (Optional[str]): The mode to calculate AP, choose from
                 'IR'(information retrieval) and 'integrate'. Defaults to 'IR'.
-        
+
         Note:
             If the ``mode`` set to 'IR', use the stanford AP calculation of
             information retrieval as in wikipedia page; if set to 'integrate',
@@ -335,13 +337,14 @@ class RetrievalAveragePrecision(BaseMetric):
             by averaging two adjacent precision points, then multiplying by the
             recall step like mAP in Detection task. This is the convention for
             the Revisited Oxford/Paris datasets.
-        
+
         Returns:
             float: the average precision of the query image.
-        
+
         References:
             [1] `Wikipedia entry for Average precision(information_retrieval)
             <https://en.wikipedia.org/wiki/Evaluation_measures_
+
             (information_retrieval)#Average_precision>`_
             [2] `The Oxford Buildings Dataset <https://www.robots.ox.ac.uk/
             ~vgg/data/oxbuildings/`_
