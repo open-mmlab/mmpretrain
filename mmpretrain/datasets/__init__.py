@@ -1,17 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from mmpretrain.utils.dependency import WITH_MULTIMODAL
 from .base_dataset import BaseDataset
 from .builder import build_dataset
 from .caltech101 import Caltech101
 from .cifar import CIFAR10, CIFAR100
-from .coco_caption import COCOCaption
-from .coco_retrieval import COCORetrieval
-from .coco_vqa import COCOVQA
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
 from .dtd import DTD
 from .fgvcaircraft import FGVCAircraft
-from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
 from .flowers102 import Flowers102
 from .food101 import Food101
 from .imagenet import ImageNet, ImageNet21k
@@ -22,20 +19,34 @@ from .multi_task import MultiTaskDataset
 from .nlvr2 import NLVR2
 from .oxfordiiitpet import OxfordIIITPet
 from .places205 import Places205
-from .refcoco import RefCOCO
 from .samplers import *  # noqa: F401,F403
 from .stanfordcars import StanfordCars
 from .sun397 import SUN397
 from .transforms import *  # noqa: F401,F403
-from .visual_genome import VisualGenomeQA
 from .voc import VOC
 
 __all__ = [
-    'BaseDataset', 'CIFAR10', 'CIFAR100', 'COCOCaption', 'COCORetrieval',
-    'COCOVQA', 'CUB', 'Caltech101', 'CustomDataset', 'DTD', 'FGVCAircraft',
-    'FashionMNIST', 'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA',
-    'Flowers102', 'Food101', 'ImageNet', 'ImageNet21k', 'InShop',
-    'KFoldDataset', 'MNIST', 'MultiLabelDataset', 'MultiTaskDataset', 'NLVR2',
-    'OxfordIIITPet', 'Places205', 'RefCOCO', 'SUN397', 'StanfordCars', 'VOC',
-    'VisualGenomeQA', 'build_dataset'
+    'BaseDataset', 'CIFAR10', 'CIFAR100', 'CUB', 'Caltech101', 'CustomDataset',
+    'DTD', 'FGVCAircraft', 'FashionMNIST', 'Flowers102', 'Food101', 'ImageNet',
+    'ImageNet21k', 'InShop', 'KFoldDataset', 'MNIST', 'MultiLabelDataset',
+    'MultiTaskDataset', 'NLVR2', 'OxfordIIITPet', 'Places205', 'SUN397',
+    'StanfordCars', 'VOC', 'build_dataset'
 ]
+
+if WITH_MULTIMODAL:
+    from .coco_caption import COCOCaption
+    from .coco_retrieval import COCORetrieval
+    from .coco_vqa import COCOVQA
+    from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
+    from .refcoco import RefCOCO
+    from .visual_genome import VisualGenomeQA
+
+    __all__.extend([
+        'COCOCaption',
+        'COCORetrieval',
+        'COCOVQA',
+        'FlamingoEvalCOCOCaption',
+        'FlamingoEvalCOCOVQA',
+        'RefCOCO',
+        'VisualGenomeQA',
+    ])

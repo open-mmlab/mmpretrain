@@ -85,7 +85,7 @@ if WITH_MULTIMODAL:
                               register_hf_tokenizer)
     from .tokenizer import BLIP2Tokenizer, BLIPTokenizer, OFATokenizer
 
-    __all__ = [
+    __all__.extend([
         'BLIPTokenizer', 'OFATokenizer', 'BLIP2Tokenizer', 'register_hf_model',
         'register_hf_tokenizer', 'no_load_hf_pretrained_model'
-    ]
+    ])
