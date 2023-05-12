@@ -47,7 +47,7 @@ class ImageClassificationInferencer(BaseInferencer):
            >>> from mmpretrain import ImageClassificationInferencer
            >>> inferencer = ImageClassificationInferencer(
                    model='configs/resnet/resnet50_8xb32_in1k.py',
-                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
+                   pretrained='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
                    device='cuda')
            >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
     """  # noqa: E501

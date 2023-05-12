@@ -21,10 +21,11 @@ from .layer_scale import LayerScale
 from .make_divisible import make_divisible
 from .norm import GRN, LayerNorm2d, build_norm_layer
 from .position_encoding import (ConditionalPositionEncoding,
-                                PositionEncodingFourier,
+                                PositionEncodingFourier, RotaryEmbeddingFast,
                                 build_2d_sincos_position_embedding)
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
+from .swiglu_ffn import SwiGLUFFN, SwiGLUFFNFused
 from .vector_quantizer import NormEMAVectorQuantizer
 
 __all__ = [
@@ -74,6 +75,9 @@ __all__ = [
     'ResLayerExtraNorm',
     'MultiModalDataPreprocessor',
     'QuickGELU',
+    'SwiGLUFFN',
+    'SwiGLUFFNFused',
+    'RotaryEmbeddingFast',
 ]
 
 if WITH_MULTIMODAL:

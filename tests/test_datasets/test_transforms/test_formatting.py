@@ -104,28 +104,47 @@ class TestToPIL(unittest.TestCase):
         results = transform(copy.deepcopy(data))
         self.assertIsInstance(results['img'], Image.Image)
 
+        cfg = dict(type='ToPIL', to_rgb=True)
+        transform = TRANSFORMS.build(cfg)
+
+        data = {'img': np.random.randint(0, 256, (224, 224, 3), dtype='uint8')}
+
+        results = transform(copy.deepcopy(data))
+        self.assertIsInstance(results['img'], Image.Image)
+        np.equal(np.array(results['img']), data['img'][:, :, ::-1])
+
+    def test_repr(self):
+        cfg = dict(type='ToPIL', to_rgb=True)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(repr(transform), 'NumpyToPIL(to_rgb=True)')
+
 
 class TestToNumpy(unittest.TestCase):
 
     def test_transform(self):
         img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
         data = {
-            'tensor': torch.tensor([1, 2, 3]),
-            'Image': Image.open(img_path),
+            'img': Image.open(img_path),
         }
 
-        cfg = dict(type='ToNumpy', keys=['tensor', 'Image'], dtype='uint8')
+        cfg = dict(type='ToNumpy')
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
-        self.assertIsInstance(results['tensor'], np.ndarray)
-        self.assertEqual(results['tensor'].dtype, 'uint8')
-        self.assertIsInstance(results['Image'], np.ndarray)
-        self.assertEqual(results['Image'].dtype, 'uint8')
+        self.assertIsInstance(results['img'], np.ndarray)
+        self.assertEqual(results['img'].dtype, 'uint8')
+
+        cfg = dict(type='ToNumpy', to_bgr=True)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(copy.deepcopy(data))
+        self.assertIsInstance(results['img'], np.ndarray)
+        self.assertEqual(results['img'].dtype, 'uint8')
+        np.equal(results['img'], np.array(data['img'])[:, :, ::-1])
 
     def test_repr(self):
-        cfg = dict(type='ToNumpy', keys=['img'], dtype='uint8')
+        cfg = dict(type='ToNumpy', to_bgr=True)
         transform = TRANSFORMS.build(cfg)
-        self.assertEqual(repr(transform), "ToNumpy(keys=['img'], dtype=uint8)")
+        self.assertEqual(
+            repr(transform), 'PILToNumpy(to_bgr=True, dtype=None)')
 
 
 class TestCollect(unittest.TestCase):

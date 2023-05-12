@@ -29,7 +29,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/CUB_200_2011',
-        test_mode=False,
+        split='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -40,7 +40,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/CUB_200_2011',
-        test_mode=True,
+        split='test',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )

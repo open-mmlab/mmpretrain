@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base_dataset import BaseDataset
 from .builder import build_dataset
+from .caltech101 import Caltech101
 from .cifar import CIFAR10, CIFAR100
 from .coco_caption import COCOCaption
 from .coco_retrieval import COCORetrieval
@@ -8,24 +9,33 @@ from .coco_vqa import COCOVQA
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
+from .dtd import DTD
+from .fgvcaircraft import FGVCAircraft
 from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
+from .flowers102 import Flowers102
+from .food101 import Food101
 from .imagenet import ImageNet, ImageNet21k
 from .inshop import InShop
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .multi_task import MultiTaskDataset
 from .nlvr2 import NLVR2
+from .oxfordiiitpet import OxfordIIITPet
 from .places205 import Places205
 from .refcoco import RefCOCO
 from .samplers import *  # noqa: F401,F403
+from .stanfordcars import StanfordCars
+from .sun397 import SUN397
 from .transforms import *  # noqa: F401,F403
 from .visual_genome import VisualGenomeQA
 from .voc import VOC
 
 __all__ = [
-    'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
-    'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
-    'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
-    'Places205', 'COCOCaption', 'COCOVQA', 'COCORetrieval', 'RefCOCO',
-    'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA', 'NLVR2', 'VisualGenomeQA'
+    'BaseDataset', 'CIFAR10', 'CIFAR100', 'COCOCaption', 'COCORetrieval',
+    'COCOVQA', 'CUB', 'Caltech101', 'CustomDataset', 'DTD', 'FGVCAircraft',
+    'FashionMNIST', 'FlamingoEvalCOCOCaption', 'FlamingoEvalCOCOVQA',
+    'Flowers102', 'Food101', 'ImageNet', 'ImageNet21k', 'InShop',
+    'KFoldDataset', 'MNIST', 'MultiLabelDataset', 'MultiTaskDataset', 'NLVR2',
+    'OxfordIIITPet', 'Places205', 'RefCOCO', 'SUN397', 'StanfordCars', 'VOC',
+    'VisualGenomeQA', 'build_dataset'
 ]

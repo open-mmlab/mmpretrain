@@ -1,0 +1,199 @@
+Collections:
+  - Name: EVA02
+    Metadata:
+      Architecture:
+        - Rotary Position Embedding
+        - Sub Layer Normalization
+        - SwiGLU
+    Paper:
+      Title: 'EVA-02: A Visual Representation for Neon Genesis'
+      URL: https://arxiv.org/abs/2303.11331
+    README: configs/eva02/README.md
+
+Models:
+  - Name: vit-tiny-p14_eva02-pre_in21k
+    Metadata:
+      FLOPs: 1703439360
+      Parameters: 5504064
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA02
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-tiny-p14_pre_in21k_20230505-d703e7b1.pth
+    Config: configs/eva02/eva02-tiny-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_Ti_pt_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+    Downstream:
+      - vit-tiny-p14_eva02-in21k-pre_3rdparty_in1k-336px
+  - Name: vit-tiny-p14_eva02-in21k-pre_3rdparty_in1k-336px
+    Metadata:
+      FLOPs: 4675416000
+      Parameters: 5758888
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 80.69
+          Top 5 Accuracy: 95.54
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-tiny-p14_in21k-pre_3rdparty_in1k-336px_20230505-a4e8708a.pth
+    Config: configs/eva02/eva02-tiny-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in1k/eva02_Ti_pt_in21k_ft_in1k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+  - Name: vit-small-p14_eva02-pre_in21k
+    Metadata:
+      FLOPs: 6135404544
+      Parameters: 21624960
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA02
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-small-p14_pre_in21k_20230505-3175f463.pth
+    Config: configs/eva02/eva02-small-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_S_pt_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+    Downstream:
+      - vit-small-p14_eva02-in21k-pre_3rdparty_in1k-336px
+  - Name: vit-small-p14_eva02-in21k-pre_3rdparty_in1k-336px
+    Metadata:
+      FLOPs: 15476744064
+      Parameters: 22133608
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 85.78
+          Top 5 Accuracy: 97.60
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-small-p14_in21k-pre_3rdparty_in1k-336px_20230505-9c5b0e85.pth
+    Config: configs/eva02/eva02-small-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in1k/eva02_S_pt_in21k_ft_in1k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+  - Name: vit-base-p14_eva02-pre_in21k
+    Metadata:
+      FLOPs: 23216492544
+      Parameters: 85766400
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA02
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-base-p14_pre_in21k_20230505-2f2d4d3c.pth
+    Config: configs/eva02/eva02-base-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_B_pt_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+    Downstream:
+      - vit-base-p14_eva02-in21k-pre_3rdparty_in1k-448px
+      - vit-base-p14_eva02-in21k-pre_in21k-medft_3rdparty_in1k-448px
+  - Name: vit-base-p14_eva02-in21k-pre_3rdparty_in1k-448px
+    Metadata:
+      FLOPs: 107105984256
+      Parameters: 87126760
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 88.29
+          Top 5 Accuracy: 98.53
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-base-p14_in21k-pre_3rdparty_in1k-448px_20230505-8ad211c5.pth
+    Config: configs/eva02/eva02-base-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in1k/eva02_B_pt_in21k_ft_in1k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+  - Name: vit-base-p14_eva02-in21k-pre_in21k-medft_3rdparty_in1k-448px
+    Metadata:
+      FLOPs: 107105984256
+      Parameters: 87126760
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 88.47
+          Top 5 Accuracy: 98.62
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-base-p14_in21k-pre_in21k-medft_3rdparty_in1k-448px_20230505-5cd4d87f.pth
+    Config: configs/eva02/eva02-base-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_B_pt_in21k_medft_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+  - Name: vit-large-p14_eva02-pre_in21k
+    Metadata:
+      FLOPs: 81146703792
+      Parameters: 303291328
+      Training Data:
+        - ImageNet-21k
+    In Collection: EVA02
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_pre_in21k_20230505-9072de5d.pth
+    Config: configs/eva02/eva02-large-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_L_pt_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+    Downstream:
+      - vit-large-p14_eva02-in21k-pre_in21k-medft_3rdparty_in1k-448px
+  - Name: vit-large-p14_eva02-in21k-pre_in21k-medft_3rdparty_in1k-448px
+    Metadata:
+      FLOPs: 362333836208
+      Parameters: 305104808
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 89.65
+          Top 5 Accuracy: 98.95
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_in21k-pre_in21k-medft_3rdparty_in1k-448px_20230505-926d1599.pth
+    Config: configs/eva02/eva02-large-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_L_pt_in21k_medft_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+  - Name: vit-large-p14_eva02-pre_m38m
+    Metadata:
+      FLOPs: 81146703792
+      Parameters: 303291328
+      Training Data:
+        - Merged-38M
+    In Collection: EVA02
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_pre_m38m_20230505-b8a1a261.pth
+    Config: configs/eva02/eva02-large-p14_headless.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/pt/eva02_L_pt_m38m_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02
+    Downstream:
+      - vit-large-p14_eva02_m38m-pre_in21k-medft_3rdparty_in1k-448px
+  - Name: vit-large-p14_eva02_m38m-pre_in21k-medft_3rdparty_in1k-448px
+    Metadata:
+      FLOPs: 362333836208
+      Parameters: 305104808
+      Training Data:
+        - Merged-38M
+        - ImageNet-21k
+        - ImageNet-1k
+    In Collection: EVA02
+    Results:
+      - Dataset: ImageNet-1k
+        Task: Image Classification
+        Metrics:
+          Top 1 Accuracy: 89.83
+          Top 5 Accuracy: 99.00
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_m38m-pre_in21k-medft_3rdparty_in1k-448px_20230505-150dc5ed.pth
+    Config: configs/eva02/eva02-large-p14_in1k.py
+    Converted From:
+      Weights: https://huggingface.co/Yuxin-CV/EVA-02/blob/main/eva02/cls/in21k/eva02_L_pt_m38m_medft_in21k_p14.pt
+      Code: https://github.com/baaivision/EVA/tree/master/EVA-02

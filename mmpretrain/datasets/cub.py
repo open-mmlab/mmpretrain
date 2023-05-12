@@ -2,6 +2,7 @@
 from typing import List
 
 from mmengine import get_file_backend, list_from_file
+from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -19,8 +20,8 @@ class CUB(BaseDataset):
 
     CUB dataset directory: ::
 
-        CUB-200-2011 (data_root)/
-        ├── images (data_prefix)
+        CUB_200_2011
+        ├── images
         │   ├── class_x
         │   │   ├── xx1.jpg
         │   │   ├── xx2.jpg
@@ -30,54 +31,56 @@ class CUB(BaseDataset):
         │   │   ├── yy2.jpg
         │   │   └── ...
         │   └── ...
-        ├── images.txt (ann_file)
-        ├── image_class_labels.txt (image_class_labels_file)
-        ├── train_test_split.txt (train_test_split_file)
+        ├── images.txt
+        ├── image_class_labels.txt
+        ├── train_test_split.txt
         └── ....
 
     Args:
         data_root (str): The root directory for CUB-200-2011 dataset.
-        test_mode (bool): ``test_mode=True`` means in test phase. It determines
-             to use the training set or test set.
-        ann_file (str, optional): Annotation file path, path relative to
-            ``data_root``. Defaults to 'images.txt'.
-        data_prefix (str): Prefix for iamges, path relative to
-            ``data_root``. Defaults to 'images'.
-        image_class_labels_file (str, optional): The label file, path
-            relative to ``data_root``. Defaults to 'image_class_labels.txt'.
-        train_test_split_file (str, optional): The split file  to split train
-            and test dataset, path relative to ``data_root``.
-            Defaults to 'train_test_split_file.txt'.
-
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
 
     Examples:
         >>> from mmpretrain.datasets import CUB
-        >>> cub_train_cfg = dict(data_root='data/CUB_200_2011', test_mode=True)
-        >>> cub_train = CUB(**cub_train_cfg)
-        >>> cub_train
+        >>> train_dataset = CUB(data_root='data/CUB_200_2011', split='train')
+        >>> train_dataset
         Dataset CUB
-        Number of samples:  5994
-        Number of categories:       200
-        Root of dataset:    data/CUB_200_2011
-        >>> cub_test_cfg = dict(data_root='data/CUB_200_2011', test_mode=True)
-        >>> cub_test = CUB(**cub_test_cfg)
-        >>> cub_test
+            Number of samples:  5994
+            Number of categories:       200
+            Root of dataset:    data/CUB_200_2011
+        >>> test_dataset = CUB(data_root='data/CUB_200_2011', split='test')
+        >>> test_dataset
         Dataset CUB
-        Number of samples:  5794
-        Number of categories:       200
-        Root of dataset:    data/CUB_200_2011
+            Number of samples:  5794
+            Number of categories:       200
+            Root of dataset:    data/CUB_200_2011
     """  # noqa: E501
 
     METAINFO = {'classes': CUB_CATEGORIES}
 
     def __init__(self,
                  data_root: str,
-                 test_mode: bool,
-                 ann_file: str = 'images.txt',
-                 data_prefix: str = 'images',
-                 image_class_labels_file: str = 'image_class_labels.txt',
-                 train_test_split_file: str = 'train_test_split.txt',
+                 split: str = 'train',
+                 test_mode: bool = False,
                  **kwargs):
+
+        splits = ['train', 'test']
+        assert split in splits, \
+            f"The split must be one of {splits}, but get '{split}'"
+        self.split = split
+
+        # To handle the BC-breaking
+        if split == 'train' and test_mode:
+            logger = MMLogger.get_current_instance()
+            logger.warning('split="train" but test_mode=True. '
+                           'The training set will be used.')
+
+        ann_file = 'images.txt'
+        data_prefix = 'images'
+        image_class_labels_file = 'image_class_labels.txt'
+        train_test_split_file = 'train_test_split.txt'
+
         self.backend = get_file_backend(data_root, enable_singleton=True)
         self.image_class_labels_file = self.backend.join_path(
             data_root, image_class_labels_file)
@@ -116,11 +119,11 @@ class CUB(BaseDataset):
 
         data_list = []
         for sample_id in sample_dict.keys():
-            if split_dict[sample_id] == '1' and self.test_mode:
-                # skip train samples when test_mode=True
+            if split_dict[sample_id] == '1' and self.split == 'test':
+                # skip train samples when split='test'
                 continue
-            elif split_dict[sample_id] == '0' and not self.test_mode:
-                # skip test samples when test_mode=False
+            elif split_dict[sample_id] == '0' and self.split == 'train':
+                # skip test samples when split='train'
                 continue
 
             img_path = self.backend.join_path(self.img_prefix,

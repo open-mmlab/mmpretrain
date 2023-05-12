@@ -52,6 +52,8 @@ from .van import VAN
 from .vgg import VGG
 from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
+from .vit_eva02 import ViTEVA02
+from .vit_sam import ViTSAM
 from .xcit import XCiT
 
 __all__ = [
@@ -116,4 +118,6 @@ __all__ = [
     'Vig',
     'PyramidVig',
     'XCiT',
+    'ViTSAM',
+    'ViTEVA02',
 ]

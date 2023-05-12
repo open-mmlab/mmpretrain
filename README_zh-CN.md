@@ -202,6 +202,7 @@ mim install -e ".[multimodal]"
         <li><a href="configs/xcit">XCiT</a></li>
         <li><a href="configs/levit">LeViT</a></li>
         <li><a href="configs/riformer">RIFormer</a></li>
+        <li><a href="configs/glip">GLIP</a></li>
         </ul>
       </td>
       <td>
@@ -290,9 +291,10 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 - [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab 新一代视频理解工具箱
 - [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab 一体化视频目标感知平台
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
-- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab 图像视频编辑工具箱
+- [MMagic](https://github.com/open-mmlab/mmagic): OpenMMLab 新一代人工智能内容生成（AIGC）工具箱
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
+- [Playground](https://github.com/open-mmlab/playground): 收集和展示 OpenMMLab 相关的前沿、有趣的社区项目
 
 ## 欢迎加入 OpenMMLab 社区
 

@@ -61,8 +61,8 @@ Loading and Formatting
    LoadImageFromFile
    PackInputs
    PackMultiTaskInputs
-   ToNumpy
-   ToPIL
+   PILToNumpy
+   NumpyToPIL
    Transpose
    Collect
 
@@ -146,6 +146,88 @@ Transform Wrapper
    MultiView
 
 .. module:: mmpretrain.models.utils.data_preprocessor
+
+
+TorchVision Transforms
+^^^^^^^^^^^^^^^^^^^^^^
+
+We also provide all the transforms in TorchVision. You can use them the like following examples:
+
+**1. Use some TorchVision Augs Surrounded by NumpyToPIL and PILToNumpy (Recommendation)**
+
+Add TorchVision Augs surrounded by ``dict(type='NumpyToPIL', to_rgb=True),`` and ``dict(type='PILToNumpy', to_bgr=True),``
+
+.. code:: python
+
+    train_pipeline = [
+        dict(type='LoadImageFromFile'),
+        dict(type='NumpyToPIL', to_rgb=True),     # from BGR in cv2 to RGB  in PIL
+        dict(type='torchvision/RandomResizedCrop',size=176),
+        dict(type='PILToNumpy', to_bgr=True),     # from RGB  in PIL to BGR in cv2
+        dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+        dict(type='PackInputs'),
+    ]
+
+    data_preprocessor = dict(
+        num_classes=1000,
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=True,                          # from BGR in cv2 to RGB  in PIL
+    )
+
+
+**2. Use TorchVision Augs and ToTensor&Normalize**
+
+Make sure the 'img' has been converted to PIL format from BGR-Numpy format before being processed by TorchVision Augs.
+
+.. code:: python
+
+    train_pipeline = [
+        dict(type='LoadImageFromFile'),
+        dict(type='NumpyToPIL', to_rgb=True),       # from BGR in cv2 to RGB  in PIL
+        dict(
+            type='torchvision/RandomResizedCrop',
+            size=176,
+            interpolation='bilinear'),            # accept str format interpolation mode
+        dict(type='torchvision/RandomHorizontalFlip', p=0.5),
+        dict(
+            type='torchvision/TrivialAugmentWide',
+            interpolation='bilinear'),
+        dict(type='torchvision/PILToTensor'),
+        dict(type='torchvision/ConvertImageDtype', dtype=torch.float),
+        dict(
+            type='torchvision/Normalize',
+            mean=(0.485, 0.456, 0.406),
+            std=(0.229, 0.224, 0.225),
+        ),
+        dict(type='torchvision/RandomErasing', p=0.1),
+        dict(type='PackInputs'),
+    ]
+
+    data_preprocessor = dict(num_classes=1000, mean=None, std=None, to_rgb=False)  # Normalize in dataset pipeline
+
+
+**3. Use TorchVision Augs Except ToTensor&Normalize**
+
+.. code:: python
+
+    train_pipeline = [
+        dict(type='LoadImageFromFile'),
+        dict(type='NumpyToPIL', to_rgb=True),   # from BGR in cv2 to RGB  in PIL
+        dict(type='torchvision/RandomResizedCrop', size=176, interpolation='bilinear'),
+        dict(type='torchvision/RandomHorizontalFlip', p=0.5),
+        dict(type='torchvision/TrivialAugmentWide', interpolation='bilinear'),
+        dict(type='PackInputs'),
+    ]
+
+    # here the Normalize params is for the RGB format
+    data_preprocessor = dict(
+        num_classes=1000,
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        to_rgb=False,
+    )
+
 
 Data Preprocessors
 ------------------

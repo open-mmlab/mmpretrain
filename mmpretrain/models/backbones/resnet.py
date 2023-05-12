@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
+import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
@@ -334,6 +334,8 @@ class ResLayer(nn.Sequential):
             layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
+        drop_path_rate (float or list): stochastic depth rate.
+            Default: 0.
     """
 
     def __init__(self,
@@ -346,9 +348,16 @@ class ResLayer(nn.Sequential):
                  avg_down=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
+                 drop_path_rate=0.0,
                  **kwargs):
         self.block = block
         self.expansion = get_expansion(block, expansion)
+
+        if isinstance(drop_path_rate, float):
+            drop_path_rate = [drop_path_rate] * num_blocks
+
+        assert len(drop_path_rate
+                   ) == num_blocks, 'Please check the length of drop_path_rate'
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
@@ -384,6 +393,7 @@ class ResLayer(nn.Sequential):
                 downsample=downsample,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
+                drop_path_rate=drop_path_rate[0],
                 **kwargs))
         in_channels = out_channels
         for i in range(1, num_blocks):
@@ -395,6 +405,7 @@ class ResLayer(nn.Sequential):
                     stride=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
+                    drop_path_rate=drop_path_rate[i],
                     **kwargs))
         super(ResLayer, self).__init__(*layers)
 
@@ -518,6 +529,13 @@ class ResNet(BaseBackbone):
         self.res_layers = []
         _in_channels = stem_channels
         _out_channels = base_channels * self.expansion
+
+        # stochastic depth decay rule
+        total_depth = sum(stage_blocks)
+        dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
+        ]
+
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
             dilation = dilations[i]
@@ -534,9 +552,10 @@ class ResNet(BaseBackbone):
                 with_cp=with_cp,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                drop_path_rate=drop_path_rate)
+                drop_path_rate=dpr[:num_blocks])
             _in_channels = _out_channels
             _out_channels *= 2
+            dpr = dpr[num_blocks:]
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)

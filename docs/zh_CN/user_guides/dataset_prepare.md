@@ -338,12 +338,12 @@ OpenMMLab 2.0 数据集格式规范规定，标注文件必须为 `json` 或 `ya
         [
             {
                 'img_path': "xxx/xxx_0.jpg",
-                'img_label': 0,
+                'gt_label': 0,
                 ...
             },
             {
                 'img_path': "xxx/xxx_1.jpg",
-                'img_label': 1,
+                'gt_label': 1,
                 ...
             },
             ...

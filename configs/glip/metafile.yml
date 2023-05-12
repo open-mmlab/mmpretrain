@@ -1,0 +1,49 @@
+Collections:
+  - Name: GLIP
+    Metadata:
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - Shift Window Multihead Self Attention
+    Paper:
+      URL: https://arxiv.org/abs/2112.03857
+      Title: "Grounded Language-Image Pre-training"
+    README: configs/glip/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/vit.py
+      Version: v1.0.0rc8
+
+Models:
+  - Name: swin-t_glip-pre_3rdparty
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 4508464128
+      Parameters: 29056354
+      Training Data:
+        - O365
+        - GoldG
+        - CC3M
+        - SBU
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/glip/swin-t_glip-pre_3rdparty_20230413-d85813b5.pth
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_tiny_model_o365_goldg_cc_sbu.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-t_headless.py
+  - Name: swin-l_glip-pre_3rdparty_384px
+    In Collection: GLIP
+    Metadata:
+      FLOPs: 104080343040
+      Parameters: 196735516
+      Training Data:
+        - FourODs
+        - GoldG
+        - CC3M+12M
+        - SBU
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/glip/swin-l_glip-pre_3rdparty_384px_20230413-04b198e8.pth
+    Converted From:
+      Weights: https://penzhanwu2bbs.blob.core.windows.net/data/GLIPv1_Open/models/glip_large_model.pth
+      Code: https://github.com/microsoft/GLIP
+    Config: configs/glip/glip-l_headless.py

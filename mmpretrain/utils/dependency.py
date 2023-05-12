@@ -76,7 +76,7 @@ def register_multimodal_placeholder(names, registry):
         def ask_install(*args, **kwargs):
             raise ImportError(
                 f'{name} requires extra multi-modal dependencies, please '
-                'install it by `pip install mmpretrain[multimodal]` '
-                'or `pip install -e .[multimodal]`.')
+                'install it by `pip install "mmpretrain[multimodal]"` '
+                'or `pip install -e ".[multimodal]"`.')
 
         registry.register_module(name=name, module=ask_install)
