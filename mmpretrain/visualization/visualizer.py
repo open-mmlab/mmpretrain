@@ -544,6 +544,7 @@ class UniversalVisualizer(Visualizer):
         """
         text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
 
+        gt_bboxes = data_sample.get('gt_bboxes')
         pred_bboxes = data_sample.get('pred_bboxes')
         if resize is not None:
             h, w = image.shape[:2]
@@ -555,12 +556,18 @@ class UniversalVisualizer(Visualizer):
                     image, (resize * w // h, resize), return_scale=True)
             pred_bboxes[:, ::2] *= w_scale
             pred_bboxes[:, 1::2] *= h_scale
+            if gt_bboxes is not None:
+                gt_bboxes[:, ::2] *= w_scale
+                gt_bboxes[:, 1::2] *= h_scale
 
         self.set_image(image)
         # Avoid the line-width limit in the base classes.
         self._default_font_size = 1e3
         self.draw_bboxes(
             pred_bboxes, line_widths=line_width, edge_colors=bbox_color)
+        if gt_bboxes is not None:
+            self.draw_bboxes(
+                gt_bboxes, line_widths=line_width, edge_colors='blue')
 
         img_scale = get_adaptive_scale(image.shape[:2])
         text_cfg = {
