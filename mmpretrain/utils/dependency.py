@@ -48,9 +48,6 @@ def require(dep, install=None):
     def wrapper(fn):
         assert isfunction(fn)
 
-        if satisfy_requirement(dep):
-            return fn
-
         @wraps(fn)
         def ask_install(*args, **kwargs):
             name = fn.__qualname__.replace('.__init__', '')
@@ -58,6 +55,11 @@ def require(dep, install=None):
             raise ImportError(
                 f'{name} requires {dep}, please install it by `{ins}`.')
 
+        if satisfy_requirement(dep):
+            fn._verify_require = getattr(fn, '_verify_require', lambda: None)
+            return fn
+
+        ask_install._verify_require = ask_install
         return ask_install
 
     return wrapper

@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from mmengine.config import Config
 from mmengine.dataset import default_collate
-from mmengine.device import get_device
 from mmengine.fileio import get_file_backend
 from mmengine.model import BaseModel
 from mmengine.runner import load_checkpoint
@@ -67,8 +66,16 @@ class BaseInferencer:
         pretrained (str, optional): Path to the checkpoint. If None, it will
             try to find a pre-defined weight from the model you specified
             (only work if the ``model`` is a model name). Defaults to None.
-        device (str, optional): Device to run inference. If None, the available
-            device will be automatically used. Defaults to None.
+        device (str | torch.device | None): Transfer the model to the target
+            device. Defaults to None.
+        device_map (str | dict | None): A map that specifies where each
+            submodule should go. It doesn't need to be refined to each
+            parameter/buffer name, once a given module name is inside, every
+            submodule of it will be sent to the same device. You can use
+            `device_map="auto"` to automatically generate the device map.
+            Defaults to None.
+        offload_folder (str | None): If the `device_map` contains any value
+            `"disk"`, the folder where we will offload weights.
         **kwargs: Other keyword arguments to initialize the model (only work if
             the ``model`` is a model name).
     """
@@ -82,15 +89,29 @@ class BaseInferencer:
                  model: ModelType,
                  pretrained: Union[bool, str] = True,
                  device: Union[str, torch.device, None] = None,
+                 device_map=None,
+                 offload_folder=None,
                  **kwargs) -> None:
-        device = device or get_device()
 
         if isinstance(model, BaseModel):
             if isinstance(pretrained, str):
                 load_checkpoint(model, pretrained, map_location='cpu')
-            model = model.to(device)
+            if device_map is not None:
+                from .utils import dispatch_model
+                model = dispatch_model(
+                    model,
+                    device_map=device_map,
+                    offload_folder=offload_folder)
+            elif device is not None:
+                model.to(device)
         else:
-            model = get_model(model, pretrained, device, **kwargs)
+            model = get_model(
+                model,
+                pretrained,
+                device=device,
+                device_map=device_map,
+                offload_folder=offload_folder,
+                **kwargs)
 
         model.eval()
 

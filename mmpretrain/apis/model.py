@@ -97,6 +97,8 @@ class ModelHub:
 def get_model(model: Union[str, Config],
               pretrained: Union[str, bool] = False,
               device=None,
+              device_map=None,
+              offload_folder=None,
               url_mapping: Tuple[str, str] = None,
               **kwargs):
     """Get a pre-defined model or create a model from config.
@@ -110,6 +112,14 @@ def get_model(model: Union[str, Config],
             load. Defaults to False.
         device (str | torch.device | None): Transfer the model to the target
             device. Defaults to None.
+        device_map (str | dict | None): A map that specifies where each
+            submodule should go. It doesn't need to be refined to each
+            parameter/buffer name, once a given module name is inside, every
+            submodule of it will be sent to the same device. You can use
+            `device_map="auto"` to automatically generate the device map.
+            Defaults to None.
+        offload_folder (str | None): If the `device_map` contains any value
+            `"disk"`, the folder where we will offload weights.
         url_mapping (Tuple[str, str], optional): The mapping of pretrained
             checkpoint link. For example, load checkpoint from a local dir
             instead of download by ``('https://.*/', './checkpoint')``.
@@ -142,6 +152,10 @@ def get_model(model: Union[str, Config],
         >>> print(result['pred_class'])
         'sea snake'
     """  # noqa: E501
+    if device_map is not None:
+        from .utils import dispatch_model
+        dispatch_model._verify_require()
+
     metainfo = None
     if isinstance(model, Config):
         config = copy.deepcopy(model)
@@ -197,10 +211,15 @@ def get_model(model: Union[str, Config],
         dataset_class = DATASETS.get(config.test_dataloader.dataset.type)
         dataset_meta = getattr(dataset_class, 'METAINFO', {})
 
+    if device_map is not None:
+        model = dispatch_model(
+            model, device_map=device_map, offload_folder=offload_folder)
+    elif device is not None:
+        model.to(device)
+
     model._dataset_meta = dataset_meta  # save the dataset meta
     model._config = config  # save the config in the model
     model._metainfo = metainfo  # save the metainfo in the model
-    model.to(device)
     model.eval()
     return model
 

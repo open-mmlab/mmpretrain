@@ -38,6 +38,10 @@ class Flamingo(BaseModel):
     """
 
     support_tasks = {'caption', 'vqa'}
+    _no_split_modules = [
+        'TransformerEncoderLayer', 'PerceiverAttention',
+        'GatedCrossAttentionBlock', 'FlamingoLayer'
+    ]
 
     def __init__(
             self,
@@ -308,4 +312,6 @@ class Flamingo(BaseModel):
 
         for key in list(incompatible_keys.unexpected_keys):
             if 'position_ids' in key:
+                incompatible_keys.unexpected_keys.remove(key)
+            if 'lang_encoder.gated_cross_attn_layers' in key:
                 incompatible_keys.unexpected_keys.remove(key)

@@ -34,6 +34,7 @@ class BLIP2Captioner(BaseModel):
         init_cfg (Optional[dict]): the config to control the initialization.
             Defaults to None.
     """
+    _no_split_modules = ['BEiTViT', 'OPTDecoderLayer', 'BertLayer']
 
     def __init__(self,
                  vision_backbone: dict,

@@ -34,7 +34,7 @@ class FlamingoLMAdapter:
                 placement augmentation.
         """
         base.set_decoder_layers_attr_name('model.layers')
-        base.gated_cross_attn_layers = nn.ModuleList([
+        gated_cross_attn_layers = nn.ModuleList([
             GatedCrossAttentionBlock(
                 dim=base.config.hidden_size, dim_visual=vis_hidden_size) if
             (layer_idx + 1) % cross_attn_every_n_layers == 0 else None
@@ -44,7 +44,7 @@ class FlamingoLMAdapter:
             nn.ModuleList([
                 FlamingoLayer(gated_cross_attn_layer, decoder_layer)
                 for gated_cross_attn_layer, decoder_layer in zip(
-                    base.gated_cross_attn_layers, base._get_decoder_layers())
+                    gated_cross_attn_layers, base._get_decoder_layers())
             ]))
         base.use_media_placement_augmentation = use_media_placement_augmentation  # noqa
         base.initialized_flamingo = True
