@@ -56,7 +56,7 @@ Models:
     Converted From:
       Weights: https://ofa-beijing.oss-cn-beijing.aliyuncs.com/checkpoints/vqa_large_best.pt
       Code: https://github.com/OFA-Sys/OFA
-  - Name: ofa-base_3rdparty-finetund_caption
+  - Name: ofa-base_3rdparty-finetuned_caption
     Metadata:
       FLOPs: null
       Parameters: 182238536

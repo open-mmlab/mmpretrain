@@ -21,7 +21,7 @@ In this work, we pursue a unified paradigm for multimodal pretraining to break t
 ```python
 from mmpretrain import inference_model
 
-result = inference_model('ofa-base_3rdparty-finetund_caption', 'demo/cat-dog.png')
+result = inference_model('ofa-base_3rdparty-finetuned_caption', 'demo/cat-dog.png')
 print(result)
 # {'pred_caption': 'a dog and a kitten sitting next to each other'}
 ```
@@ -42,9 +42,9 @@ python tools/test.py configs/ofa/ofa-base_finetuned_refcoco.py https://download.
 
 ### Image Caption on COCO
 
-| Model                                  | Params (M) | BLEU-4 | CIDER  |                 Config                  |                                               Download                                                |
-| :------------------------------------- | :--------: | :----: | :----: | :-------------------------------------: | :---------------------------------------------------------------------------------------------------: |
-| `ofa-base_3rdparty-finetund_caption`\* |   182.24   | 42.64  | 144.50 | [config](ofa-base_finetuned_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-caption_20230418-de18914e.pth) |
+| Model                                   | Params (M) | BLEU-4 | CIDER  |                 Config                  |                                               Download                                               |
+| :-------------------------------------- | :--------: | :----: | :----: | :-------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| `ofa-base_3rdparty-finetuned_caption`\* |   182.24   | 42.64  | 144.50 | [config](ofa-base_finetuned_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-caption_20230418-de18914e.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
