@@ -4,6 +4,7 @@ import warnings
 from mmengine.logging import MMLogger
 
 from mmpretrain.registry import MODELS
+from mmpretrain.utils import require
 from .base_backbone import BaseBackbone
 
 
@@ -55,6 +56,7 @@ class TIMMBackbone(BaseBackbone):
         **kwargs: Other timm & model specific arguments.
     """
 
+    @require('timm')
     def __init__(self,
                  model_name,
                  features_only=False,
@@ -63,11 +65,7 @@ class TIMMBackbone(BaseBackbone):
                  in_channels=3,
                  init_cfg=None,
                  **kwargs):
-        try:
-            import timm
-        except ImportError:
-            raise ImportError(
-                'Failed to import timm. Please run "pip install timm".')
+        import timm
 
         if not isinstance(pretrained, bool):
             raise TypeError('pretrained must be bool, not str for model path')
@@ -79,7 +77,12 @@ class TIMMBackbone(BaseBackbone):
 
         super(TIMMBackbone, self).__init__(init_cfg)
         if 'norm_layer' in kwargs:
-            kwargs['norm_layer'] = MODELS.get(kwargs['norm_layer'])
+            norm_class = MODELS.get(kwargs['norm_layer'])
+
+            def build_norm(*args, **kwargs):
+                return norm_class(*args, **kwargs)
+
+            kwargs['norm_layer'] = build_norm
         self.timm_model = timm.create_model(
             model_name=model_name,
             features_only=features_only,
