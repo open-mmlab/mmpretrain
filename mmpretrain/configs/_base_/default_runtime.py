@@ -1,13 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine.hooks.checkpoint_hook import CheckpointHook
-from mmengine.hooks.iter_timer_hook import IterTimerHook
-from mmengine.hooks.logger_hook import LoggerHook
-from mmengine.hooks.param_scheduler_hook import ParamSchedulerHook
-from mmengine.hooks.sampler_seed_hook import DistSamplerSeedHook
-from mmengine.visualization.vis_backend import LocalVisBackend
+from mmengine.hooks import (CheckpointHook, DistSamplerSeedHook, IterTimerHook,
+                            LoggerHook, ParamSchedulerHook)
+from mmengine.visualization import LocalVisBackend
 
-from mmpretrain.engine.hooks.visualization_hook import VisualizationHook
-from mmpretrain.visualization.visualizer import UniversalVisualizer
+from mmpretrain.engine.hooks import VisualizationHook
+from mmpretrain.visualization import UniversalVisualizer
 
 # defaults to use registries in mmpretrain
 default_scope = 'mmpretrain'

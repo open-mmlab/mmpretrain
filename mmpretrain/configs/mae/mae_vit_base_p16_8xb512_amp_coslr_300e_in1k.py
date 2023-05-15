@@ -48,10 +48,9 @@ param_scheduler = [
 
 # runtime settings
 train_cfg = dict(type=EpochBasedTrainLoop, max_epochs=300)
-default_hooks.merge(
-    dict(
-        # only keeps the latest 3 checkpoints
-        checkpoint=dict(type=CheckpointHook, interval=1, max_keep_ckpts=3)))
+# only keeps the latest 3 checkpoints
+default_hooks.checkpoint = dict(
+    type=CheckpointHook, interval=1, max_keep_ckpts=3)
 
 randomness.merge(dict(seed=0, diff_rank_seed=True))
 

@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmpretrain.models.heads.mae_head import MAEPretrainHead
-from mmpretrain.models.losses import PixelReconstructionLoss
-from mmpretrain.models.necks.mae_neck import MAEPretrainDecoder
-from mmpretrain.models.selfsup.mae import MAE, MAEViT
+from mmpretrain.models import (MAE, MAEPretrainDecoder, MAEPretrainHead,
+                               MAEViT, PixelReconstructionLoss)
 
 # model settings
 model = dict(
