@@ -1,12 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcv.transforms.loading import LoadImageFromFile
-from mmcv.transforms.processing import RandomFlip
+from mmcv.transforms import LoadImageFromFile, RandomFlip
 from mmengine.dataset.sampler import DefaultSampler
 
-from mmpretrain.datasets.imagenet import ImageNet
-from mmpretrain.datasets.transforms.formatting import PackInputs
-from mmpretrain.datasets.transforms.processing import RandomResizedCrop
-from mmpretrain.models.utils.data_preprocessor import SelfSupDataPreprocessor
+from mmpretrain.datasets import ImageNet, PackInputs, RandomResizedCrop
+from mmpretrain.models import SelfSupDataPreprocessor
 
 # dataset settings
 dataset_type = 'ImageNet'
@@ -38,6 +35,6 @@ train_dataloader = dict(
     dataset=dict(
         type=ImageNet,
         data_root=data_root,
-        # ann_file='meta/train.txt',
+        ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline))

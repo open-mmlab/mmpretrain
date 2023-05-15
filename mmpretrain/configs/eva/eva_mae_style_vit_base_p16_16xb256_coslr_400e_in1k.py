@@ -1,47 +1,42 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 if '_base_':
     from .._base_.models.mae_vit_base_p16 import *
     from .._base_.datasets.imagenet_bs512_mae import *
     from .._base_.default_runtime import *
-from mmpretrain.models.selfsup import EVA, CLIPGenerator
-from mmpretrain.models.necks.mae_neck import MAEPretrainDecoder
-from mmpretrain.models.heads.mim_head import MIMHead
-from mmpretrain.models.losses import CosineSimilarityLoss
-from mmengine.optim.optimizer.optimizer_wrapper import OptimWrapper
-from torch.optim.adamw import AdamW
-from mmengine.optim.scheduler.lr_scheduler import CosineAnnealingLR, LinearLR
-from mmengine.runner.loops import EpochBasedTrainLoop
-from mmengine.hooks.checkpoint_hook import CheckpointHook
+
+from mmengine.hooks import CheckpointHook
+from mmengine.optim import CosineAnnealingLR, LinearLR, OptimWrapper
+from mmengine.runner import EpochBasedTrainLoop
+from torch.optim import AdamW
+
+from mmpretrain.models import (EVA, CLIPGenerator, CosineSimilarityLoss,
+                               MAEPretrainDecoder, MIMHead)
 
 # dataset settings
-train_dataloader.merge(dict(batch_size=256))
+train_dataloader.batch_size = 256
 
 # model settings
-model.merge(
-    dict(
-        type=EVA,
-        backbone=dict(init_cfg=[
-            dict(type='Xavier', distribution='uniform', layer='Linear'),
-            dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
-        ]),
-        neck=dict(
-            type=MAEPretrainDecoder,
-            predict_feature_dim=512,
-            init_cfg=[
-                dict(type='Xavier', distribution='uniform', layer='Linear'),
-                dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
-            ]),
-        head=dict(
-            _delete_=True,
-            type=MIMHead,
-            loss=dict(
-                type=CosineSimilarityLoss, shift_factor=2.0, scale_factor=2.0),
-        ),
-        target_generator=dict(
-            type=CLIPGenerator,
-            tokenizer_path=  # noqa
-            'https://download.openmmlab.com/mmselfsup/1.x/target_generator_ckpt/clip_vit_base_16.pth.tar'  # noqa
-        ),
-        init_cfg=None))
+model.type = EVA
+model.init_cfg = None
+model.backbone.update(init_cfg=[
+    dict(type='Xavier', distribution='uniform', layer='Linear'),
+    dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
+])
+model.neck.update(
+    type=MAEPretrainDecoder,
+    predict_feature_dim=512,
+    init_cfg=[
+        dict(type='Xavier', distribution='uniform', layer='Linear'),
+        dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
+    ])
+model.head = dict(
+    type=MIMHead,
+    loss=dict(type=CosineSimilarityLoss, shift_factor=2.0, scale_factor=2.0))
+model.target_generator = dict(
+    type=CLIPGenerator,
+    tokenizer_path=  # noqa
+    'https://download.openmmlab.com/mmselfsup/1.x/target_generator_ckpt/clip_vit_base_16.pth.tar'  # noqa
+)
 
 # optimizer wrapper
 optim_wrapper = dict(
@@ -81,12 +76,10 @@ param_scheduler = [
 
 # runtime settings
 train_cfg = dict(type=EpochBasedTrainLoop, max_epochs=400)
-default_hooks.merge(
-    dict(
-        # only keeps the latest 3 checkpoints
-        checkpoint=dict(type=CheckpointHook, interval=1, max_keep_ckpts=3)))
+default_hooks.checkpoint = dict(
+    type=CheckpointHook, interval=1, max_keep_ckpts=3)
 
-randomness.merge(dict(seed=0, diff_rank_seed=True))
+randomness.update(dict(seed=0, diff_rank_seed=True))
 
 # auto resume
 resume = True
