@@ -95,6 +95,8 @@ jobs:
         type: string
     docker:
       - image: cimg/python:<< parameters.python >>
+    environment:
+      MKL_SERVICE_FORCE_INTEL: 1
     resource_class: large
     steps:
       - checkout
