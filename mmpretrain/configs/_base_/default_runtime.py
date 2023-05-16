@@ -6,9 +6,6 @@ from mmengine.visualization import LocalVisBackend
 from mmpretrain.engine.hooks import VisualizationHook
 from mmpretrain.visualization import UniversalVisualizer
 
-# defaults to use registries in mmpretrain
-default_scope = 'mmpretrain'
-
 # configure default hooks
 default_hooks = dict(
     # record the time of every iteration.
@@ -57,3 +54,4 @@ resume = False
 
 # Defaults to use random seed and disable `deterministic`
 randomness = dict(seed=None, deterministic=False)
+default_scope = None
