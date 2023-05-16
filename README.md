@@ -70,11 +70,19 @@ The `main` branch works with **PyTorch 1.8+**.
 ### Major features
 
 - Various backbones and pretrained models
-- Rich training strategies(supervised learning, self-supervised learning, etc.)
+- Rich training strategies (supervised learning, self-supervised learning, multi-modality learning etc.)
 - Bag of training tricks
 - Large-scale training configs
 - High efficiency and extensibility
 - Powerful toolkits for model analysis and experiments
+- Various out-of-box inference tasks.
+  - Image Classification
+  - Image Caption
+  - Visual Question Answering
+  - Visual Grounding
+  - Retrieval (Image-To-Image, Text-To-Image, Image-To-Text)
+
+https://github.com/open-mmlab/mmpretrain/assets/26739999/c112d1f4-ff43-4b73-8a18-a4372b56fabe
 
 ## What's new
 
