@@ -13,7 +13,9 @@ from .formatting import (Collect, NumpyToPIL, PackInputs, PackMultiTaskInputs,
 from .processing import (Albumentations, BEiTMaskGenerator, ColorJitter,
                          EfficientNetCenterCrop, EfficientNetRandomCrop,
                          Lighting, RandomCrop, RandomErasing,
-                         RandomResizedCrop, ResizeEdge, SimMIMMaskGenerator)
+                         RandomResizedCrop,
+                         RandomResizedCropAndInterpolationWithTwoPic,
+                         ResizeEdge, SimMIMMaskGenerator)
 from .wrappers import MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
@@ -30,5 +32,6 @@ __all__ = [
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
-    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView'
+    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
+    'RandomResizedCropAndInterpolationWithTwoPic'
 ]

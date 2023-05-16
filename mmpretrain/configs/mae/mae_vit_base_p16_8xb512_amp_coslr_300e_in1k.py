@@ -52,7 +52,7 @@ train_cfg = dict(type=EpochBasedTrainLoop, max_epochs=300)
 default_hooks.checkpoint = dict(
     type=CheckpointHook, interval=1, max_keep_ckpts=3)
 
-randomness.merge(dict(seed=0, diff_rank_seed=True))
+randomness.update(seed=0, diff_rank_seed=True)
 
 # auto resume
 resume = True
@@ -60,3 +60,4 @@ resume = True
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.
 auto_scale_lr = dict(base_batch_size=4096)
+model_wrapper_cfg = dict(find_unused_parameters=True)
