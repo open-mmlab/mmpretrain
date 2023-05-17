@@ -73,7 +73,7 @@ class DCNv3Function(Function):
             DCNv3.dcnv3_backward(*args)
 
         return grad_input, grad_offset, grad_mask, \
-            None, None, None, None, None, None, None, \
+            None, None, None, None, None, None, None,\
             None, None, None, None, None, None
 
     @staticmethod
@@ -203,8 +203,8 @@ def dcnv3_core_pytorch(input, offset, mask, kernel_h, kernel_w, stride_h,
                                     dilation_h, dilation_w, group,
                                     input.device)
     spatial_norm = torch.tensor([W_in, H_in]).reshape(1, 1, 1, 2).\
-        repeat(1, 1, 1,
-               group*(kernel_h*kernel_w-remove_center)).to(input.device)
+        repeat(1, 1, 1, group*(kernel_h*kernel_w-remove_center)).\
+        to(input.device)
 
     sampling_locations = (ref + grid * offset_scale).repeat(N_, 1, 1, 1, 1)
     if remove_center:
@@ -218,8 +218,8 @@ def dcnv3_core_pytorch(input, offset, mask, kernel_h, kernel_w, stride_h,
     sampling_grids = 2 * sampling_locations - 1
     # N_, H_in, W_in, group*group_channels ->
     # N_, H_in*W_in, group*group_channels ->
-    # N_, group*group_channels, H_in*W_in
-    # -> N_*group, group_channels, H_in, W_in
+    # N_, group*group_channels, H_in*W_in ->
+    # N_*group, group_channels, H_in, W_in
     input_ = input.view(N_, H_in*W_in, group*group_channels).transpose(1, 2).\
         reshape(N_*group, group_channels, H_in, W_in)
     # N_, H_out, W_out, group*P_*2 ->
