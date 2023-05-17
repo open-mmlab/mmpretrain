@@ -40,6 +40,7 @@ if WITH_MULTIMODAL:
     from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
     from .refcoco import RefCOCO
     from .visual_genome import VisualGenomeQA
+    from .scienceqa import ScienceQA
 
     __all__.extend([
         'COCOCaption',
@@ -49,4 +50,5 @@ if WITH_MULTIMODAL:
         'FlamingoEvalCOCOVQA',
         'RefCOCO',
         'VisualGenomeQA',
+        'ScienceQA',
     ])
