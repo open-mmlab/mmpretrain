@@ -54,4 +54,7 @@ resume = False
 
 # Defaults to use random seed and disable `deterministic`
 randomness = dict(seed=None, deterministic=False)
+
+# Do not need to specify default_scope with new config. Therefore set it to
+# None to avoid BC-breaking.
 default_scope = None
