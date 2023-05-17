@@ -62,6 +62,11 @@ jobs:
           command: |
             python -V
             pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - when:
+          condition:
+            equal: ["3.10.0", << parameters.python >>]
+          steps:
+            - run: pip install dsdl
       - run:
           name: Install mmpretrain dependencies
           command: |
@@ -113,6 +118,11 @@ jobs:
           command: |
             python -V
             pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - when:
+          condition:
+            equal: ["3.10.0", << parameters.python >>]
+          steps:
+            - run: pip install dsdl
       - run:
           name: Install mmpretrain dependencies
           command: |

@@ -6,6 +6,7 @@ from .cifar import CIFAR10, CIFAR100
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
+from .dsdl import DSDLClsDataset
 from .dtd import DTD
 from .fgvcaircraft import FGVCAircraft
 from .flowers102 import Flowers102
@@ -28,5 +29,6 @@ __all__ = [
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
     'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
     'Places205', 'Flowers102', 'OxfordIIITPet', 'DTD', 'FGVCAircraft',
-    'StanfordCars', 'SUN397', 'Caltech101', 'Food101'
+    'StanfordCars', 'SUN397', 'Caltech101', 'Food101', 'Places205',
+    'DSDLClsDataset'
 ]

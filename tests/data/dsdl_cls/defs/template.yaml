@@ -1,0 +1,9 @@
+$dsdl-version: "0.5.3"
+
+Cifar10Sample:
+    $def: struct
+    $params: ['cdom']
+    $fields: 
+        image: Image
+        label: Label[dom=$cdom]
+    $optional: ['label']
