@@ -3,8 +3,7 @@
 # Copyright (c) 2022 OpenGVLab
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
-# Copied from
-# https://github.com/OpenGVLab/InternImage/blob/master/classification/models/
+
 from __future__ import absolute_import, division, print_function
 import math  # noqa
 import time
@@ -55,8 +54,8 @@ def check_forward_equal_with_pytorch_double():
     max_rel_err = ((output_cuda - output_pytorch).abs() /
                    output_pytorch.abs()).max()
     print('>>> forward double')
-    print(f'* {fwdok} check_forward_equal_with_pytorch_double: '
-          f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
+    print(f'* {fwdok} check_forward_equal_with_pytorch_double:'
+          f' max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
 
 @torch.no_grad()
@@ -84,7 +83,7 @@ def check_forward_equal_with_pytorch_float():
     max_rel_err = ((output_cuda - output_pytorch).abs() /
                    output_pytorch.abs()).max()
     print('>>> forward float')
-    print(f'* {fwdok} check_forward_equal_with_pytorch_float: '
+    print(f'* {fwdok} check_forward_equal_with_pytorch_float:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
 
@@ -133,20 +132,20 @@ def check_backward_equal_with_pytorch_double(channels=4,
     bwdok = torch.allclose(input0.grad, input1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (input0.grad - input1.grad).abs().max()
     max_rel_err = ((input0.grad - input1.grad).abs() / input0.grad.abs()).max()
-    print(f'* {bwdok} input_grad check_backward_equal_with_pytorch_double: '
+    print(f'* {bwdok} input_grad check_backward_equal_with_pytorch_double:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
     bwdok = torch.allclose(offset0.grad, offset1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (offset0.grad - offset1.grad).abs().max()
     max_rel_err = ((offset0.grad - offset1.grad).abs() /
                    offset0.grad.abs()).max()
-    print(f'* {bwdok} offset_grad check_backward_equal_with_pytorch_double: '
+    print(f'* {bwdok} offset_grad check_backward_equal_with_pytorch_double:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
     bwdok = torch.allclose(mask0.grad, mask1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (mask0.grad - mask1.grad).abs().max()
     max_rel_err = ((mask0.grad - mask1.grad).abs() / mask0.grad.abs()).max()
-    print(f'* {bwdok} mask_grad check_backward_equal_with_pytorch_double: '
+    print(f'* {bwdok} mask_grad check_backward_equal_with_pytorch_double:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
 
@@ -194,20 +193,20 @@ def check_backward_equal_with_pytorch_float(channels=4,
     bwdok = torch.allclose(input0.grad, input1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (input0.grad - input1.grad).abs().max()
     max_rel_err = ((input0.grad - input1.grad).abs() / input0.grad.abs()).max()
-    print(f'* {bwdok} input_grad check_backward_equal_with_pytorch_float: '
+    print(f'* {bwdok} input_grad check_backward_equal_with_pytorch_float:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
     bwdok = torch.allclose(offset0.grad, offset1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (offset0.grad - offset1.grad).abs().max()
     max_rel_err = ((offset0.grad - offset1.grad).abs() /
                    offset0.grad.abs()).max()
-    print(f'* {bwdok} offset_grad check_backward_equal_with_pytorch_float: '
+    print(f'* {bwdok} offset_grad check_backward_equal_with_pytorch_float:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
     bwdok = torch.allclose(mask0.grad, mask1.grad, rtol=1e-2, atol=1e-3)
     max_abs_err = (mask0.grad - mask1.grad).abs().max()
     max_rel_err = ((mask0.grad - mask1.grad).abs() / mask0.grad.abs()).max()
-    print(f'* {bwdok} mask_grad check_backward_equal_with_pytorch_float: '
+    print(f'* {bwdok} mask_grad check_backward_equal_with_pytorch_float:'
           f'max_abs_err {max_abs_err:.2e} max_rel_err {max_rel_err:.2e}')
 
 
@@ -223,7 +222,7 @@ def check_time_cost(im2col_step=128):
     mask = torch.rand(N, H_out, W_out, M, P).cuda() + 1e-5
     mask /= mask.sum(-1, keepdim=True)
     mask = mask.reshape(N, H_out, W_out, M * P)
-    print(f'>>> time cost: im2col_step {im2col_step}; '
+    print(f'>>> time cost: im2col_step {im2col_step};'
           f'input {input.shape}; points {P} ')
     repeat = 100
     for i in range(repeat):

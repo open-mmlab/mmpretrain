@@ -125,14 +125,14 @@ class DCNv3_pytorch(nn.Module):
             raise ValueError(f'channels must be divisible by group, '
                              f'but got {channels} and {group}')
         _d_per_group = channels // group
-        dw_kernel_size = dw_kernel_size if dw_kernel_size is not None \
+        dw_kernel_size = dw_kernel_size if dw_kernel_size is not None\
             else kernel_size
         # you'd better set _d_per_group to a power of 2
         # which is more efficient in our CUDA implementation
         if not _is_power_of_2(_d_per_group):
             warnings.warn(
-                "You'd better set channels in DCNv3 to make "
-                'the dimension of each attention head a power of 2 '
+                "You'd better set channels in DCNv3 "
+                'to make the dimension of each attention head a power of 2 '
                 'which is more efficient in our CUDA implementation.')
 
         self.offset_scale = offset_scale
@@ -253,17 +253,17 @@ class DCNv3(nn.Module):
         """
         super().__init__()
         if channels % group != 0:
-            raise ValueError(f'channels must be divisible by group,'
-                             f' but got {channels} and {group}')
+            raise ValueError(f'channels must be divisible by group, '
+                             f'but got {channels} and {group}')
         _d_per_group = channels // group
-        dw_kernel_size = dw_kernel_size if dw_kernel_size is not None \
+        dw_kernel_size = dw_kernel_size if dw_kernel_size is not None\
             else kernel_size
         # you'd better set _d_per_group to a power of 2
         # which is more efficient in our CUDA implementation
         if not _is_power_of_2(_d_per_group):
             warnings.warn(
-                "You'd better set channels in DCNv3 to "
-                'make the dimension of each attention head a power of 2 '
+                "You'd better set channels in DCNv3 "
+                'to make the dimension of each attention head a power of 2 '
                 'which is more efficient in our CUDA implementation.')
 
         self.offset_scale = offset_scale

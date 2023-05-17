@@ -7,8 +7,6 @@
 * Modified from
 *https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/tree/pytorch_1.0.0
 **************************************************************************************************
-* Copied from
-* https://github.com/OpenGVLab/InternImage/blob/master/classification/models/
 */
 
 #include <algorithm>
