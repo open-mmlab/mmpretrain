@@ -207,7 +207,7 @@ class MaskFeatViT(VisionTransformer):
                  drop_path_rate: float = 0,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  final_norm: bool = True,
-                 out_type: str = 'avg_featmap',
+                 out_type: str = 'raw',
                  interpolate_mode: str = 'bicubic',
                  patch_cfg: dict = dict(),
                  layer_cfgs: dict = dict(),

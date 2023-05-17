@@ -21,7 +21,7 @@ def test_mae_vit():
 
     # test without mask
     fake_outputs = mae_backbone(fake_inputs, None)
-    assert fake_outputs[0].shape == torch.Size([2, 768])
+    assert fake_outputs[0].shape == torch.Size([2, 197, 768])
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
