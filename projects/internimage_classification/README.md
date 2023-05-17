@@ -130,15 +130,15 @@ model = dict(
 
 The accuracy of different models on ImageNet1K,
 
-|      name      |   pretrain   | resolution |  acc@1  |  acc@5  |                    config                    |
-| :------------: | :----------: | :--------: | :-----: | :-----: | :------------------------------------------: |
-| InternImage-T  | ImageNet-1K  |    224     | 83.3780 | 96.4100 | [config](./configs/internimage_t_1k_224.py)  |
-| InternImage-S  | ImageNet-1K  |    224     | 83.9060 | 96.9300 | [config](./configs/internimage_s_1k_224.py)  |
-| InternImage-B  | ImageNet-1K  |    224     | 84.5580 | 97.0700 | [config](./configs/internimage_b_1k_224.py)  |
-| InternImage-L  | ImageNet-22K |    384     | 87.3760 | 98.2560 | [config](./configs/internimage_l_1k_384.py)  |
-| InternImage-XL | ImageNet-22K |    384     | 87.6780 | 98.3880 | [config](./configs/internimage_xl_1k_384.py) |
-| InternImage-H  |  Joint 427M  |    640     | 89.5500 | 98.8500 | [config](./configs/internimage_h_1k_640.py)  |
-| InternImage-G  |      -       |    512     | 89.7520 | 98.9120 | [config](./configs/internimage_g_1k_512.py)  |
+|      name      | resolution |  acc@1  |  acc@5  |                    config                    |
+| :------------: | :--------: | :-----: | :-----: | :------------------------------------------: |
+| InternImage-T  |    224     | 83.4700 | 96.5340 | [config](./configs/internimage_t_1k_224.py)  |
+| InternImage-S  |    224     | 84.1640 | 96.9320 | [config](./configs/internimage_s_1k_224.py)  |
+| InternImage-B  |    224     | 84.8660 | 97.1820 | [config](./configs/internimage_b_1k_224.py)  |
+| InternImage-L  |    384     | 87.7060 | 98.3820 | [config](./configs/internimage_l_1k_384.py)  |
+| InternImage-XL |    384     | 88.0460 | 98.5620 | [config](./configs/internimage_xl_1k_384.py) |
+| InternImage-H  |    640     | 89.5500 | 98.8500 | [config](./configs/internimage_h_1k_640.py)  |
+| InternImage-G  |    512     | 90.0580 | 98.9700 | [config](./configs/internimage_g_1k_512.py)  |
 
 ## Citation
 
