@@ -60,4 +60,3 @@ resume = True
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.
 auto_scale_lr = dict(base_batch_size=4096)
-model_wrapper_cfg = dict(find_unused_parameters=True)
