@@ -70,6 +70,7 @@ model = dict(
         patch_size=16,
         drop_path_rate=0.1,
         final_norm=True,
+        out_type='raw',
         layer_scale_init_value=0.1,
         init_cfg=[
             dict(type=TruncNormalInit, std=0.02, layer='Linear'),
