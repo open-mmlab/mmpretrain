@@ -4,7 +4,7 @@ from mmpretrain.engine import EMAHook
 if '_base_':
     from .._base_.datasets.imagenet_bs64_swin_384 import *
     from .._base_.default_runtime import *
-    from .._base_.models.convnext.convnext_base import *
+    from .._base_.models.convnext_base import *
     from .._base_.schedules.imagenet_bs1024_adamw_swin import *
 
 # dataset setting
