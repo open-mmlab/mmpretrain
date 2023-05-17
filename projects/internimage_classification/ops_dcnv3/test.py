@@ -4,6 +4,9 @@
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
 
+# Copied from
+# https://github.com/OpenGVLab/InternImage/blob/master/classification/models/
+
 from __future__ import absolute_import, division, print_function
 import math  # noqa
 import time

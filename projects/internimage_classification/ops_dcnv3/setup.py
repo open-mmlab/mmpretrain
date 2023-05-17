@@ -4,6 +4,9 @@
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
 
+# Copied from
+# https://github.com/OpenGVLab/InternImage/blob/master/classification/models/
+
 import glob
 import os
 from setuptools import find_packages, setup
