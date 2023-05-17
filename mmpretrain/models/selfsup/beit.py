@@ -182,7 +182,7 @@ class BEiTPretrainViT(BEiTViT):
                  drop_path_rate: float = 0,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  final_norm: bool = True,
-                 out_type: str = 'avg_featmap',
+                 out_type: str = 'raw',
                  frozen_stages: int = -1,
                  use_abs_pos_emb: bool = False,
                  use_rel_pos_bias: bool = False,
