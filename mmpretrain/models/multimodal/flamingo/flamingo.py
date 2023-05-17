@@ -91,7 +91,11 @@ class Flamingo(BaseModel):
         if vision_encoder_weight is not None:
             from mmengine.runner.checkpoint import load_checkpoint
             load_checkpoint(
-                self.vision_encoder, vision_encoder_weight, map_location='cpu')
+                self.vision_encoder,
+                vision_encoder_weight,
+                map_location='cpu',
+                revise_keys=[(r'^backbone\.', '')],
+            )
 
         self.perceiver = PerceiverResampler(dim=self.vision_encoder.embed_dims)
 

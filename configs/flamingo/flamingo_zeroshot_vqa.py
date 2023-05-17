@@ -21,7 +21,9 @@ model = dict(
         layer_cfgs=dict(act_cfg=dict(type='QuickGELU')),
         final_norm=False,
         out_type='raw',
-        pretrained='/mnt/HDD/ckpt/clip_vit_l_14.pth',
+        pretrained=(
+            'https://download.openmmlab.com/mmclassification/v0/clip/'
+            'vit-large-p14_clip-openai-pre_3rdparty_20230517-95e2af0b.pth'),
     ),
     lang_encoder=dict(
         base=dict(
