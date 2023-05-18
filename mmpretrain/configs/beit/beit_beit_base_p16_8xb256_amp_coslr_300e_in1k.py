@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+if '_base_':
+    from .._base_.default_runtime import *
+
 from mmengine.dataset import DefaultSampler, default_collate
 from mmengine.hooks import CheckpointHook
 from mmengine.model import ConstantInit, PretrainedInit, TruncNormalInit
@@ -12,9 +15,6 @@ from mmpretrain.datasets import (BEiTMaskGenerator, ColorJitter, ImageNet,
 from mmpretrain.models import (BEiT, BEiTPretrainViT, BEiTV1Head,
                                CrossEntropyLoss, DALLEEncoder,
                                TwoNormDataPreprocessor)
-
-if '_base_':
-    from .._base_.default_runtime import *
 
 # dataset settings
 dataset_type = ImageNet
