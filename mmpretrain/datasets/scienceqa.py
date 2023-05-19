@@ -18,9 +18,9 @@ class ScienceQA(BaseDataset):
     Args:
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``.
-        data_split (str): The split of dataset. Options: ``train``, ``val``,
+        split (str): The split of dataset. Options: ``train``, ``val``,
             ``test``, ``trainval``, ``minival``, and ``minitest``.
-        data_split_file (str): The split file of dataset, which contains the
+        split_file (str): The split file of dataset, which contains the
             ids of data samples in the split.
         ann_file (str): Annotation file path.
         data_prefix (dict): Prefix for data field. Defaults to
@@ -31,18 +31,18 @@ class ScienceQA(BaseDataset):
 
     def __init__(self,
                  data_root: str,
-                 data_split: str,
-                 data_split_file: str,
+                 split: str,
+                 split_file: str,
                  ann_file: str,
                  data_prefix: dict = dict(img_path=''),
                  pipeline: Sequence[Callable] = (),
                  **kwargs):
 
-        assert data_split in [
+        assert split in [
             'train', 'val', 'test', 'trainval', 'minival', 'minitest'
-        ], f'Invalid split {data_split}'
-        self.data_split = data_split
-        self.data_split_file = os.path.join(data_root, data_split_file)
+        ], f'Invalid split {split}'
+        self.split = split
+        self.split_file = os.path.join(data_root, split_file)
 
         super().__init__(
             data_root=data_root,
@@ -55,8 +55,7 @@ class ScienceQA(BaseDataset):
         """Load data list."""
         img_prefix = self.data_prefix['img_path']
         annotations = mmengine.load(self.ann_file)
-        current_data_split = mmengine.load(
-            self.data_split_file)[self.data_split]  # noqa
+        current_data_split = mmengine.load(self.split_file)[self.split]  # noqa
 
         file_backend = get_file_backend(img_prefix)
 

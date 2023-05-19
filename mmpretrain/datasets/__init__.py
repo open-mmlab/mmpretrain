@@ -39,8 +39,8 @@ if WITH_MULTIMODAL:
     from .coco_vqa import COCOVQA
     from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
     from .refcoco import RefCOCO
-    from .visual_genome import VisualGenomeQA
     from .scienceqa import ScienceQA
+    from .visual_genome import VisualGenomeQA
 
     __all__.extend([
         'COCOCaption',
