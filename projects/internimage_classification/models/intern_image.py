@@ -2,6 +2,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # modified from
 # https://github.com/OpenGVLab/InternImage/blob/master/classification/models/intern_image.py
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -590,3 +592,71 @@ class InternImage(BaseBackbone):
         else:
             # for InternImage-H/G
             return self.forward_clip_projector(x)
+
+    @staticmethod
+    def _remove_state_dict_prefix(self, state_dict, prefix, local_metadata):
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            if 'head.fc.' in k:
+                new_k = k.replace('head.fc.', 'head.')
+            elif 'patch_embed' in k:
+                map_fun = {
+                    '.0.': '.conv1.',
+                    '.1.': '.norm1.',
+                    '.3.': '.conv2.',
+                    '.4.': '.norm2.',
+                    'norm2.norm1': 'norm2.1'
+                }
+                new_k = k
+                for old, new in map_fun.items():
+                    new_k = new_k.replace(old, new)
+            elif 'layers' in k:
+                print(k)
+                new_k = k.replace('backbone.layers', 'backbone.levels')
+                if 'mlp' in new_k:
+                    new_k = new_k.replace('layers.0.0', 'fc1')
+                    new_k = new_k.replace('layers.1', 'fc2')
+            elif 'clip_projector.cross_dcn.k_bias' in k:
+                new_k = k
+            else:
+                new_k = k
+
+            new_k = new_k.replace('backbone.', '')
+            new_state_dict[new_k] = v
+        return new_state_dict
+
+    @staticmethod
+    def _add_state_dict_prefix(state_dict, prefix, local_metadata, strict,
+                               missing_keys, unexpected_keys, error_msgs):
+
+        for k, v in state_dict['model'].items():
+            if 'head.' in k and 'conv_head' not in k:
+                if 'weight' in k:
+                    new_k = 'head.fc.weight'
+                else:
+                    new_k = 'head.fc.bias'
+            elif 'patch_embed' in k:
+                map_fun = {
+                    'conv1': '0',
+                    'norm1': '1',
+                    'conv2': '3',
+                    'norm2': '4'
+                }
+                new_k = k
+                for old, new in map_fun.items():
+                    new_k = new_k.replace(old, new)
+                new_k = 'backbone.' + new_k
+
+            elif 'levels' in k:
+                new_k = k.replace('levels', 'layers')
+                if 'mlp' in new_k:
+                    new_k = new_k.replace('fc1', 'layers.0.0')
+                    new_k = new_k.replace('fc2', 'layers.1')
+                new_k = 'backbone.' + new_k
+            elif 'clip_projector.cross_dcn.k_bias' in k:
+                continue
+            else:
+                new_k = 'backbone.' + k
+
+            state_dict[new_k] = state_dict['model'][k]
+        del state_dict['model']

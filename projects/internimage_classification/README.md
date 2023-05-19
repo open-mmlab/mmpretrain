@@ -61,12 +61,6 @@ mim train mmpretrain ${CONFIG} \
 
 Please download the pretrain weight provided by [OpenGVLab](https://github.com/OpenGVLab/) from [here](https://huggingface.co/OpenGVLab/InternImage/tree/main)
 
-Then, convert weights to mmpretrain. For example,
-
-```bash
-python tools/internimage_to_mmpretrain.py /PATH/TO/internimage_t_1k_224.pth tiny.pth
-```
-
 ##### On Local Single GPU
 
 ```bash
@@ -74,7 +68,7 @@ python tools/internimage_to_mmpretrain.py /PATH/TO/internimage_t_1k_224.pth tiny
 mim test mmpretrain ${CONFIG} -C ${CHECKPOINT}
 
 # a specific command example
-mim test mmpretrain configs/internimage_t_1k_224.py -C tiny.pth
+mim test mmpretrain configs/internimage_t_1k_224.py -C /PATH/TO/internimage_t_1k_224.pth
 ```
 
 ##### On Multiple GPUs
@@ -83,7 +77,7 @@ mim test mmpretrain configs/internimage_t_1k_224.py -C tiny.pth
 # test with mim
 # a specific command examples, 8 GPUs here
 mim test mmpretrain configs/internimage_t_1k_224.py \
-	-C tiny.pth \
+	-C /PATH/TO/internimage_t_1k_224.pth \
     --launcher pytorch --gpus 8
 ```
 
@@ -100,31 +94,6 @@ mim test mmpretrain ${CONFIG} \
 ```
 
 Note: `PY_ARGS` is other optional args.
-
-#### Fine-tune
-
-With the converted weights, you can easily fine-tune models for downstream classification task like the below configuration,
-
-```python
-model = dict(
-    type='ImageClassifier',
-    backbone=dict(
-        type='InternImage',
-        stem_channels=64,
-        drop_path_rate=0.1,
-        stage_blocks=[4, 4, 18, 4],
-        groups=[4, 8, 16, 32],
-        init_cfg=dict(
-            type='Pretrained', checkpoint='/PATH/TO/internimage_tiny.pth', prefix='backbone')
-        ),
-    neck=dict(type='GlobalAveragePooling'),
-    head=dict(
-        type='LinearClsHead',
-        num_classes=NUM_CLASSES,
-        in_channels=768,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        topk=(1, 5)))
-```
 
 ## Results on ImageNet1K
 
