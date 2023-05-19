@@ -6,12 +6,12 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from mmengine.model import BaseModel, BaseModule
-from mmengine.utils import ProgressBar
 from torch import nn
 
 from mmpretrain.datasets.categories import CIFAR100_CATEGORIES_CN
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
+from mmpretrain.utils import track_on_main_process
 from .utils import OPENAI_PROMPT
 
 PROTOTYPE_MAP = {'cifar100': CIFAR100_CATEGORIES_CN}
@@ -353,7 +353,7 @@ class ChineseCLIP(BaseModel):
 
         # cosine similarity as logits
         logits_per_image = image_features @ self.text_prototype_embeds.to(
-            image_features.device)
+            image_features.device) * self.logit_scale.exp()
 
         pred_scores = F.softmax(logits_per_image, dim=1)
         pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
@@ -374,8 +374,7 @@ class ChineseCLIP(BaseModel):
     def prepare_text_prototype(self, device) -> None:
         """The function to prepare text prototypes with prompt."""
         class_embeddings = []
-        prog_bar = ProgressBar(len(self.prototype))
-        for classname in self.prototype:
+        for classname in track_on_main_process(self.prototype):
             # format with class
             texts = [prompt(classname) for prompt in self.prompt]
             tokenized_texts = self.tokenize(texts)
@@ -384,7 +383,6 @@ class ChineseCLIP(BaseModel):
             class_feature = class_features.mean(dim=0)
             class_feature /= class_feature.norm()
             class_embeddings.append(class_feature)
-            prog_bar.update()
         self.text_prototype_embeds = torch.stack(
             class_embeddings, dim=1).to(device)
 
