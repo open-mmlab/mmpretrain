@@ -96,8 +96,13 @@ class ScienceQA(BaseDataset):
                 'img_path':
                 file_backend.join_path(img_prefix, data_id, ann['image'])
                 if ann['image'] is not None else None,
+<<<<<<< 9bb692e440626595b7997e95b197ca358d8446cb
                 'has_image':
                 True if ann['image'] is not None else False,
+=======
+                'caption':
+                ann['caption'],
+>>>>>>> [Feature]: Add caption
             }
             data_list.append(data_info)
 
