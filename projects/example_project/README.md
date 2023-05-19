@@ -49,19 +49,19 @@ mim train mmpretrain configs/examplenet_8xb32_in1k.py --launcher slurm \
 **To test with single GPU:**
 
 ```bash
-mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT
+mim test mmpretrain configs/examplenet_8xb32_in1k.py --checkpoint $CHECKPOINT
 ```
 
 **To test with multiple GPUs:**
 
 ```bash
-mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher pytorch --gpus 8
+mim test mmpretrain configs/examplenet_8xb32_in1k.py --checkpoint $CHECKPOINT --launcher pytorch --gpus 8
 ```
 
 **To test with multiple GPUs by slurm:**
 
 ```bash
-mim test mmpretrain configs/examplenet_8xb32_in1k.py $CHECKPOINT --launcher slurm \
+mim test mmpretrain configs/examplenet_8xb32_in1k.py --checkpoint $CHECKPOINT --launcher slurm \
     --gpus 16 --gpus-per-node 8 --partition $PARTITION
 ```
 
