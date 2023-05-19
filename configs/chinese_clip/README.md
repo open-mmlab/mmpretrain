@@ -44,6 +44,8 @@ print(type(feats))
 
 Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
 
+Please download datsets from [link](http://clip-cn-beijing.oss-cn-beijing.aliyuncs.com/datasets/cifar-100.zip) and unzip it to `./data/` folder. We use `CustomDataset` to build this dataset.
+
 Test:
 
 ```shell
@@ -56,12 +58,12 @@ python tools/test.py configs/chinese_clip/cn-clip_resnet50_zeroshot-cls_cifar100
 
 ### Image Classification on CIFAR100
 
-| Model                                           |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) |                         Config                          |                          Download                          |
-| :---------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-----------------------------------------------------: | :--------------------------------------------------------: |
-| `cn-clip_resnet50_zeroshot-cls_cifar100`\*      | From scratch |   77.00    |    N/A    |   41.10   |   [config](cn-clip_resnet50_zeroshot-cls_cifar100.py)   | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_resnet50_3rdparty_20230519-6a2b3eb2.pth) |
-| `cn-clip_vit-base-p16_zeroshot-cls_cifar100`\*  | From scratch |   188.00   |    N/A    |   65.20   | [config](cn-clip_vit-base-p16_zeroshot-cls_cifar100.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-base-p16_3rdparty_20230519-37fbc59e.pth) |
+| Model                                           |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) |                          Config                          |                                                         Download                                                          |
+| :---------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------: |
+| `cn-clip_resnet50_zeroshot-cls_cifar100`\*      | From scratch |   77.00    |    N/A    |   41.10   |   [config](cn-clip_resnet50_zeroshot-cls_cifar100.py)    |   [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_resnet50_3rdparty_20230519-6a2b3eb2.pth)    |
+| `cn-clip_vit-base-p16_zeroshot-cls_cifar100`\*  | From scratch |   188.00   |    N/A    |   65.20   | [config](cn-clip_vit-base-p16_zeroshot-cls_cifar100.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-base-p16_3rdparty_20230519-37fbc59e.pth)  |
 | `cn-clip_vit-large-p14_zeroshot-cls_cifar100`\* | From scratch |   406.00   |    N/A    |   75.50   | [config](cn-clip_vit-large-p14_zeroshot-cls_cifar100.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-large-p14_3rdparty_20230519-3f844503.pth) |
-| `cn-clip_vit-huge-p14_zeroshot-cls_cifar100`\*  | From scratch |   958.00   |    N/A    |   79.90   | [config](cn-clip_vit-huge-p14_zeroshot-cls_cifar100.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-huge-p14_3rdparty_20230519-e4f49b00.pth) |
+| `cn-clip_vit-huge-p14_zeroshot-cls_cifar100`\*  | From scratch |   958.00   |    N/A    |   79.90   | [config](cn-clip_vit-huge-p14_zeroshot-cls_cifar100.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-huge-p14_3rdparty_20230519-e4f49b00.pth)  |
 
 *Models with * are converted from the [official repo](https://github.com/OFA-Sys/Chinese-CLIP). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
