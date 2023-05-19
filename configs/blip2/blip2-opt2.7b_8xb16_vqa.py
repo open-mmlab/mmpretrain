@@ -5,7 +5,7 @@ _base_ = [
 
 # model settings
 model = dict(
-    type='BLIP2VQAModel',
+    type='Blip2VQA',
     tokenizer=dict(
         type='AutoTokenizer', name_or_path='facebook/opt-2.7b',
         use_fast=False),

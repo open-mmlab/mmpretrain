@@ -11,7 +11,7 @@ else:
     from mmpretrain.utils.dependency import register_multimodal_placeholder
 
     register_multimodal_placeholder([
-        'BLIP2Captioner', 'BLIP2Retriever', 'BLIP2VQAModel', 'BLIPCaptioner',
-        'BLIPNLVR', 'BLIPRetriever', 'BlipGroundingModel', 'BlipVQAModel',
-        'Flamingo', 'OFA'
+        'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'BlipCaption',
+        'BlipNLVR', 'BlipRetrieval', 'BlipGrounding', 'BlipVQA', 'Flamingo',
+        'OFA'
     ], MODELS)

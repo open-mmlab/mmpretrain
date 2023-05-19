@@ -52,7 +52,7 @@ def all_gather_concat(data: torch.Tensor) -> torch.Tensor:
 
 
 @MODELS.register_module()
-class BLIPRetriever(BaseModel):
+class BlipRetrieval(BaseModel):
     """BLIP Retriever.
 
     Args:
@@ -114,9 +114,9 @@ class BLIPRetriever(BaseModel):
                  init_cfg: Optional[dict] = None):
         if data_preprocessor is None:
             data_preprocessor = {}
-            # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault(
-                'type', 'mmpretrain.MultiModalDataPreprocessor')
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -214,6 +214,7 @@ class BLIPRetriever(BaseModel):
           post-processing, same as a common nn.Module.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
+
         Note that this method doesn't handle neither back propagation nor
         optimizer updating, which are done in the :meth:`train_step`.
 

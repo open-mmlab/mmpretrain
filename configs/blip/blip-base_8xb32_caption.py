@@ -5,7 +5,7 @@ _base_ = [
 
 # model settings
 model = dict(
-    type='BLIPCaptioner',
+    type='BlipCaption',
     vision_encoder=dict(
         type='VisionTransformer',
         arch='b',
@@ -13,7 +13,7 @@ model = dict(
         patch_size=16,
         out_type='raw',
     ),
-    tokenizer=dict(type='BLIPTokenizer', name_or_path='bert-base-uncased'),
+    tokenizer=dict(type='BlipTokenizer', name_or_path='bert-base-uncased'),
     decoder_head=dict(
         type='SeqGenerationHead',
         decoder=dict(

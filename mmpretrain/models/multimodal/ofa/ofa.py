@@ -126,8 +126,9 @@ class OFA(BaseModel):
     ):
         if data_preprocessor is None:
             data_preprocessor = {}
-        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-        data_preprocessor = MODELS.build(data_preprocessor)
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)

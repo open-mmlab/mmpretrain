@@ -24,7 +24,7 @@ med_config = {
 }
 
 model = dict(
-    type='BlipGroundingModel',
+    type='BlipGrounding',
     visual_encoder=dict(
         type='VisionTransformer',
         arch='b',
@@ -40,7 +40,7 @@ model = dict(
         type='XBertEncoder',
         med_config=med_config,
     ),
-    tokenizer=dict(type='BLIPTokenizer', name_or_path='bert-base-uncased'),
+    tokenizer=dict(type='BlipTokenizer', name_or_path='bert-base-uncased'),
     head=dict(
         type='GroundingHead',
         decoder=dict(

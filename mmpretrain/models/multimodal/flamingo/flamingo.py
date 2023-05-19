@@ -57,9 +57,9 @@ class Flamingo(BaseModel):
             init_cfg: Optional[dict] = None):
         if data_preprocessor is None:
             data_preprocessor = {}
-        data_preprocessor.setdefault('type',
-                                     'mmpretrain.MultiModalDataPreprocessor')
-        data_preprocessor = MODELS.build(data_preprocessor)
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -135,6 +135,7 @@ class Flamingo(BaseModel):
 
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
+
         Note that this method doesn't handle neither back propagation nor
         optimizer updating, which are done in the :meth:`train_step`.
 

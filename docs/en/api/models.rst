@@ -130,9 +130,16 @@ Multi-Modality Algorithms
    :toctree: generated
    :nosignatures:
 
+   Blip2Caption
+   Blip2Retrieval
+   Blip2VQA
+   BlipCaption
+   BlipGrounding
+   BlipNLVR
+   BlipRetrieval
+   BlipVQA
+   Flamingo
    OFA
-   BLIPCaptioner
-   BLIPRetriever
 
 .. module:: mmpretrain.models.backbones
 

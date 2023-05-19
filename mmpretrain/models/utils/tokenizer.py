@@ -11,8 +11,8 @@ register_hf_tokenizer(LlamaTokenizer)
 
 
 @register_hf_tokenizer()
-class BLIPTokenizer(BertTokenizerFast):
-    """"BLIPTokenizer inherit BertTokenizerFast (fast, Rust-based)."""
+class BlipTokenizer(BertTokenizerFast):
+    """"BlipTokenizer inherit BertTokenizerFast (fast, Rust-based)."""
 
     @classmethod
     def from_pretrained(
@@ -34,7 +34,7 @@ class BLIPTokenizer(BertTokenizerFast):
 
 
 @register_hf_tokenizer()
-class BLIP2Tokenizer(BertTokenizer):
+class Blip2Tokenizer(BertTokenizer):
 
     @classmethod
     def from_pretrained(

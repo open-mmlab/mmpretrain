@@ -9,7 +9,7 @@ from mmpretrain.structures import DataSample
 
 
 @MODELS.register_module()
-class BlipVQAModel(BaseModel):
+class BlipVQA(BaseModel):
     """BLIP VQA.
 
     Args:
@@ -41,7 +41,7 @@ class BlipVQAModel(BaseModel):
         data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
         data_preprocessor = MODELS.build(data_preprocessor)
 
-        super(BlipVQAModel, self).__init__(
+        super(BlipVQA, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
         self.tokenizer = TOKENIZER.build(tokenizer)

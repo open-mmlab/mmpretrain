@@ -10,7 +10,7 @@ from mmpretrain.structures import DataSample
 
 
 @MODELS.register_module()
-class BLIP2Captioner(BaseModel):
+class Blip2Caption(BaseModel):
     """BLIP2 Caption.
 
     Module for BLIP2 Caption task.
@@ -47,11 +47,11 @@ class BLIP2Captioner(BaseModel):
                  num_captions: int = 1,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
-
         if data_preprocessor is None:
             data_preprocessor = {}
-        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-        data_preprocessor = MODELS.build(data_preprocessor)
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)

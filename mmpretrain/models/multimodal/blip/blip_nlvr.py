@@ -10,15 +10,14 @@ from mmpretrain.registry import MODELS, TOKENIZER
 
 
 @MODELS.register_module()
-class BLIPNLVR(BaseModel):
+class BlipNLVR(BaseModel):
     """BLIP NLVR.
 
     Args:
         vision_backbone (dict): Backbone for extracting image features.
         text_backbone (dict): Backbone for extracting text features.
-                              but we integrate the vqa text extractor
-                              into the tokenizer part in datasets/transform/
-                              so we don't need text_backbone
+            but we integrate the vqa text extractor into the tokenizer part in
+            datasets/transform/ so we don't need text_backbone
         multimodal_backbone (Optional[dict]): Backbone for extracting
             multi-modal features. We apply this part as VQA fusion module.
         neck (Optional[dict]): The neck module to process features from
@@ -26,12 +25,6 @@ class BLIPNLVR(BaseModel):
         head (Optional[dict]): The head module to calculate
             loss from processed features. See :mod:`mmmultimodal.models.heads`.
             Notice that if the head is not set, `loss` method cannot be used.
-            Defaults to None.
-        train_cfg (Optional[dict]): The training setting. The acceptable
-            fields are:
-            - augments (List[dict]): The batch augmentation methods to use.
-              More details can be found in
-              :mod:`mmmultimodal.model.utils.augment`.
             Defaults to None.
         tokenizer: (Optional[dict]): The config for tokenizer
         data_preprocessor (Optional[dict]): The config for preprocessing input
@@ -48,19 +41,13 @@ class BLIPNLVR(BaseModel):
                  multimodal_backbone: dict,
                  tokenizer: Optional[dict] = None,
                  max_txt_len: int = 35,
-                 train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
-
         if data_preprocessor is None:
             data_preprocessor = {}
-            # The build process is in MMEngine, so we need to add scope here.
-            data_preprocessor.setdefault(
-                'type', 'mmpretrain.MultiModalDataPreprocessor')
-
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
         super().__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -115,6 +102,7 @@ class BLIPNLVR(BaseModel):
 
         - "loss": Forward and return a dict of losses according to the given
           images and data samples.
+
         Note that this method doesn't handle neither back propagation nor
         optimizer updating, which are done in the :meth:`train_step`.
 

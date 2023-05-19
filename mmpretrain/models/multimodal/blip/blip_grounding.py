@@ -12,7 +12,7 @@ from mmpretrain.structures.data_sample import DataSample
 
 
 @MODELS.register_module()
-class BlipGroundingModel(BaseModel):
+class BlipGrounding(BaseModel):
     """BLIP Grounding.
 
     Args:
@@ -46,19 +46,17 @@ class BlipGroundingModel(BaseModel):
                  head: Optional[Union[List[dict], dict]] = None,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
-
         if data_preprocessor is None:
             data_preprocessor = {}
-        # The build process is in MMEngine, so we need to add scope here.
-        data_preprocessor.setdefault('type',
-                                     'mmpretrain.MultiModalDataPreprocessor')
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
+
+        super(BlipGrounding, self).__init__(
+            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
         self.tokenizer = TOKENIZER.build(tokenizer)
-
         self.prompt = 'localize instance: '
-
-        super(BlipGroundingModel, self).__init__(
-            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
         self.visual_encoder = MODELS.build(visual_encoder)
         self.text_encoder = MODELS.build(text_encoder)
         self.multimodal_encoder = MODELS.build(multimodal_encoder)
@@ -76,6 +74,7 @@ class BlipGroundingModel(BaseModel):
 
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
+
         Note that this method doesn't handle neither back propagation nor
         optimizer updating, which are done in the :meth:`train_step`.
 

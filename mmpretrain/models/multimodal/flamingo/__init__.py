@@ -2,7 +2,4 @@
 from .adapter import FlamingoLMAdapter
 from .flamingo import Flamingo
 
-__all__ = [
-    'Flamingo',
-    'FlamingoLMAdapter',
-]
+__all__ = ['Flamingo', 'FlamingoLMAdapter']

@@ -5,8 +5,8 @@ _base_ = [
 
 # model settings
 model = dict(
-    type='BLIP2Retriever',
-    tokenizer=dict(type='BLIP2Tokenizer', name_or_path='bert-base-uncased'),
+    type='Blip2Retrieval',
+    tokenizer=dict(type='Blip2Tokenizer', name_or_path='bert-base-uncased'),
     vision_backbone=dict(
         type='BEiTViT',
         # eva-g without the final layer

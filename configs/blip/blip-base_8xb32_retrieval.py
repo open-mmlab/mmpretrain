@@ -5,8 +5,8 @@ _base_ = [
 
 # model settings
 model = dict(
-    type='BLIPRetriever',
-    tokenizer=dict(type='BLIPTokenizer', name_or_path='bert-base-uncased'),
+    type='BlipRetrieval',
+    tokenizer=dict(type='BlipTokenizer', name_or_path='bert-base-uncased'),
     vision_backbone=dict(
         type='VisionTransformer',
         arch='b',

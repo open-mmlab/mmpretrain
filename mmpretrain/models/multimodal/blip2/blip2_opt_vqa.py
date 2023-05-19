@@ -5,15 +5,15 @@ import torch
 
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
-from .blip2_caption import BLIP2Captioner
+from .blip2_caption import Blip2Caption
 
 
 @MODELS.register_module()
-class BLIP2VQAModel(BLIP2Captioner):
+class Blip2VQA(Blip2Caption):
     """BLIP2 VQA.
 
     Module for BLIP2 VQA task. For more details about the initialization
-    params, please refer to :class:`BLIP2Captioner`.
+    params, please refer to :class:`Blip2Caption`.
     """
 
     def predict(self,

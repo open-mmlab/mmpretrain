@@ -9,11 +9,11 @@ from mmengine.utils import track_iter_progress
 
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
-from ..blip.blip_retrieval import BLIPRetriever, all_gather_concat
+from ..blip.blip_retrieval import BlipRetrieval, all_gather_concat
 
 
 @MODELS.register_module()
-class BLIP2Retriever(BLIPRetriever):
+class Blip2Retrieval(BlipRetrieval):
     """BLIP2 Retriever.
 
     Args:
@@ -69,11 +69,12 @@ class BLIP2Retriever(BLIPRetriever):
                  init_cfg: Optional[dict] = None) -> None:
         if data_preprocessor is None:
             data_preprocessor = {}
-        data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
-        data_preprocessor = MODELS.build(data_preprocessor)
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'MultiModalDataPreprocessor')
+            data_preprocessor = MODELS.build(data_preprocessor)
 
-        # Skip BLIPRetriever init
-        super(BLIPRetriever, self).__init__(
+        # Skip BlipRetrieval init
+        super(BlipRetrieval, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
         self.vision_backbone = MODELS.build(vision_backbone)

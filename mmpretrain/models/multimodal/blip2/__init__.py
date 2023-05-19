@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .blip2_caption import BLIP2Captioner
-from .blip2_opt_vqa import BLIP2VQAModel
-from .blip2_retriever import BLIP2Retriever
+from .blip2_caption import Blip2Caption
+from .blip2_opt_vqa import Blip2VQA
+from .blip2_retriever import Blip2Retrieval
 from .modeling_opt import OPTForCausalLM
 from .Qformer import Qformer
 
 __all__ = [
-    'Qformer', 'BLIP2Retriever', 'OPTForCausalLM', 'BLIP2Captioner',
-    'BLIP2VQAModel'
+    'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'OPTForCausalLM', 'Qformer'
 ]
