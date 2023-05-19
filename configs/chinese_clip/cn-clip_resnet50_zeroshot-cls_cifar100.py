@@ -5,15 +5,13 @@ data_preprocessor = dict(
     type='MultiModalDataPreprocessor',
     mean=[0.48145466 * 255, 0.4578275 * 255, 0.40821073 * 255],
     std=[0.26862954 * 255, 0.26130258 * 255, 0.27577711 * 255],
-    to_rgb=True,
+    to_rgb=False,
 )
 
 test_pipeline = [
-    dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=(224, 224), interpolation='bicubic'),
     dict(
         type='PackInputs',
-        algorithm_keys=['text'],
         meta_keys=['image_id', 'scale_factor'],
     ),
 ]
@@ -23,9 +21,9 @@ test_dataloader = dict(
     batch_size=32,
     num_workers=8,
     dataset=dict(
-        type='CustomDataset',
-        data_root='data/cifar-100',
-        data_prefix='test',
+        type='CIFAR100',
+        data_root='data/cifar100',
+        split='test',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )

@@ -23,7 +23,7 @@ Models:
       - Task: Image Classification
         Dataset: CIFAR100
         Metrics:
-          Top 1 Accuracy: 41.1
+          Top 1 Accuracy: 40.7
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_resnet50_3rdparty_20230519-6a2b3eb2.pth
     Config: configs/chinese_clip/cn-clip_resnet50_zeroshot-cls_cifar100.py
     Converted From:
@@ -39,7 +39,7 @@ Models:
       - Task: Image Classification
         Dataset: CIFAR100
         Metrics:
-          Top 1 Accuracy: 65.2
+          Top 1 Accuracy: 64.5
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-base-p16_3rdparty_20230519-37fbc59e.pth
     Config: configs/chinese_clip/cn-clip_vit-base-p16_zeroshot-cls_cifar100.py
     Converted From:
@@ -55,7 +55,7 @@ Models:
       - Task: Image Classification
         Dataset: CIFAR100
         Metrics:
-          Top 1 Accuracy: 75.5
+          Top 1 Accuracy: 
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-large-p14_3rdparty_20230519-3f844503.pth
     Config: configs/chinese_clip/cn-clip_vit-large-p14_zeroshot-cls_cifar100.py
     Converted From:
@@ -71,7 +71,7 @@ Models:
       - Task: Image Classification
         Dataset: CIFAR100
         Metrics:
-          Top 1 Accuracy: 79.9
+          Top 1 Accuracy: 
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-huge-p14_3rdparty_20230519-e4f49b00.pth
     Config: configs/chinese_clip/cn-clip_vit-huge-p14_zeroshot-cls_cifar100.py
     Converted From:
