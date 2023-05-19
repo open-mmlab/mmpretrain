@@ -54,7 +54,7 @@ Models:
     Results:
       - Task: Image Classification
         Dataset: CIFAR100
-        Metrics:
+        Metrics: 74.8
           Top 1 Accuracy:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-large-p14_3rdparty_20230519-3f844503.pth
     Config: configs/chinese_clip/cn-clip_vit-large-p14_zeroshot-cls_cifar100.py

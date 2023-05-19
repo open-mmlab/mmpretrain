@@ -267,8 +267,9 @@ class ChineseCLIP(BaseModel):
         self.context_length = context_length
 
         # for zero-shot classification
-        if text_prototype in PROTOTYPE_MAP.keys():
-            self.prototype = PROTOTYPE_MAP['cifar100']
+        if isinstance(text_prototype,
+                      str) and text_prototype in PROTOTYPE_MAP.keys():
+            self.prototype = PROTOTYPE_MAP[text_prototype]
         else:
             self.prototype = text_prototype
         self.text_prototype_embeds = None
