@@ -44,8 +44,6 @@ print(type(feats))
 
 Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
 
-Please download datsets from [link](http://clip-cn-beijing.oss-cn-beijing.aliyuncs.com/datasets/cifar-100.zip) and unzip it to `./data/` folder. We use `CustomDataset` to build this dataset.
-
 Test:
 
 ```shell
