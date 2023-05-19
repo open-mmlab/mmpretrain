@@ -1,0 +1,70 @@
+Collections:
+  - Name: BLIP-2
+    Metadata:
+      Training Data:
+        - COCO
+        - VG
+        - CC3M
+        - CC12M
+        - SBU
+        - LAION-400M
+      Architecture:
+        - Transformer
+        - Q-Former
+    Paper:
+      Title: 'BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image
+        Encoders and Large Language Models'
+      URL: https://arxiv.org/abs/2301.12597
+    README: configs/blip2/README.md
+
+Models:
+  - Name: blip2_3rdparty_retrieval
+    Metadata:
+      FLOPs: null
+      Parameters: 1173191358
+    In Collection: BLIP-2
+    Results:
+      - Task: Image-To-Text Retrieval
+        Dataset: COCO
+        Metrics:
+          Recall@1: 85.4
+      - Task: Text-To-Image Retrieval
+        Dataset: COCO
+        Metrics:
+          Recall@1: 68.3
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip2/blip2_3rdparty_pretrain_20230505-f7ef4390.pth
+    Config: configs/blip2/blip2_8xb32_retrieval.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_opt2.7b.pth
+      Code: https://github.com/salesforce/LAVIS
+  - Name: blip2-opt2.7b_3rdparty-zeroshot_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 3770465152
+    In Collection: BLIP-2
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: 53.5
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip2/blip2-opt2.7b_3rdparty_pretrain_20230505-b51db4e1.pth
+    Config: configs/blip2/blip2-opt2.7b_8xb16_vqa.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_opt2.7b.pth
+      Code: https://github.com/salesforce/LAVIS
+  - Name: blip2-opt2.7b_3rdparty-zeroshot_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 3770465152
+    In Collection: BLIP-2
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics:
+          BLEU-4: 32.90
+          CIDER: 111.10
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip2/blip2-opt2.7b_3rdparty_pretrain_20230505-b51db4e1.pth
+    Config: configs/blip2/blip2-opt2.7b_8xb32_caption.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP2/blip2_pretrained_opt2.7b.pth
+      Code: https://github.com/salesforce/LAVIS

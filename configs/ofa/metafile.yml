@@ -1,0 +1,89 @@
+Collections:
+  - Name: OFA
+    Metadata:
+      Architecture:
+        - ResNet
+        - Transformer
+      Training Data:
+        - CC12M
+        - CC3M
+        - SBU
+        - COCO
+        - VG
+        - VQAv2
+        - GQA
+        - RefCOCO
+        - OpenImages
+        - Object365
+        - YFCC100M
+        - ImageNet-21K
+        - Pile
+    Paper:
+      Title: 'OFA: Unifying Architectures, Tasks, and Modalities Through a Simple
+        Sequence-to-Sequence Learning Framework'
+      URL: https://arxiv.org/abs/2202.03052
+    README: configs/ofa/README.md
+
+Models:
+  - Name: ofa-base_3rdparty-finetuned_refcoco
+    Metadata:
+      FLOPs: null
+      Parameters: 182238536
+    In Collection: OFA
+    Results:
+      - Task: Visual Grounding
+        Dataset: RefCOCO
+        Metrics:
+          Accuracy (testA): 90.49
+          Accuracy (testB): 83.63
+    Weights: https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_refcoco_20230418-2797d3ab.pth
+    Config: configs/ofa/ofa-base_finetuned_refcoco.py
+    Converted From:
+      Weights: https://ofa-beijing.oss-cn-beijing.aliyuncs.com/checkpoints/refcoco_base_best.pt
+      Code: https://github.com/OFA-Sys/OFA
+  - Name: ofa-base_3rdparty-finetuned_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 182238536
+    In Collection: OFA
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: 78.00   # Report from the official repo
+    Weights: https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-vqa_20230418-f38539a5.pth
+    Config: configs/ofa/ofa-base_finetuned_vqa.py
+    Converted From:
+      Weights: https://ofa-beijing.oss-cn-beijing.aliyuncs.com/checkpoints/vqa_large_best.pt
+      Code: https://github.com/OFA-Sys/OFA
+  - Name: ofa-base_3rdparty-finetuned_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 182238536
+    In Collection: OFA
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics:
+          BLEU-4: 42.64
+          CIDER: 144.50
+    Weights: https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-caption_20230418-de18914e.pth
+    Config: configs/ofa/ofa-base_finetuned_caption.py
+    Converted From:
+      Weights: https://ofa-beijing.oss-cn-beijing.aliyuncs.com/checkpoints/caption_base_best.pt
+      Code: https://github.com/OFA-Sys/OFA
+  - Name: ofa-base_3rdparty-zeroshot_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 182238536
+    In Collection: OFA
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: 58.32
+    Weights: https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_pretrain_20230418-dccfc07f.pth
+    Config: configs/ofa/ofa-base_zeroshot_vqa.py
+    Converted From:
+      Weights: https://ofa-beijing.oss-cn-beijing.aliyuncs.com/checkpoints/ofa_base.pt
+      Code: https://github.com/OFA-Sys/OFA

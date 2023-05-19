@@ -6,6 +6,7 @@ from .builder import (BACKBONES, CLASSIFIERS, HEADS, LOSSES, NECKS,
 from .classifiers import *  # noqa: F401,F403
 from .heads import *  # noqa: F401,F403
 from .losses import *  # noqa: F401,F403
+from .multimodal import *  # noqa: F401,F403
 from .necks import *  # noqa: F401,F403
 from .retrievers import *  # noqa: F401,F403
 from .selfsup import *  # noqa: F401,F403

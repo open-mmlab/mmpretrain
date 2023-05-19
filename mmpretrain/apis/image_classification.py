@@ -7,32 +7,28 @@ import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
-from mmengine.device import get_device
-from mmengine.infer import BaseInferencer
-from mmengine.model import BaseModel
-from mmengine.runner import load_checkpoint
 
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
-from .model import get_model, list_models
-
-ModelType = Union[BaseModel, str, Config]
-InputType = Union[str, np.ndarray, list]
+from .base import BaseInferencer, InputType, ModelType
+from .model import list_models
 
 
 class ImageClassificationInferencer(BaseInferencer):
     """The inferencer for image classification.
 
     Args:
-        model (BaseModel | str | Config): A model name or a path to the confi
+        model (BaseModel | str | Config): A model name or a path to the config
             file, or a :obj:`BaseModel` object. The model name can be found
             by ``ImageClassificationInferencer.list_models()`` and you can also
             query it in :doc:`/modelzoo_statistics`.
-        pretrained (str, optional): Path to the checkpoint. If None, it will try
-            to find a pre-defined weight from the model you specified
+        pretrained (str, optional): Path to the checkpoint. If None, it will
+            try to find a pre-defined weight from the model you specified
             (only work if the ``model`` is a model name). Defaults to None.
-        device (str, optional): Device to run inference. If None, use CPU or
-            the device of the input model. Defaults to None.
+        device (str, optional): Device to run inference. If None, the available
+            device will be automatically used. Defaults to None.
+        **kwargs: Other keyword arguments to initialize the model (only work if
+            the ``model`` is a model name).
 
     Example:
         1. Use a pre-trained model in MMPreTrain to inference an image.
@@ -61,34 +57,20 @@ class ImageClassificationInferencer(BaseInferencer):
         'wait_time'
     }
 
-    def __init__(
-        self,
-        model: ModelType,
-        pretrained: Union[bool, str] = True,
-        device: Union[str, torch.device, None] = None,
-        classes=None,
-    ) -> None:
-        device = device or get_device()
-
-        if isinstance(model, BaseModel):
-            if isinstance(pretrained, str):
-                load_checkpoint(model, pretrained, map_location='cpu')
-            model = model.to(device)
-        else:
-            model = get_model(model, pretrained, device)
-
-        model.eval()
-
-        self.config = model.config
-        self.model = model
-        self.pipeline = self._init_pipeline(self.config)
-        self.collate_fn = default_collate
-        self.visualizer = None
+    def __init__(self,
+                 model: ModelType,
+                 pretrained: Union[bool, str] = True,
+                 device: Union[str, torch.device, None] = None,
+                 classes=None,
+                 **kwargs) -> None:
+        super().__init__(
+            model=model, pretrained=pretrained, device=device, **kwargs)
 
         if classes is not None:
             self.classes = classes
         else:
-            self.classes = getattr(model, 'dataset_meta', {}).get('classes')
+            self.classes = getattr(self.model, '_dataset_meta',
+                                   {}).get('classes')
 
     def __call__(self,
                  inputs: InputType,
@@ -120,8 +102,11 @@ class ImageClassificationInferencer(BaseInferencer):
         Returns:
             list: The inference results.
         """
-        return super().__call__(inputs, return_datasamples, batch_size,
-                                **kwargs)
+        return super().__call__(
+            inputs,
+            return_datasamples=return_datasamples,
+            batch_size=batch_size,
+            **kwargs)
 
     def _init_pipeline(self, cfg: Config) -> Callable:
         test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
@@ -147,7 +132,7 @@ class ImageClassificationInferencer(BaseInferencer):
         pipeline = Compose([load_image, self.pipeline])
 
         chunked_data = self._get_chunk_data(map(pipeline, inputs), batch_size)
-        yield from map(self.collate_fn, chunked_data)
+        yield from map(default_collate, chunked_data)
 
     def visualize(self,
                   ori_inputs: List[InputType],

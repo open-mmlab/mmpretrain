@@ -70,11 +70,19 @@ The `main` branch works with **PyTorch 1.8+**.
 ### Major features
 
 - Various backbones and pretrained models
-- Rich training strategies(supervised learning, self-supervised learning, etc.)
+- Rich training strategies (supervised learning, self-supervised learning, multi-modality learning etc.)
 - Bag of training tricks
 - Large-scale training configs
 - High efficiency and extensibility
 - Powerful toolkits for model analysis and experiments
+- Various out-of-box inference tasks.
+  - Image Classification
+  - Image Caption
+  - Visual Question Answering
+  - Visual Grounding
+  - Retrieval (Image-To-Image, Text-To-Image, Image-To-Text)
+
+https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351-fbc74a04e904
 
 ## What's new
 
@@ -116,6 +124,12 @@ mim install -e .
 ```
 
 Please refer to [installation documentation](https://mmpretrain.readthedocs.io/en/latest/get_started.html) for more detailed installation and dataset preparation.
+
+For multi-modality models support, please install the extra dependencies by:
+
+```shell
+mim install -e ".[multimodal]"
+```
 
 ## User Guides
 

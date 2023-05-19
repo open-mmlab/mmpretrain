@@ -331,6 +331,12 @@ def add_models(metafile):
         'Image Classification',
         'Image Retrieval',
         'Multi-Label Classification',
+        'Image Caption',
+        'Visual Grounding',
+        'Visual Question Answering',
+        'Image-To-Text Retrieval',
+        'Text-To-Image Retrieval',
+        'NLVR',
     ]
 
     for task in tasks:

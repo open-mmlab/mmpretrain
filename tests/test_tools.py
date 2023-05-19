@@ -306,7 +306,7 @@ class TestVisCam(TestCase):
 
         model = get_model('mobilevit-xxsmall_3rdparty_in1k')
         self.config_file = self.dir / 'config.py'
-        model.config.dump(self.config_file)
+        model._config.dump(self.config_file)
 
         self.ckpt_file = self.dir / 'ckpt.pth'
         torch.save(model.state_dict(), self.ckpt_file)

@@ -136,6 +136,8 @@ jobs:
     machine:
       image: ubuntu-2004-cuda-11.4:202110-01
     resource_class: gpu.nvidia.small
+    environment:
+      MKL_SERVICE_FORCE_INTEL: 1
     parameters:
       torch:
         type: string

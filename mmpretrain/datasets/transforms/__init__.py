@@ -10,11 +10,12 @@ from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            SolarizeAdd, Translate)
 from .formatting import (Collect, NumpyToPIL, PackInputs, PackMultiTaskInputs,
                          PILToNumpy, Transpose)
-from .processing import (Albumentations, BEiTMaskGenerator, ColorJitter,
-                         EfficientNetCenterCrop, EfficientNetRandomCrop,
-                         Lighting, RandomCrop, RandomErasing,
-                         RandomResizedCrop, ResizeEdge, SimMIMMaskGenerator)
-from .wrappers import MultiView
+from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
+                         ColorJitter, EfficientNetCenterCrop,
+                         EfficientNetRandomCrop, Lighting, RandomCrop,
+                         RandomErasing, RandomResizedCrop, RandomTranslatePad,
+                         ResizeEdge, SimMIMMaskGenerator)
+from .wrappers import ApplyToList, MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
           RandomGrayscale, RandomResize, Resize):
@@ -30,5 +31,6 @@ __all__ = [
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
-    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView'
+    'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
+    'ApplyToList', 'CleanCaption', 'RandomTranslatePad'
 ]

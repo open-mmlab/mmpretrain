@@ -105,9 +105,9 @@ class UniversalVisualizer(Visualizer):
         if resize is not None:
             h, w = image.shape[:2]
             if w < h:
-                image = mmcv.imresize(image, (resize, resize * h / w))
+                image = mmcv.imresize(image, (resize, resize * h // w))
             else:
-                image = mmcv.imresize(image, (resize * w / h, resize))
+                image = mmcv.imresize(image, (resize * w // h, resize))
         elif rescale_factor is not None:
             image = mmcv.imrescale(image, rescale_factor)
 
@@ -329,6 +329,441 @@ class UniversalVisualizer(Visualizer):
             resize=resize,
             color=color,
             alpha=alpha)
+
+        if show:
+            self.show(drawn_img, win_name=name, wait_time=wait_time)
+
+        if out_file is not None:
+            # save the image to the target file instead of vis_backends
+            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
+
+        return drawn_img
+
+    @master_only
+    def visualize_image_caption(self,
+                                image: np.ndarray,
+                                data_sample: DataSample,
+                                resize: Optional[int] = None,
+                                text_cfg: dict = dict(),
+                                show: bool = False,
+                                wait_time: float = 0,
+                                out_file: Optional[str] = None,
+                                name: Optional[str] = '',
+                                step: int = 0) -> None:
+        """Visualize image caption result.
+
+        This method will draw the input image and the images caption.
+
+        Args:
+            image (np.ndarray): The image to draw. The format should be RGB.
+            data_sample (:obj:`DataSample`): The annotation of the image.
+            resize (int, optional): Resize the long edge of the image to the
+                specified length before visualization. Defaults to None.
+            text_cfg (dict): Extra text setting, which accepts arguments of
+                :func:`plt.text`. Defaults to an empty dict.
+            show (bool): Whether to display the drawn image in a window, please
+                confirm your are able to access the graphical interface.
+                Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
+            out_file (str, optional): Extra path to save the visualization
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Defaults to None.
+            name (str): The image identifier. It's useful when using the
+                storage backends of the visualizer to save or display the
+                image. Defaults to an empty string.
+            step (int): The global step value. It's useful to record a
+                series of visualization results for the same image with the
+                storage backends. Defaults to 0.
+
+        Returns:
+            np.ndarray: The visualization image.
+        """
+        text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
+
+        if resize is not None:
+            h, w = image.shape[:2]
+            if w < h:
+                image = mmcv.imresize(image, (resize, resize * h // w))
+            else:
+                image = mmcv.imresize(image, (resize * w // h, resize))
+
+        self.set_image(image)
+
+        img_scale = get_adaptive_scale(image.shape[:2])
+        text_cfg = {
+            'size': int(img_scale * 7),
+            **self.DEFAULT_TEXT_CFG,
+            **text_cfg,
+        }
+        self.ax_save.text(
+            img_scale * 5,
+            img_scale * 5,
+            data_sample.get('pred_caption'),
+            wrap=True,
+            **text_cfg,
+        )
+        drawn_img = self.get_image()
+
+        if show:
+            self.show(drawn_img, win_name=name, wait_time=wait_time)
+
+        if out_file is not None:
+            # save the image to the target file instead of vis_backends
+            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
+
+        return drawn_img
+
+    @master_only
+    def visualize_vqa(self,
+                      image: np.ndarray,
+                      data_sample: DataSample,
+                      resize: Optional[int] = None,
+                      text_cfg: dict = dict(),
+                      show: bool = False,
+                      wait_time: float = 0,
+                      out_file: Optional[str] = None,
+                      name: Optional[str] = '',
+                      step: int = 0) -> None:
+        """Visualize visual question answering result.
+
+        This method will draw the input image, question and answer.
+
+        Args:
+            image (np.ndarray): The image to draw. The format should be RGB.
+            data_sample (:obj:`DataSample`): The annotation of the image.
+            resize (int, optional): Resize the long edge of the image to the
+                specified length before visualization. Defaults to None.
+            text_cfg (dict): Extra text setting, which accepts arguments of
+                :func:`plt.text`. Defaults to an empty dict.
+            show (bool): Whether to display the drawn image in a window, please
+                confirm your are able to access the graphical interface.
+                Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
+            out_file (str, optional): Extra path to save the visualization
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Defaults to None.
+            name (str): The image identifier. It's useful when using the
+                storage backends of the visualizer to save or display the
+                image. Defaults to an empty string.
+            step (int): The global step value. It's useful to record a
+                series of visualization results for the same image with the
+                storage backends. Defaults to 0.
+
+        Returns:
+            np.ndarray: The visualization image.
+        """
+        text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
+
+        if resize is not None:
+            h, w = image.shape[:2]
+            if w < h:
+                image = mmcv.imresize(image, (resize, resize * h // w))
+            else:
+                image = mmcv.imresize(image, (resize * w // h, resize))
+
+        self.set_image(image)
+
+        img_scale = get_adaptive_scale(image.shape[:2])
+        text_cfg = {
+            'size': int(img_scale * 7),
+            **self.DEFAULT_TEXT_CFG,
+            **text_cfg,
+        }
+        text = (f'Q: {data_sample.get("question")}\n'
+                f'A: {data_sample.get("pred_answer")}')
+        self.ax_save.text(
+            img_scale * 5,
+            img_scale * 5,
+            text,
+            wrap=True,
+            **text_cfg,
+        )
+        drawn_img = self.get_image()
+
+        if show:
+            self.show(drawn_img, win_name=name, wait_time=wait_time)
+
+        if out_file is not None:
+            # save the image to the target file instead of vis_backends
+            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
+
+        return drawn_img
+
+    @master_only
+    def visualize_visual_grounding(self,
+                                   image: np.ndarray,
+                                   data_sample: DataSample,
+                                   resize: Optional[int] = None,
+                                   text_cfg: dict = dict(),
+                                   show: bool = False,
+                                   wait_time: float = 0,
+                                   out_file: Optional[str] = None,
+                                   name: Optional[str] = '',
+                                   line_width: Union[int, float] = 3,
+                                   bbox_color: Union[str, tuple] = 'green',
+                                   step: int = 0) -> None:
+        """Visualize visual grounding result.
+
+        This method will draw the input image, bbox and the object.
+
+        Args:
+            image (np.ndarray): The image to draw. The format should be RGB.
+            data_sample (:obj:`DataSample`): The annotation of the image.
+            resize (int, optional): Resize the long edge of the image to the
+                specified length before visualization. Defaults to None.
+            text_cfg (dict): Extra text setting, which accepts arguments of
+                :func:`plt.text`. Defaults to an empty dict.
+            show (bool): Whether to display the drawn image in a window, please
+                confirm your are able to access the graphical interface.
+                Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
+            out_file (str, optional): Extra path to save the visualization
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Defaults to None.
+            name (str): The image identifier. It's useful when using the
+                storage backends of the visualizer to save or display the
+                image. Defaults to an empty string.
+            step (int): The global step value. It's useful to record a
+                series of visualization results for the same image with the
+                storage backends. Defaults to 0.
+
+        Returns:
+            np.ndarray: The visualization image.
+        """
+        text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
+
+        gt_bboxes = data_sample.get('gt_bboxes')
+        pred_bboxes = data_sample.get('pred_bboxes')
+        if resize is not None:
+            h, w = image.shape[:2]
+            if w < h:
+                image, w_scale, h_scale = mmcv.imresize(
+                    image, (resize, resize * h // w), return_scale=True)
+            else:
+                image, w_scale, h_scale = mmcv.imresize(
+                    image, (resize * w // h, resize), return_scale=True)
+            pred_bboxes[:, ::2] *= w_scale
+            pred_bboxes[:, 1::2] *= h_scale
+            if gt_bboxes is not None:
+                gt_bboxes[:, ::2] *= w_scale
+                gt_bboxes[:, 1::2] *= h_scale
+
+        self.set_image(image)
+        # Avoid the line-width limit in the base classes.
+        self._default_font_size = 1e3
+        self.draw_bboxes(
+            pred_bboxes, line_widths=line_width, edge_colors=bbox_color)
+        if gt_bboxes is not None:
+            self.draw_bboxes(
+                gt_bboxes, line_widths=line_width, edge_colors='blue')
+
+        img_scale = get_adaptive_scale(image.shape[:2])
+        text_cfg = {
+            'size': int(img_scale * 7),
+            **self.DEFAULT_TEXT_CFG,
+            **text_cfg,
+        }
+
+        text_positions = pred_bboxes[:, :2] + line_width
+        for i in range(pred_bboxes.size(0)):
+            self.ax_save.text(
+                text_positions[i, 0] + line_width,
+                text_positions[i, 1] + line_width,
+                data_sample.get('text'),
+                **text_cfg,
+            )
+        drawn_img = self.get_image()
+
+        if show:
+            self.show(drawn_img, win_name=name, wait_time=wait_time)
+
+        if out_file is not None:
+            # save the image to the target file instead of vis_backends
+            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
+
+        return drawn_img
+
+    @master_only
+    def visualize_t2i_retrieval(self,
+                                text: str,
+                                data_sample: DataSample,
+                                prototype_dataset: BaseDataset,
+                                topk: int = 1,
+                                draw_score: bool = True,
+                                text_cfg: dict = dict(),
+                                fig_cfg: dict = dict(),
+                                show: bool = False,
+                                wait_time: float = 0,
+                                out_file: Optional[str] = None,
+                                name: Optional[str] = '',
+                                step: int = 0) -> None:
+        """Visualize Text-To-Image retrieval result.
+
+        This method will draw the input text and the images retrieved from the
+        prototype dataset.
+
+        Args:
+            image (np.ndarray): The image to draw. The format should be RGB.
+            data_sample (:obj:`DataSample`): The annotation of the image.
+            prototype_dataset (:obj:`BaseDataset`): The prototype dataset.
+                It should have `get_data_info` method and return a dict
+                includes `img_path`.
+            topk (int): To visualize the topk matching items. Defaults to 1.
+            draw_score (bool): Whether to draw the match scores of the
+                retrieved images. Defaults to True.
+            text_cfg (dict): Extra text setting, which accepts arguments of
+                :func:`plt.text`. Defaults to an empty dict.
+            fig_cfg (dict): Extra figure setting, which accepts arguments of
+                :func:`plt.Figure`. Defaults to an empty dict.
+            show (bool): Whether to display the drawn image in a window, please
+                confirm your are able to access the graphical interface.
+                Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
+            out_file (str, optional): Extra path to save the visualization
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Defaults to None.
+            name (str): The image identifier. It's useful when using the
+                storage backends of the visualizer to save or display the
+                image. Defaults to an empty string.
+            step (int): The global step value. It's useful to record a
+                series of visualization results for the same image with the
+                storage backends. Defaults to 0.
+
+        Returns:
+            np.ndarray: The visualization image.
+        """
+        text_cfg = {**self.DEFAULT_TEXT_CFG, **text_cfg}
+
+        match_scores, indices = torch.topk(data_sample.pred_score, k=topk)
+
+        figure = create_figure(margin=True, **fig_cfg)
+        figure.suptitle(text)
+        gs = figure.add_gridspec(1, topk)
+
+        for k, (score, sample_idx) in enumerate(zip(match_scores, indices)):
+            sample = prototype_dataset.get_data_info(sample_idx.item())
+            value_image = mmcv.imread(sample['img_path'])[..., ::-1]
+            value_plot = figure.add_subplot(gs[0, k])
+            value_plot.axis(False)
+            value_plot.imshow(value_image)
+            if draw_score:
+                value_plot.text(
+                    5,
+                    5,
+                    f'{score:.2f}',
+                    **text_cfg,
+                )
+        drawn_img = img_from_canvas(figure.canvas)
+        self.set_image(drawn_img)
+
+        if show:
+            self.show(drawn_img, win_name=name, wait_time=wait_time)
+
+        if out_file is not None:
+            # save the image to the target file instead of vis_backends
+            mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
+
+        return drawn_img
+
+    @master_only
+    def visualize_i2t_retrieval(self,
+                                image: np.ndarray,
+                                data_sample: DataSample,
+                                prototype_dataset: Sequence[str],
+                                topk: int = 1,
+                                draw_score: bool = True,
+                                resize: Optional[int] = None,
+                                text_cfg: dict = dict(),
+                                show: bool = False,
+                                wait_time: float = 0,
+                                out_file: Optional[str] = None,
+                                name: str = '',
+                                step: int = 0) -> None:
+        """Visualize Image-To-Text retrieval result.
+
+        This method will draw the input image and the texts retrieved from the
+        prototype dataset.
+
+        Args:
+            image (np.ndarray): The image to draw. The format should be RGB.
+            data_sample (:obj:`DataSample`): The annotation of the image.
+            prototype_dataset (Sequence[str]): The prototype dataset.
+                It should be a list of texts.
+            topk (int): To visualize the topk matching items. Defaults to 1.
+            draw_score (bool): Whether to draw the prediction scores
+                of prediction categories. Defaults to True.
+            resize (int, optional): Resize the short edge of the image to the
+                specified length before visualization. Defaults to None.
+            text_cfg (dict): Extra text setting, which accepts
+                arguments of :meth:`mmengine.Visualizer.draw_texts`.
+                Defaults to an empty dict.
+            show (bool): Whether to display the drawn image in a window, please
+                confirm your are able to access the graphical interface.
+                Defaults to False.
+            wait_time (float): The display time (s). Defaults to 0, which means
+                "forever".
+            out_file (str, optional): Extra path to save the visualization
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Defaults to None.
+            name (str): The image identifier. It's useful when using the
+                storage backends of the visualizer to save or display the
+                image. Defaults to an empty string.
+            step (int): The global step value. It's useful to record a
+                series of visualization results for the same image with the
+                storage backends. Defaults to 0.
+
+        Returns:
+            np.ndarray: The visualization image.
+        """
+        if resize is not None:
+            h, w = image.shape[:2]
+            if w < h:
+                image = mmcv.imresize(image, (resize, resize * h // w))
+            else:
+                image = mmcv.imresize(image, (resize * w // h, resize))
+
+        self.set_image(image)
+
+        match_scores, indices = torch.topk(data_sample.pred_score, k=topk)
+        texts = []
+        for score, sample_idx in zip(match_scores, indices):
+            text = prototype_dataset[sample_idx.item()]
+            if draw_score:
+                text = f'{score:.2f} ' + text
+            texts.append(text)
+
+        img_scale = get_adaptive_scale(image.shape[:2])
+        text_cfg = {
+            'size': int(img_scale * 7),
+            **self.DEFAULT_TEXT_CFG,
+            **text_cfg,
+        }
+        self.ax_save.text(
+            img_scale * 5,
+            img_scale * 5,
+            '\n'.join(texts),
+            **text_cfg,
+        )
+        drawn_img = self.get_image()
 
         if show:
             self.show(drawn_img, win_name=name, wait_time=wait_time)

@@ -2,10 +2,11 @@
 import copy
 import fnmatch
 import os.path as osp
+import re
 import warnings
 from os import PathLike
 from pathlib import Path
-from typing import List, Union
+from typing import List, Tuple, Union
 
 from mmengine.config import Config
 from modelindex.load_model_index import load
@@ -96,6 +97,9 @@ class ModelHub:
 def get_model(model: Union[str, Config],
               pretrained: Union[str, bool] = False,
               device=None,
+              device_map=None,
+              offload_folder=None,
+              url_mapping: Tuple[str, str] = None,
               **kwargs):
     """Get a pre-defined model or create a model from config.
 
@@ -108,6 +112,18 @@ def get_model(model: Union[str, Config],
             load. Defaults to False.
         device (str | torch.device | None): Transfer the model to the target
             device. Defaults to None.
+        device_map (str | dict | None): A map that specifies where each
+            submodule should go. It doesn't need to be refined to each
+            parameter/buffer name, once a given module name is inside, every
+            submodule of it will be sent to the same device. You can use
+            `device_map="auto"` to automatically generate the device map.
+            Defaults to None.
+        offload_folder (str | None): If the `device_map` contains any value
+            `"disk"`, the folder where we will offload weights.
+        url_mapping (Tuple[str, str], optional): The mapping of pretrained
+            checkpoint link. For example, load checkpoint from a local dir
+            instead of download by ``('https://.*/', './checkpoint')``.
+            Defaults to None.
         **kwargs: Other keyword arguments of the model config.
 
     Returns:
@@ -136,11 +152,16 @@ def get_model(model: Union[str, Config],
         >>> print(result['pred_class'])
         'sea snake'
     """  # noqa: E501
+    if device_map is not None:
+        from .utils import dispatch_model
+        dispatch_model._verify_require()
+
+    metainfo = None
     if isinstance(model, Config):
         config = copy.deepcopy(model)
         if pretrained is True and 'load_from' in config:
             pretrained = config.load_from
-    elif isinstance(model, (str, PathLike)) and Path(model).suffix:
+    elif isinstance(model, (str, PathLike)) and Path(model).suffix == '.py':
         config = Config.fromfile(model)
         if pretrained is True and 'load_from' in config:
             pretrained = config.load_from
@@ -164,14 +185,19 @@ def get_model(model: Union[str, Config],
     config.model.setdefault('data_preprocessor',
                             config.get('data_preprocessor', None))
 
+    from mmengine.registry import DefaultScope
+
     from mmpretrain.registry import MODELS
-    model = MODELS.build(config.model)
+    with DefaultScope.overwrite_default_scope('mmpretrain'):
+        model = MODELS.build(config.model)
 
     dataset_meta = {}
     if pretrained:
         # Mapping the weights to GPU may cause unexpected video memory leak
         # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
         from mmengine.runner import load_checkpoint
+        if url_mapping is not None:
+            pretrained = re.sub(url_mapping[0], url_mapping[1], pretrained)
         checkpoint = load_checkpoint(model, pretrained, map_location='cpu')
         if 'dataset_meta' in checkpoint.get('meta', {}):
             # mmpretrain 1.x
@@ -185,9 +211,15 @@ def get_model(model: Union[str, Config],
         dataset_class = DATASETS.get(config.test_dataloader.dataset.type)
         dataset_meta = getattr(dataset_class, 'METAINFO', {})
 
-    model.dataset_meta = dataset_meta
-    model.config = config  # save the config in the model for convenience
-    model.to(device)
+    if device_map is not None:
+        model = dispatch_model(
+            model, device_map=device_map, offload_folder=offload_folder)
+    elif device is not None:
+        model.to(device)
+
+    model._dataset_meta = dataset_meta  # save the dataset meta
+    model._config = config  # save the config in the model
+    model._metainfo = metainfo  # save the metainfo in the model
     model.eval()
     return model
 
@@ -284,6 +316,8 @@ def list_models(pattern=None, exclude_patterns=None, task=None) -> List[str]:
             metainfo = ModelHub._models_dict[key]
             if metainfo.results is None and task == 'null':
                 task_matches.append(key)
+            elif metainfo.results is None:
+                continue
             elif task in [result.task for result in metainfo.results]:
                 task_matches.append(key)
         matches = task_matches
@@ -291,41 +325,84 @@ def list_models(pattern=None, exclude_patterns=None, task=None) -> List[str]:
     return sorted(list(matches))
 
 
-def inference_model(model, input_, **kwargs):
+def inference_model(model, *args, **kwargs):
     """Inference an image with the inferencer.
 
     Automatically select inferencer to inference according to the type of
     model. It's a shortcut for a quick start, and for advanced usage, please
     use the correspondding inferencer class.
 
-    Here is the mapping from model type to inferencer:
+    Here is the mapping from task to inferencer:
 
-    - :class:`~mmpretrain.models.ImageClassifier`: :class:`ImageClassificationInferencer`.
-    - :class:`~mmpretrain.models.ImageToImageRetriever`: :class:`ImageToImageRetrievalInferencer`.
+    - Image Classification: :class:`ImageClassificationInferencer`
+    - Image Retrieval: :class:`ImageRetrievalInferencer`
+    - Image Caption: :class:`ImageCaptionInferencer`
+    - Visual Question Answering: :class:`VisualQuestionAnsweringInferencer`
+    - Visual Grounding: :class:`VisualGroundingInferencer`
+    - Text-To-Image Retrieval: :class:`TextToImageRetrievalInferencer`
+    - Image-To-Text Retrieval: :class:`ImageToTextRetrievalInferencer`
+    - NLVR: :class:`NLVRInferencer`
 
     Args:
         model (BaseModel | str | Config): The loaded model, the model
             name or the config of the model.
-        input_ (str | ndarray): The image path or loaded image.
-        **kwargs: Other keyword arguments to initialize the correspondding
-            inferencer.
+        *args: Positional arguments to call the inferencer.
+        **kwargs: Other keyword arguments to initialize and call the
+            correspondding inferencer.
 
     Returns:
         result (dict): The inference results.
     """  # noqa: E501
     from mmengine.model import BaseModel
 
-    if not isinstance(model, BaseModel):
-        model = get_model(model, pretrained=True)
+    if isinstance(model, BaseModel):
+        metainfo = getattr(model, '_metainfo', None)
+    else:
+        metainfo = ModelHub.get(model)
 
-    import mmpretrain.models
+    from inspect import signature
+
+    from .image_caption import ImageCaptionInferencer
     from .image_classification import ImageClassificationInferencer
     from .image_retrieval import ImageRetrievalInferencer
+    from .multimodal_retrieval import (ImageToTextRetrievalInferencer,
+                                       TextToImageRetrievalInferencer)
+    from .nlvr import NLVRInferencer
+    from .visual_grounding import VisualGroundingInferencer
+    from .visual_question_answering import VisualQuestionAnsweringInferencer
+    task_mapping = {
+        'Image Classification': ImageClassificationInferencer,
+        'Image Retrieval': ImageRetrievalInferencer,
+        'Image Caption': ImageCaptionInferencer,
+        'Visual Question Answering': VisualQuestionAnsweringInferencer,
+        'Visual Grounding': VisualGroundingInferencer,
+        'Text-To-Image Retrieval': TextToImageRetrievalInferencer,
+        'Image-To-Text Retrieval': ImageToTextRetrievalInferencer,
+        'NLVR': NLVRInferencer,
+    }
 
-    if isinstance(model, mmpretrain.models.ImageClassifier):
-        inferencer = ImageClassificationInferencer(model, **kwargs)
-    elif isinstance(model, mmpretrain.models.ImageToImageRetriever):
-        inferencer = ImageRetrievalInferencer(model, **kwargs)
-    else:
-        raise NotImplementedError(f'No available inferencer for {type(model)}')
-    return inferencer(input_)[0]
+    inferencer_type = None
+
+    if metainfo is not None and metainfo.results is not None:
+        tasks = set(result.task for result in metainfo.results)
+        inferencer_type = [
+            task_mapping.get(task) for task in tasks if task in task_mapping
+        ]
+        if len(inferencer_type) > 1:
+            inferencer_names = [cls.__name__ for cls in inferencer_type]
+            warnings.warn('The model supports multiple tasks, auto select '
+                          f'{inferencer_names[0]}, you can also use other '
+                          f'inferencer {inferencer_names} directly.')
+        inferencer_type = inferencer_type[0]
+
+    if inferencer_type is None:
+        raise NotImplementedError('No available inferencer for the model')
+
+    init_kwargs = {
+        k: kwargs.pop(k)
+        for k in list(kwargs)
+        if k in signature(inferencer_type).parameters.keys()
+    }
+
+    inferencer = inferencer_type(model, **init_kwargs)
+    return inferencer(*args, **kwargs)[0]

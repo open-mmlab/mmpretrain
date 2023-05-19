@@ -154,6 +154,11 @@ TASK_UTILS = Registry(
     parent=MMENGINE_TASK_UTILS,
     locations=['mmpretrain.models'],
 )
+# Tokenizer to encode sequence
+TOKENIZER = Registry(
+    'tokenizer',
+    locations=['mmpretrain.models'],
+)
 
 #######################################################################
 #                       mmpretrain.evaluation                         #

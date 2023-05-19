@@ -68,11 +68,19 @@ MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是
 ### 主要特性
 
 - 支持多样的主干网络与预训练模型
-- 支持多种训练策略（有监督学习，无监督学习等）
+- 支持多种训练策略（有监督学习，无监督学习，多模态学习等）
 - 提供多种训练技巧
 - 大量的训练配置文件
 - 高效率和高可扩展性
 - 功能强大的工具箱，有助于模型分析和实验
+- 支持多种开箱即用的推理任务
+  - 图像分类
+  - 图像描述（Image Caption）
+  - 视觉问答（Visual Question Answering）
+  - 视觉定位（Visual Grounding）
+  - 检索（图搜图，图搜文，文搜图）
+
+https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351-fbc74a04e904
 
 ## 更新日志
 
@@ -113,6 +121,12 @@ mim install -e .
 ```
 
 更详细的步骤请参考 [安装指南](https://mmpretrain.readthedocs.io/zh_CN/latest/get_started.html) 进行安装。
+
+如果需要多模态模型，请使用如下方式安装额外的依赖：
+
+```shell
+mim install -e ".[multimodal]"
+```
 
 ## 基础教程
 

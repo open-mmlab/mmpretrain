@@ -9,6 +9,7 @@ import torch.nn.functional as F
 
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
+from mmpretrain.utils import require
 from .base import BaseClassifier
 
 
@@ -59,6 +60,7 @@ class TimmClassifier(BaseClassifier):
         torch.Size([1, 1000])
     """  # noqa: E501
 
+    @require('timm')
     def __init__(self,
                  *args,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),

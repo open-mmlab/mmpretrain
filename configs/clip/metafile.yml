@@ -294,3 +294,15 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.laion2b_ft_in12k_in1k
+  - Name: vit-large-p14_clip-openai-pre_3rdparty
+    Metadata:
+      FLOPs: 59696580608
+      Parameters: 303302656
+      Training Data:
+        - OpenAI
+    In Collection: CLIP
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/vit-large-p14_clip-openai-pre_3rdparty_20230517-95e2af0b.pth
+    Config: configs/clip/vit-large-p14_headless.py
+    Converted From:
+      Code: https://github.com/mlfoundations/open_clip
+      Weights: https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt

@@ -1,0 +1,42 @@
+Collections:
+  - Name: Flamingo
+    Metadata:
+      Architecture:
+        - Transformer
+        - Gated Cross-Attention Dense
+    Paper:
+      Title: 'Flamingo: a Visual Language Model for Few-Shot Learning'
+      URL: https://arxiv.org/abs/2204.14198
+    README: configs/flamingo/README.md
+
+Models:
+  - Name: flamingo_3rdparty-zeroshot_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Flamingo
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics:
+          CIDER: 65.50  # Report from the official repo
+    Weights: https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth
+    Config: configs/flamingo/flamingo_zeroshot_caption.py
+    Converted From:
+      Weights: https://huggingface.co/openflamingo/OpenFlamingo-9B
+      Code: https://github.com/mlfoundations/open_flamingo
+  - Name: flamingo_3rdparty-zeroshot_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Flamingo
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: 43.50  # Report from the official repo
+    Weights: https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth
+    Config: configs/flamingo/flamingo_zeroshot_vqa.py
+    Converted From:
+      Weights: https://huggingface.co/openflamingo/OpenFlamingo-9B
+      Code: https://github.com/mlfoundations/open_flamingo

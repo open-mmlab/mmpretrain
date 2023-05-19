@@ -8,6 +8,8 @@ import torch
 from mmengine.logging import MMLogger
 from torch import nn
 
+from mmpretrain.registry import MODELS
+
 
 class LayerNorm(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16."""
@@ -19,6 +21,7 @@ class LayerNorm(nn.LayerNorm):
         return ret.type(orig_type)
 
 
+@MODELS.register_module()
 class QuickGELU(nn.Module):
     """A faster version of GELU."""
 

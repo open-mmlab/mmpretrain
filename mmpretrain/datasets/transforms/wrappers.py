@@ -95,3 +95,50 @@ class MultiView(BaseTransform):
             repr_str += str(p)
         repr_str += ')'
         return repr_str
+
+
+@TRANSFORMS.register_module()
+class ApplyToList(BaseTransform):
+    """A transform wrapper to apply the wrapped transforms to a list of items.
+    For example, to load and resize a list of images.
+
+    Args:
+        transforms (list[dict | callable]): Sequence of transform config dict
+            to be wrapped.
+        scatter_key (str): The key to scatter data dict. If the field is a
+            list, scatter the list to multiple data dicts to do transformation.
+        collate_keys (List[str]): The keys to collate from multiple data dicts.
+            The fields in ``collate_keys`` will be composed into a list after
+            transformation, and the other fields will be adopted from the
+            first data dict.
+    """
+
+    def __init__(self, transforms, scatter_key, collate_keys):
+        super().__init__()
+
+        self.transforms = Compose([TRANSFORMS.build(t) for t in transforms])
+        self.scatter_key = scatter_key
+        self.collate_keys = set(collate_keys)
+        self.collate_keys.add(self.scatter_key)
+
+    def transform(self, results: dict):
+        scatter_field = results.get(self.scatter_key)
+
+        if isinstance(scatter_field, list):
+            scattered_results = []
+            for item in scatter_field:
+                single_results = copy.deepcopy(results)
+                single_results[self.scatter_key] = item
+                scattered_results.append(self.transforms(single_results))
+
+            final_output = scattered_results[0]
+
+            # merge output list to single output
+            for key in scattered_results[0].keys():
+                if key in self.collate_keys:
+                    final_output[key] = [
+                        single[key] for single in scattered_results
+                    ]
+            return final_output
+        else:
+            return self.transforms(results)

@@ -23,7 +23,7 @@ class TestImageClassificationInferencer(TestCase):
         # test input BaseModel
         model = get_model(MODEL)
         inferencer = ImageClassificationInferencer(model)
-        self.assertEqual(model.config, inferencer.config)
+        self.assertEqual(model._config, inferencer.config)
         self.assertIsInstance(inferencer.model.backbone, MobileNetV3)
 
         # test input model name

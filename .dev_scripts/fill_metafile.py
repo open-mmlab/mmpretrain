@@ -20,8 +20,10 @@ To display metafile or fill missing fields of the metafile.
 
 MMCLS_ROOT = Path(__file__).absolute().parents[1].resolve().absolute()
 console = Console()
-dataset_completer = FuzzyWordCompleter(
-    ['ImageNet-1k', 'ImageNet-21k', 'CIFAR-10', 'CIFAR-100'])
+dataset_completer = FuzzyWordCompleter([
+    'ImageNet-1k', 'ImageNet-21k', 'CIFAR-10', 'CIFAR-100', 'RefCOCO', 'VQAv2',
+    'COCO', 'OpenImages', 'Object365', 'CC3M', 'CC12M', 'YFCC100M', 'VG'
+])
 
 
 def prompt(message,
@@ -83,53 +85,57 @@ def parse_args():
     return args
 
 
-def get_flops(config_path):
+def get_flops_params(config_path):
     import numpy as np
     import torch
-    from fvcore.nn import FlopCountAnalysis, parameter_count
-    from mmengine.config import Config
+    from mmengine.analysis import FlopAnalyzer, parameter_count
     from mmengine.dataset import Compose
     from mmengine.model.utils import revert_sync_batchnorm
     from mmengine.registry import DefaultScope
 
-    import mmpretrain.datasets  # noqa: F401
-    from mmpretrain.apis import init_model
+    from mmpretrain.apis import get_model
+    from mmpretrain.models.utils import no_load_hf_pretrained_model
 
-    cfg = Config.fromfile(config_path)
-
-    if 'test_dataloader' in cfg:
-        # build the data pipeline
-        test_dataset = cfg.test_dataloader.dataset
-        if test_dataset.pipeline[0]['type'] == 'LoadImageFromFile':
-            test_dataset.pipeline.pop(0)
-        if test_dataset.type in ['CIFAR10', 'CIFAR100']:
-            # The image shape of CIFAR is (32, 32, 3)
-            test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
-
-        with DefaultScope.overwrite_default_scope('mmpretrain'):
-            data = Compose(test_dataset.pipeline)({
-                'img':
-                np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
-            })
-        resolution = tuple(data['inputs'].shape[-2:])
-    else:
-        # For configs only for get model.
-        resolution = (224, 224)
-
-    model = init_model(cfg, device='cpu')
+    with no_load_hf_pretrained_model():
+        model = get_model(config_path, device='cpu')
     model = revert_sync_batchnorm(model)
     model.eval()
+    params = int(parameter_count(model)[''])
 
-    with torch.no_grad():
-        model.forward = model.extract_feat
-        model.to('cpu')
-        inputs = (torch.randn((1, 3, *resolution)), )
-        analyzer = FlopCountAnalysis(model, inputs)
-        analyzer.unsupported_ops_warnings(False)
-        analyzer.uncalled_modules_warnings(False)
-        flops = analyzer.total()
-        params = parameter_count(model)['']
-    return int(flops), int(params)
+    # get flops
+    try:
+        if 'test_dataloader' in model._config:
+            # build the data pipeline
+            test_dataset = model._config.test_dataloader.dataset
+            if test_dataset.pipeline[0]['type'] == 'LoadImageFromFile':
+                test_dataset.pipeline.pop(0)
+            if test_dataset.type in ['CIFAR10', 'CIFAR100']:
+                # The image shape of CIFAR is (32, 32, 3)
+                test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
+
+            with DefaultScope.overwrite_default_scope('mmpretrain'):
+                data = Compose(test_dataset.pipeline)({
+                    'img':
+                    np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+                })
+            resolution = tuple(data['inputs'].shape[-2:])
+        else:
+            # For configs only for get model.
+            resolution = (224, 224)
+
+        with torch.no_grad():
+            # Skip flops if the model doesn't have `extract_feat` method.
+            model.forward = model.extract_feat
+            model.to('cpu')
+            inputs = (torch.randn((1, 3, *resolution)), )
+            analyzer = FlopAnalyzer(model, inputs)
+            analyzer.unsupported_ops_warnings(False)
+            analyzer.uncalled_modules_warnings(False)
+            flops = int(analyzer.total())
+    except Exception:
+        print('Unable to calculate flops.')
+        flops = None
+    return flops, params
 
 
 def fill_collection(collection: dict):
@@ -202,12 +208,9 @@ def fill_model_by_prompt(model: dict, defaults: dict):
     params = model.get('Metadata', {}).get('Parameters')
     if model.get('Config') is not None and (
             MMCLS_ROOT / model['Config']).exists() and (flops is None
-                                                        or params is None):
-        try:
-            print('Automatically compute FLOPs and Parameters from config.')
-            flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
-        except Exception:
-            print('Failed to compute FLOPs and Parameters.')
+                                                        and params is None):
+        print('Automatically compute FLOPs and Parameters from config.')
+        flops, params = get_flops_params(str(MMCLS_ROOT / model['Config']))
 
     if flops is None:
         flops = prompt('Please specify the [red]FLOPs[/]: ')
@@ -222,7 +225,8 @@ def fill_model_by_prompt(model: dict, defaults: dict):
     model['Metadata'].setdefault('FLOPs', flops)
     model['Metadata'].setdefault('Parameters', params)
 
-    if model.get('Metadata', {}).get('Training Data') is None:
+    if 'Training Data' not in model.get('Metadata', {}) and \
+            'Training Data' not in defaults.get('Metadata', {}):
         training_data = prompt(
             'Please input all [red]training dataset[/], '
             'include pre-training (input empty to finish): ',
@@ -259,12 +263,11 @@ def fill_model_by_prompt(model: dict, defaults: dict):
                 for metric in metrics_list:
                     k, v = metric.split('=')[:2]
                     metrics[k] = round(float(v), 2)
-            if len(metrics) > 0:
-                results = [{
-                    'Dataset': test_dataset,
-                    'Metrics': metrics,
-                    'Task': task
-                }]
+            results = [{
+                'Task': task,
+                'Dataset': test_dataset,
+                'Metrics': metrics or None,
+            }]
     model['Results'] = results
 
     weights = model.get('Weights')
@@ -274,7 +277,7 @@ def fill_model_by_prompt(model: dict, defaults: dict):
 
     if model.get('Converted From') is None and model.get(
             'Weights') is not None:
-        if Confirm.ask(
+        if '3rdparty' in model['Name'] or Confirm.ask(
                 'Is the checkpoint is converted '
                 'from [red]other repository[/]?',
                 default=False):
@@ -317,9 +320,9 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
     # Metadata.Flops, Metadata.Parameters
     flops = model.get('Metadata', {}).get('FLOPs')
     params = model.get('Metadata', {}).get('Parameters')
-    if config_updated or (flops is None or params is None):
+    if config_updated or (flops is None and params is None):
         print(f'Automatically compute FLOPs and Parameters of {model["Name"]}')
-        flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
+        flops, params = get_flops_params(str(MMCLS_ROOT / model['Config']))
 
     model.setdefault('Metadata', {})
     model['Metadata']['FLOPs'] = flops
@@ -409,10 +412,15 @@ def format_model(model: dict):
 
 def order_models(model):
     order = []
+    # Pre-trained model
     order.append(int('Downstream' not in model))
+    # non-3rdparty model
     order.append(int('3rdparty' in model['Name']))
+    # smaller model
     order.append(model.get('Metadata', {}).get('Parameters', 0))
+    # faster model
     order.append(model.get('Metadata', {}).get('FLOPs', 0))
+    # name order
     order.append(len(model['Name']))
 
     return tuple(order)
@@ -442,7 +450,10 @@ def main():
     collection = fill_collection(collection)
     if ori_collection != collection:
         console.print(format_collection(collection))
-    model_defaults = {'In Collection': collection['Name']}
+    model_defaults = {
+        'In Collection': collection['Name'],
+        'Metadata': collection.get('Metadata', {}),
+    }
 
     models = content.get('Models', [])
     updated_models = []

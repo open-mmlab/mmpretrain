@@ -1,0 +1,98 @@
+Collections:
+  - Name: BLIP
+    Metadata:
+      Training Data:
+        - COCO
+        - VG
+        - Conceptual Captions
+        - Conceptual 12M
+        - SBU captions
+      Architecture:
+        - Transformer
+    Paper:
+      Title: 'BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language
+        Understanding and Generation'
+      URL: https://arxiv.org/abs/2201.12086
+    README: configs/blip/README.md
+
+Models:
+  - Name: blip-base_8xb16_refcoco
+    Metadata:
+      FLOPs: null
+      Parameters: 498488636
+    In Collection: BLIP
+    Results:
+      - Task: Visual Grounding
+        Dataset: RefCOCO
+        Metrics:
+          Accuracy (testA): 86.14
+          Accuracy (testB): 77.33
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_8xb16_refcoco_20230508-d2d10f4c.pth
+    Config: configs/blip/blip-base_8xb16_refcoco.py
+  - Name: blip-base_3rdparty_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 223971644
+    In Collection: BLIP
+    Results:
+      - Dataset: COCO
+        Task: Image Caption
+        Metrics:
+          BLEU-4: 40.12
+          CIDER: 132.82
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-caption_20230419-a5b71af3.pth
+    Config: configs/blip/blip-base_8xb32_caption.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP/blip_coco_caption_base.pth
+      Code: https://github.com/salesforce/LAVIS
+  - Name: blip-base_3rdparty_nlvr
+    Metadata:
+      FLOPs: null
+      Parameters: 259372034
+    In Collection: BLIP
+    Results:
+      - Task: NLVR
+        Dataset: NLVR2
+        Metrics:
+          Top 1 Accuracy: 82.33
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_nlvr_20230427-3b14d33f.pth
+    Config: configs/blip/blip-base_8xb32_nlvr.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_nlvr.pth
+      Code: https://github.com/salesforce/LAVIS
+  - Name: blip-base_3rdparty_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 361478972
+    In Collection: BLIP
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: 78.2
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth
+    Config: configs/blip/blip-base_8xb32_vqa.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_vqa_capfilt_large.pth
+      Code: https://github.com/salesforce/LAVIS
+  - Name: blip-base_3rdparty_retrieval
+    Metadata:
+      FLOPs: null
+      Parameters: 447486979
+    In Collection: BLIP
+    Results:
+      - Task: Image-To-Text Retrieval
+        Dataset: COCO
+        Metrics:
+          Recall@1: 82.52
+          Recall@5: 95.34
+      - Task: Text-To-Image Retrieval
+        Dataset: COCO
+        Metrics:
+          Recall@1: 64.82
+          Recall@5: 86.28
+    Weights: https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-retrieval_20230419-a1804d2c.pth
+    Config: configs/blip/blip-base_8xb32_retrieval.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/BLIP/blip_coco_retrieval.pth
+      Code: https://github.com/salesforce/LAVIS
