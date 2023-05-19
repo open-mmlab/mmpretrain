@@ -387,7 +387,7 @@ class VisualQuestionAnsweringTab:
     def __init__(self) -> None:
         self.model_list = VisualQuestionAnsweringInferencer.list_models()
         # The fine-tuned OFA vqa models requires extra object description.
-        self.model_list.remove('ofa-base_3rdparty_coco-vqa')
+        self.model_list.remove('ofa-base_3rdparty-finetuned_vqa')
         self.tab = self.create_ui()
 
     def create_ui(self):
@@ -463,4 +463,4 @@ if __name__ == '__main__':
                         'to https://mmpretrain.readthedocs.io/en/latest/'
                         'get_started.html#installation')
 
-    demo.launch(server_name='0.0.0.0')
+    demo.launch()
