@@ -82,7 +82,7 @@ The `main` branch works with **PyTorch 1.8+**.
   - Visual Grounding
   - Retrieval (Image-To-Image, Text-To-Image, Image-To-Text)
 
-https://github.com/open-mmlab/mmpretrain/assets/26739999/c112d1f4-ff43-4b73-8a18-a4372b56fabe
+https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351-fbc74a04e904
 
 ## What's new
 

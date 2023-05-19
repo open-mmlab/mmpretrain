@@ -80,7 +80,7 @@ MMPreTrain 是一款基于 PyTorch 的开源深度学习预训练工具箱，是
   - 视觉定位（Visual Grounding）
   - 检索（图搜图，图搜文，文搜图）
 
-https://github.com/open-mmlab/mmpretrain/assets/26739999/c112d1f4-ff43-4b73-8a18-a4372b56fabe
+https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351-fbc74a04e904
 
 ## 更新日志
 
