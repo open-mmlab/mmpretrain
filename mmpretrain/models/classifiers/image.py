@@ -78,6 +78,13 @@ class ImageClassifier(BaseClassifier):
         self.neck = neck
         self.head = head
 
+        if hasattr(self.backbone, '_remove_state_dict_prefix'):
+            self._register_state_dict_hook(
+                self.backbone._remove_state_dict_prefix)
+        if hasattr(self.backbone, '_add_state_dict_prefix'):
+            self._register_load_state_dict_pre_hook(
+                self.backbone._add_state_dict_prefix)
+
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: Optional[List[DataSample]] = None,
