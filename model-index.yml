@@ -75,3 +75,4 @@ Import:
   - configs/blip/metafile.yml
   - configs/flamingo/metafile.yml
   - configs/blip2/metafile.yml
+  - configs/chinese_clip/metafile.yml
