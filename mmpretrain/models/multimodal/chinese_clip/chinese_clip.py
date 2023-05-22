@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import OrderedDict
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -301,28 +301,35 @@ class ChineseCLIP(BaseModel):
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    def extract_image_feat(self, image):
+    def extract_image_feat(self, images: torch.Tensor) -> torch.Tensor:
+        """The function to extract image latent features."""
         if isinstance(self.vision_backbone, ModifiedResNet):
-            return self.vision_backbone(image)
-        return self.vision_backbone(image)[-1] @ self.vision_projection
+            return self.vision_backbone(images)
+        return self.vision_backbone(images)[-1] @ self.vision_projection
 
-    def extract_text_feat(self, text):
+    def extract_text_feat(self, texts: torch.Tensor) -> torch.Tensor:
+        """The function to extract text latent features."""
         pad_index = self.tokenizer.vocab['[PAD]']
-        attn_mask = text.ne(pad_index)
+        attn_mask = texts.ne(pad_index)
         # [batch_size, seq_length, hidden_size]
-        x = self.text_backbone(text, attention_mask=attn_mask)[0]
+        x = self.text_backbone(texts, attention_mask=attn_mask)[0]
         return x[:, 0, :] @ self.text_projection
 
-    def extract_feat(self, image, text):
-        assert image is not None or text is not None, \
-            'text and image cannot both be None!'
-        if image is None:
-            return self.extract_text_feat(text)
-        elif text is None:
-            return self.extract_image_feat(image)
+    def extract_feat(
+            self, images: torch.Tensor,
+            texts: torch.Tensor) -> Union[torch.Tensor, Tuple[torch.Tensor]]:
+        """The function to extract image and text latent features, the input
+        image or text can not both be None."""
 
-        image_features = self.extract_image_feat(image)
-        text_features = self.extract_text_feat(text)
+        assert images is not None or texts is not None, \
+            'text and image cannot both be None!'
+        if images is None:
+            return self.extract_text_feat(texts)
+        elif texts is None:
+            return self.extract_image_feat(images)
+
+        image_features = self.extract_image_feat(images)
+        text_features = self.extract_text_feat(texts)
 
         image_features = image_features / image_features.norm(
             dim=-1, keepdim=True)
@@ -331,9 +338,10 @@ class ChineseCLIP(BaseModel):
 
         return image_features, text_features
 
-    def compute_similarity(self, images, text):
+    def compute_similarity(self, images, texts):
+        """Extract images and texts features and compute cosine similarity."""
         image_features, text_features = self.extract_feat(
-            image=images, text=text)
+            images=images, texts=texts)
 
         # cosine similarity as logits
         logit_scale = self.logit_scale.exp()
@@ -346,10 +354,24 @@ class ChineseCLIP(BaseModel):
     def predict(self,
                 images: torch.Tensor,
                 data_samples: DataSample = None) -> DataSample:
+        """Predict the classes of the input images.
+
+        The prediction is for zero-shot classification and the text prototypes
+        will be prepared in thisfunction.
+
+        Args:
+            images (torch.Tensor): The input images.
+            data_samples (DataSample): The data samples with information from
+                dataset.
+
+        Returns:
+            DataSample: The results of prediction.
+        """
+
         if self.text_prototype_embeds is None:
             self.prepare_text_prototype(device=images.device)
 
-        image_features = self.extract_image_feat(image=images)
+        image_features = self.extract_image_feat(images=images)
         image_features /= image_features.norm(dim=-1, keepdim=True)
 
         # cosine similarity as logits
@@ -393,7 +415,7 @@ class ChineseCLIP(BaseModel):
         Args:
             texts (Union[str, List[str]]): An input string or a list of input
                 strings to tokenize
-        context_length (int): The context length to use. Defaults to 52.
+            context_length (int): The context length to use. Defaults to 52.
 
         Returns:
             torch.Tensor: Resulting tokens.
