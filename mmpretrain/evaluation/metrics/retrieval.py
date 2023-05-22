@@ -234,6 +234,7 @@ class RetrievalAveragePrecision(BaseMetric):
         Use in OpenMMLab config files:
 
         .. code:: python
+        
             val_evaluator = dict(type='RetrievalAveragePrecision', topk=100)
             test_evaluator = val_evaluator
     """
