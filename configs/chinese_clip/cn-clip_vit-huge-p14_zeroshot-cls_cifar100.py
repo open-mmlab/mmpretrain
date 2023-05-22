@@ -12,7 +12,6 @@ test_pipeline = [
     dict(type='Resize', scale=(224, 224), interpolation='bicubic'),
     dict(
         type='PackInputs',
-        algorithm_keys=['text'],
         meta_keys=['image_id', 'scale_factor'],
     ),
 ]
