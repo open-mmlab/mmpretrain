@@ -64,30 +64,30 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='InternImage',
-        stem_channels=112,
-        drop_path_rate=0.5,
+        stem_channels=80,
+        drop_path_rate=0.4,
         stage_blocks=[4, 4, 21, 4],
-        groups=[7, 14, 28, 56],
+        groups=[5, 10, 20, 40],
         layer_scale=1e-5,
         post_norm=True),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=1344,
+        in_channels=960,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5)))
 
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=5e-4, eps=1e-8, betas=(0.9, 0.999)))
+    optimizer=dict(type='AdamW', lr=1.25e-04, eps=1e-8, betas=(0.9, 0.999)),
+    weight_decay=0.05)
 
 # learning policy
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=5e-7,
         by_epoch=True,
         begin=0,
         end=20,
@@ -99,7 +99,7 @@ param_scheduler = [
         by_epoch=True,
         begin=20,
         end=300,
-    )
+        eta_min=1.25e-06)
 ]
 
 # train, val, test setting
@@ -109,14 +109,14 @@ test_cfg = dict()
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=128)
+auto_scale_lr = dict(base_batch_size=128 * 8)
 
 default_scope = 'mmpretrain'
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=100),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=1),
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='VisualizationHook', enable=False),
 )

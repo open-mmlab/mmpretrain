@@ -13,7 +13,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        scale=384,
+        scale=224,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
@@ -24,11 +24,11 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=384,
+        scale=224,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=384),
+    dict(type='CenterCrop', crop_size=224),
     dict(type='PackInputs'),
 ]
 
@@ -64,41 +64,31 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='InternImage',
-        stem_channels=192,
-        drop_path_rate=0.2,
-        stage_blocks=[5, 5, 24, 5],
-        groups=[12, 24, 48, 96],
-        layer_scale=1e-5,
-        offset_scale=2.0,
-        post_norm=True),
+        stem_channels=64,
+        drop_path_rate=0.1,
+        stage_blocks=[4, 4, 18, 4],
+        groups=[4, 8, 16, 32]),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=2304,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.3, mode='original'),
+        in_channels=768,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5)))
 
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(
-        type='AdamW',
-        lr=2e-05,
-        eps=1e-8,
-        betas=(0.9, 0.999),
-        weight_decay=0.05,
-    ))
+    optimizer=dict(type='AdamW', lr=1.25e-04, eps=1e-8, betas=(0.9, 0.999)),
+    weight_decay=0.05)
 
 # learning policy
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=5e-7,
         by_epoch=True,
         begin=0,
-        end=2,
+        end=20,
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
@@ -107,7 +97,7 @@ param_scheduler = [
         by_epoch=True,
         begin=20,
         end=300,
-    )
+        eta_min=1.25e-06)
 ]
 
 # train, val, test setting
@@ -117,14 +107,14 @@ test_cfg = dict()
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=128)
+auto_scale_lr = dict(base_batch_size=128 * 8)
 
 default_scope = 'mmpretrain'
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=100),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=1),
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='VisualizationHook', enable=False),
 )
