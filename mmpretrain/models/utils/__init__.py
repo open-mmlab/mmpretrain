@@ -83,9 +83,10 @@ __all__ = [
 if WITH_MULTIMODAL:
     from .huggingface import (no_load_hf_pretrained_model, register_hf_model,
                               register_hf_tokenizer)
-    from .tokenizer import Blip2Tokenizer, BlipTokenizer, OFATokenizer
+    from .tokenizer import (Blip2Tokenizer, BlipTokenizer, OFATokenizer,
+                            FullTokenizer)
 
     __all__.extend([
         'BlipTokenizer', 'OFATokenizer', 'Blip2Tokenizer', 'register_hf_model',
-        'register_hf_tokenizer', 'no_load_hf_pretrained_model'
+        'register_hf_tokenizer', 'no_load_hf_pretrained_model', 'FullTokenizer'
     ])
