@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
 from mmengine.evaluator import Evaluator
 
 from mmpretrain.structures import DataSample
@@ -10,12 +9,12 @@ class TestScienceQAMetric:
     def test_evaluate(self):
         meta_info = {
             'choices': ['A', 'B', 'C', 'D'],
-            'prediction': 'A',
+            'pred_answer': 'A',
             'grade': 'grade1',
             'subject': 'language science',
-            'answer': 1,
+            'gt_answer': 1,
             'hint': 'hint',
-            'image': torch.ones((3, 224, 224))
+            'has_image': True
         }
         data_sample = DataSample(metainfo=meta_info)
         data_samples = [data_sample for _ in range(10)]
