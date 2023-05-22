@@ -42,6 +42,7 @@ if WITH_MULTIMODAL:
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .visual_genome import VisualGenomeQA
+    from .nocaps import NoCaps
 
     __all__.extend([
         'COCOCaption',
@@ -52,5 +53,6 @@ if WITH_MULTIMODAL:
         'RefCOCO',
         'VisualGenomeQA',
         'ScienceQA',
+        'NoCaps'
         'GQA',
     ])
