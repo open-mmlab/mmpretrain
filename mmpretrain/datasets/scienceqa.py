@@ -62,42 +62,45 @@ class ScienceQA(BaseDataset):
         data_list = []
         for data_id in current_data_split:
             ann = annotations[data_id]
-            if ann['image'] is not None:
-                data_info = {
-                    'image_id':
-                    data_id,
-                    'question':
-                    ann['question'],
-                    'choices':
-                    ann['choices'],
-                    'answer':
-                    ann['answer'],
-                    'hint':
-                    ann['hint'],
-                    'image_name':
-                    ann['image'],
-                    'task':
-                    ann['task'],
-                    'grade':
-                    ann['grade'],
-                    'subject':
-                    ann['subject'],
-                    'topic':
-                    ann['topic'],
-                    'category':
-                    ann['category'],
-                    'skill':
-                    ann['skill'],
-                    'lecture':
-                    ann['lecture'],
-                    'solution':
-                    ann['solution'],
-                    'split':
-                    ann['split'],
-                    'img_path':
-                    file_backend.join_path(img_prefix, data_id,
-                                           ann['image']),  # noqa
-                }
-                data_list.append(data_info)
+            data_info = {
+                'image_id':
+                data_id,
+                'question':
+                ann['question'],
+                'choices':
+                ann['choices'],
+                'gt_answer':
+                ann['answer'],
+                'hint':
+                ann['hint'],
+                'image_name':
+                ann['image'],
+                'task':
+                ann['task'],
+                'grade':
+                ann['grade'],
+                'subject':
+                ann['subject'],
+                'topic':
+                ann['topic'],
+                'category':
+                ann['category'],
+                'skill':
+                ann['skill'],
+                'lecture':
+                ann['lecture'],
+                'solution':
+                ann['solution'],
+                'split':
+                ann['split'],
+                'img_path':
+                file_backend.join_path(img_prefix, data_id, ann['image'])
+                if ann['image'] is not None else None,
+                'caption':
+                ann['caption'],
+                'has_image':
+                True if ann['image'] is not None else False,
+            }
+            data_list.append(data_info)
 
         return data_list
