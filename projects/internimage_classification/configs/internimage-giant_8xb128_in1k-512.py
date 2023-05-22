@@ -13,7 +13,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        scale=224,
+        scale=512,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
@@ -24,11 +24,11 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=224,
+        scale=512,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=224),
+    dict(type='CenterCrop', crop_size=512),
     dict(type='PackInputs'),
 ]
 
@@ -64,59 +64,58 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='InternImage',
-        stem_channels=80,
+        stem_channels=512,
         drop_path_rate=0.4,
-        stage_blocks=[4, 4, 21, 4],
-        groups=[5, 10, 20, 40],
-        layer_scale=1e-5,
-        post_norm=True),
-    neck=dict(type='GlobalAveragePooling'),
+        stage_blocks=[2, 2, 48, 4],
+        groups=[16, 32, 64, 128],
+        dw_kernel_size=5,
+        level2_post_norm=True,
+        level2_post_norm_block_ids=[5, 11, 17, 23, 29, 35, 41, 47],
+        center_feature_scale=True,
+        use_clip_projector=True,
+    ),
+    neck=None,
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=960,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        in_channels=768,
+        loss=dict(
+            type='LabelSmoothLoss', label_smooth_val=0.3, mode='original'),
         topk=(1, 5)))
 
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=5e-4, eps=1e-8, betas=(0.9, 0.999)))
+    optimizer=dict(type='AdamW', lr=5e-6, eps=1e-8, betas=(0.9, 0.999)),
+    weight_decay=0.05)
 
 # learning policy
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=5e-7,
         by_epoch=True,
         begin=0,
-        end=20,
+        end=2,
         convert_to_iter_based=True),
     # main learning rate scheduler
-    dict(
-        type='CosineAnnealingLR',
-        T_max=280,
-        by_epoch=True,
-        begin=20,
-        end=300,
-    )
+    dict(type='CosineAnnealingLR', T_max=18, by_epoch=True, begin=2, end=20)
 ]
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=300, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR,
 # based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=128)
+auto_scale_lr = dict(base_batch_size=128 * 8)
 
 default_scope = 'mmpretrain'
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=100),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=1),
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     visualization=dict(type='VisualizationHook', enable=False),
 )

@@ -78,9 +78,14 @@ class ImageClassifier(BaseClassifier):
         self.neck = neck
         self.head = head
 
+        # update the key-value pairs of weight before exporting the weights
+        # with the `_remove_state_dict_prefix` function
         if hasattr(self.backbone, '_remove_state_dict_prefix'):
             self._register_state_dict_hook(
                 self.backbone._remove_state_dict_prefix)
+
+        # update the key-value pairs of weight before loading the weights
+        # with the `_add_state_dict_prefix` function
         if hasattr(self.backbone, '_add_state_dict_prefix'):
             self._register_load_state_dict_pre_hook(
                 self.backbone._add_state_dict_prefix)
