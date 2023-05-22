@@ -1,6 +1,6 @@
 # RIFormer
 
-> [RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer](https://arxiv.org/abs/xxxx.xxxxx)
+> [RIFormer: Keep Your Vision Backbone Effective But Removing Token Mixer](https://arxiv.org/abs/2304.05659)
 
 <!-- [ALGORITHM] -->
 

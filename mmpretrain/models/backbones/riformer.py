@@ -202,7 +202,7 @@ class RIFormer(BaseBackbone):
             [stage1, downsampling, stage2, downsampling, stage3, downsampling, stage4]
             Defaults to -1, means the last stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
-            Defaults to 0, which means not freezing any parameters.
+            Defaults to -1, which means not freezing any parameters.
         deploy (bool): Whether to switch the model structure to
             deployment mode. Default: False.
         init_cfg (dict, optional): Initialization config dict
@@ -259,7 +259,7 @@ class RIFormer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.,
                  out_indices=-1,
-                 frozen_stages=0,
+                 frozen_stages=-1,
                  init_cfg=None,
                  deploy=False):
 
@@ -366,7 +366,7 @@ class RIFormer(BaseBackbone):
             for param in self.patch_embed.parameters():
                 param.requires_grad = False
 
-        for i in range(self.frozen_stages):
+        for i in range(0, self.frozen_stages + 1):
             # Include both block and downsample layer.
             module = self.network[i]
             module.eval()
