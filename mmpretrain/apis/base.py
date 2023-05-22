@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import abstractmethod
+from math import ceil
 from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -154,7 +155,8 @@ class BaseInferencer:
         inputs = self.preprocess(
             ori_inputs, batch_size=batch_size, **preprocess_kwargs)
         preds = []
-        for data in track(inputs, 'Inference'):
+        for data in track(
+                inputs, 'Inference', total=ceil(len(ori_inputs) / batch_size)):
             preds.extend(self.forward(data, **forward_kwargs))
         visualization = self.visualize(ori_inputs, preds, **visualize_kwargs)
         results = self.postprocess(preds, visualization, return_datasamples,
