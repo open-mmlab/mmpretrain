@@ -83,7 +83,7 @@ class ScienceQAMetric(BaseMetric):
                 data_sample.get('pred_answer'), choices, self.options)
             result['grade'] = data_sample.get('grade')
             result['subject'] = data_sample.get('subject')
-            result['answer'] = self.options[data_sample.get('gt_answer')]
+            result['answer'] = data_sample.get('gt_answer')
             hint = data_sample.get('hint')
             has_image = data_sample.get('has_image', False)
             result[

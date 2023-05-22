@@ -96,8 +96,6 @@ class ScienceQA(BaseDataset):
                 'img_path':
                 file_backend.join_path(img_prefix, data_id, ann['image'])
                 if ann['image'] is not None else None,
-                'caption':
-                ann['caption'],
                 'has_image':
                 True if ann['image'] is not None else False,
             }
