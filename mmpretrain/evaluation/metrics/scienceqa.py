@@ -83,13 +83,13 @@ class ScienceQAMetric(BaseMetric):
                 data_sample.get('pred_answer'), choices, self.options)
             result['grade'] = data_sample.get('grade')
             result['subject'] = data_sample.get('subject')
-            result['answer'] = self.options[data_sample.get('answer')]
-            image = data_sample.get('image')
+            result['answer'] = self.options[data_sample.get('gt_answer')]
             hint = data_sample.get('hint')
+            has_image = data_sample.get('has_image', False)
             result[
-                'no_context'] = True if image is None and hint is None else False  # noqa
+                'no_context'] = True if not has_image and hint is None else False  # noqa
             result['has_text'] = True if hint is not None else False
-            result['has_image'] = data_sample.get('has_image', False)
+            result['has_image'] = has_image
 
             # Save the result to `self.results`.
             self.results.append(result)
