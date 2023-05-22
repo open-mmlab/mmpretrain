@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List
 import os.path as osp
+from typing import List
 
 import mmengine
 from mmengine.dataset import BaseDataset
