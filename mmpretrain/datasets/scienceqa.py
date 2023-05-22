@@ -69,7 +69,7 @@ class ScienceQA(BaseDataset):
                 ann['question'],
                 'choices':
                 ann['choices'],
-                'answer':
+                'gt_answer':
                 ann['answer'],
                 'hint':
                 ann['hint'],
@@ -98,6 +98,8 @@ class ScienceQA(BaseDataset):
                 if ann['image'] is not None else None,
                 'caption':
                 ann['caption'],
+                'has_image':
+                True if ann['image'] is not None else False,
             }
             data_list.append(data_info)
 
