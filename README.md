@@ -86,6 +86,12 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## What's new
 
+🌟 v1.0.0rc8 was released in 22/05/2023
+
+- Support multiple multi-modal algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
+- Add EVA-02, Dino-V2, ViT-SAM and GLIP backbones.
+- Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain.
+
 🌟 v1.0.0rc7 was released in 07/04/2023
 
 - Integrated Self-supervised learning algorithms from **MMSelfSup**, such as **MAE**, **BEiT**, etc.
@@ -159,6 +165,9 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
       </td>
       <td>
         <b>Self-supervised Learning</b>
+      </td>
+      <td>
+        <b>Multi-Modality Algorithms</b>
       </td>
       <td>
         <b>Others</b>
@@ -237,6 +246,15 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
         <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
         <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+        <li><a href="configs/blip">BLIP (arxiv'2022)</a></li>
+        <li><a href="configs/blip2">BLIP-2 (arxiv'2023)</a></li>
+        <li><a href="configs/ofa">OFA (CoRR'2022)</a></li>
+        <li><a href="configs/flamingo">Flamingo (NeurIPS'2022)</a></li>
+        <li><a href="configs/chinese_clip">Chinese CLIP (arxiv'2022)</a></li>
         </ul>
       </td>
       <td>

@@ -84,6 +84,12 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## 更新日志
 
+🌟 2023/5/22 发布了 v1.0.0rc8 版本
+
+- 支持多种多模态算法和推理器。您可以通过 [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo) 探索这些功能!
+- 新增 EVA-02，Dino-V2，ViT-SAM 和 GLIP 主干网络。
+- 将 torchvision 变换注册到 MMPretrain，现在您可以轻松地将 torchvision 的数据增强集成到 MMPretrain 中。
+
 🌟 2023/4/7 发布了 v1.0.0rc7 版本
 
 - 整和来自 MMSelfSup 的自监督学习算法，例如 `MAE`, `BEiT` 等
@@ -156,6 +162,9 @@ mim install -e ".[multimodal]"
       </td>
       <td>
         <b>自监督学习</b>
+      </td>
+      <td>
+        <b>多模态算法</b>
       </td>
       <td>
         <b>其它</b>
@@ -233,6 +242,15 @@ mim install -e ".[multimodal]"
         <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
         <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
         <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+        <li><a href="configs/blip">BLIP (arxiv'2022)</a></li>
+        <li><a href="configs/blip2">BLIP-2 (arxiv'2023)</a></li>
+        <li><a href="configs/ofa">OFA (CoRR'2022)</a></li>
+        <li><a href="configs/flamingo">Flamingo (NeurIPS'2022)</a></li>
+        <li><a href="configs/chinese_clip">Chinese CLIP (arxiv'2022)</a></li>
         </ul>
       </td>
       <td>
