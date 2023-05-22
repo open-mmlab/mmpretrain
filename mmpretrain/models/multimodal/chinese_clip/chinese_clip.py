@@ -397,7 +397,8 @@ class ChineseCLIP(BaseModel):
     def prepare_text_prototype(self, device) -> None:
         """The function to prepare text prototypes with prompt."""
         class_embeddings = []
-        for classname in track_on_main_process(self.prototype):
+        for classname in track_on_main_process(self.prototype,
+                                               'Prepare text prototype...'):
             # format with class
             texts = [prompt(classname) for prompt in self.prompt]
             tokenized_texts = self.tokenize(texts)
