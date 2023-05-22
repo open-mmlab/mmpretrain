@@ -36,7 +36,7 @@ train_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=256,
     num_workers=8,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -44,6 +44,6 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='meta/train.txt',
+        # ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline))

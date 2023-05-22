@@ -30,17 +30,17 @@ model = dict(
         num_embed=512,
         loss=dict(type='CrossEntropyLoss')),
     target_generator=dict(
-        type='ClipTargeter',
-        model_name='ViT-B/16',
-        checkpoint=  # noqa
-        'https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt'  # noqa
-    ))
+        type='CLIPGenerator',
+        tokenizer_path=  # noqa
+        'https://download.openmmlab.com/mmselfsup/1.x/target_generator_ckpt/clip_vit_base_16.pth.tar'  # noqa
+    ),
+)
 
 # optimizer wrapper
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     loss_scale='dynamic',
-    # betas: (0.9, 0.98) for 300 epochs and (0.9, 0.999) for 800 epochs.
+    # betas: (0.9, 0.98) for 300 epochs and (0.9, 0.999) for 800/1600 epochs.
     optimizer=dict(
         type='AdamW', lr=1.5e-3, betas=(0.9, 0.999), weight_decay=0.05),
     clip_grad=dict(max_norm=3.0),

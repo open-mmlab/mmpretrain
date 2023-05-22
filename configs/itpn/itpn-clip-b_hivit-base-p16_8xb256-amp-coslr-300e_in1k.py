@@ -30,11 +30,11 @@ model = dict(
         num_embed=512,
         loss=dict(type='CosineSimilarityLoss')),
     target_generator=dict(
-        type='ClipTargeter',
-        model_name='ViT-B/16',
-        checkpoint=  # noqa
-        'https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt'  # noqa
-    ))
+        type='CLIPGenerator',
+        tokenizer_path=  # noqa
+        'https://download.openmmlab.com/mmselfsup/1.x/target_generator_ckpt/clip_vit_base_16.pth.tar'  # noqa
+    ),
+)
 
 # optimizer wrapper
 optim_wrapper = dict(

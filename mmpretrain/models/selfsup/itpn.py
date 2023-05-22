@@ -1,176 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import hashlib
 import math
-import os
-import urllib
-import warnings
 from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 from mmengine.model.weight_init import trunc_normal_
-from tqdm import tqdm
 
 from mmpretrain.models.backbones.hivit import BlockWithRPE, HiViT, PatchMerge
-from mmpretrain.models.utils.clip_generator_helper import build_clip_model
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
 from .base import BaseSelfSupervisor
-
-_MODELS = {
-    'RN50':
-    'https://openaipublic.azureedge.net/clip/models/afeb0e10f9e5a86da6080e35cf09123aca3b358a0c3e3b6c78a7b63bc04b6762/RN50.pt',  # noqa
-    'RN101':
-    'https://openaipublic.azureedge.net/clip/models/8fa8567bab74a42d41c5915025a8e4538c3bdbe8804a470a72f30b0d94fab599/RN101.pt',  # noqa
-    'RN50x4':
-    'https://openaipublic.azureedge.net/clip/models/7e526bd135e493cef0776de27d5f42653e6b4c8bf9e0f653bb11773263205fdd/RN50x4.pt',  # noqa
-    'RN50x16':
-    'https://openaipublic.azureedge.net/clip/models/52378b407f34354e150460fe41077663dd5b39c54cd0bfd2b27167a4a06ec9aa/RN50x16.pt',  # noqa
-    'ViT-B/32':
-    'https://openaipublic.azureedge.net/clip/models/40d365715913c9da98579312b702a82c18be219cc2a73407c4526f58eba950af/ViT-B-32.pt',  # noqa
-    'ViT-B/16':
-    'https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt',  # noqa
-    'ViT-L/14':
-    'https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt',  # noqa
-    'ViT-L/14@336px':
-    'https://openaipublic.azureedge.net/clip/models/3035c92b350959924f9f00213499208652fc7ea050643e8b385c2dac08641f02/ViT-L-14-336px.pt',  # noqa
-}
-
-
-@MODELS.register_module()
-class ClipTargeter(nn.Module):
-    """Vector-Quantized Knowledge Distillation.
-
-    The module only contains encoder and VectorQuantizer part
-    Modified from https://github.com/microsoft/unilm/blob/master/beit2/modeling_vqkd.py
-
-    Args:
-        encoder_config (dict): The config of encoder.
-        decoder_config (dict, optional): The config of decoder. Currently,
-            VQKD only support to build encoder. Defaults to None.
-        num_embed (int): Number of embedding vectors in the codebook. Defaults
-            to 8192.
-        embed_dims (int) : The dimension of embedding vectors in the codebook.
-            Defaults to 32.
-        decay (float): The decay parameter of EMA. Defaults to 0.99.
-        beta (float): The mutiplier for VectorQuantizer loss. Defaults to 1.
-        quantize_kmeans_init (bool): Whether to use k-means to initialize the
-            VectorQuantizer. Defaults to True.
-        init_cfg (dict or List[dict], optional): Initialization config dict.
-            Defaults to None.
-    """  # noqa: E501
-
-    def __init__(
-        self,
-        model_name: str = 'ViT-B/16',
-        jit: bool = False,
-        checkpoint: str = None,
-    ) -> None:
-        super().__init__()
-        if model_name in _MODELS:
-            model_path = self._download(
-                _MODELS[model_name], checkpoint
-                or os.path.expanduser('~/.cache/clip'))
-        elif os.path.isfile(model_name):
-            model_path = model_name
-        else:
-            raise RuntimeError(
-                f'Model {model_name} not found; available models = '
-                f'{list(_MODELS.keys())}')
-
-        try:
-            # loading JIT archive
-            model = torch.jit.load(model_path, map_location='cpu').eval()
-            state_dict = None
-        except RuntimeError:
-            # loading saved state dict
-            if jit:
-                warnings.warn(
-                    f'File {model_path} is not a JIT archive. Loading as a '
-                    'state dict instead')
-                # jit = False
-            state_dict = torch.load(model_path, map_location='cpu')
-
-        # if not jit:
-        self.clip_model = build_clip_model(state_dict
-                                           or model.state_dict()).to('cuda')
-
-    def _download(self, url: str, root: str):
-        os.makedirs(root, exist_ok=True)
-        filename = os.path.basename(url)
-
-        expected_sha256 = url.split('/')[-2]
-        download_target = os.path.join(root, filename)
-
-        if os.path.exists(
-                download_target) and not os.path.isfile(download_target):
-            raise RuntimeError(
-                f'{download_target} exists and is not a regular file')
-
-        if os.path.isfile(download_target):
-            if hashlib.sha256(
-                    open(download_target,
-                         'rb').read()).hexdigest() == expected_sha256:
-                return download_target
-            else:
-                warnings.warn(
-                    f'{download_target} exists, but the SHA256 checksum does '
-                    'not match; re-downloading the file')
-
-        with urllib.request.urlopen(url) as source, open(
-                download_target, 'wb') as output:
-            with tqdm(
-                    total=int(source.info().get('Content-Length')),
-                    ncols=80,
-                    unit='iB',
-                    unit_scale=True,
-                    unit_divisor=1024) as loop:
-                while True:
-                    buffer = source.read(8192)
-                    if not buffer:
-                        break
-
-                    output.write(buffer)
-                    loop.update(len(buffer))
-
-        if hashlib.sha256(open(download_target,
-                               'rb').read()).hexdigest() != expected_sha256:
-            raise RuntimeError(
-                'Model has been downloaded but the SHA256 checksum does not '
-                'match.')
-
-        return download_target
-
-    def encode_image(self,
-                     image: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Encode the image.
-
-        Get the feature and attention mask from the last layer of the visual
-        branch of CLIP.
-
-        Args:
-            image (torch.Tensor): The image tensor with shape NCHW.
-
-        Returns:
-            Tuple[torch.Tensor, torch.Tensor]: The feature and attention mask.
-        """
-        return self.clip_model.visual(image)[0]
-
-    def forward(self,
-                image: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        """Encode the image.
-
-        Get the feature and attention mask from the last layer of the visual
-        branch of CLIP.
-
-        Args:
-            image (torch.Tensor): The image tensor with shape NCHW.
-
-        Returns:
-            Tuple[torch.Tensor, torch.Tensor]: The feature and attention mask.
-        """
-        return self.encode_image(image)
 
 
 @MODELS.register_module()
@@ -492,25 +332,12 @@ class iTPN(BaseSelfSupervisor):
 
             # inputs[1] is the target image
             with torch.no_grad():
-                target = self.target_generator(inputs[1])
+                target = self.target_generator(inputs[1])[0]
                 target = target.detach()
 
             # iTPN contains a neck module
             feats = self.neck(img_latent)
             loss = self.head.loss(feats, target[:, 1:, :], mask)
 
-        if isinstance(loss, torch.Tensor):
-            losses = dict(loss=loss)
-            return losses
-        elif isinstance(loss, Tuple):
-            # the loss_1 and loss_2 are general reconstruction loss (patch
-            # feature vectors from last layer of backbone) and early state
-            # reconstruction loss (patch feature vectors from intermediate
-            # layer of backbone)
-            loss_1, loss_2 = loss[0], loss[1]
-            losses = dict()
-            # the key with prefix 'loss', like loss_1 and loss_2, will be used
-            # as the final criterion
-            losses['loss_1'] = loss_1
-            losses['loss_2'] = loss_2
-            return losses
+        losses = dict(loss=loss)
+        return losses
