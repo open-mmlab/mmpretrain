@@ -1,15 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
 
-from mmpretrain.registry import METRICS
-from mmpretrain.evaluation.metrics.vqa import _process_digit_article, \
-    _process_punctuation
 from mmengine.evaluator import BaseMetric
+
+from mmpretrain.evaluation.metrics.vqa import (_process_digit_article,
+                                               _process_punctuation)
+from mmpretrain.registry import METRICS
 
 
 @METRICS.register_module()
 class GQAAcc(BaseMetric):
-    '''GQA Acc metric.
+    """GQA Acc metric.
 
     Compute GQA accuracy.
 
@@ -22,7 +23,7 @@ class GQAAcc(BaseMetric):
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Should be modified according to the
             `retrieval_type` for unambiguous results. Defaults to TR.
-    '''
+    """
     default_prefix = 'GQA'
 
     def __init__(self,
@@ -66,7 +67,7 @@ class GQAAcc(BaseMetric):
             gqa_acc = 1 if pred_answer == gt_answer else 0
             acc.append(gqa_acc)
 
-        accuracy = sum(acc) / len(acc) * 100
+        accuracy = sum(acc) / len(acc)
 
         metrics = {'acc': accuracy}
         return metrics
@@ -75,5 +76,3 @@ class GQAAcc(BaseMetric):
         answer = _process_punctuation(answer)
         answer = _process_digit_article(answer)
         return answer
-
-    
