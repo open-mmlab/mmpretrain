@@ -38,6 +38,7 @@ if WITH_MULTIMODAL:
     from .coco_retrieval import COCORetrieval
     from .coco_vqa import COCOVQA
     from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
+    from .gqa_dataset import GQA
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .visual_genome import VisualGenomeQA
@@ -51,4 +52,5 @@ if WITH_MULTIMODAL:
         'RefCOCO',
         'VisualGenomeQA',
         'ScienceQA',
+        'GQA',
     ])
