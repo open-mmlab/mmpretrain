@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 
-from mmpretrain.models import VisionTransformer, HiViT
+from mmpretrain.models import HiViT, VisionTransformer
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
@@ -235,48 +235,47 @@ class MAE(BaseSelfSupervisor):
         losses = dict(loss=loss)
         return losses
 
-    
-    
+
 @MODELS.register_module()
 class MAEHiViT(HiViT):
     """HiViT for MAE pre-training.
 
-        A PyTorch implement of: ` HiViT: A Simple and More Efficient Design
-        of Hierarchical Vision Transformer`.
-        This module implements the patch masking in MAE and initialize the
-        position embedding with sine-cosine position embedding.
+    A PyTorch implement of: `HiViT: A Simple and More Efficient Design
+    of Hierarchical Vision Transformer <https://arxiv.org/abs/2205.14949>`_.
+    This module implements the patch masking in MAE and initialize the
+    position embedding with sine-cosine position embedding.
 
-        Args:
-            arch (str | dict): Vision Transformer architecture
-                Default: 'b'
-            img_size (int | tuple): Input image size
-            patch_size (int | tuple): The patch size
-                Defaults to 4, to downsample 4x at the first stage
-            inner_patches (int): The inner patches within a token
-                Defaults to 4
-            out_indices (Sequence | int): Output from which stages.
-                Defaults to -1, means the last stage.
-            drop_rate (float): Probability of an element to be zeroed.
-                Defaults to 0.
-            drop_path_rate (float): stochastic depth rate. Defaults to 0.
-            norm_cfg (dict): Config dict for normalization layer.
-                Defaults to ``dict(type='LN')``.
-            ape (bool): the absolute position embedding
-            rpe (bool): the relative position embedding
-                Defaults to False
-            layer_scale_init_value (float): the layer scale init value
-            mask_ratio (bool): The ratio of total number of patches to be masked.
-                Defaults to 0.75.
-            init_cfg (Union[List[dict], dict], optional): Initialization config
-                dict. Defaults to None.
-        """
+    Args:
+        arch (str | dict): Vision Transformer architecture
+            Default: 'b'
+        img_size (int | tuple): Input image size
+        patch_size (int | tuple): The patch size
+            Defaults to 4, to downsample 4x at the first stage
+        inner_patches (int): The inner patches within a token
+            Defaults to 4
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        drop_rate (float): Probability of an element to be zeroed.
+            Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        ape (bool): the absolute position embedding
+        rpe (bool): the relative position embedding
+            Defaults to False
+        layer_scale_init_value (float): the layer scale init value
+        mask_ratio (bool): The ratio of total number of patches to be masked.
+            Defaults to 0.75.
+        init_cfg (Union[List[dict], dict], optional): Initialization config
+            dict. Defaults to None.
+    """
 
     def __init__(self,
                  arch: Union[str, dict] = 'b',
                  img_size: int = 224,
                  patch_size: int = 16,
                  inner_patches: int = 4,
-                 out_indices: Union[list, int] = [23, ],
+                 out_indices: Union[list, int] = [23],
                  drop_rate: float = 0.0,
                  drop_path_rate: float = 0.0,
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
@@ -297,8 +296,7 @@ class MAEHiViT(HiViT):
             ape=ape,
             rpe=rpe,
             layer_scale_init_value=layer_scale_init_value,
-            init_cfg=init_cfg
-        )
+            init_cfg=init_cfg)
 
         self.pos_embed.requires_grad = False
         self.mask_ratio = mask_ratio
@@ -308,7 +306,7 @@ class MAEHiViT(HiViT):
         """Initialize position embedding, patch embedding."""
         super().apply(self._init_weights)
         pos_embed = build_2d_sincos_position_embedding(
-            int(self.num_patches ** .5),
+            int(self.num_patches**.5),
             self.pos_embed.shape[-1],
             cls_token=False)
         self.pos_embed.data.copy_(pos_embed.float())
@@ -317,11 +315,9 @@ class MAEHiViT(HiViT):
         torch.nn.init.xavier_uniform_(w.view([w.shape[0], -1]))
 
     def masking_id(
-            self,
-            batch_size,
-            mask_ratio
-    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """ Generate the mask for MAE Pre-training
+            self, batch_size,
+            mask_ratio) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Generate the mask for MAE Pre-training.
 
         Args:
             batch_size: The batch size of input data
@@ -336,10 +332,12 @@ class MAEHiViT(HiViT):
         N, L = batch_size, self.pos_embed.size(1)
         len_keep = int(L * (1 - mask_ratio))
 
-        noise = torch.rand(N, L, device=self.pos_embed.device)  # noise in [0, 1]
+        noise = torch.rand(
+            N, L, device=self.pos_embed.device)  # noise in [0, 1]
 
         # sort noise for each sample
-        ids_shuffle = torch.argsort(noise, dim=1)  # ascend: small is keep, large is remove
+        ids_shuffle = torch.argsort(
+            noise, dim=1)  # ascend: small is keep, large is remove
         ids_restore = torch.argsort(ids_shuffle, dim=1)
 
         # keep the first subset
@@ -353,9 +351,9 @@ class MAEHiViT(HiViT):
         return ids_keep, ids_restore, mask
 
     def forward(
-            self,
-            x: torch.Tensor,
-            mask: Optional[bool] = True
+        self,
+        x: torch.Tensor,
+        mask: Optional[bool] = True
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate features for masked images.
 
@@ -392,8 +390,10 @@ class MAEHiViT(HiViT):
             x = self.patch_embed(x)
 
             x = torch.gather(
-                x, dim=1, index=ids_keep[:, :, None, None, None].expand(-1, -1, *x.shape[2:])
-            )
+                x,
+                dim=1,
+                index=ids_keep[:, :, None, None,
+                               None].expand(-1, -1, *x.shape[2:]))
 
             for blk in self.blocks[:-self.num_main_blocks]:
                 x = blk(x)
@@ -404,7 +404,8 @@ class MAEHiViT(HiViT):
                 pos_embed = torch.gather(
                     pos_embed.expand(B, -1, -1),
                     dim=1,
-                    index=ids_keep[:, :, None].expand(-1, -1, pos_embed.shape[2]),
+                    index=ids_keep[:, :, None].expand(-1, -1,
+                                                      pos_embed.shape[2]),
                 )
                 x = x + pos_embed
             x = self.pos_drop(x)

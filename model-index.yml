@@ -76,3 +76,5 @@ Import:
   - configs/flamingo/metafile.yml
   - configs/blip2/metafile.yml
   - configs/chinese_clip/metafile.yml
+  - configs/itpn/metafile.yml
+  - configs/hivit/metafile.yml

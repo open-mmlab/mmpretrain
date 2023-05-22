@@ -2,7 +2,11 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='HiViT', arch='base', img_size=224, ape=True, rpe=True,
+        type='HiViT',
+        arch='base',
+        img_size=224,
+        ape=True,
+        rpe=True,
         drop_path_rate=0.5),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(

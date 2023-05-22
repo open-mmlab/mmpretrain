@@ -1,16 +1,18 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import math
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from mmengine.model.weight_init import trunc_normal_
-from ..utils import build_norm_layer, to_2tuple
-from mmpretrain.registry import MODELS
 from mmcv.cnn.bricks import DropPath
+from mmengine.model.weight_init import trunc_normal_
+
+from mmpretrain.registry import MODELS
+from ..utils import build_norm_layer, to_2tuple
 from .base_backbone import BaseBackbone
 
 
 class Mlp(nn.Module):
-    """MLP block
+    """MLP block.
 
     Args:
         in_features (int): Number of input dims.
@@ -20,7 +22,12 @@ class Mlp(nn.Module):
         drop (float): MLP dropout rate.
     """
 
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -32,55 +39,62 @@ class Mlp(nn.Module):
     def forward(self, x):
         x = self.fc1(x)
         x = self.act(x)
-        # x = self.drop(x)
-        # commit this for the orignal BERT implement
         x = self.fc2(x)
         x = self.drop(x)
         return x
 
 
 class Attention(nn.Module):
+    """Attention.
+
+    Args:
+        input size (int): Input size.
+        dim (int): Number of input dims.
+        num_heads (int): Number of attention heads.
+        qkv_bias (bool): Enable bias for qkv projections if True.
+        qk_scale (float): The number of divider after q@k. Default to None.
+        attn_drop (float): The drop out rate for attention output weights.
+            Defaults to 0.
+        proj_drop (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        rpe (bool): If True, add relative position embedding to
+            the patch embedding.
     """
-        Attention
 
-        Args:
-            input size (int): Input size.
-            dim (int): Number of input dims.
-            num_heads (int): Number of attention heads.
-            qkv_bias (bool): Enable bias for qkv projections if True.
-            qk_scale (float): The number of divider after q@k. Default to None.
-            attn_drop (float): The drop out rate for attention output weights.
-                Defaults to 0.
-            proj_drop (float): Probability of an element to be zeroed
-                after the feed forward layer. Defaults to 0.
-            rpe (bool): If True, add relative position embedding to
-                the patch embedding.
-        """
-
-    def __init__(self, input_size, dim, num_heads, qkv_bias=True, qk_scale=None, attn_drop=0., proj_drop=0., rpe=True):
+    def __init__(self,
+                 input_size,
+                 dim,
+                 num_heads,
+                 qkv_bias=True,
+                 qk_scale=None,
+                 attn_drop=0.,
+                 proj_drop=0.,
+                 rpe=True):
         super().__init__()
         self.input_size = input_size
         self.dim = dim
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        self.scale = qk_scale or head_dim ** -0.5
+        self.scale = qk_scale or head_dim**-0.5
 
         # define a parameter table of relative position bias
         self.relative_position_bias_table = nn.Parameter(
-            torch.zeros((2 * input_size - 1) * (2 * input_size - 1), num_heads)
-        ) if rpe else None
+            torch.zeros((2 * input_size - 1) *
+                        (2 * input_size - 1), num_heads)) if rpe else None
         if rpe:
             coords_h = torch.arange(input_size)
             coords_w = torch.arange(input_size)
             coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
             coords_flatten = torch.flatten(coords, 1)
-            relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
+            relative_coords = coords_flatten[:, :,
+                                             None] - coords_flatten[:, None, :]
             relative_coords = relative_coords.permute(1, 2, 0).contiguous()
             relative_coords[:, :, 0] += input_size - 1
             relative_coords[:, :, 1] += input_size - 1
             relative_coords[:, :, 0] *= 2 * input_size - 1
             relative_position_index = relative_coords.sum(-1)
-            self.register_buffer("relative_position_index", relative_position_index)
+            self.register_buffer('relative_position_index',
+                                 relative_position_index)
 
             trunc_normal_(self.relative_position_bias_table, std=.02)
 
@@ -92,8 +106,10 @@ class Attention(nn.Module):
 
     def forward(self, x, rpe_index=None, mask=None):
         B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
+                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[
+            2]  # make torchscript happy (cannot use tensor as tuple)
 
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))
@@ -101,12 +117,14 @@ class Attention(nn.Module):
         if rpe_index is not None:
             rpe_index = self.relative_position_index.view(-1)
             S = int(math.sqrt(rpe_index.size(-1)))
-            relative_position_bias = self.relative_position_bias_table[rpe_index].view(-1, S, S, self.num_heads)
-            relative_position_bias = relative_position_bias.permute(0, 3, 1, 2).contiguous()
+            relative_position_bias = self.relative_position_bias_table[
+                rpe_index].view(-1, S, S, self.num_heads)
+            relative_position_bias = relative_position_bias.permute(
+                0, 3, 1, 2).contiguous()
             attn = attn + relative_position_bias
         if mask is not None:
             mask = mask.bool()
-            attn = attn.masked_fill(~mask[:, None, None, :], float("-inf"))
+            attn = attn.masked_fill(~mask[:, None, None, :], float('-inf'))
         attn = self.softmax(attn)
         attn = self.attn_drop(attn)
 
@@ -117,11 +135,10 @@ class Attention(nn.Module):
 
 
 class BlockWithRPE(nn.Module):
-    """
-    HiViT block
+    """HiViT block.
 
     Args:
-        input size (int): Input size.
+        input_size (int): Input size.
         dim (int): Number of input dims.
         num_heads (int): Number of attention heads.
         mlp_ratio (int): Ratio of MLP hidden dim to embedding dim.
@@ -140,9 +157,20 @@ class BlockWithRPE(nn.Module):
             Defaults to ``dict(type='LN')``.
     """
 
-    def __init__(self, input_size, dim, num_heads=0., mlp_ratio=4., qkv_bias=True, qk_scale=None,
-                 drop=0., attn_drop=0., drop_path=0., rpe=True, layer_scale_init_value=0.0,
-                 act_layer=nn.GELU, norm_cfg=dict(type='LN')):
+    def __init__(self,
+                 input_size,
+                 dim,
+                 num_heads=0.,
+                 mlp_ratio=4.,
+                 qkv_bias=True,
+                 qk_scale=None,
+                 drop=0.,
+                 attn_drop=0.,
+                 drop_path=0.,
+                 rpe=True,
+                 layer_scale_init_value=0.0,
+                 act_layer=nn.GELU,
+                 norm_cfg=dict(type='LN')):
         super().__init__()
         self.dim = dim
         self.num_heads = num_heads
@@ -152,28 +180,43 @@ class BlockWithRPE(nn.Module):
 
         self.norm1 = build_norm_layer(norm_cfg, dim) if with_attn else None
         self.attn = Attention(
-            input_size, dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, rpe=rpe,
+            input_size,
+            dim,
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=drop,
+            rpe=rpe,
         ) if with_attn else None
 
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=mlp_hidden_dim,
+            act_layer=act_layer,
+            drop=drop)
 
         if layer_scale_init_value > 0:
-            self.gamma_1 = nn.Parameter(layer_scale_init_value * torch.ones((dim)),
-                                        requires_grad=True) if with_attn else None
-            self.gamma_2 = nn.Parameter(layer_scale_init_value * torch.ones((dim)), requires_grad=True)
+            self.gamma_1 = nn.Parameter(
+                layer_scale_init_value * torch.ones(
+                    (dim)), requires_grad=True) if with_attn else None
+            self.gamma_2 = nn.Parameter(
+                layer_scale_init_value * torch.ones((dim)), requires_grad=True)
         else:
             self.gamma_1, self.gamma_2 = None, None
 
     def forward(self, x, rpe_index=None, mask=None):
         if self.attn is not None:
             if self.gamma_1 is not None:
-                x = x + self.drop_path(self.gamma_1 * self.attn(self.norm1(x), rpe_index, mask))
+                x = x + self.drop_path(
+                    self.gamma_1 * self.attn(self.norm1(x), rpe_index, mask))
             else:
-                x = x + self.drop_path(self.attn(self.norm1(x), rpe_index, mask))
+                x = x + self.drop_path(
+                    self.attn(self.norm1(x), rpe_index, mask))
         if self.gamma_2 is not None:
             x = x + self.drop_path(self.gamma_2 * self.mlp(self.norm2(x)))
         else:
@@ -182,28 +225,36 @@ class BlockWithRPE(nn.Module):
 
 
 class PatchEmbed(nn.Module):
-    """
-        PatchEmbed
+    """PatchEmbed for HiViT.
 
-        Args:
-            img_size (int): Input image size.
-            patch_size (int): Patch size. Defaults to 16.
-            inner_patches (int): Inner patch. Defaults to 4.
-            in_chans (int): Number of image input channels.
-            embed_dim (int): Transformer embedding dimension.
-            norm_cfg (dict): Config dict for normalization layer.
-                Defaults to ``dict(type='LN')``.
-            kernel_size (int): Kernel size.
-            pad_size (int): Pad size.
+    Args:
+        img_size (int): Input image size.
+        patch_size (int): Patch size. Defaults to 16.
+        inner_patches (int): Inner patch. Defaults to 4.
+        in_chans (int): Number of image input channels.
+        embed_dim (int): Transformer embedding dimension.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        kernel_size (int): Kernel size.
+        pad_size (int): Pad size.
     """
 
-    def __init__(
-            self, img_size=224, patch_size=16, inner_patches=4, in_chans=3, embed_dim=128,
-            norm_cfg=None, kernel_size=None, pad_size=None):
+    def __init__(self,
+                 img_size=224,
+                 patch_size=16,
+                 inner_patches=4,
+                 in_chans=3,
+                 embed_dim=128,
+                 norm_cfg=None,
+                 kernel_size=None,
+                 pad_size=None):
         super().__init__()
-        img_size = to_2tuple(img_size) if not isinstance(img_size, tuple) else img_size
+        img_size = to_2tuple(img_size) if not isinstance(img_size,
+                                                         tuple) else img_size
         patch_size = to_2tuple(patch_size)
-        patches_resolution = [img_size[0] // patch_size[0], img_size[1] // patch_size[1]]
+        patches_resolution = [
+            img_size[0] // patch_size[0], img_size[1] // patch_size[1]
+        ]
         self.img_size = img_size
         self.patch_size = patch_size
         self.inner_patches = inner_patches
@@ -216,7 +267,12 @@ class PatchEmbed(nn.Module):
         conv_size = [size // inner_patches for size in patch_size]
         kernel_size = kernel_size or conv_size
         pad_size = pad_size or 0
-        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=kernel_size, stride=conv_size, padding=pad_size)
+        self.proj = nn.Conv2d(
+            in_chans,
+            embed_dim,
+            kernel_size=kernel_size,
+            stride=conv_size,
+            padding=pad_size)
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, embed_dim)
         else:
@@ -227,22 +283,25 @@ class PatchEmbed(nn.Module):
         patches_resolution = (H // self.patch_size[0], W // self.patch_size[1])
         num_patches = patches_resolution[0] * patches_resolution[1]
         x = self.proj(x).view(
-            B, -1,
-            patches_resolution[0], self.inner_patches,
-            patches_resolution[1], self.inner_patches,
-        ).permute(0, 2, 4, 3, 5, 1).reshape(B, num_patches, self.inner_patches, self.inner_patches, -1)
+            B,
+            -1,
+            patches_resolution[0],
+            self.inner_patches,
+            patches_resolution[1],
+            self.inner_patches,
+        ).permute(0, 2, 4, 3, 5, 1).reshape(B, num_patches, self.inner_patches,
+                                            self.inner_patches, -1)
         if self.norm is not None:
             x = self.norm(x)
         return x
 
 
 class PatchMerge(nn.Module):
-    """
-        PatchMerge
+    """PatchMerge for HiViT.
 
-        Args:
-            dim (int): Number of input channels.
-            norm_cfg (dict): Config dict for normalization layer.
+    Args:
+        dim (int): Number of input channels.
+        norm_cfg (dict): Config dict for normalization layer.
     """
 
     def __init__(self, dim, norm_cfg):
@@ -274,52 +333,54 @@ class PatchMerge(nn.Module):
 
 @MODELS.register_module()
 class HiViT(BaseBackbone):
-    """
-        HiViT
+    """HiViT.
 
-        Args:
-            arch (str | dict): Swin Transformer architecture. If use string, choose
-                from 'tiny', 'small', and'base'. If use dict, it should
-                have below keys:
+    A PyTorch implement of: `HiViT: A Simple and More Efficient Design
+    of Hierarchical Vision Transformer <https://arxiv.org/abs/2205.14949>`_.
 
-                - **embed_dims** (int): The dimensions of embedding.
-                - **depths** (List[int]): The number of blocks in each stage.
-                - **num_heads** (int): The number of heads in attention
-                  modules of each stage.
+    Args:
+        arch (str | dict): Swin Transformer architecture. If use string, choose
+            from 'tiny', 'small', and'base'. If use dict, it should
+            have below keys:
 
-            Defaults to 'tiny'.
-            img_size (int): Input image size.
-            patch_size (int): Patch size. Defaults to 16.
-            inner_patches (int): Inner patch. Defaults to 4.
-            in_chans (int): Number of image input channels.
-            embed_dim (int): Transformer embedding dimension.
-            depths (list[int]): Number of successive HiViT blocks.
-            num_heads (int): Number of attention heads.
-            stem_mlp_ratio (int): Ratio of MLP hidden dim to embedding dim
-                in the first two stages.
-            mlp_ratio (int): Ratio of MLP hidden dim to embedding dim in
-                the last stage.
-            qkv_bias (bool): Enable bias for qkv projections if True.
-            qk_scale (float): The number of divider after q@k. Default to None.
-            drop (float): Probability of an element to be zeroed
-                after the feed forward layer. Defaults to 0.
-            attn_drop (float): The drop out rate for attention output weights.
-                Defaults to 0.
-            drop_path (float): Stochastic depth rate. Defaults to 0.
-            norm_cfg (dict): Config dict for normalization layer.
-                Defaults to ``dict(type='LN')``.
-            ape (bool): If True, add absolute position embedding to
-                the patch embedding.
-            rpe (bool): If True, add relative position embedding to
-                the patch embedding.
-            patch_norm (bool): If True, use norm_cfg for normalization layer.
-            frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-                -1 means not freezing any parameters. Defaults to -1.
-            kernel_size (int): Kernel size.
-            pad_size (int): Pad size.
-            layer_scale_init_value (float): Layer-scale init values. Defaults to 0.
-            init_cfg (dict, optional): The extra config for initialization.
-                 Defaults to None.
+            - **embed_dims** (int): The dimensions of embedding.
+            - **depths** (List[int]): The number of blocks in each stage.
+            - **num_heads** (int): The number of heads in attention
+              modules of each stage.
+
+        Defaults to 'tiny'.
+        img_size (int): Input image size.
+        patch_size (int): Patch size. Defaults to 16.
+        inner_patches (int): Inner patch. Defaults to 4.
+        in_chans (int): Number of image input channels.
+        embed_dim (int): Transformer embedding dimension.
+        depths (list[int]): Number of successive HiViT blocks.
+        num_heads (int): Number of attention heads.
+        stem_mlp_ratio (int): Ratio of MLP hidden dim to embedding dim
+            in the first two stages.
+        mlp_ratio (int): Ratio of MLP hidden dim to embedding dim in
+            the last stage.
+        qkv_bias (bool): Enable bias for qkv projections if True.
+        qk_scale (float): The number of divider after q@k. Default to None.
+        drop (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        attn_drop (float): The drop out rate for attention output weights.
+            Defaults to 0.
+        drop_path (float): Stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        ape (bool): If True, add absolute position embedding to
+            the patch embedding.
+        rpe (bool): If True, add relative position embedding to
+            the patch embedding.
+        patch_norm (bool): If True, use norm_cfg for normalization layer.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Defaults to -1.
+        kernel_size (int): Kernel size.
+        pad_size (int): Pad size.
+        layer_scale_init_value (float): Layer-scale init values. Defaults to 0.
+        init_cfg (dict, optional): The extra config for initialization.
+             Defaults to None.
     """
     arch_zoo = {
         **dict.fromkeys(['t', 'tiny'],
@@ -356,7 +417,7 @@ class HiViT(BaseBackbone):
                  attn_drop_rate=0.,
                  drop_path_rate=0.0,
                  norm_cfg=dict(type='LN'),
-                 out_indices=[23, ],
+                 out_indices=[23],
                  ape=True,
                  rpe=False,
                  patch_norm=True,
@@ -391,43 +452,56 @@ class HiViT(BaseBackbone):
         self.out_indices = out_indices
         self.out_indices[-1] = self.depths[-1] - 1
 
-        img_size = to_2tuple(img_size) if not isinstance(img_size, tuple) else img_size
+        img_size = to_2tuple(img_size) if not isinstance(img_size,
+                                                         tuple) else img_size
 
-        embed_dim = self.embed_dims // 2 ** (self.num_stages - 1)
+        embed_dim = self.embed_dims // 2**(self.num_stages - 1)
         # split image into non-overlapping patches
         self.patch_embed = PatchEmbed(
-            img_size=img_size, patch_size=patch_size, inner_patches=inner_patches, in_chans=in_chans,
-            embed_dim=embed_dim, norm_cfg=norm_cfg if patch_norm else None, kernel_size=kernel_size,
+            img_size=img_size,
+            patch_size=patch_size,
+            inner_patches=inner_patches,
+            in_chans=in_chans,
+            embed_dim=embed_dim,
+            norm_cfg=norm_cfg if patch_norm else None,
+            kernel_size=kernel_size,
             pad_size=pad_size)
         num_patches = self.patch_embed.num_patches
         Hp, Wp = self.patch_embed.patches_resolution
 
-        if rpe: assert Hp == Wp, f'If you use rpe, make sure H == W of input size'
+        if rpe:
+            assert Hp == Wp, 'If you use relative position, make sure H == W '
+            'of input size'
 
         # absolute position embedding
         if ape:
             self.pos_embed = nn.Parameter(
-                torch.zeros(1, num_patches, self.num_features)
-            )
+                torch.zeros(1, num_patches, self.num_features))
             trunc_normal_(self.pos_embed, std=.02)
         if rpe:
-            # get pair-wise relative position index for each token inside the window
+            # get pair-wise relative position index for each token inside the
+            # window
             coords_h = torch.arange(Hp)
             coords_w = torch.arange(Wp)
             coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
             coords_flatten = torch.flatten(coords, 1)
-            relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
+            relative_coords = coords_flatten[:, :,
+                                             None] - coords_flatten[:, None, :]
             relative_coords = relative_coords.permute(1, 2, 0).contiguous()
             relative_coords[:, :, 0] += Hp - 1
             relative_coords[:, :, 1] += Wp - 1
             relative_coords[:, :, 0] *= 2 * Wp - 1
             relative_position_index = relative_coords.sum(-1)
-            self.register_buffer("relative_position_index", relative_position_index)
+            self.register_buffer('relative_position_index',
+                                 relative_position_index)
 
         self.pos_drop = nn.Dropout(p=drop_rate)
 
         # stochastic depth
-        dpr = iter(x.item() for x in torch.linspace(0, drop_path_rate, sum(self.depths) + sum(self.depths[:-1])))
+        dpr = iter(
+            x.item()
+            for x in torch.linspace(0, drop_path_rate,
+                                    sum(self.depths) + sum(self.depths[:-1])))
 
         # build blocks
         self.blocks = nn.ModuleList()
@@ -440,15 +514,21 @@ class HiViT(BaseBackbone):
             for _ in range(stage_depth):
                 self.blocks.append(
                     BlockWithRPE(
-                        Hp, embed_dim, nhead, ratio, qkv_bias, qk_scale,
-                        drop=drop_rate, attn_drop=attn_drop_rate, drop_path=next(dpr), rpe=rpe,
-                        norm_cfg=norm_cfg, layer_scale_init_value=layer_scale_init_value,
-                    )
-                )
+                        Hp,
+                        embed_dim,
+                        nhead,
+                        ratio,
+                        qkv_bias,
+                        qk_scale,
+                        drop=drop_rate,
+                        attn_drop=attn_drop_rate,
+                        drop_path=next(dpr),
+                        rpe=rpe,
+                        norm_cfg=norm_cfg,
+                        layer_scale_init_value=layer_scale_init_value,
+                    ))
             if stage_i + 1 < self.num_stages:
-                self.blocks.append(
-                    PatchMerge(embed_dim, norm_cfg)
-                )
+                self.blocks.append(PatchMerge(embed_dim, norm_cfg))
                 embed_dim *= 2
 
         self.frozen_stages = frozen_stages
@@ -475,15 +555,17 @@ class HiViT(BaseBackbone):
         dim = x.shape[-1]
         w0 = w // self.patch_size
         h0 = h // self.patch_size
-        # we add a small number to avoid floating point error in the interpolation
+        # we add a small number to avoid floating point error in interpolation
         # see discussion at https://github.com/facebookresearch/dino/issues/8
         w0, h0 = w0 + 0.1, h0 + 0.1
         patch_pos_embed = nn.functional.interpolate(
-            patch_pos_embed.reshape(1, int(math.sqrt(N)), int(math.sqrt(N)), dim).permute(0, 3, 1, 2),
+            patch_pos_embed.reshape(1, int(math.sqrt(N)), int(math.sqrt(N)),
+                                    dim).permute(0, 3, 1, 2),
             scale_factor=(h0 / math.sqrt(N), w0 / math.sqrt(N)),
             mode='bicubic',
         )
-        assert int(h0) == patch_pos_embed.shape[-2] and int(w0) == patch_pos_embed.shape[-1]
+        assert int(h0) == patch_pos_embed.shape[-2] and int(
+            w0) == patch_pos_embed.shape[-1]
         patch_pos_embed = patch_pos_embed.permute(0, 2, 3, 1).view(1, -1, dim)
         return patch_pos_embed
 
@@ -497,8 +579,9 @@ class HiViT(BaseBackbone):
         for i, blk in enumerate(self.blocks[:-self.num_main_blocks]):
             x = blk(x)
             if i in self.out_indices:
-                x = x.reshape(B, Hp, Wp, *x.shape[-3:]).permute(0, 5, 1, 3, 2, 4).reshape(
-                    B, -1, Hp * x.shape[-3], Wp * x.shape[-2]).contiguous()
+                x = x.reshape(B, Hp, Wp, *x.shape[-3:]).permute(
+                    0, 5, 1, 3, 2, 4).reshape(B, -1, Hp * x.shape[-3],
+                                              Wp * x.shape[-2]).contiguous()
                 outs.append(x)
 
         x = x[..., 0, 0, :]

@@ -1,7 +1,11 @@
 # model settings
 model = dict(
     type='iTPN',
-    backbone=dict(type='iTPNHiViT', arch='base', reconstruction_type='pixel', mask_ratio=0.75),
+    backbone=dict(
+        type='iTPNHiViT',
+        arch='base',
+        reconstruction_type='pixel',
+        mask_ratio=0.75),
     neck=dict(
         type='iTPNPretrainDecoder',
         num_patches=196,

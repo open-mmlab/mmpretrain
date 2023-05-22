@@ -13,6 +13,7 @@ from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .efficientnet_v2 import EfficientNetV2
+from .hivit import HiViT
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -55,7 +56,6 @@ from .vision_transformer import VisionTransformer
 from .vit_eva02 import ViTEVA02
 from .vit_sam import ViTSAM
 from .xcit import XCiT
-from .hivit import HiViT
 
 __all__ = [
     'LeNet5',

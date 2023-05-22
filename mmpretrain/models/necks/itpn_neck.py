@@ -1,18 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+from mmcv.cnn import build_norm_layer
 from mmengine.model import BaseModule
 
+from mmpretrain.models.backbones.hivit import BlockWithRPE
 from mmpretrain.registry import MODELS
 from ..backbones.vision_transformer import TransformerEncoderLayer
 from ..utils import build_2d_sincos_position_embedding
-from mmcv.cnn import build_norm_layer
-
-from mmpretrain.models.backbones.hivit import BlockWithRPE
-import torch.nn.functional as F
 
 
 class PatchSplit(nn.Module):
@@ -24,6 +23,7 @@ class PatchSplit(nn.Module):
         norm_cfg (dict): Config dict for normalization layer.
                 Defaults to ``dict(type='LN')``.
     """
+
     def __init__(self, dim, fpn_dim, norm_cfg):
         super().__init__()
         _, self.norm = build_norm_layer(norm_cfg, dim)
@@ -34,11 +34,10 @@ class PatchSplit(nn.Module):
         B, N, H, W, C = x.shape
         x = self.norm(x)
         x = self.reduction(x)
-        x = x.reshape(
-            B, N, H, W, 2, 2, self.fpn_dim
-        ).permute(0, 1, 2, 4, 3, 5, 6).reshape(
-            B, N, 2 * H, 2 * W, self.fpn_dim
-        )
+        x = x.reshape(B, N, H, W, 2, 2,
+                      self.fpn_dim).permute(0, 1, 2, 4, 3, 5,
+                                            6).reshape(B, N, 2 * H, 2 * W,
+                                                       self.fpn_dim)
         return x
 
 
@@ -61,36 +60,41 @@ class iTPNPretrainDecoder(BaseModule):
         mlp_ratio (int): Ratio of mlp hidden dim to decoder's embedding dim.
             Defaults to 4.
         norm_cfg (dict): Normalization layer. Defaults to LayerNorm.
-        reconstruction_type ('pixel' or 'clip'): The itpn supports 2 kinds of supervisions.
-        num_outs (int): The output number of neck (transformer pyramid network).
+        reconstruction_type (str): The itpn supports 2 kinds of supervisions.
+            Defaults to 'pixel'.
+        num_outs (int): The output number of neck (transformer pyramid
+            network). Defaults to 3.
         predict_feature_dim (int): The output dimension to supervision.
+            Defaults to None.
         init_cfg (Union[List[dict], dict], optional): Initialization config
             dict. Defaults to None.
     """
 
-    def __init__(
-            self,
-            num_patches: int = 196,
-            patch_size: int = 16,
-            in_chans: int = 3,
-            embed_dim: int = 512,
-            fpn_dim: int = 256,
-            fpn_depth: int = 2,
-            decoder_embed_dim: int = 512,
-            decoder_depth: int = 6,
-            decoder_num_heads: int = 16,
-            mlp_ratio: int = 4,
-            norm_cfg: dict = dict(type='LN', eps=1e-6),
-            reconstruction_type: str = 'pixel',
-            num_outs: int = 3,
-            qkv_bias: bool = True,
-            qk_scale: Optional = None,
-            drop_rate: float = 0.0,
-            attn_drop_rate: float = 0.0,
-            predict_feature_dim: Optional[float] = None,
-            init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+    def __init__(self,
+                 num_patches: int = 196,
+                 patch_size: int = 16,
+                 in_chans: int = 3,
+                 embed_dim: int = 512,
+                 fpn_dim: int = 256,
+                 fpn_depth: int = 2,
+                 decoder_embed_dim: int = 512,
+                 decoder_depth: int = 6,
+                 decoder_num_heads: int = 16,
+                 mlp_ratio: int = 4,
+                 norm_cfg: dict = dict(type='LN', eps=1e-6),
+                 reconstruction_type: str = 'pixel',
+                 num_outs: int = 3,
+                 qkv_bias: bool = True,
+                 qk_scale: Optional[bool] = None,
+                 drop_rate: float = 0.0,
+                 attn_drop_rate: float = 0.0,
+                 predict_feature_dim: Optional[float] = None,
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
         super().__init__(init_cfg=init_cfg)
         self.num_patches = num_patches
+        assert reconstruction_type in ['pixel', 'clip'], \
+            'iTPN method only support `pixel` and `clip`, ' \
+            f'but got `{reconstruction_type}`.'
         self.reconstruction_type = reconstruction_type
         self.num_outs = num_outs
 
@@ -108,7 +112,7 @@ class iTPNPretrainDecoder(BaseModule):
             norm_cfg=norm_cfg,
         )
 
-        ## merge the output
+        # merge the output
         self.decoder_embed = nn.ModuleList()
         self.decoder_embed.append(
             nn.Sequential(
@@ -130,7 +134,8 @@ class iTPNPretrainDecoder(BaseModule):
                 ))
 
         if reconstruction_type == 'pixel':
-            self.mask_token = nn.Parameter(torch.zeros(1, 1, decoder_embed_dim))
+            self.mask_token = nn.Parameter(
+                torch.zeros(1, 1, decoder_embed_dim))
 
             # create new position embedding, different from that in encoder
             # and is not learnable
@@ -153,7 +158,7 @@ class iTPNPretrainDecoder(BaseModule):
 
             # Used to map features to pixels
             if predict_feature_dim is None:
-                predict_feature_dim = patch_size ** 2 * in_chans
+                predict_feature_dim = patch_size**2 * in_chans
             self.decoder_pred = nn.Linear(
                 decoder_embed_dim, predict_feature_dim, bias=True)
         else:
@@ -182,44 +187,83 @@ class iTPNPretrainDecoder(BaseModule):
             self.fpn_modules = nn.ModuleList()
             self.fpn_modules.append(
                 BlockWithRPE(
-                    Hp, fpn_dim, 0, mlp_ratio, qkv_bias, qk_scale,
-                    drop=drop_rate, attn_drop=attn_drop_rate, drop_path=0.,
-                    rpe=rpe, norm_cfg=norm_cfg
-                ))
+                    Hp,
+                    fpn_dim,
+                    0,
+                    mlp_ratio,
+                    qkv_bias,
+                    qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0.,
+                    rpe=rpe,
+                    norm_cfg=norm_cfg))
             self.fpn_modules.append(
                 BlockWithRPE(
-                    Hp, fpn_dim, 0, mlp_ratio, qkv_bias, qk_scale,
-                    drop=drop_rate, attn_drop=attn_drop_rate, drop_path=0.,
-                    rpe=False, norm_cfg=norm_cfg,
+                    Hp,
+                    fpn_dim,
+                    0,
+                    mlp_ratio,
+                    qkv_bias,
+                    qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0.,
+                    rpe=False,
+                    norm_cfg=norm_cfg,
                 ))
 
-            self.align_dim_16to8 = nn.Linear(mlvl_dims['8'], fpn_dim, bias=False)
+            self.align_dim_16to8 = nn.Linear(
+                mlvl_dims['8'], fpn_dim, bias=False)
             self.split_16to8 = PatchSplit(mlvl_dims['16'], fpn_dim, norm_cfg)
-            self.block_16to8 = nn.Sequential(
-                *[BlockWithRPE(
-                    Hp, fpn_dim, 0, mlp_ratio, qkv_bias, qk_scale,
-                    drop=drop_rate, attn_drop=attn_drop_rate, drop_path=0.,
-                    rpe=rpe, norm_cfg=norm_cfg,
-                ) for _ in range(fpn_depth)]
-            )
+            self.block_16to8 = nn.Sequential(*[
+                BlockWithRPE(
+                    Hp,
+                    fpn_dim,
+                    0,
+                    mlp_ratio,
+                    qkv_bias,
+                    qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0.,
+                    rpe=rpe,
+                    norm_cfg=norm_cfg,
+                ) for _ in range(fpn_depth)
+            ])
 
         if num_outs > 2:
-            self.align_dim_8to4 = nn.Linear(mlvl_dims['4'], fpn_dim, bias=False)
+            self.align_dim_8to4 = nn.Linear(
+                mlvl_dims['4'], fpn_dim, bias=False)
             self.split_8to4 = PatchSplit(fpn_dim, fpn_dim, norm_cfg)
-            self.block_8to4 = nn.Sequential(
-                *[BlockWithRPE(
-                    Hp, fpn_dim, 0, mlp_ratio, qkv_bias, qk_scale,
-                    drop=drop_rate, attn_drop=attn_drop_rate, drop_path=0.,
-                    rpe=rpe, norm_cfg=norm_cfg,
-                ) for _ in range(fpn_depth)]
-            )
+            self.block_8to4 = nn.Sequential(*[
+                BlockWithRPE(
+                    Hp,
+                    fpn_dim,
+                    0,
+                    mlp_ratio,
+                    qkv_bias,
+                    qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0.,
+                    rpe=rpe,
+                    norm_cfg=norm_cfg,
+                ) for _ in range(fpn_depth)
+            ])
             self.fpn_modules.append(
                 BlockWithRPE(
-                    Hp, fpn_dim, 0, mlp_ratio, qkv_bias, qk_scale,
-                    drop=drop_rate, attn_drop=attn_drop_rate, drop_path=0.,
-                    rpe=rpe, norm_cfg=norm_cfg
-                )
-            )
+                    Hp,
+                    fpn_dim,
+                    0,
+                    mlp_ratio,
+                    qkv_bias,
+                    qk_scale,
+                    drop=drop_rate,
+                    attn_drop=attn_drop_rate,
+                    drop_path=0.,
+                    rpe=rpe,
+                    norm_cfg=norm_cfg))
 
     def init_weights(self) -> None:
         """Initialize position embedding and mask token of MAE decoder."""
@@ -227,7 +271,7 @@ class iTPNPretrainDecoder(BaseModule):
 
         if self.reconstruction_type == 'pixel':
             decoder_pos_embed = build_2d_sincos_position_embedding(
-                int(self.num_patches ** .5),
+                int(self.num_patches**.5),
                 self.decoder_pos_embed.shape[-1],
                 cls_token=False)
             self.decoder_pos_embed.data.copy_(decoder_pos_embed.float())
@@ -253,7 +297,8 @@ class iTPNPretrainDecoder(BaseModule):
         """The normalization layer of decoder."""
         return getattr(self, self.decoder_norm_name)
 
-    def forward(self, x: torch.Tensor,
+    def forward(self,
+                x: torch.Tensor,
                 ids_restore: torch.Tensor = None) -> torch.Tensor:
         """The forward function.
 
@@ -277,18 +322,24 @@ class iTPNPretrainDecoder(BaseModule):
         x = x[..., None, None, :]
         Hp = Wp = math.sqrt(L)
 
-        outs = [x] if self.align_dim_16tofpn is None else [self.align_dim_16tofpn(x)]
+        outs = [x] if self.align_dim_16tofpn is None else [
+            self.align_dim_16tofpn(x)
+        ]
         if self.num_outs >= 2:
-            x = self.block_16to8(self.split_16to8(x) + self.align_dim_16to8(features[1]))
+            x = self.block_16to8(
+                self.split_16to8(x) + self.align_dim_16to8(features[1]))
             outs.append(x)
         if self.num_outs >= 3:
-            x = self.block_8to4(self.split_8to4(x) + self.align_dim_8to4(features[0]))
+            x = self.block_8to4(
+                self.split_8to4(x) + self.align_dim_8to4(features[0]))
             outs.append(x)
         if self.num_outs > 3:
             outs = [
-                out.reshape(B, Hp, Wp, *out.shape[-3:]).permute(0, 5, 1, 3, 2, 4).reshape(
-                    B, -1, Hp * out.shape[-3], Wp * out.shape[-2]).contiguous()
-                for out in outs]
+                out.reshape(B, Hp, Wp, *out.shape[-3:]).permute(
+                    0, 5, 1, 3, 2, 4).reshape(B, -1, Hp * out.shape[-3],
+                                              Wp * out.shape[-2]).contiguous()
+                for out in outs
+            ]
             if self.num_outs >= 4:
                 outs.insert(0, F.avg_pool2d(outs[0], kernel_size=2, stride=2))
             if self.num_outs >= 5:
@@ -303,9 +354,13 @@ class iTPNPretrainDecoder(BaseModule):
             for feat, layer in zip(outs, self.decoder_embed):
                 x = layer(feat).reshape(B, L, -1)
                 # append mask tokens to sequence
-                mask_tokens = self.mask_token.repeat(x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
+                mask_tokens = self.mask_token.repeat(
+                    x.shape[0], ids_restore.shape[1] + 1 - x.shape[1], 1)
                 x = torch.cat([x, mask_tokens], dim=1)
-                x = torch.gather(x, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))
+                x = torch.gather(
+                    x,
+                    dim=1,
+                    index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[2]))
                 feats.append(x)
             x = feats.pop(0)
             # add pos embed

@@ -1,11 +1,12 @@
 # dataset settings
 dataset_type = 'ImageNet'
-data_root = '/home/TianYunjie/Workspace/dataset/ILSVRC2012/'
+data_root = 'data/imagenet/'
 data_preprocessor = dict(
     type='TwoNormDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
-    second_mean=[0.48145466 * 255, 0.4578275 * 255, 0.40821073 * 255],  # clip mean & std
+    # clip mean & std
+    second_mean=[0.48145466 * 255, 0.4578275 * 255, 0.40821073 * 255],
     second_std=[0.26862954 * 255, 0.26130258 * 255, 0.27577711 * 255],
     to_rgb=True)
 
@@ -43,6 +44,6 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        # ann_file='meta/train.txt',
+        ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline))

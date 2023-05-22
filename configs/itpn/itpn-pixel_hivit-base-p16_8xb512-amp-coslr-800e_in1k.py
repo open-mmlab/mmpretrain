@@ -1,13 +1,8 @@
 _base_ = [
-    '../_base_/models/mim_itpn-base-p16.py',
+    '../_base_/models/itpn_hivit-base-p16.py',
     '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
-
-# model settings
-model = dict(
-    backbone=dict(type='MIMiTPN', arch='large'),
-    neck=dict(type='iTPNPretrainDecoder', embed_dim=768))
 
 # optimizer wrapper
 optim_wrapper = dict(
@@ -20,7 +15,7 @@ optim_wrapper = dict(
         weight_decay=0.05),
     paramwise_cfg=dict(
         custom_keys={
-            'ln': dict(decay_mult=0.0),
+            'norm': dict(decay_mult=0.0),
             'bias': dict(decay_mult=0.0),
             'pos_embed': dict(decay_mult=0.),
             'mask_token': dict(decay_mult=0.),

@@ -6,13 +6,12 @@ _base_ = [
 model = dict(
     type='iTPN',
     backbone=dict(
-        type='MIMiTPN',
+        type='iTPNHiViT',
         arch='base',
-        drop_path_rate=0.1,
+        drop_path_rate=0.0,
         rpe=True,
         layer_scale_init_value=0.1,
-        reconstruction_type='clip'
-    ),
+        reconstruction_type='clip'),
     neck=dict(
         type='iTPNPretrainDecoder',
         patch_size=16,
@@ -29,12 +28,12 @@ model = dict(
         type='iTPNClipHead',
         embed_dims=512,
         num_embed=512,
-        loss=dict(type='CrossEntropyLoss')),
+        loss=dict(type='CosineSimilarityLoss')),
     target_generator=dict(
         type='ClipTargeter',
         model_name='ViT-B/16',
-        checkpoint= \
-            'https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt'
+        checkpoint=  # noqa
+        'https://openaipublic.azureedge.net/clip/models/5806e77cd80f8b59890b7e101eabd078d9fb84e6937f9e85e4ecb61988df416f/ViT-B-16.pt'  # noqa
     ))
 
 # optimizer wrapper
@@ -43,7 +42,7 @@ optim_wrapper = dict(
     loss_scale='dynamic',
     # betas: (0.9, 0.98) for 300 epochs and (0.9, 0.999) for 1600 epochs.
     optimizer=dict(
-        type='AdamW', lr=1.5e-3, betas=(0.9, 0.999), weight_decay=0.05),
+        type='AdamW', lr=1.5e-3, betas=(0.9, 0.98), weight_decay=0.05),
     clip_grad=dict(max_norm=3.0),
     paramwise_cfg=dict(
         custom_keys={
@@ -66,12 +65,12 @@ param_scheduler = [
         eta_min=1e-5,
         by_epoch=True,
         begin=10,
-        end=800,
+        end=300,
         convert_to_iter_based=True)
 ]
 
 # runtime settings
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=800)
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
