@@ -42,6 +42,5 @@ model = dict(
     max_txt_len=20,
 )
 
-
 val_cfg = dict()
 test_cfg = dict()

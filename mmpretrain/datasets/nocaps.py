@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from pathlib import Path
 from typing import List
 
 import mmengine
@@ -31,10 +30,12 @@ class NoCaps(BaseDataset):
 
         data_list = []
         for ann in annotations:
-            data_info = {'image_id': ann["img_id"],
-                         'img_path': file_backend.join_path(img_prefix, ann['image']),
-                         "gt_caption":None}
-    
+            data_info = {
+                'image_id': ann['img_id'],
+                'img_path': file_backend.join_path(img_prefix, ann['image']),
+                'gt_caption': None
+            }
+
             data_list.append(data_info)
-            
+
         return data_list

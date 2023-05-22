@@ -7,8 +7,6 @@ data_preprocessor = dict(
     to_rgb=True,
 )
 
-
-
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -18,7 +16,6 @@ test_pipeline = [
         backend='pillow'),
     dict(type='PackInputs', meta_keys=['image_id']),
 ]
-
 
 val_dataloader = dict(
     batch_size=16,
