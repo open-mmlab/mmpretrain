@@ -601,17 +601,15 @@ class InternImage(BaseBackbone):
                 new_k = k.replace('head.fc.', 'head.')
             elif 'patch_embed' in k:
                 map_fun = {
-                    '.0.': '.conv1.',
-                    '.1.': '.norm1.',
-                    '.3.': '.conv2.',
-                    '.4.': '.norm2.',
-                    'norm2.norm1': 'norm2.1'
+                    'patch_embed.0.': 'patch_embed.conv1.',
+                    'patch_embed.1.': 'patch_embed.norm1.',
+                    'patch_embed.3.': 'patch_embed.conv2.',
+                    'patch_embed.4.': 'patch_embed.norm2.',
                 }
                 new_k = k
                 for old, new in map_fun.items():
                     new_k = new_k.replace(old, new)
             elif 'layers' in k:
-                print(k)
                 new_k = k.replace('backbone.layers', 'backbone.levels')
                 if 'mlp' in new_k:
                     new_k = new_k.replace('layers.0.0', 'fc1')
