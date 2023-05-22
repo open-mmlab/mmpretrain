@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import collections
+import os
 
-from transformers import (AutoTokenizer, BartTokenizer, BertTokenizer,
-                          BertTokenizerFast, LlamaTokenizer, BasicTokenizer,
-                          WordpieceTokenizer)
 from mmengine.fileio import list_from_file
+from transformers import (AutoTokenizer, BartTokenizer, BasicTokenizer,
+                          BertTokenizer, BertTokenizerFast, LlamaTokenizer,
+                          WordpieceTokenizer)
 
 from mmpretrain.registry import TOKENIZER
 from .huggingface import register_hf_tokenizer
