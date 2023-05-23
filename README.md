@@ -88,7 +88,7 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 🌟 v1.0.0rc8 was released in 22/05/2023
 
-- Support multiple multi-modal algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
+- Support multiple **multi-modal** algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
 - Add EVA-02, Dino-V2, ViT-SAM and GLIP backbones.
 - Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain.
 
