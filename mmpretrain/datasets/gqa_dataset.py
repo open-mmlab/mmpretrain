@@ -12,6 +12,9 @@ from mmpretrain.registry import DATASETS
 class GQA(BaseDataset):
     """GQA dataset.
 
+    We use the annotation file from LAVIS, and you can
+    download it from https://storage.googleapis.com/sfr-vision-language-research/LAVIS/datasets/gqa/testdev_balanced_questions.json .  # noqa: E501
+
     Args:
         data_root (str): The root directory for ``data_prefix``, ``ann_file``
             and ``question_file``.
