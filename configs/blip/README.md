@@ -60,7 +60,7 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 
 ### Visual Question Answering on OK-VQA
 
-| Model                      | Params (M) | Accuracy |               Config                 |                                                       Download                                                        |
+| Model                      | Params (M) | Accuracy |                Config                |                                                       Download                                                        |
 | :------------------------- | :--------: | :------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
 | `blip-base_3rdparty_vqa`\* |   361.48   |  40.59   | [config](./blip-base_8xb32_okvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
 
