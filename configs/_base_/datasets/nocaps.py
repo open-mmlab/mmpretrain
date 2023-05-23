@@ -24,7 +24,7 @@ val_dataloader = dict(
         type='NoCaps',
         data_root='data/nocaps/',
         data_prefix=dict(img_path='images/'),
-        ann_file='annotations/nocaps_val.json',
+        ann_file='annotations/nocaps_val_4500_captions.json',
         pipeline=test_pipeline,
     ),
     sampler=dict(type='DefaultSampler', shuffle=False),
