@@ -63,7 +63,7 @@ pip install -U openmim && mim install -e .
 Just install with mim.
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0.0rc7"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc8"
 ```
 
 ```{note}
@@ -80,7 +80,7 @@ can add `[multimodal]` during the installation. For example:
 mim install -e ".[multimodal]"
 
 # Install as a Python package
-mim install "mmpretrain[multimodal]>=1.0.0rc7"
+mim install "mmpretrain[multimodal]>=1.0.0rc8"
 ```
 
 ## Verify the installation

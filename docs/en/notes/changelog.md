@@ -1,5 +1,52 @@
 # Changelog (MMPreTrain)
 
+## v1.0.0rc8(22/05/2023)
+
+### Highlights
+
+- Support multiple multi-modal algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
+- Add EVA-02, Dino-V2, ViT-SAM and GLIP backbones.
+- Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain.
+
+### New Features
+
+- Support Chinese CLIP. ([#1576](https://github.com/open-mmlab/mmpretrain/pull/1576))
+- Add ScienceQA Metrics ([#1577](https://github.com/open-mmlab/mmpretrain/pull/1577))
+- Support multiple multi-modal algorithms and inferencers. ([#1561](https://github.com/open-mmlab/mmpretrain/pull/1561))
+- add eva02 backbone ([#1450](https://github.com/open-mmlab/mmpretrain/pull/1450))
+- Support dinov2 backbone ([#1522](https://github.com/open-mmlab/mmpretrain/pull/1522))
+- Support some downstream classification datasets. ([#1467](https://github.com/open-mmlab/mmpretrain/pull/1467))
+- Support GLIP ([#1308](https://github.com/open-mmlab/mmpretrain/pull/1308))
+- Register torchvision transforms into mmpretrain ([#1265](https://github.com/open-mmlab/mmpretrain/pull/1265))
+- Add ViT of SAM ([#1476](https://github.com/open-mmlab/mmpretrain/pull/1476))
+
+### Improvements
+
+- [Refactor] Support to freeze channel reduction and add layer decay function ([#1490](https://github.com/open-mmlab/mmpretrain/pull/1490))
+- [Refactor] Support resizing pos_embed while loading ckpt and format output ([#1488](https://github.com/open-mmlab/mmpretrain/pull/1488))
+
+### Bug Fixes
+
+- Fix scienceqa ([#1581](https://github.com/open-mmlab/mmpretrain/pull/1581))
+- Fix config of beit ([#1528](https://github.com/open-mmlab/mmpretrain/pull/1528))
+- Incorrect stage freeze on RIFormer Model ([#1573](https://github.com/open-mmlab/mmpretrain/pull/1573))
+- Fix ddp bugs caused by `out_type`. ([#1570](https://github.com/open-mmlab/mmpretrain/pull/1570))
+- Fix multi-task-head loss potential bug ([#1530](https://github.com/open-mmlab/mmpretrain/pull/1530))
+- Support bce loss without batch augmentations ([#1525](https://github.com/open-mmlab/mmpretrain/pull/1525))
+- Fix clip generator init bug ([#1518](https://github.com/open-mmlab/mmpretrain/pull/1518))
+- Fix the bug in binary cross entropy loss ([#1499](https://github.com/open-mmlab/mmpretrain/pull/1499))
+
+### Docs Update
+
+- Update PoolFormer citation to CVPR version ([#1505](https://github.com/open-mmlab/mmpretrain/pull/1505))
+- Refine Inference Doc ([#1489](https://github.com/open-mmlab/mmpretrain/pull/1489))
+- Add doc for usage of confusion matrix ([#1513](https://github.com/open-mmlab/mmpretrain/pull/1513))
+- Update MMagic link ([#1517](https://github.com/open-mmlab/mmpretrain/pull/1517))
+- Fix example_project README ([#1575](https://github.com/open-mmlab/mmpretrain/pull/1575))
+- Add NPU support page ([#1481](https://github.com/open-mmlab/mmpretrain/pull/1481))
+- train cfg: Removed old description ([#1473](https://github.com/open-mmlab/mmpretrain/pull/1473))
+- Fix typo in MultiLabelDataset docstring ([#1483](https://github.com/open-mmlab/mmpretrain/pull/1483))
+
 ## v1.0.0rc7(07/04/2023)
 
 ### Highlights

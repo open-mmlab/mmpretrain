@@ -67,7 +67,7 @@ pip install -U openmim && mim install -e .
 直接使用 mim 安装即可。
 
 ```shell
-pip install -U openmim && mim install "mmpretrain>=1.0.0rc7"
+pip install -U openmim && mim install "mmpretrain>=1.0.0rc8"
 ```
 
 ```{note}
@@ -83,7 +83,7 @@ MMPretrain 中的多模态模型需要额外的依赖项，要安装这些依赖
 mim install -e ".[multimodal]"
 
 # 作为 Python 包安装
-mim install "mmpretrain[multimodal]>=1.0.0rc7"
+mim install "mmpretrain[multimodal]>=1.0.0rc8"
 ```
 
 ## 验证安装

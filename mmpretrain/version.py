@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved
 
-__version__ = '1.0.0rc7'
+__version__ = '1.0.0rc8'
 
 
 def parse_version_info(version_str):
