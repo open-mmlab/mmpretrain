@@ -12,7 +12,8 @@ from mmpretrain.registry import METRICS
 class GQAAcc(BaseMetric):
     """GQA Acc metric.
 
-    Compute GQA accuracy.
+    Compute GQA accuracy. We use the annotation file from LAVIS, and you can
+    download it from https://storage.googleapis.com/sfr-vision-language-research/LAVIS/datasets/gqa/testdev_balanced_questions.json .  # noqa: E501
 
     Args:
         collect_device (str): Device name used for collecting results from
