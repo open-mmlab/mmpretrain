@@ -90,7 +90,7 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 - Support multiple **multi-modal** algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
 - Add EVA-02, Dino-V2, ViT-SAM and GLIP backbones.
-- Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain.
+- Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain. See [the doc](https://mmpretrain.readthedocs.io/en/latest/api/data_process.html#torchvision-transforms)
 
 🌟 v1.0.0rc7 was released in 07/04/2023
 
