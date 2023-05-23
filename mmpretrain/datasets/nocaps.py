@@ -4,6 +4,7 @@ from typing import List
 import mmengine
 from mmengine.dataset import BaseDataset
 from mmengine.fileio import get_file_backend
+from pycocotools.coco import COCO
 
 from mmpretrain.registry import DATASETS
 
@@ -25,14 +26,18 @@ class NoCaps(BaseDataset):
     def load_data_list(self) -> List[dict]:
         """Load data list."""
         img_prefix = self.data_prefix['img_path']
-        annotations = mmengine.load(self.ann_file)
-        file_backend = get_file_backend(img_prefix)
+        with mmengine.get_local_path(self.ann_file) as ann_file:
+            coco = COCO(ann_file)
 
+        file_backend = get_file_backend(img_prefix)
         data_list = []
-        for ann in annotations:
+        for ann in coco.anns.values():
+            image_id = ann['image_id']
+            image_path = file_backend.join_path(
+                img_prefix, coco.imgs[image_id]['file_name'])
             data_info = {
-                'image_id': ann['img_id'],
-                'img_path': file_backend.join_path(img_prefix, ann['image']),
+                'image_id': image_id,
+                'img_path': image_path,
                 'gt_caption': None
             }
 
