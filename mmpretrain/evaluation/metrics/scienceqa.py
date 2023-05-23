@@ -86,9 +86,9 @@ class ScienceQAMetric(BaseMetric):
             result['answer'] = data_sample.get('gt_answer')
             hint = data_sample.get('hint')
             has_image = data_sample.get('has_image', False)
-            result[
-                'no_context'] = True if not has_image and hint is None else False  # noqa
-            result['has_text'] = True if hint is not None else False
+            result['no_context'] = True if not has_image and len(
+                hint) == 0 else False  # noqa
+            result['has_text'] = True if len(hint) > 0 else False
             result['has_image'] = has_image
 
             # Save the result to `self.results`.
