@@ -3,11 +3,6 @@ _base_ = [
     '../../_base_/default_runtime.py',
 ]
 
-# dataset settings
-dataset_type = 'ImageNet'
-data_root = 'sproject:s3://openmmlab/datasets/classification/imagenet/'
-# data_root = 'data/imagenet/'
-
 data_preprocessor = dict(
     num_classes=1000,
     # RGB format normalization parameters
@@ -47,7 +42,7 @@ train_pipeline = [
 ]
 
 train_dataloader = dict(
-    dataset=dict(data_root=data_root, pipeline=train_pipeline),
+    dataset=dict(pipeline=train_pipeline),
     sampler=dict(type='RepeatAugSampler', shuffle=True),
 )
 
@@ -56,7 +51,7 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='ConvNeXt',
-        arch='small',
+        arch='tiny',
         drop_path_rate=0.3,
         layer_scale_init_value=0.,
         use_grn=True,

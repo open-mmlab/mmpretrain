@@ -1,0 +1,39 @@
+Collections:
+  - Name: SparK
+    Metadata:
+      Architecture:
+        - Dense Connections
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      Title: 'Designing BERT for Convolutional Networks: Sparse and Hierarchical Masked Modeling'
+      URL: https://arxiv.org/abs/2301.03580
+    README: configs/spark/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      FLOPs: 4100000000
+      Parameters: 37971000
+      Training Data:
+        - ImageNet-1k
+    In Collection: SparK
+    Results: null
+    Weights:
+    Config: configs/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k.py
+
+  - Name: spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k
+    Metadata:
+      FLOPs: 4470000000
+      Parameters: 39732000
+      Training Data:
+        - ImageNet-1k
+    In Collection: SparK
+    Results: null
+    Weights:
+    Config: configs/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k.py
