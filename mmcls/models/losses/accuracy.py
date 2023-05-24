@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import platform
 from numbers import Number
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+from mmcls.utils import auto_select_device
 
 
 def accuracy_numpy(pred, target, topk=(1, ), thrs=0.):
@@ -112,6 +115,12 @@ def accuracy(pred, target, topk=1, thrs=0.):
                  if isinstance(x, np.ndarray) else x)
     pred = to_tensor(pred)
     target = to_tensor(target)
+    if platform.machine() == 'aarch64':
+        # ARM chip with low version GCC version may cause calculation errors,
+        # attempt to calculate on cuda or npu.
+        # reference: https://github.com/pytorch/pytorch/issues/75411
+        pred = pred.to(auto_select_device())
+        target = target.to(auto_select_device())
 
     res = accuracy_torch(pred, target, topk, thrs)
 
