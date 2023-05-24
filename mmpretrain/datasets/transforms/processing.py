@@ -4,7 +4,6 @@ import math
 import numbers
 import re
 import string
-import traceback
 from enum import EnumMeta
 from numbers import Number
 from typing import Dict, List, Optional, Sequence, Tuple, Union
@@ -45,43 +44,20 @@ def _interpolation_modes_from_str(t: str):
     return inverse_modes_mapping[t]
 
 
-def _warpper_vision_transform_cls(vision_transform_cls, new_name):
-    """build a transform warpper class for specific torchvison.transform to
-    handle the different input type between torchvison.transforms with
-    mmcls.datasets.transforms."""
+class TorchVisonTransformWrapper:
 
-    def new_init(self, *args, **kwargs):
+    def __init__(self, transform, *args, **kwargs):
         if 'interpolation' in kwargs and isinstance(kwargs['interpolation'],
                                                     str):
             kwargs['interpolation'] = _interpolation_modes_from_str(
                 kwargs['interpolation'])
         if 'dtype' in kwargs and isinstance(kwargs['dtype'], str):
             kwargs['dtype'] = _str_to_torch_dtype(kwargs['dtype'])
+        self.t = transform(*args, **kwargs)
 
-        try:
-            self.t = vision_transform_cls(*args, **kwargs)
-        except TypeError as e:
-            traceback.print_exc()
-            raise TypeError(
-                f'Error when init the {vision_transform_cls}, please '
-                f'check the argmemnts of {args} and {kwargs}. \n{e}')
-
-    def new_call(self, input):
-        try:
-            input['img'] = self.t(input['img'])
-        except Exception as e:
-            traceback.print_exc()
-            raise Exception('Error when processing of transform(`torhcvison/'
-                            f'{vision_transform_cls.__name__}`). \n{e}')
-        return input
-
-    def new_str(self):
-        return str(self.t)
-
-    new_transforms_cls = type(
-        new_name, (),
-        dict(__init__=new_init, __call__=new_call, __str__=new_str))
-    return new_transforms_cls
+    def __call__(self, results):
+        results['img'] = self.t(results['img'])
+        return results
 
 
 def register_vision_transforms() -> List[str]:
@@ -99,10 +75,11 @@ def register_vision_transforms() -> List[str]:
         _transform = getattr(torchvision.transforms, module_name)
         if inspect.isclass(_transform) and callable(
                 _transform) and not isinstance(_transform, (EnumMeta)):
-            new_cls = _warpper_vision_transform_cls(
-                _transform, f'TorchVison{module_name}')
+            from functools import partial
             TRANSFORMS.register_module(
-                module=new_cls, name=f'torchvision/{module_name}')
+                module=partial(
+                    TorchVisonTransformWrapper, transform=_transform),
+                name=f'torchvision/{module_name}')
             vision_transforms.append(f'torchvision/{module_name}')
     return vision_transforms
 
