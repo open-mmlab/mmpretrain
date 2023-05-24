@@ -199,7 +199,8 @@ def get_default_traget_layers(model, args):
         num_extra_tokens = args.num_extra_tokens or getattr(
             model.backbone, 'num_extra_tokens', 1)
 
-        out_type = getattr(model.backbone, 'out_type')
+        # models like swin have no attr 'out_type', set out_type to avg_featmap
+        out_type = getattr(model.backbone, 'out_type', 'avg_featmap')
         if out_type == 'cls_token' or num_extra_tokens > 0:
             # Assume the backbone feature is class token.
             name, layer = norm_layers[-3]
