@@ -78,3 +78,4 @@ Import:
   - configs/chinese_clip/metafile.yml
   - configs/itpn/metafile.yml
   - configs/hivit/metafile.yml
+  - configs/spark/metafile.yml

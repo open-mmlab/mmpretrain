@@ -1,5 +1,7 @@
 # SparK
+
 > [Designing BERT for Convolutional Networks: Sparse and Hierarchical Masked Modeling](https://arxiv.org/abs/2301.03580)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -51,6 +53,7 @@ python tools/train.py configs/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_
 | `spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k` |   39.73    |   4.47    | [config](spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k.py) |   N/A    |
 
 ## Citation
+
 ```bibtex
 @Article{tian2023designing,
   author  = {Keyu Tian and Yi Jiang and Qishuai Diao and Chen Lin and Liwei Wang and Zehuan Yuan},
@@ -59,4 +62,3 @@ python tools/train.py configs/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_
   year    = {2023},
 }
 ```
-
