@@ -55,7 +55,10 @@ gallery_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
 val_dataloader = query_dataloader
-val_evaluator = dict(type='RetrievalRecall', topk=1)
+val_evaluator = [
+    dict(type='RetrievalRecall', topk=1),
+    dict(type='RetrievalAveragePrecision', topk=10),
+]
 
 test_dataloader = val_dataloader
 test_evaluator = val_evaluator
