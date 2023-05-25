@@ -34,7 +34,7 @@ class AttentionWithBias(BaseModule):
                  num_heads=8,
                  key_dim=32,
                  attn_ratio=4.,
-                 resolution=7,
+                 resolution=4,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         self.num_heads = num_heads
@@ -82,10 +82,14 @@ class AttentionWithBias(BaseModule):
         qkv = self.qkv(x)
         qkv = qkv.reshape(B, N, self.num_heads, -1).permute(0, 2, 1, 3)
         q, k, v = qkv.split([self.key_dim, self.key_dim, self.d], dim=-1)
-
-        attn = ((q @ k.transpose(-2, -1)) * self.scale +
-                (self.attention_biases[:, self.attention_bias_idxs]
-                 if self.training else self.ab))
+        a = q @ k.transpose(-2, -1)
+        a = a * self.scale
+        b = (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab)
+        attn = a * b
+        # attn = ((q @ k.transpose(-2, -1)) * self.scale +
+        #         (self.attention_biases[:, self.attention_bias_idxs]
+        #          if self.training else self.ab))
         attn = attn.softmax(dim=-1)
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)
         x = self.proj(x)

@@ -1,3 +1,4 @@
+RES = 128
 # dataset settings
 dataset_type = 'CustomDataset'
 data_preprocessor = dict(
@@ -16,7 +17,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        scale=224,
+        scale=RES,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
@@ -44,16 +45,16 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=248,
+        scale=RES,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=224),
+    dict(type='CenterCrop', crop_size=RES),
     dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(
-    batch_size=16,
+    batch_size=32,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -64,7 +65,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=16,
+    batch_size=32,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -73,7 +74,7 @@ val_dataloader = dict(
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
-val_evaluator = dict(type='Accuracy', topk=(1, 5))
+val_evaluator = dict(type='Accuracy', topk=(1,))
 
 # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader
