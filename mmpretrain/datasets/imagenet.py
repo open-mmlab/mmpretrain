@@ -28,11 +28,15 @@ class ImageNet(CustomDataset):
         |   |   ├── y2.jpg
         |   |   └── ...
         |   └── ...
-        └── val
-            ├──class_x
-            |   └── ...
-            ├── class_y
-            |   └── ...
+        ├── val
+        │   ├──class_x
+        |   |   └── ...
+        │   ├── class_y
+        |   |   └── ...
+        |   └── ...
+        └── test
+            ├── test1.jpg
+            ├── test2.jpg
             └── ...
 
     or ::
@@ -46,6 +50,10 @@ class ImageNet(CustomDataset):
         │   ├── x3.jpg
         │   ├── y3.jpg
         │   └── ...
+        ├── test
+        │   ├── test1.jpg
+        │   ├── test2.jpg
+        │   └── ...
         └── meta
             ├── train.txt
             └── val.txt
@@ -55,7 +63,6 @@ class ImageNet(CustomDataset):
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
         split (str): The dataset split, supports "train", "val" and "test".
-            When ``split`` is set to "test", ``with_label`` will be set to False.
             Default to ''.
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
         ann_file (str): Annotation file path. Defaults to ''.
