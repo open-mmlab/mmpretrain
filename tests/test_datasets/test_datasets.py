@@ -300,6 +300,7 @@ class TestImageNet(TestCustomDataset):
         cls.meta_folder = 'meta'
         cls.train_file = 'train.txt'
         cls.val_file = 'val.txt'
+        cls.test_file = 'test.txt'
         cls.categories = ['cat', 'dog']
 
         os.mkdir(osp.join(cls.root, cls.meta_folder))
@@ -318,6 +319,13 @@ class TestImageNet(TestCustomDataset):
             f.write('\n'.join([
                 '11.jpg 0',
                 '22.jpg 1',
+            ]))
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.test_file),
+                  'w') as f:
+            f.write('\n'.join([
+                'aa.jpg',
+                'bb.jpg',
             ]))
 
     def test_initialize(self):
@@ -341,6 +349,16 @@ class TestImageNet(TestCustomDataset):
             self.assertEqual(dataset.split, split)
             self.assertEqual(dataset.data_root, self.root)
 
+        # Test split="test"
+        cfg = {**self.DEFAULT_ARGS}
+        cfg['split'] = 'test'
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.split, 'test')
+            self.assertFalse(dataset.with_label)
+        self.assertIn('Since the ImageNet1k test set', log.output[0])
+
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
@@ -362,6 +380,15 @@ class TestImageNet(TestCustomDataset):
         self.assertEqual(data_info['img_path'],
                          osp.join(self.root, 'val', '11.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
+
+        # Test split="test"
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test', 'aa.jpg'))
 
         # test override classes
         cfg = {

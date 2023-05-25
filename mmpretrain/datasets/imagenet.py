@@ -54,7 +54,8 @@ class ImageNet(CustomDataset):
     Args:
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
-        split (str): The dataset split, supports "train" and "val".
+        split (str): The dataset split, supports "train", "val" and "test".
+            When ``split`` is set to "test", ``with_label`` will be set to False.
             Default to ''.
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
         ann_file (str): Annotation file path. Defaults to ''.
@@ -93,10 +94,18 @@ class ImageNet(CustomDataset):
         kwargs = {'extensions': self.IMG_EXTENSIONS, **kwargs}
 
         if split:
-            splits = ['train', 'val']
+            splits = ['train', 'val', 'test']
             assert split in splits, \
                 f"The split must be one of {splits}, but get '{split}'"
             self.split = split
+
+            if split == 'test':
+                logger = MMLogger.get_current_instance()
+                logger.warning(
+                    'Since the ImageNet1k test set does not provide label'
+                    'annotations, `with_label` is set to False')
+                kwargs['with_label'] = False
+
             data_prefix = split if data_prefix == '' else data_prefix
 
             if ann_file == '':
