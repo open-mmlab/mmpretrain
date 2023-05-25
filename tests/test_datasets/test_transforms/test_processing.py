@@ -956,4 +956,4 @@ class TestVisionTransformWrapper(TestCase):
         mmcls_trans = TRANSFORMS.build(
             dict(type='torchvision/RandomResizedCrop', size=224))
 
-        self.assertEqual(str(vision_trans), str(mmcls_trans))
+        self.assertEqual(f'TorchVision{repr(vision_trans)}', repr(mmcls_trans))

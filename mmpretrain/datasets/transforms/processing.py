@@ -59,6 +59,9 @@ class TorchVisonTransformWrapper:
         results['img'] = self.t(results['img'])
         return results
 
+    def __repr__(self) -> str:
+        return f'TorchVision{repr(self.t)}'
+
 
 def register_vision_transforms() -> List[str]:
     """Register transforms in ``torchvision.transforms`` to the ``TRANSFORMS``
