@@ -2,7 +2,7 @@
 
 ## Introduction of the t-SNE visualization tool
 
-MMPretrain provides `tools/visualization/vis_tsne.py` tool to visualize ... by t-SNE. Please install `sklearn` to calculate TSNE by `pip install scikit-learn`.
+MMPretrain provides `tools/visualization/vis_tsne.py` tool to visualize the feature embeddings of images by t-SNE. Please install `sklearn` to calculate t-SNE by `pip install scikit-learn`.
 
 **Command**：
 
@@ -33,7 +33,7 @@ python tools/visualization/vis_tsne.py \
 
 - `CONFIG`: The path of t-SNE config file.
 - `--checkpoint CHECKPOINT`: The path of the checkpoint file.
-- `--work-dir WORK_DIR`: The dir to save logs and models.
+- `--work-dir WORK_DIR`: The directory to save logs and visualization images.
 - `--test-cfg TEST_CFG`: The path of t-SNE config file to load config of test dataloader.
 - `--vis-stage {backbone,neck,pre_logits}`: The visualization stage of the model.
 - `--class-idx CLASS_IDX [CLASS_IDX ...]`: The categories used to calculate t-SNE.
