@@ -53,7 +53,7 @@ python tools/visualization/vis_tsne.py \
 
 ## 如何可视化 CNN 分类器的t-分布随机邻域嵌入（如 ResNet-18 和 ResNet-50）
 
-以下是在CIFAR-10数据集上训练的 ResNet-18 和 ResNet-50 模型上运行t-SNE可视化的两个样例：
+以下是在CIFAR-10数据集上训练的 ResNet-18 和 ResNet-50 模型上运行 t-SNE 可视化的两个样例：
 
 ```shell
 python tools/visualization/vis_tsne.py \
@@ -71,4 +71,15 @@ python tools/visualization/vis_tsne.py \
 
 ## 如何可视化自监督视觉 transformer 的t-分布随机邻域嵌入
 
-待添加。
+以下是在ImageNet数据集上训练的 MAE-ViT-base 模型上运行 t-SNE 可视化的一个样例。输入数据来自 ImageNet 验证集。
+
+```shell
+python tools/visualization/vis_tsne.py \
+    configs/mae/mae_vit-base-p16_8xb512-amp-coslr-800e_in1k.py \
+    --checkpoint https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth \
+    --test-cfg configs/_base_/datasets/imagenet_bs32.py
+```
+
+| MAE-ViT-base                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <div align=center><img src='https://github.com/open-mmlab/mmpretrain/assets/42371271/ee576c0c-abef-43d1-8866-24a5f5fd0cf6' height="auto" width="auto" ></div> |

@@ -212,6 +212,9 @@ def main():
                     F.adaptive_avg_pool2d(inputs, 1).squeeze()
                     for inputs in batch_features
                 ]
+            elif batch_features[0].ndim == 3:
+                # For (N, L, C) feature
+                batch_features = [inputs.mean(1) for inputs in batch_features]
 
         # save batch features
         features.append(batch_features)
