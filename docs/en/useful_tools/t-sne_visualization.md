@@ -51,7 +51,7 @@ python tools/visualization/vis_tsne.py \
 - `--n-iter-without-progress N_ITER_WITHOUT_PROGRESS`: Maximum number of iterations without progress before we abort the optimization.
 - `--init INIT`: The init method.
 
-## How to visualize the t-SNE of a CNN classifier (ResNet-18 and ResNet-50)
+## How to visualize the t-SNE of a image classifier (such as ResNet)
 
 Here are two examples of running t-SNE visualization on ResNet-18 and ResNet-50 models, trained on CIFAR-10 dataset:
 
@@ -69,9 +69,9 @@ python tools/visualization/vis_tsne.py \
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | <div align=center><img src='https://user-images.githubusercontent.com/42371271/236410521-c4d087da-d16f-48ad-b951-c74d10c68f33.png' height="auto" width="auto" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/42371271/236411844-c97dc514-dad0-401e-ba8f-307d0a385b4e.png' height="auto" width="auto" ></div> |
 
-## How to visualize the t-SNE of a self-supervised vision transformer
+## How to visualize the t-SNE of a self-supervised model (such as MAE)
 
-Here is an example of running t-SNE visualization on MAE-ViT-base model, trained on ImageNet dataset. The input data is from ImageNet validation set.
+Here is an example of running t-SNE visualization on MAE-ViT-base model, trained on ImageNet dataset. The input data is from ImageNet validation set. MAE and some self-supervised pre-training algorithms do not have test_dataloader information. When analyzing such self-supervised algorithms, you need to add test_dataloader information in the config, or you can use '--test-cfg' argument to specify a config file.
 
 ```shell
 python tools/visualization/vis_tsne.py \

@@ -39,7 +39,7 @@ python tools/visualization/vis_tsne.py \
 - `--class-idx CLASS_IDX [CLASS_IDX ...]`: 用来计算 t-SNE 的类别。
 - `--max-num-class MAX_NUM_CLASS`: 前 N 个被应用 t-SNE 算法的类别，默认为20。
 - `--max-num-samples MAX_NUM_SAMPLES`: 每个类别中最大的样本数，值越高需要的计算时间越长，默认为100。
-- `--cfg-options CFG_OPTIONS [CFG_OPTIONS ...]`: 覆盖被使用的配置中的一些设定，xxx=yyy 格式的关键字-值对会被合并到配置文件中。override some settings in the used config, the key-value pair in xxx=yyy format will be merged into config file. If the value to be overwritten is a list, it should be like key="[a,b]" or key=a,b It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" Note that the quotation marks are necessary and that no white space is allowed.
+- `--cfg-options CFG_OPTIONS [CFG_OPTIONS ...]`: 覆盖被使用的配置中的一些设定，形如 xxx=yyy 格式的关键字-值对会被合并到配置文件中。如果被覆盖的值是一个列表，它应该形如 key="[a,b]" 或者 key=a,b 。它还允许嵌套的列表/元组值，例如 key="[(a,b),(c,d)]" 。注意引号是必需的，而且不允许有空格。
 - `--device DEVICE`: 用于推理的设备。
 - `--legend`: 显示所有类别的图例。
 - `--show`: 在图形窗口中显示结果。
@@ -51,7 +51,7 @@ python tools/visualization/vis_tsne.py \
 - `--n-iter-without-progress N_ITER_WITHOUT_PROGRESS`: 在我们中止优化之前，最大的没有进展的迭代次数。
 - `--init INIT`: 初始化方法。
 
-## 如何可视化 CNN 分类器的t-分布随机邻域嵌入（如 ResNet-18 和 ResNet-50）
+## 如何可视化分类模型的t-SNE（如 ResNet）
 
 以下是在CIFAR-10数据集上训练的 ResNet-18 和 ResNet-50 模型上运行 t-SNE 可视化的两个样例：
 
@@ -69,9 +69,9 @@ python tools/visualization/vis_tsne.py \
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | <div align=center><img src='https://user-images.githubusercontent.com/42371271/236410521-c4d087da-d16f-48ad-b951-c74d10c68f33.png' height="auto" width="auto" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/42371271/236411844-c97dc514-dad0-401e-ba8f-307d0a385b4e.png' height="auto" width="auto" ></div> |
 
-## 如何可视化自监督视觉 transformer 的t-分布随机邻域嵌入
+## 如何可视化自监督模型的t-SNE（如 MAE）
 
-以下是在ImageNet数据集上训练的 MAE-ViT-base 模型上运行 t-SNE 可视化的一个样例。输入数据来自 ImageNet 验证集。
+以下是在ImageNet数据集上训练的 MAE-ViT-base 模型上运行 t-SNE 可视化的一个样例。输入数据来自 ImageNet 验证集。MAE和一些自监督预训练算法配置中没有 test_dataloader 信息。在分析这些自监督算法时，你需要在配置中添加 test_dataloader 信息，或者使用 `--test-cfg` 字段来指定一个配置文件。
 
 ```shell
 python tools/visualization/vis_tsne.py \
