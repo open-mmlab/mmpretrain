@@ -1,69 +1,7 @@
-# dataset settings
-dataset_type = 'ImageNet'
-data_preprocessor = dict(
-    num_classes=1000,
-    # RGB format normalization parameters
-    mean=[123.675, 116.28, 103.53],
-    std=[58.395, 57.12, 57.375],
-    # convert image from BGR to RGB
-    to_rgb=True,
-)
+_base_ = './_base_.py'
 
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=640,
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackInputs'),
-]
-
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=640,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=640),
-    dict(type='PackInputs'),
-]
-
-train_dataloader = dict(
-    batch_size=128,
-    num_workers=8,
-    dataset=dict(
-        type=dataset_type,
-        data_root='../../data/imagenet',
-        data_prefix='train',
-        pipeline=train_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=True),
-)
-
-val_dataloader = dict(
-    batch_size=128,
-    num_workers=8,
-    dataset=dict(
-        type=dataset_type,
-        data_root='../../data/imagenet',
-        data_prefix='val',
-        pipeline=test_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-)
-val_evaluator = dict(type='Accuracy', topk=(1, 5))
-
-test_dataloader = val_dataloader
-test_evaluator = val_evaluator
-
-# model setting
-custom_imports = dict(imports='models')
 model = dict(
-    type='ImageClassifier',
     backbone=dict(
-        type='InternImage',
         stem_channels=320,
         drop_path_rate=0.1,
         stage_blocks=[6, 6, 32, 6],
@@ -76,59 +14,42 @@ model = dict(
         use_clip_projector=True,
     ),
     neck=None,
-    head=dict(
-        type='LinearClsHead',
-        num_classes=1000,
-        in_channels=768,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        topk=(1, 5)))
+    head=dict(in_channels=768))
 
-# optimizer
-optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=5e-6, eps=1e-8, betas=(0.9, 0.999)),
-    weight_decay=0.05)
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='RandomResizedCrop',
+        scale=640,
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackInputs')
+]
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='ResizeEdge',
+        scale=640,
+        edge='short',
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='CenterCrop', crop_size=640),
+    dict(type='PackInputs')
+]
 
-# learning policy
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+test_dataloader = val_dataloader
+
+optim_wrapper = dict(optimizer=dict(lr=5e-6))
 param_scheduler = [
-    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         by_epoch=True,
         begin=0,
         end=2,
         convert_to_iter_based=True),
-    # main learning rate scheduler
     dict(type='CosineAnnealingLR', T_max=18, by_epoch=True, begin=2, end=20)
 ]
-
-# train, val, test setting
 train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=1)
-val_cfg = dict()
-test_cfg = dict()
-
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=128 * 8)
-
-default_scope = 'mmpretrain'
-default_hooks = dict(
-    timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=100),
-    param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
-    sampler_seed=dict(type='DistSamplerSeedHook'),
-    visualization=dict(type='VisualizationHook', enable=False),
-)
-
-env_cfg = dict(
-    cudnn_benchmark=False,
-    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
-    dist_cfg=dict(backend='nccl'),
-)
-
-vis_backends = [dict(type='LocalVisBackend')]
-visualizer = dict(type='UniversalVisualizer', vis_backends=vis_backends)
-log_level = 'INFO'
-load_from = None
-resume = False
-randomness = dict(seed=None, deterministic=False)
