@@ -15,21 +15,34 @@ from .base import BaseSelfSupervisor
 
 @MODELS.register_module()
 class iTPNHiViT(HiViT):
-    """Vision Transformer for MAE pre-training using HiViT.
-
-    A PyTorch implement of: `An Image is Worth 16x16 Words: Transformers
-    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_.
-    This module implements the patch masking in MAE and initialize the
-    position embedding with sine-cosine position embedding.
+    """HiViT for iTPN pre-training.
 
     Args:
-        img_size (int | tuple): Input image size
-        patch_size (int | tuple): The patch size
+        img_size (int | tuple): Input image size. Defaults to 224.
+        patch_size (int | tuple): The patch size. Defaults to 16.
+        inner_patches (int): Inner patch. Defaults to 4.
+        stem_mlp_ratio (int): Ratio of MLP hidden dim to embedding dim
+            in the first two stages. Defaults to 3.
+        mlp_ratio (int): Ratio of MLP hidden dim to embedding dim in
+            the last stage. Defaults to 4.
+        qkv_bias (bool): Enable bias for qkv projections if True.
+        qk_scale (float): The number of divider after q@k. Default to None.
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
+        attn_drop_rate (float): The drop out rate for attention output weights.
+            Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        ape (bool): If True, add absolute position embedding to
+            the patch embedding.
+        rpe (bool): If True, add relative position embedding to
+            the patch embedding.
+        layer_scale_init_value (float): Layer-scale init values. Defaults to 0.
         mask_ratio (bool): The ratio of total number of patches to be masked.
             Defaults to 0.75.
+        reconstruction_type (str): The reconstruction of self-supervised
+            learning. Defaults to 'pixel'.
     """
 
     def __init__(

@@ -362,11 +362,11 @@ class HiViT(BaseBackbone):
             the last stage.
         qkv_bias (bool): Enable bias for qkv projections if True.
         qk_scale (float): The number of divider after q@k. Default to None.
-        drop (float): Probability of an element to be zeroed
+        drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Defaults to 0.
-        attn_drop (float): The drop out rate for attention output weights.
+        attn_drop_rate (float): The drop out rate for attention output weights.
             Defaults to 0.
-        drop_path (float): Stochastic depth rate. Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         ape (bool): If True, add absolute position embedding to
