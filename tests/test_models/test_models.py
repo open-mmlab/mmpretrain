@@ -34,6 +34,7 @@ test_list = [
         backbone=mmpretrain.models.VisionTransformer,
         forward=False,
         backward=False),
+    Cfg(name='hivit-tiny-p16_16xb64_in1k', backbone=mmpretrain.models.HiViT),
 ]
 
 

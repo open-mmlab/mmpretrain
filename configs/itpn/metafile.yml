@@ -1,0 +1,50 @@
+Collections:
+  - Name: iTPN
+    Metadata:
+      Architecture:
+        - Dense Connections
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      Title: 'Integrally Pre-Trained Transformer Pyramid Networks'
+      URL: https://arxiv.org/abs/2211.12735
+    README: configs/itpn/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: itpn-clip-b_hivit-base-p16_8xb256-amp-coslr-800e_in1k
+    Metadata:
+      FLOPs: 18474000000
+      Parameters: 233000000
+      Training Data:
+        - ImageNet-1k
+    In Collection: iTPN
+    Results: null
+    Weights:
+    Config: configs/itpn/itpn-clip-b_hivit-base-p16_8xb256-amp-coslr-800e_in1k.py
+
+  - Name: itpn-pixel_hivit-base-p16_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      FLOPs: 18474000000
+      Parameters: 103000000
+      Training Data:
+        - ImageNet-1k
+    In Collection: iTPN
+    Results: null
+    Weights:
+    Config: configs/itpn/itpn-pixel_hivit-base-p16_8xb512-amp-coslr-800e_in1k.py
+
+  - Name: itpn-pixel_hivit-large-p16_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      FLOPs: 63977000000
+      Parameters: 314000000
+      Training Data:
+        - ImageNet-1k
+    In Collection: iTPN
+    Results: null
+    Weights:
+    Config: configs/itpn/itpn-pixel_hivit-large-p16_8xb512-amp-coslr-800e_in1k.py

@@ -1,0 +1,63 @@
+Collections:
+  - Name: HiViT
+    Metadata:
+      Architecture:
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+    Paper:
+      Title: 'HiViT: A Simple and More Efficient Design of Hierarchical Vision Transformer'
+      URL: https://arxiv.org/abs/2205.14949
+    README: configs/hivit/README.md
+    Code:
+      URL: null
+      Version: null
+
+Models:
+  - Name: hivit-tiny-p16_16xb64_in1k
+    Metadata:
+      FLOPs: 4603000000
+      Parameters: 19181000
+      Training Data:
+        - ImageNet-1k
+    In Collection: HiViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.1
+        Task: Image Classification
+    Weights:
+    Config: configs/hivit/hivit-tiny-p16_16xb64_in1k.py
+
+  - Name: hivit-small-p16_16xb64_in1k
+    Metadata:
+      FLOPs: 9072000000
+      Parameters: 37526000
+      Training Data:
+        - ImageNet-1k
+    In Collection: HiViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+        Task: Image Classification
+    Weights:
+    Config: configs/hivit/hivit-small-p16_16xb64_in1k.py
+
+  - Name: hivit-base-p16_16xb64_in1k
+    Metadata:
+      FLOPs: 18474000000
+      Parameters: 79051000
+      Training Data:
+        - ImageNet-1k
+    In Collection: HiViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+        Task: Image Classification
+    Weights:
+    Config: configs/hivit/hivit-base-p16_16xb64_in1k.py
