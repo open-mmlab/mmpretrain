@@ -346,16 +346,14 @@ class TestImageNet(TestCustomDataset):
             cfg['split'] = split
             cfg['classes'] = self.categories
             dataset = dataset_class(**cfg)
-            self.assertEqual(dataset.split, split)
             self.assertEqual(dataset.data_root, self.root)
 
         # Test split="test"
         cfg = {**self.DEFAULT_ARGS}
         cfg['split'] = 'test'
         logger = MMLogger.get_current_instance()
-        with self.assertLogs(logger, 'WARN') as log:
+        with self.assertLogs(logger, 'INFO') as log:
             dataset = dataset_class(**cfg)
-            self.assertEqual(dataset.split, 'test')
             self.assertFalse(dataset.with_label)
         self.assertIn('Since the ImageNet1k test set', log.output[0])
 
@@ -467,7 +465,7 @@ class TestImageNet21k(TestCustomDataset):
         ann_path = osp.join(self.root, self.meta_folder, self.train_file)
         os.rename(ann_path, ann_path + 'copy')
         logger = MMLogger.get_current_instance()
-        with self.assertLogs(logger, 'WARN') as log:
+        with self.assertLogs(logger, 'INFO') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `ann_file`', log.output[0])
         os.rename(ann_path + 'copy', ann_path)

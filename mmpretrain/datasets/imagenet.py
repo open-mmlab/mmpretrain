@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Union
 
-from mmengine import get_file_backend
+from mmengine import fileio
 from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
@@ -104,11 +104,10 @@ class ImageNet(CustomDataset):
             splits = ['train', 'val', 'test']
             assert split in splits, \
                 f"The split must be one of {splits}, but get '{split}'"
-            self.split = split
 
             if split == 'test':
                 logger = MMLogger.get_current_instance()
-                logger.warning(
+                logger.info(
                     'Since the ImageNet1k test set does not provide label'
                     'annotations, `with_label` is set to False')
                 kwargs['with_label'] = False
@@ -116,12 +115,9 @@ class ImageNet(CustomDataset):
             data_prefix = split if data_prefix == '' else data_prefix
 
             if ann_file == '':
-                self.backend = get_file_backend(
-                    data_root, enable_singleton=True)
-                annotation = self.backend.join_path(data_root, 'meta',
-                                                    f'{split}.txt')
-                if self.backend.exists(annotation):
-                    ann_file = self.backend.join_path('meta', f'{split}.txt')
+                _ann_path = fileio.join_path(data_root, 'meta', f'{split}.txt')
+                if fileio.exists(_ann_path):
+                    ann_file = _ann_path
 
         super().__init__(
             data_root=data_root,
@@ -212,12 +208,9 @@ class ImageNet21k(CustomDataset):
             data_prefix = split if data_prefix == '' else data_prefix
 
             if not ann_file:
-                self.backend = get_file_backend(
-                    data_root, enable_singleton=True)
-                annotation = self.backend.join_path(data_root, 'meta',
-                                                    f'{split}.txt')
-                if self.backend.exists(annotation):
-                    ann_file = self.backend.join_path('meta', f'{split}.txt')
+                _ann_path = fileio.join_path(data_root, 'meta', f'{split}.txt')
+                if fileio.exists(_ann_path):
+                    ann_file = _ann_path
 
         logger = MMLogger.get_current_instance()
 
