@@ -199,7 +199,7 @@ class ImageRetrievalTab:
                     elem_id='image_retri_models',
                     elem_classes='select_model',
                     choices=self.model_list,
-                    value='resnet50-arcface_8xb32_inshop',
+                    value='resnet50-arcface_inshop',
                 )
                 topk = gr.Slider(minimum=1, maximum=6, value=3, step=1)
             with gr.Column():
