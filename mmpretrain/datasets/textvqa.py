@@ -21,6 +21,15 @@ class TextVQA(BaseDataset):
     test json:
         https://dl.fbaipublicfiles.com/textvqa/data/TextVQA_0.5.1_test.json
 
+    folder structure:
+    data/textvqa
+        ├── annotations
+        │   ├── TextVQA_0.5.1_test.json
+        │   └── TextVQA_0.5.1_val.json
+        └── images
+            ├── test_images
+            └── train_images
+
     Args:
         data_root (str): The root directory for ``data_prefix``, ``ann_file``
             and ``question_file``.
