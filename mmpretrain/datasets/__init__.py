@@ -24,13 +24,14 @@ from .stanfordcars import StanfordCars
 from .sun397 import SUN397
 from .transforms import *  # noqa: F401,F403
 from .voc import VOC
+from .vsr import VSR
 
 __all__ = [
     'BaseDataset', 'CIFAR10', 'CIFAR100', 'CUB', 'Caltech101', 'CustomDataset',
     'DTD', 'FGVCAircraft', 'FashionMNIST', 'Flowers102', 'Food101', 'ImageNet',
     'ImageNet21k', 'InShop', 'KFoldDataset', 'MNIST', 'MultiLabelDataset',
     'MultiTaskDataset', 'NLVR2', 'OxfordIIITPet', 'Places205', 'SUN397',
-    'StanfordCars', 'VOC', 'build_dataset'
+    'StanfordCars', 'VOC', 'VSR', 'build_dataset'
 ]
 
 if WITH_MULTIMODAL:
