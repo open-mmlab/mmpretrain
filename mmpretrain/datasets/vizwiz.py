@@ -4,6 +4,8 @@ from typing import List
 
 import mmengine
 from mmengine.dataset import BaseDataset
+from collections import Counter
+
 
 from mmpretrain.registry import DATASETS
 
@@ -38,7 +40,7 @@ class VizWiz(BaseDataset):
         annotations = mmengine.load(self.ann_file)
 
         data_list = []
-        for ann in zip(annotations):
+        for ann in annotations:
             # {
             #     "image": "VizWiz_val_00000001.jpg",
             #     "question": "Can you tell me what this medicine is please?",
@@ -90,18 +92,21 @@ class VizWiz(BaseDataset):
             data_info = dict()
             data_info["question"] = ann["question"]
             data_info["image"] = ann["image"]
-            if "answerable" in ann and ann["answerable"] == 1:
-                # add answer_weight & answer_count, delete duplicate answer
-                answers = []
-                for item in ann.pop('answers'):
-                    if item['answer_confidence'] == 'yes' and item['answer'] != 'unanswerable':
-                        answers.append(item['answer'])
-                count = Counter(answers)
-                answer_weight = [i / len(answers) for i in count.values()]
-                data_info['gt_answer'] = list(count.keys())
-                data_info['gt_answer_weight'] = answer_weight
-                data_info.update(ann)
 
-            data_list.append(data_info)
+            if "answerable" not in ann:
+                data_list.append(data_info)
+            else:
+                if ann["answerable"] == 1:
+                    # add answer_weight & answer_count, delete duplicate answer
+                    answers = []
+                    for item in ann.pop('answers'):
+                        if item['answer_confidence'] == 'yes' and item['answer'] != 'unanswerable':
+                            answers.append(item['answer'])
+                    count = Counter(answers)
+                    answer_weight = [i / len(answers) for i in count.values()]
+                    data_info['gt_answer'] = list(count.keys())
+                    data_info['gt_answer_weight'] = answer_weight
+                    # data_info.update(ann)
+                    data_list.append(data_info)
 
         return data_list
