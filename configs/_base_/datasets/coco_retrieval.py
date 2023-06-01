@@ -1,4 +1,8 @@
 # data settings
+# Here are the links to download the annotations for coco retrieval for conveniency
+# https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_train2014.json
+# https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_val2014.json
+# https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_test2014.json
 data_preprocessor = dict(
     type='MultiModalDataPreprocessor',
     mean=[122.770938, 116.7460125, 104.09373615],
