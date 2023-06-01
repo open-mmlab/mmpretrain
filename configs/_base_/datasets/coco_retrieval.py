@@ -1,5 +1,5 @@
 # data settings
-# Here are the links to download the annotations for coco retrieval for conveniency
+# Here are the links to download the annotations for coco retrieval for conveniency # noqa
 # https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_train2014.json
 # https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_val2014.json
 # https://download.openmmlab.com/mmclassification/datasets/coco_retrieval/caption_karpathy_test2014.json
