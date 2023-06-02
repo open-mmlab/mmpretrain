@@ -592,8 +592,8 @@ class InternImage(BaseBackbone):
             return self.forward_clip_projector(x)
 
     @staticmethod
-    def checkpoint_filter_fn(state_dict, prefix, local_metadata, strict,
-                             missing_keys, unexpected_keys, error_msgs):
+    def _checkpoint_filter(state_dict, prefix, local_metadata, strict,
+                           missing_keys, unexpected_keys, error_msgs):
 
         # The weights are already in mmpretrain format
         if 'levels.0.blocks.0.norm1.0.weight' not in state_dict['model']:
