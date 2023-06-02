@@ -78,7 +78,7 @@ class ImageClassifier(BaseClassifier):
         self.neck = neck
         self.head = head
 
-        # If the model needs to load weights from a third party,
+        # If the model needs to load pretrain weights from a third party,
         # the key can be modified with this hook
         if hasattr(self.backbone, 'checkpoint_filter_fn'):
             self._register_load_state_dict_pre_hook(
