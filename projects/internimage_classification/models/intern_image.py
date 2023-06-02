@@ -595,39 +595,42 @@ class InternImage(BaseBackbone):
     def _checkpoint_filter(state_dict, prefix, local_metadata, strict,
                            missing_keys, unexpected_keys, error_msgs):
 
-        # The weights are already in mmpretrain format
-        if 'levels.0.blocks.0.norm1.0.weight' not in state_dict['model']:
-            return
+        def internimage_to_mmpretrain():
+            for k, v in state_dict['model'].items():
+                if 'head.' in k and 'conv_head' not in k:
+                    if 'weight' in k:
+                        new_k = 'head.fc.weight'
+                    else:
+                        new_k = 'head.fc.bias'
+                elif 'patch_embed' in k:
+                    map_fun = {
+                        'conv1': '0',
+                        'norm1': '1',
+                        'conv2': '3',
+                        'norm2': '4'
+                    }
+                    new_k = k
+                    for old, new in map_fun.items():
+                        new_k = new_k.replace(old, new)
+                    new_k = 'backbone.' + new_k
 
-        # The original weights need to be converted to mmpretrain format
-        for k, v in state_dict['model'].items():
-            if 'head.' in k and 'conv_head' not in k:
-                if 'weight' in k:
-                    new_k = 'head.fc.weight'
+                elif 'levels' in k:
+                    new_k = k.replace('levels', 'layers')
+                    if 'mlp' in new_k:
+                        new_k = new_k.replace('fc1', 'layers.0.0')
+                        new_k = new_k.replace('fc2', 'layers.1')
+                    new_k = 'backbone.' + new_k
+                elif 'clip_projector.cross_dcn.k_bias' in k:
+                    continue
                 else:
-                    new_k = 'head.fc.bias'
-            elif 'patch_embed' in k:
-                map_fun = {
-                    'conv1': '0',
-                    'norm1': '1',
-                    'conv2': '3',
-                    'norm2': '4'
-                }
-                new_k = k
-                for old, new in map_fun.items():
-                    new_k = new_k.replace(old, new)
-                new_k = 'backbone.' + new_k
+                    new_k = 'backbone.' + k
 
-            elif 'levels' in k:
-                new_k = k.replace('levels', 'layers')
-                if 'mlp' in new_k:
-                    new_k = new_k.replace('fc1', 'layers.0.0')
-                    new_k = new_k.replace('fc2', 'layers.1')
-                new_k = 'backbone.' + new_k
-            elif 'clip_projector.cross_dcn.k_bias' in k:
-                continue
-            else:
-                new_k = 'backbone.' + k
+                state_dict[new_k] = state_dict['model'][k]
+            del state_dict['model']
 
-            state_dict[new_k] = state_dict['model'][k]
-        del state_dict['model']
+        # The original weights need to be converted to mmpretrain format.
+        # Some modules in the original weights starts with 'levels',
+        # and in this implement they are replaced with 'layers'.
+        if 'model' in state_dict and 'levels.0.blocks.0.norm1.0.weight'\
+                in state_dict['model']:
+            internimage_to_mmpretrain()
