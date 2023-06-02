@@ -2,8 +2,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # modified from
 # https://github.com/OpenGVLab/InternImage/blob/master/classification/models/intern_image.py
-from collections import OrderedDict
-
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -594,39 +592,14 @@ class InternImage(BaseBackbone):
             return self.forward_clip_projector(x)
 
     @staticmethod
-    def _remove_state_dict_prefix(self, state_dict, prefix, local_metadata):
-        new_state_dict = OrderedDict()
-        for k, v in state_dict.items():
-            if 'head.fc.' in k:
-                new_k = k.replace('head.fc.', 'head.')
-            elif 'patch_embed' in k:
-                map_fun = {
-                    'patch_embed.0.': 'patch_embed.conv1.',
-                    'patch_embed.1.': 'patch_embed.norm1.',
-                    'patch_embed.3.': 'patch_embed.conv2.',
-                    'patch_embed.4.': 'patch_embed.norm2.',
-                }
-                new_k = k
-                for old, new in map_fun.items():
-                    new_k = new_k.replace(old, new)
-            elif 'layers' in k:
-                new_k = k.replace('backbone.layers', 'backbone.levels')
-                if 'mlp' in new_k:
-                    new_k = new_k.replace('layers.0.0', 'fc1')
-                    new_k = new_k.replace('layers.1', 'fc2')
-            elif 'clip_projector.cross_dcn.k_bias' in k:
-                new_k = k
-            else:
-                new_k = k
+    def checkpoint_filter_fn(state_dict, prefix, local_metadata, strict,
+                             missing_keys, unexpected_keys, error_msgs):
 
-            new_k = new_k.replace('backbone.', '')
-            new_state_dict[new_k] = v
-        return new_state_dict
+        # The weights are already in mmpretrain format
+        if 'levels.0.blocks.0.norm1.0.weight' not in state_dict['model']:
+            return
 
-    @staticmethod
-    def _add_state_dict_prefix(state_dict, prefix, local_metadata, strict,
-                               missing_keys, unexpected_keys, error_msgs):
-
+        # The original weights need to be converted to mmpretrain format
         for k, v in state_dict['model'].items():
             if 'head.' in k and 'conv_head' not in k:
                 if 'weight' in k:

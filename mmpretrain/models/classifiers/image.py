@@ -78,17 +78,11 @@ class ImageClassifier(BaseClassifier):
         self.neck = neck
         self.head = head
 
-        # update the key-value pairs of weight before exporting the weights
-        # with the `_remove_state_dict_prefix` function
-        if hasattr(self.backbone, '_remove_state_dict_prefix'):
-            self._register_state_dict_hook(
-                self.backbone._remove_state_dict_prefix)
-
-        # update the key-value pairs of weight before loading the weights
-        # with the `_add_state_dict_prefix` function
-        if hasattr(self.backbone, '_add_state_dict_prefix'):
+        # If the model needs to load weights from a third party,
+        # the key can be modified with this hook
+        if hasattr(self.backbone, 'checkpoint_filter_fn'):
             self._register_load_state_dict_pre_hook(
-                self.backbone._add_state_dict_prefix)
+                self.backbone.checkpoint_filter_fn)
 
     def forward(self,
                 inputs: torch.Tensor,
