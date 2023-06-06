@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
 from typing import List
 
 import mmengine
@@ -41,17 +40,15 @@ class VSR(BaseDataset):
         for ann in annotations:
             # ann example
             # {
-            #     'question': "Is it overcast?",
-            #     'answer': 'no,
-            #     'image_id': n161313.jpg,
-            #     'question_id': 262148000,
-            #     ....
+            #     "image": "train2017/000000372029.jpg",
+            #     "question": "The dog is on the surfboard.",
+            #     "answer": true
             # }
             data_info = dict()
-            data_info['img_path'] = osp.join(self.data_prefix['img_path'],
+            data_info['img_path'] = mmengine.join_path(self.data_prefix['img_path'],
                                              ann['image'])
             data_info['question'] = ann['question']
-            data_info['gt_answer'] = ann['answer']
+            data_info['gt_answer'] = 'yes' if ann['answer'] else 'no'
 
             data_list.append(data_info)
 
