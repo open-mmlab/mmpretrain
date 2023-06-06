@@ -23,7 +23,7 @@ class ScienceQA(BaseDataset):
         split_file (str): The split file of dataset, which contains the
             ids of data samples in the split.
         ann_file (str): Annotation file path.
-        only_image (bool): Whether only to load data with image. Defaults to
+        image_only (bool): Whether only to load data with image. Defaults to
             False.
         data_prefix (dict): Prefix for data field. Defaults to
             ``dict(img_path='')``.
@@ -36,7 +36,7 @@ class ScienceQA(BaseDataset):
                  split: str,
                  split_file: str,
                  ann_file: str,
-                 only_image: bool = False,
+                 image_only: bool = False,
                  data_prefix: dict = dict(img_path=''),
                  pipeline: Sequence[Callable] = (),
                  **kwargs):
@@ -45,7 +45,7 @@ class ScienceQA(BaseDataset):
         ], f'Invalid split {split}'
         self.split = split
         self.split_file = os.path.join(data_root, split_file)
-        self.only_image = only_image
+        self.image_only = image_only
 
         super().__init__(
             data_root=data_root,
@@ -65,7 +65,7 @@ class ScienceQA(BaseDataset):
         data_list = []
         for data_id in current_data_split:
             ann = annotations[data_id]
-            if self.only_image and ann['image'] is None:
+            if self.image_only and ann['image'] is None:
                 continue
             data_info = {
                 'image_id':
