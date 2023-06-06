@@ -91,7 +91,7 @@ class VizWiz(BaseDataset):
             # },
             data_info = dict()
             data_info["question"] = ann["question"]
-            data_info["image"] = ann["image"]
+            data_info["img_path"] = mmengine.join_path(self.data_prefix['img_path'], ann["image"])
 
             if "answerable" not in ann:
                 data_list.append(data_info)
