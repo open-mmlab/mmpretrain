@@ -1,18 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
+from collections import Counter
 from typing import List
 
 import mmengine
 from mmengine.dataset import BaseDataset
-from collections import Counter
-
 
 from mmpretrain.registry import DATASETS
 
 
 @DATASETS.register_module()
 class VizWiz(BaseDataset):
-    """VizWiz dataset
+    """VizWiz dataset.
 
     Args:
         data_root (str): The root directory for ``data_prefix``, ``ann_file``
@@ -90,17 +88,19 @@ class VizWiz(BaseDataset):
             #     "answerable": 1
             # },
             data_info = dict()
-            data_info["question"] = ann["question"]
-            data_info["image"] = ann["image"]
+            data_info['question'] = ann['question']
+            data_info['img_path'] = mmengine.join_path(
+                self.data_prefix['img_path'], ann['image'])
 
-            if "answerable" not in ann:
+            if 'answerable' not in ann:
                 data_list.append(data_info)
             else:
-                if ann["answerable"] == 1:
+                if ann['answerable'] == 1:
                     # add answer_weight & answer_count, delete duplicate answer
                     answers = []
                     for item in ann.pop('answers'):
-                        if item['answer_confidence'] == 'yes' and item['answer'] != 'unanswerable':
+                        if item['answer_confidence'] == 'yes' and item[
+                                'answer'] != 'unanswerable':
                             answers.append(item['answer'])
                     count = Counter(answers)
                     answer_weight = [i / len(answers) for i in count.values()]
