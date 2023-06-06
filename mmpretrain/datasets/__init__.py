@@ -46,7 +46,6 @@ if WITH_MULTIMODAL:
     from .visual_genome import VisualGenomeQA
     from .vizwiz import VizWiz
 
-
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'RefCOCO', 'VisualGenomeQA', 'ScienceQA',
