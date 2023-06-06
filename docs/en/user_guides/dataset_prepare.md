@@ -140,11 +140,34 @@ For a complete example about how to use the `CustomDataset`, please see [How to 
 
 ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
 
+`````{tabs}
+
+````{group-tab} Download by MIM
+
+MIM supports downloading from [OpenDataLab](https://opendatalab.com/) and preprocessing ImageNet dataset with one command line.
+
+```Bash
+# install OpenDataLab CLI tools
+pip install -U opendatalab
+# log in OpenDataLab, registry
+odl login
+# download and preprocess by MIM
+mim download mmpretrain --dataset imagenet1k
+```
+
+````
+
+````{group-tab} Download form Official Source
+
 1. Register an account and login to the [download page](http://www.image-net.org/download-images).
 2. Find download links for ILSVRC2012 and download the following two files
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
+
+````
+
+`````
 
 ### The Directory Structrue of the ImageNet dataset
 

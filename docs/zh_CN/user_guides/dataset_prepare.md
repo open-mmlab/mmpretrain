@@ -138,11 +138,34 @@ train_dataloader = dict(
 
 ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/)。 可以通过以下步骤使用它。
 
+`````{tabs}
+
+````{group-tab} MIM 下载
+
+MIM支持使用一条命令行从 [OpenDataLab](https://opendatalab.com/) 下载并预处理 ImageNet 数据集。
+
+```Bash
+# install OpenDataLab CLI tools
+pip install -U opendatalab
+# log in OpenDataLab, registry
+odl login
+# download and preprocess by MIM
+mim download mmpretrain --dataset imagenet1k
+```
+
+````
+
+````{group-tab} 从官网下载
+
+
 1. 注册一个帐户并登录到[下载页面](http://www.image-net.org/download-images)。
 2. 找到 ILSVRC2012 的下载链接，下载以下两个文件：
    - ILSVRC2012_img_train.tar (~138GB)
    - ILSVRC2012_img_val.tar (~6.3GB)
 3. 解压已下载的图片。
+
+````
+`````
 
 ### ImageNet数据集目录结构
 
