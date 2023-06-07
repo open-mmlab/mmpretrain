@@ -62,7 +62,7 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 
 | Model                      | Params (M) | Accuracy |                Config                 |                                                       Download                                                        |
 | :------------------------- | :--------: | :------: | :-----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
-| `blip-base_3rdparty_vqa`\* |   361.48   |  xx.xx   | [config](./blip-base_8xb32_ocrvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
+| `blip-base_3rdparty_vqa`\* |   361.48   |  28.30   | [config](./blip-base_8xb32_ocrvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
 
 ### Image-To-Text Retrieval on COCO
 

@@ -79,7 +79,7 @@ class OCRVQA(BaseDataset):
                 data_info['img_path'] = img_path
                 data_info['question'] = question
                 data_info['gt_answer'] = answer
-                data_info['gt_answer_weight'] = 1.0
+                data_info['gt_answer_weight'] = [1.0]
 
                 data_info['imageURL'] = ann['imageURL']
                 data_info['title'] = ann['title']
