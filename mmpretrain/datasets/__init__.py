@@ -39,6 +39,7 @@ if WITH_MULTIMODAL:
     from .coco_vqa import COCOVQA
     from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
     from .gqa_dataset import GQA
+    from .ocr_vqa import OCRVQA
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .visual_genome import VisualGenomeQA
@@ -49,6 +50,7 @@ if WITH_MULTIMODAL:
         'COCOVQA',
         'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA',
+        'OCRVQA',
         'RefCOCO',
         'VisualGenomeQA',
         'ScienceQA',
