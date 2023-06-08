@@ -66,6 +66,7 @@ Self-supervised Algorithms
    CAE
    DenseCL
    EVA
+   iTPN
    MAE
    MILAN
    MaskFeat
@@ -88,6 +89,8 @@ like ``mask``, and here is the a list of these **modified backbone** modules.
 
    BEiTPretrainViT
    CAEPretrainViT
+   iTPNHiViT
+   MAEHiViT
    MAEViT
    MILANViT
    MaskFeatViT
@@ -167,6 +170,7 @@ Backbones
    EfficientFormer
    EfficientNet
    EfficientNetV2
+   HiViT
    HRNet
    HorNet
    InceptionV3
@@ -235,6 +239,7 @@ Necks
    NonLinearNeck
    SimMIMLinearDecoder
    SwAVNeck
+   iTPNPretrainDecoder
 
 .. module:: mmpretrain.models.heads
 
@@ -271,6 +276,7 @@ Heads
    SwAVHead
    VigClsHead
    VisionTransformerClsHead
+   iTPNClipHead
 
 .. module:: mmpretrain.models.losses
 

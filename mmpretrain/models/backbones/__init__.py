@@ -13,6 +13,7 @@ from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .efficientnet_v2 import EfficientNetV2
+from .hivit import HiViT
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -120,4 +121,5 @@ __all__ = [
     'XCiT',
     'ViTSAM',
     'ViTEVA02',
+    'HiViT',
 ]

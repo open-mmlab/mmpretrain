@@ -46,8 +46,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/imagenet',
-        ann_file='meta/train.txt',
-        data_prefix='train',
+        split='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -58,8 +57,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root='data/imagenet',
-        ann_file='meta/val.txt',
-        data_prefix='val',
+        split='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
