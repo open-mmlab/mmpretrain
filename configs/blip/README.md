@@ -62,7 +62,7 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 
 | Model                      | Params (M) | Accuracy |                Config                |                                                       Download                                                        |
 | :------------------------- | :--------: | :------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
-| `blip-base_3rdparty_vqa`\* |   361.48   |  40.59   | [config](./blip-base_8xb32_okvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
+| `blip-base_3rdparty_vqa`\* |   361.48   |  40.59#  | [config](./blip-base_8xb32_okvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
 
 ### Image-To-Text Retrieval on COCO
 
@@ -83,6 +83,8 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | `blip-base_3rdparty_nlvr`\* |   259.37   |   82.33   | [config](./blip-base_8xb32_nlvr.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_nlvr_20230427-3b14d33f.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reprodcue the training results.*
+
+*Results with # denote zero-shot evaluation. The corresponding model hasn't been finetuned on that dataset.*
 
 ## Citation
 
