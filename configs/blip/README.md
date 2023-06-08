@@ -70,6 +70,18 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | :------------------------------- | :--------: | :------: | :------: | :--------------------------------------: | :----------------------------------------------------------------------------------------------------: |
 | `blip-base_3rdparty_retrieval`\* |   447.49   |  64.82   |  86.28   | [config](./blip-base_8xb32_retrieval.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-retrieval_20230419-a1804d2c.pth) |
 
+### Image-To-Text Retrieval on Flickr30k
+
+| Model                            | Params (M) | Recall@1 | Recall@5 |                       Config                       |                                           Download                                           |
+| :------------------------------- | :--------: | :------: | :------: | :------------------------------------------------: | :------------------------------------------------------------------------------------------: |
+| `blip-base_3rdparty_retrieval`\* |   447.49   |  95.10#  |  99.60#  | [config](./blip-base_8xb32_retrieval_flickr30k.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-retrieval_20230419-a1804d2c.pth) |
+
+### Text-To-Image Retrieval on Flickr30k
+
+| Model                            | Params (M) | Recall@1 | Recall@5 |                       Config                       |                                           Download                                           |
+| :------------------------------- | :--------: | :------: | :------: | :------------------------------------------------: | :------------------------------------------------------------------------------------------: |
+| `blip-base_3rdparty_retrieval`\* |   447.49   |  85.26#  |  96.58#  | [config](./blip-base_8xb32_retrieval_flickr30k.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-retrieval_20230419-a1804d2c.pth) |
+
 ### NLVR on NLVR2
 
 | Model                       | Params (M) | Top-1 (%) |               Config                |                                                    Download                                                    |
@@ -77,6 +89,8 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | `blip-base_3rdparty_nlvr`\* |   259.37   |   82.33   | [config](./blip-base_8xb32_nlvr.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_nlvr_20230427-3b14d33f.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reprodcue the training results.*
+
+*Results with # denote zero-shot evaluation. The corresponding model hasn't been finetuned on that dataset.*
 
 ## Citation
 
