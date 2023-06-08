@@ -46,6 +46,12 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | :----------------------------- | :--------: | :----: | :----: | :------------------------------------: | :------------------------------------------------------------------------------------------------------------: |
 | `blip-base_3rdparty_caption`\* |   223.97   | 40.12  | 132.82 | [config](./blip-base_8xb32_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-caption_20230419-a5b71af3.pth) |
 
+### Image Caption on NoCaps
+
+| Model                          | Params (M) | SPICE | CIDER  |                Config                 |                                                     Download                                                     |
+| :----------------------------- | :--------: | :---: | :----: | :-----------------------------------: | :--------------------------------------------------------------------------------------------------------------: |
+| `blip-base_3rdparty_caption`\* |   223.97   | 14.69 | 109.12 | [config](./blip-base_8xb32_nocaps.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_coco-caption_20230419-a5b71af3.pth) |
+
 ### Visual Grounding on RefCOCO
 
 | Model                     | Params (M) | Accuracy (testA) | Accuracy (testB) |                Config                |                                             Download                                              |
@@ -59,6 +65,12 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | `blip-base_3rdparty_vqa`\* |   361.48   |  78.20   | [config](./blip-base_8xb32_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
 
 ### Visual Question Answering on OK-VQA
+
+| Model                      | Params (M) | Accuracy |                Config                |                                                       Download                                                        |
+| :------------------------- | :--------: | :------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+| `blip-base_3rdparty_vqa`\* |   361.48   |  40.59#  | [config](./blip-base_8xb32_okvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
+
+### Visual Question Answering on OCR-VQA
 
 | Model                      | Params (M) | Accuracy |                Config                 |                                                       Download                                                        |
 | :------------------------- | :--------: | :------: | :-----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |

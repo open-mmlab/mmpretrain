@@ -290,41 +290,169 @@ class TestCustomDataset(TestBaseDataset):
 class TestImageNet(TestCustomDataset):
     DATASET_TYPE = 'ImageNet'
 
-    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='ann.txt')
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.meta_folder = 'meta'
+        cls.train_file = 'train.txt'
+        cls.val_file = 'val.txt'
+        cls.test_file = 'test.txt'
+        cls.categories = ['cat', 'dog']
+
+        os.mkdir(osp.join(cls.root, cls.meta_folder))
+
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.train_file),
+                  'w') as f:
+            f.write('\n'.join([
+                '1.jpg 0',
+                '2.jpg 1',
+                '3.jpg 1',
+            ]))
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.val_file), 'w') as f:
+            f.write('\n'.join([
+                '11.jpg 0',
+                '22.jpg 1',
+            ]))
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.test_file),
+                  'w') as f:
+            f.write('\n'.join([
+                'aa.jpg',
+                'bb.jpg',
+            ]))
+
+    def test_initialize(self):
+        super().test_initialize()
+
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid splits
+        splits = ['train', 'val']
+        for split in splits:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = split
+            cfg['classes'] = self.categories
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.data_root, self.root)
+
+        # Test split="test"
+        cfg = {**self.DEFAULT_ARGS}
+        cfg['split'] = 'test'
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'INFO') as log:
+            dataset = dataset_class(**cfg)
+            self.assertFalse(dataset.with_label)
+        self.assertIn('Since the ImageNet1k test set', log.output[0])
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # test classes number
-        cfg = {
-            **self.DEFAULT_ARGS,
-            'data_prefix': ASSETS_ROOT,
-            'ann_file': '',
-        }
-        with self.assertRaisesRegex(
-                AssertionError, r"\(2\) doesn't match .* classes \(1000\)"):
-            dataset_class(**cfg)
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'train', '1.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test split="val"
+        cfg = {**self.DEFAULT_ARGS, 'split': 'val'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'val', '11.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test split="test"
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test', 'aa.jpg'))
 
         # test override classes
         cfg = {
             **self.DEFAULT_ARGS,
-            'data_prefix': ASSETS_ROOT,
             'classes': ['cat', 'dog'],
-            'ann_file': '',
         }
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         self.assertEqual(dataset.CLASSES, ('cat', 'dog'))
 
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
 
 class TestImageNet21k(TestCustomDataset):
     DATASET_TYPE = 'ImageNet21k'
 
-    DEFAULT_ARGS = dict(
-        data_root=ASSETS_ROOT, classes=['cat', 'dog'], ann_file='ann.txt')
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.meta_folder = 'meta'
+        cls.train_file = 'train.txt'
+
+        os.mkdir(osp.join(cls.root, cls.meta_folder))
+
+        with open(osp.join(cls.root, cls.meta_folder, cls.train_file),
+                  'w') as f:
+            f.write('\n'.join([
+                'cat/a.jpg 0',
+                'cat/b.jpg 0',
+                'dog/a.jpg 1',
+                'dog/b.jpg 1',
+            ]))
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            classes=['cat', 'dog'],
+            ann_file='meta/train.txt')
+
+    def test_initialize(self):
+        super().test_initialize()
+
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid splits
+        cfg = {**self.DEFAULT_ARGS}
+        cfg['split'] = 'train'
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.split, 'train')
+        self.assertEqual(dataset.data_root, self.root)
 
     def test_load_data_list(self):
-        super().test_initialize()
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # The multi_label option is not implemented not.
@@ -333,17 +461,25 @@ class TestImageNet21k(TestCustomDataset):
             dataset_class(**cfg)
 
         # Warn about ann_file
-        cfg = {**self.DEFAULT_ARGS, 'ann_file': ''}
+        cfg = {**self.DEFAULT_ARGS, 'ann_file': '', 'lazy_init': True}
+        ann_path = osp.join(self.root, self.meta_folder, self.train_file)
+        os.rename(ann_path, ann_path + 'copy')
         logger = MMLogger.get_current_instance()
-        with self.assertLogs(logger, 'WARN') as log:
+        with self.assertLogs(logger, 'INFO') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `ann_file`', log.output[0])
+        os.rename(ann_path + 'copy', ann_path)
 
         # Warn about classes
         cfg = {**self.DEFAULT_ARGS, 'classes': None}
         with self.assertLogs(logger, 'WARN') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `classes`', log.output[0])
+
+        # Test split='train'
+        cfg = {**self.DEFAULT_ARGS, 'split': 'train', 'classes': None}
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 4)
 
 
 class TestPlaces205(TestCustomDataset):
@@ -599,17 +735,12 @@ class TestVOC(TestBaseDataset):
         cls.tmpdir = tmpdir
         data_root = tmpdir.name
 
-        cls.DEFAULT_ARGS = dict(
-            data_root=data_root,
-            image_set_path='ImageSets/train.txt',
-            data_prefix=dict(img_path='JPEGImages', ann_path='Annotations'),
-            pipeline=[],
-            test_mode=False)
+        cls.DEFAULT_ARGS = dict(data_root=data_root, split='trainval')
 
         cls.image_folder = osp.join(data_root, 'JPEGImages')
         cls.ann_folder = osp.join(data_root, 'Annotations')
-        cls.image_set_folder = osp.join(data_root, 'ImageSets')
-        os.mkdir(cls.image_set_folder)
+        cls.image_set_folder = osp.join(data_root, 'ImageSets', 'Main')
+        os.makedirs(cls.image_set_folder)
         os.mkdir(cls.image_folder)
         os.mkdir(cls.ann_folder)
 
@@ -621,7 +752,7 @@ class TestVOC(TestBaseDataset):
         train_list = [i for i in range(0, 4)]
         test_list = [i for i in range(4, 6)]
 
-        with open(osp.join(cls.image_set_folder, 'train.txt'), 'w') as f:
+        with open(osp.join(cls.image_set_folder, 'trainval.txt'), 'w') as f:
             for train_item in train_list:
                 f.write(str(train_item) + '\n')
         with open(osp.join(cls.image_set_folder, 'test.txt'), 'w') as f:
@@ -677,6 +808,31 @@ class TestVOC(TestBaseDataset):
         with self.assertRaisesRegex(ValueError, "type <class 'dict'>"):
             dataset_class(**cfg)
 
+        # Test invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test valid splits
+        splits = ['trainval', 'test']
+        for split in splits:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = split
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.split, split)
+
+        # Test split='trainval' and test_mode = True
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'trainval'
+            cfg['test_mode'] = True
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.split, 'trainval')
+            self.assertEqual(dataset.test_mode, True)
+        self.assertIn('The trainval set will be used', log.output[0])
+
     def test_get_cat_ids(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
         cfg = {'classes': self.fake_classes, **self.DEFAULT_ARGS}
@@ -710,9 +866,8 @@ class TestVOC(TestBaseDataset):
         self.assertEqual(data_info['img_path'], f'{fake_img_path}.jpg')
         self.assertEqual(set(data_info['gt_label']), set(self.fake_labels[0]))
 
-        # Test with test_mode=True
-        cfg['image_set_path'] = 'ImageSets/test.txt'
-        cfg['test_mode'] = True
+        # Test with split='test'
+        cfg['split'] = 'test'
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 2)
 
@@ -722,7 +877,8 @@ class TestVOC(TestBaseDataset):
         self.assertEqual(set(data_info['gt_label']), set(self.fake_labels[4]))
 
         # Test with test_mode=True and ann_path = None
-        cfg['image_set_path'] = 'ImageSets/test.txt'
+        cfg['split'] = ''
+        cfg['image_set_path'] = 'ImageSets/Main/test.txt'
         cfg['test_mode'] = True
         cfg['data_prefix'] = 'JPEGImages'
         dataset = dataset_class(**cfg)
@@ -771,9 +927,9 @@ class TestMNIST(TestBaseDataset):
 
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
         data_prefix = tmpdir.name
-        cls.DEFAULT_ARGS = dict(
-            data_prefix=data_prefix, pipeline=[], test_mode=False)
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
 
         dataset_class = DATASETS.get(cls.DATASET_TYPE)
 
@@ -805,6 +961,39 @@ class TestMNIST(TestBaseDataset):
             with open(file, 'wb') as f:
                 f.write(data)
 
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with invalid split
+        with self.assertRaisesRegex(AssertionError, 'The split must be'):
+            cfg = {**self.DEFAULT_ARGS}
+            cfg['split'] = 'unknown'
+            dataset_class(**cfg)
+
+        # Test with valid split
+        splits = ['train', 'test']
+        test_modes = [False, True]
+
+        for split in splits:
+            for test_mode in test_modes:
+                cfg = {**self.DEFAULT_ARGS}
+                cfg['split'] = split
+                cfg['test_mode'] = test_mode
+
+                if split == 'train' and test_mode:
+                    logger = MMLogger.get_current_instance()
+                    with self.assertLogs(logger, 'WARN') as log:
+                        dataset = dataset_class(**cfg)
+                        self.assertEqual(dataset.split, split)
+                        self.assertEqual(dataset.test_mode, test_mode)
+                        self.assertEqual(dataset.data_root, self.root)
+                    self.assertIn('training set will be used', log.output[0])
+                else:
+                    dataset = dataset_class(**cfg)
+                    self.assertEqual(dataset.split, split)
+                    self.assertEqual(dataset.test_mode, test_mode)
+                    self.assertEqual(dataset.data_root, self.root)
+
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
@@ -817,8 +1006,8 @@ class TestMNIST(TestBaseDataset):
         np.testing.assert_equal(data_info['img'], self.fake_img)
         np.testing.assert_equal(data_info['gt_label'], self.fake_label)
 
-        # Test with test_mode=True
-        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        # Test with split='test'
+        cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 1)
 
@@ -829,7 +1018,7 @@ class TestMNIST(TestBaseDataset):
         # Test automatically download
         with patch('mmpretrain.datasets.mnist.download_and_extract_archive'
                    ) as mock:
-            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'split': 'test'}
             dataset = dataset_class(**cfg)
             dataset.train_list = [['invalid_train_file', None]]
             dataset.test_list = [['invalid_test_file', None]]
@@ -852,7 +1041,7 @@ class TestMNIST(TestBaseDataset):
         with self.assertRaisesRegex(RuntimeError, '`download=True`'):
             cfg = {
                 **self.DEFAULT_ARGS, 'lazy_init': True,
-                'test_mode': True,
+                'split': 'test',
                 'download': False
             }
             dataset = dataset_class(**cfg)
@@ -1946,7 +2135,7 @@ class TestSUN397(TestBaseDataset):
             f.write('\n'.join([
                 '/a/abbey/sun_aqswjsnjlrfzzhiz.jpg',
                 '/a/airplane_cabin/sun_blczihbhbntqccux.jpg',
-                '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg',  # invalid
+                '/a/assembly_line/sun_ajckcfldgdrdjogj.jpg',
             ]))
 
         with open(osp.join(cls.root, cls.meta_folder, cls.test_file),
@@ -1954,8 +2143,8 @@ class TestSUN397(TestBaseDataset):
             f.write('\n'.join([
                 '/a/abbey/sun_ajkqrqitspwywirx.jpg',
                 '/a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg',
-                '/a/auto_factory/sun_apfsprenzdnzbhmt.jpg',  # invalid
-                '/b/baggage_claim/sun_avittiqqaiibgcau.jpg',  # invalid
+                '/a/auto_factory/sun_apfsprenzdnzbhmt.jpg',
+                '/b/baggage_claim/sun_avittiqqaiibgcau.jpg',
             ]))
 
     def test_initialize(self):
@@ -1981,7 +2170,7 @@ class TestSUN397(TestBaseDataset):
 
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
-        self.assertEqual(len(dataset), 3 - 1)
+        self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
@@ -1992,13 +2181,13 @@ class TestSUN397(TestBaseDataset):
         # Test with split='test'
         cfg = {**self.DEFAULT_ARGS, 'split': 'test'}
         dataset = dataset_class(**cfg)
-        self.assertEqual(len(dataset), 4 - 2)
+        self.assertEqual(len(dataset), 4)
         data_info = dataset[-1]
         self.assertEqual(
             data_info['img_path'],
             osp.join(self.root, self.data_prefix,
-                     'a/airplane_cabin/sun_aqylhacwdsqfjuuu.jpg'))
-        self.assertEqual(data_info['gt_label'], 1)
+                     'b/baggage_claim/sun_avittiqqaiibgcau.jpg'))
+        self.assertEqual(data_info['gt_label'], 26)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)

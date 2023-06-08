@@ -78,6 +78,7 @@ MMPretrain 上手路线
    useful_tools/dataset_visualization.md
    useful_tools/scheduler_visualization.md
    useful_tools/cam_visualization.md
+   useful_tools/t-sne_visualization.md
 
 .. _分析工具:
 .. toctree::

@@ -46,7 +46,7 @@ class ImageRetrievalInferencer(BaseInferencer):
     Example:
         >>> from mmpretrain import ImageRetrievalInferencer
         >>> inferencer = ImageRetrievalInferencer(
-        ...     'resnet50-arcface_8xb32_inshop',
+        ...     'resnet50-arcface_inshop',
         ...     prototype='./demo/',
         ...     prototype_cache='img_retri.pth')
         >>> inferencer('demo/cat-dog.png', topk=2)[0][1]
