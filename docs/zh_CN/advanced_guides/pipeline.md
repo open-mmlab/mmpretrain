@@ -112,7 +112,7 @@ train_pipeline = [
 
    ```python
    from mmcv.transforms import BaseTransform
-   from mmpretrain.datasets import TRANSFORMS
+   from mmpretrain.registry import TRANSFORMS
 
    @TRANSFORMS.register_module()
    class MyTransform(BaseTransform):
