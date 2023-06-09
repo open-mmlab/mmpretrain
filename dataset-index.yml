@@ -7,5 +7,5 @@ imagenet1k:
 cub:
   dataset: CUB-200-2011
   download_root: data
-  data_root: data/CUB-200-2011
+  data_root: data/CUB_200_2011
   script: tools/dataset_converters/odl_cub_preprocess.sh
