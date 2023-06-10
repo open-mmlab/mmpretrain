@@ -453,6 +453,7 @@ class RepVGG(BaseBackbone):
                  arch,
                  in_channels=3,
                  base_channels=64,
+                 stem_stride=2,
                  out_indices=(3, ),
                  strides=(2, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
@@ -514,7 +515,7 @@ class RepVGG(BaseBackbone):
         self.stem = RepVGGBlock(
             self.in_channels,
             channels,
-            stride=2,
+            stride=stem_stride,
             se_cfg=arch['se_cfg'],
             with_cp=with_cp,
             conv_cfg=conv_cfg,
