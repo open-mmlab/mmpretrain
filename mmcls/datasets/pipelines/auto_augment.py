@@ -48,14 +48,18 @@ class AutoAugment(object):
     """Auto augmentation.
 
     This data augmentation is proposed in `AutoAugment: Learning Augmentation
-    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
+    Policies from Data <https://arxiv.org/abs/1805.09501>`_. Note that this 
+    implement differ from the method proposed in this paper. When AutoAugment
+    is called, a random policy in policies will be selected to augment images.
 
     Args:
         policies (list[list[dict]]): The policies of auto augmentation. Each
             policy in ``policies`` is a specific augmentation policy, and is
-            composed by several augmentations (dict). When AutoAugment is
-            called, a random policy in ``policies`` will be selected to
-            augment images.
+            composed by several augmentations (dict). The dict shall at least 
+            have key `type`, a string indicating the type of augumentation and
+            other keys as parameters to this `type`. 
+            When AutoAugment is called, a random policy in ``policies`` will be 
+            selected to augment images.
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to use _HPARAMS_DEFAULT.
