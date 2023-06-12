@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.transforms import (CenterCrop, LoadImageFromFile, Normalize,
                              RandomFlip, RandomGrayscale, RandomResize, Resize)
-from mmpretrain.registry import TRANSFORMS
 
+from mmpretrain.registry import TRANSFORMS
 from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            Brightness, ColorTransform, Contrast, Cutout,
                            Equalize, GaussianBlur, Invert, Posterize,
@@ -21,7 +21,6 @@ from .wrappers import ApplyToList, MultiView
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
           RandomGrayscale, RandomResize, Resize):
     TRANSFORMS.register_module(module=t)
-
 __all__ = [
     'NumpyToPIL', 'PILToNumpy', 'Transpose', 'Collect', 'RandomCrop',
     'RandomResizedCrop', 'Shear', 'Translate', 'Rotate', 'Invert',
@@ -33,5 +32,6 @@ __all__ = [
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
     'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
+    'ApplyToList', 'CleanCaption', 'RandomTranslatePad',
     'RandomResizedCropAndInterpolationWithTwoPic'
 ]
