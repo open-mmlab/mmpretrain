@@ -76,6 +76,7 @@ Self-supervised Algorithms
    SimCLR
    SimMIM
    SimSiam
+   SparK
    SwAV
 
 .. _selfsup_backbones:
@@ -202,6 +203,8 @@ Backbones
    SVT
    ShuffleNetV1
    ShuffleNetV2
+   SparseResNet
+   SparseConvNeXt
    SwinTransformer
    SwinTransformerV2
    T2T_ViT
@@ -240,6 +243,7 @@ Necks
    SimMIMLinearDecoder
    SwAVNeck
    iTPNPretrainDecoder
+   SparKLightDecoder
 
 .. module:: mmpretrain.models.heads
 
@@ -277,6 +281,7 @@ Heads
    VigClsHead
    VisionTransformerClsHead
    iTPNClipHead
+   SparKPretrainHead
 
 .. module:: mmpretrain.models.losses
 
