@@ -31,7 +31,6 @@ from .swav_head import SwAVHead
 from .vig_head import VigClsHead
 from .vision_transformer_head import VisionTransformerClsHead
 from .vqa_head import VQAGenerationHead
-from .spark_head import SparKPretrainHead
 
 __all__ = [
     'ClsHead',
