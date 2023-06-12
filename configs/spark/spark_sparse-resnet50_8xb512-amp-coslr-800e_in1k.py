@@ -12,8 +12,6 @@ model = dict(
     input_size=224,
     downsample_raito=32,
     mask_ratio=0.6,
-    mask_ratio2=0.6,
-    uniform=False,
     enc_dec_norm_cfg=dict(type='SparseSyncBatchNorm2d'),
     enc_dec_norm_dim=2048,
     backbone=dict(

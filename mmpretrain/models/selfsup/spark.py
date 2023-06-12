@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import random
 from typing import Dict, List, Optional, Union
 
-import numpy as np
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
@@ -20,6 +18,9 @@ class SparK(BaseSelfSupervisor):
 
     Implementation of `Designing BERT for Convolutional Networks: Sparse and
     Hierarchical Masked Modeling <https://arxiv.org/abs/2301.03580>`_.
+
+    Modified from
+    https://github.com/keyu-tian/SparK/blob/main/pretrain/spark.py
     """
 
     def __init__(
@@ -32,8 +33,6 @@ class SparK(BaseSelfSupervisor):
         input_size: int = 224,
         downsample_raito: int = 32,
         mask_ratio: float = 0.6,
-        mask_ratio2: float = 0.6,
-        uniform: bool = False,
         enc_dec_norm_cfg=dict(type='SparseSyncBatchNorm2d'),
         enc_dec_norm_dim: int = 2048,
         init_cfg: Optional[dict] = None,
@@ -50,28 +49,16 @@ class SparK(BaseSelfSupervisor):
         feature_map_size = input_size // downsample_raito
         self.feature_map_size = feature_map_size
 
-        # with an extra active site
-        if mask_ratio != mask_ratio2 and not uniform:
-            k = 1 / feature_map_size**2
-            mask_ratio = min(1, mask_ratio / (1 - k))
-            mask_ratio2 = min(1, mask_ratio2 / (1 - k))
-        self.mask_ratio = (mask_ratio, mask_ratio2)
-        self.ratios = torch.tensor([
-            self.mask_ratio[0], self.mask_ratio[1],
-            (self.mask_ratio[0] + self.mask_ratio[1]) / 2
-        ])
-        self.uniform = uniform
+        self.mask_ratio = mask_ratio
         self.len_keep = round(feature_map_size * feature_map_size *
                               (1 - mask_ratio))
 
         self.enc_dec_norm_cfg = enc_dec_norm_cfg
         self.enc_dec_norms = nn.ModuleList()
         self.enc_dec_projectors = nn.ModuleList()
-        # self.pos_embeds = nn.ParameterList()
         self.mask_tokens = nn.ParameterList()
 
         proj_out_dim = self.neck.feature_dim
-        # len(self.backbone.out_indices) = 4
         for i in range(len(self.backbone.out_indices)):
             enc_dec_norm = build_norm_layer(self.enc_dec_norm_cfg,
                                             enc_dec_norm_dim)[1]
@@ -113,29 +100,8 @@ class SparK(BaseSelfSupervisor):
         """
         B, C, H, W = shape
         f = self.feature_map_size
-        if self.mask_ratio[0] == self.mask_ratio[1]:
-            len_keep = self.len_keep
-        elif self.uniform:
-            r = random.uniform(self.mask_ratio[0], self.mask_ratio[1])
-            len_keep = round(f * f * (1 - r))
-        else:
-            i1, i2, i3, i4 = np.linspace(0, B, 4, dtype=int).tolist()
-            l1, l2, l3 = i2 - i1, i3 - i2, i4 - i3
-            r1, r2, r3 = self.ratios[torch.randperm(
-                3, generator=generator)].tolist()
-            r = torch.tensor(
-                [r1] * l1 + [r2] * l2 + [r3] * l3,
-                device=device).view(-1, 1, 1)
-            active = torch.rand(
-                B, f, f, device=device, generator=generator) >= r
-
-            rr, cc = torch.randint(
-                low=0, high=f, size=(2, B), generator=generator).unbind(0)
-            active[torch.arange(B), rr, cc] = True  # an extra active site
-            return active.unsqueeze_(1)
-
         idx = torch.rand(B, f * f, generator=generator).argsort(dim=1)
-        idx = idx[:, :len_keep].to(device)  # (B, len_keep)
+        idx = idx[:, :self.len_keep].to(device)  # (B, len_keep)
         return torch.zeros(
             B, f * f, dtype=torch.bool, device=device).scatter_(
                 dim=1, index=idx, value=True).view(B, 1, f, f)
