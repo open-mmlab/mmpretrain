@@ -57,14 +57,6 @@ model = dict(
         dict(type='CutMix', alpha=1.0)
     ]))
 
-custom_hooks = [
-    dict(
-        type='EMAHook',
-        momentum=1e-4,
-        evaluate_on_origin=True,
-        priority='ABOVE_NORMAL')
-]
-
 # schedule settings
 # optimizer
 optim_wrapper = dict(

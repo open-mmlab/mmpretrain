@@ -52,7 +52,7 @@ model = dict(
     backbone=dict(
         type='ConvNeXt',
         arch='tiny',
-        drop_path_rate=0.3,
+        drop_path_rate=0.1,
         layer_scale_init_value=0.,
         use_grn=True,
     ),
@@ -82,7 +82,7 @@ custom_hooks = [
 # optimizer
 optim_wrapper = dict(
     optimizer=dict(
-        type='AdamW', lr=3.2e-3, betas=(0.9, 0.999), weight_decay=0.01),
+        type='AdamW', lr=3.2e-3, betas=(0.9, 0.999), weight_decay=0.05),
     constructor='LearningRateDecayOptimWrapperConstructor',
     paramwise_cfg=dict(
         layer_decay_rate=0.7,
@@ -103,13 +103,13 @@ param_scheduler = [
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=380,
-        eta_min=1.0e-6,
+        T_max=280,
+        eta_min=1.0e-5,
         by_epoch=True,
         begin=20,
-        end=400)
+        end=300)
 ]
-train_cfg = dict(by_epoch=True, max_epochs=400)
+train_cfg = dict(by_epoch=True, max_epochs=300)
 val_cfg = dict()
 test_cfg = dict()
 

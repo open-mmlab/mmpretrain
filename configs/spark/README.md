@@ -16,7 +16,17 @@ We identify and overcome two key obstacles in extending the success of BERT-styl
 
 <!-- [TABS-BEGIN] -->
 
-<!-- **Use the model**
+**Predict image**
+
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('resnet50_spark-pre_8xb256-coslr-300e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
 
 ```python
 import torch
@@ -29,7 +39,7 @@ print(type(out))
 # To extract features.
 feats = model.extract_feat(inputs)
 print(type(feats))
-``` -->
+```
 
 **Train/Test Command**
 
@@ -41,16 +51,29 @@ Train:
 python tools/train.py configs/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k.py
 ```
 
+Test:
+
+```shell
+python tools/test.py configs/spark/benchmarks/resnet50_8xb256-coslr-300e_in1k.py https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/resnet50_8xb256-coslr-300e_in1k/resnet50_8xb256-coslr-300e_in1k_20230612-f86aab51.pth
+```
+
 <!-- [TABS-END] -->
 
 ## Models and results
 
 ### Pretrained models
 
-| Model                                                      | Params (M) | Flops (G) |                                Config                                 | Download |
-| :--------------------------------------------------------- | :--------: | :-------: | :-------------------------------------------------------------------: | :------: |
-| `spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k`         |   37.97    |   4.10    |     [config](spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k.py)     |   N/A    |
-| `spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k` |   39.73    |   4.47    | [config](spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k.py) |   N/A    |
+| Model                                                      | Params (M) | Flops (G) |                            Config                            |                            Download                             |
+| :--------------------------------------------------------- | :--------: | :-------: | :----------------------------------------------------------: | :-------------------------------------------------------------: |
+| `spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k`         |   37.97    |   4.10    | [config](spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k_20230612-e403c28f.pth) \| [log](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k_20230612-e403c28f.json) |
+| `spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k` |   39.73    |   4.47    | [config](spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k_20230612-b0ea712e.pth) \| [log](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k_20230612-b0ea712e.json) |
+
+### Image Classification on ImageNet-1k
+
+| Model                                   |                  Pretrain                  | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                  Download                  |
+| :-------------------------------------- | :----------------------------------------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :----------------------------------------: |
+| `resnet50_spark-pre_8xb256-coslr-300e_in1k` | [SPARK](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k_20230612-e403c28f.pth) |   23.52    |   1.31    |   80.10   |   94.90   | [config](benchmarks/resnet50_8xb256-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/resnet50_8xb256-coslr-300e_in1k/resnet50_8xb256-coslr-300e_in1k_20230612-f86aab51.pth) \| [log](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/resnet50_8xb256-coslr-300e_in1k/resnet50_8xb256-coslr-300e_in1k_20230612-f86aab51.json) |
+| `convnextv2-tiny_spark-pre_8xb256-coslr-300e_in1k` | [SPARK](https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k_20230612-b0ea712e.pth) |   28.64    |   4.47    |   82.80   |   96.30   | [config](benchmarks/convnextv2-tiny_8xb256-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/spark//spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/convnextv2-tiny_8xb256-coslr-300e_in1k/convnextv2-tiny_8xb256-coslr-300e_in1k_20230612-ffc78743.pth) \| [log](https://download.openmmlab.com/mmpretrain/v1.0/spark//spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/convnextv2-tiny_8xb256-coslr-300e_in1k/convnextv2-tiny_8xb256-coslr-300e_in1k_20230612-ffc78743.json) |
 
 ## Citation
 
