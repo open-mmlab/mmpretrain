@@ -21,6 +21,7 @@ from .wrappers import ApplyToList, MultiView
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
           RandomGrayscale, RandomResize, Resize):
     TRANSFORMS.register_module(module=t)
+
 __all__ = [
     'NumpyToPIL', 'PILToNumpy', 'Transpose', 'Collect', 'RandomCrop',
     'RandomResizedCrop', 'Shear', 'Translate', 'Rotate', 'Invert',
