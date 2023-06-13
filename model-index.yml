@@ -79,3 +79,4 @@ Import:
   - configs/itpn/metafile.yml
   - configs/hivit/metafile.yml
   - configs/minigpt4/metafile.yml
+  - configs/otter/metafile.yml
