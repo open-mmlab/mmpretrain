@@ -70,6 +70,12 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | :------------------------- | :--------: | :------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
 | `blip-base_3rdparty_vqa`\* |   361.48   |  40.59#  | [config](./blip-base_8xb32_okvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
 
+### Visual Question Answering on OCR-VQA
+
+| Model                      | Params (M) | Accuracy |                Config                 |                                                       Download                                                        |
+| :------------------------- | :--------: | :------: | :-----------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+| `blip-base_3rdparty_vqa`\* |   361.48   |  28.30#  | [config](./blip-base_8xb32_ocrvqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty-capflit_vqa_20230505-81488941.pth) |
+
 ### Image-To-Text Retrieval on COCO
 
 | Model                            | Params (M) | Recall@1 | Recall@5 |                  Config                  |                                                Download                                                |
