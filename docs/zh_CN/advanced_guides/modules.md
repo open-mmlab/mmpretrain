@@ -3,7 +3,7 @@
 在我们的设计中，我们定义一个完整的模型为顶层模块，根据功能的不同，基本几种不同类型的模型组件组成。
 
 - 模型：顶层模块定义了具体的任务类型，例如 `ImageClassifier` 用在图像分类任务中， `MAE` 用在自监督学习中， `ImageToImageRetriever` 用在图像检索中。
-- 主干网络：通常是一个特征提取网络，涵盖了模型直接绝大多数的差异，例如 `ResNet`、`MobileNet`。
+- 主干网络：通常是一个特征提取网络，涵盖了模型之间绝大多数的差异，例如 `ResNet`、`MobileNet`。
 - 颈部：用于连接主干网络和头部的组件，例如 `GlobalAveragePooling`。
 - 头部：用于执行特定任务的组件，例如 `ClsHead`、 `ContrastiveHead`。
 - 损失函数：在头部用于计算损失函数的组件，例如 `CrossEntropyLoss`、`LabelSmoothLoss`。
