@@ -45,9 +45,10 @@ if WITH_MULTIMODAL:
     from .scienceqa import ScienceQA
     from .textvqa import TextVQA
     from .visual_genome import VisualGenomeQA
+    from .vsr import VSR
 
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'OCRVQA', 'RefCOCO', 'VisualGenomeQA',
-        'ScienceQA', 'NoCaps', 'GQA', 'TextVQA'
+        'ScienceQA', 'NoCaps', 'GQA', 'TextVQA', 'VSR'
     ])
