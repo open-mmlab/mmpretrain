@@ -14,7 +14,7 @@ Models:
     Metadata:
       FLOPs: null
       Parameters: 8121315072
-    In Collection: Flamingo
+    In Collection: MiniGPT4
     Results:
       - Task: Image Caption
         Dataset: COCO
