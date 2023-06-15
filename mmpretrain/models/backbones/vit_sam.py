@@ -593,11 +593,11 @@ class ViTSAM(BaseBackbone):
 
             if i in self.out_indices:
                 # (B, H, W, C) -> (B, C, H, W)
-                x = x.permute(0, 3, 1, 2)
+                x_reshape = x.permute(0, 3, 1, 2)
 
                 if self.out_channels > 0:
-                    x = self.channel_reduction(x)
-                outs.append(self._format_output(x))
+                    x_reshape = self.channel_reduction(x_reshape)
+                outs.append(self._format_output(x_reshape))
 
         return tuple(outs)
 

@@ -1,5 +1,6 @@
 # data settings
-
+# coco caption annotations can be grabbed from LAVIS repo
+# https://github.com/salesforce/LAVIS/blob/main/lavis/configs/datasets/coco/defaults_cap.yaml
 data_preprocessor = dict(
     type='MultiModalDataPreprocessor',
     mean=[122.770938, 116.7460125, 104.09373615],
