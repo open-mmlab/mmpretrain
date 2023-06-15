@@ -1,9 +1,11 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import random
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 from mmengine.device import get_device
+from mmengine.logging import MMLogger
 from mmengine.model import BaseModel
 from transformers import StoppingCriteriaList
 
@@ -14,41 +16,51 @@ from .utils import StoppingCriteriaSub
 
 @MODELS.register_module()
 class MiniGPT4(BaseModel):
-    """The model of MiniGPT-4.
+    """The multi-modality model of MiniGPT-4.
+
+    The implementation of `MiniGPT-4 <https://arxiv.org/abs/2304.10592>`_.
+    Modified from https://github.com/Vision-CAIR/MiniGPT-4/blob/main/minigpt4/models/mini_gpt4.py
 
     Args:
-        vision_encoder='eva_clip_g',
-        q_former_model="",
-        lang_encoder='',
-        tokenizer = '',
-        img_size=224,
-        drop_path_rate=0,
-        use_grad_checkpoint=False,
-        freeze_vit=True,
-        freeze_q_former=True,
-        num_query_token=32,
-        llama_model="",
-        prompt_path="",
-        prompt_template="",
-        max_txt_len=32,
-        end_sym='',
-        low_resource=False,  # use 8 bit and put vit in cpu
-    """
+        vision_encoder (dict): The config for vision encoder.
+        q_former_model (dict): The config for Qformer.
+        lang_encoder (dict): The config for language model.
+        tokenizer (dict): The config for tokenizer.
+        task (str): To define the task, which control the processing of text.
+            Defaults to 'caption'.
+        freeze_vit (bool): Freeze the training of ViT. Defaults to True.
+        freeze_q_former (bool): Freeze the training of Qformer. Defaults to
+            True.
+        num_query_token (int): Number of query tokens of Qformer. Defaults to
+            32.
+        prompt_template (str): Prompt template of the model. Defaults to
+            '###Human: {} ###Assistant: '.
+        raw_prompts (list): Prompts for training. Defaults to None.
+        max_txt_len (int): Max token length while doing tokenization. Defaults
+            to 32.
+        end_sym (str): Ended symbol of the sequence. Defaults to '\n'.
+        generation_cfg (dict): The config of text generation. Defaults to
+            dict().
+        data_preprocessor (:obj:`BaseDataPreprocessor`): Used for
+            pre-processing data sampled by dataloader to the format accepted by
+            :meth:`forward`. Defaults to None.
+        init_cfg (dict): Initialization config dict. Defaults to None.
+    """ # noqa
 
     def __init__(self,
-                 vision_encoder,
-                 q_former_model='',
-                 lang_encoder='',
-                 tokenizer='',
-                 freeze_vit=True,
-                 freeze_q_former=True,
-                 num_query_token=32,
-                 prompt_template='',
-                 raw_prompts=None,
-                 max_txt_len=32,
-                 end_sym='\n',
-                 generation_cfg=dict(),
-                 low_resource=False,
+                 vision_encoder: dict,
+                 q_former_model: dict,
+                 lang_encoder: dict,
+                 tokenizer: dict,
+                 task: str = 'caption',
+                 freeze_vit: bool = True,
+                 freeze_q_former: bool = True,
+                 num_query_token: int = 32,
+                 prompt_template: str = '###Human: {} ###Assistant: ',
+                 raw_prompts: Optional[list] = None,
+                 max_txt_len: int = 32,
+                 end_sym: str = '\n',
+                 generation_cfg: dict = dict(),
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
         if data_preprocessor is None:
@@ -58,6 +70,8 @@ class MiniGPT4(BaseModel):
 
         super().__init__(
             data_preprocessor=data_preprocessor, init_cfg=init_cfg)
+        self.task = task
+        logger = MMLogger.get_current_instance()
 
         # build vision model
         vision_encoder_weight = vision_encoder.pop('pretrained', None)
@@ -71,6 +85,10 @@ class MiniGPT4(BaseModel):
             for name, param in self.ln_vision.named_parameters():
                 param.requires_grad = False
             self.ln_vision = self.ln_vision.eval()
+        else:
+            logger.warning('Please check `frozen_stages` in the dict of'
+                           '`vision_encoder`. Also set it to be -1 if do not'
+                           'freeze ViT.')
 
         # build Qformer
         q_former_model_weight = q_former_model.pop('pretrained', None)
@@ -88,8 +106,6 @@ class MiniGPT4(BaseModel):
             mean=0.0, std=self.q_former.config.initializer_range)
 
         if q_former_model_weight is not None:
-            from mmengine.logging import MMLogger
-            logger = MMLogger.get_current_instance()
             logger.info(f'Loading checkpoint from {q_former_model_weight}')
             state_dict = torch.load(q_former_model_weight)['state_dict']
             incompatible_keys = self.load_state_dict(state_dict, strict=False)
@@ -105,20 +121,7 @@ class MiniGPT4(BaseModel):
         self.llama_tokenizer = TOKENIZER.build(tokenizer)
         self.llama_tokenizer.pad_token = self.llama_tokenizer.eos_token
 
-        self.low_resource = low_resource
         self.llama_model = MODELS.build(lang_encoder)
-
-        # if self.low_resource:
-        #     self.llama_model = LlamaForCausalLM.from_pretrained(
-        #         llama_model,
-        #         torch_dtype=torch.float16,
-        #         load_in_8bit=True,
-        #         device_map={'': device_8bit})
-        # else:
-        #     self.llama_model = LlamaForCausalLM.from_pretrained(
-        #         llama_model,
-        #         torch_dtype=torch.float16,
-        #     )
         for name, param in self.llama_model.named_parameters():
             param.requires_grad = False
 
@@ -133,7 +136,7 @@ class MiniGPT4(BaseModel):
         if raw_prompts is not None:
             filted_prompts = [
                 raw_prompt for raw_prompt in raw_prompts
-                if "<ImageHere>" in raw_prompt
+                if '<ImageHere>' in raw_prompt
             ]
             self.prompt_list = [
                 prompt_template.format(p) for p in filted_prompts
@@ -141,7 +144,7 @@ class MiniGPT4(BaseModel):
         else:
             self.prompt_list = []
 
-        #
+        # update generation configs
         self.generation_cfg = dict(
             max_new_tokens=300,
             num_beams=1,
@@ -161,17 +164,10 @@ class MiniGPT4(BaseModel):
         self.stopping_criteria = StoppingCriteriaList(
             [StoppingCriteriaSub(stops=stop_words_ids)])
 
-    # def vit_to_cpu(self):
-    #     self.ln_vision.to("cpu")
-    #     self.ln_vision.float()
-    #     self.vision_encoder.to("cpu")
-    #     self.vision_encoder.float()
-
-    def encode_img(self, images):
+    def encode_img(self,
+                   images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """The function to encode the images."""
         device = images.device
-        # if self.low_resource:
-        #     self.vit_to_cpu()
-        #     image = image.to("cpu")
         x = self.vision_encoder(images)[0]
         image_embeds = self.ln_vision(x).to(device)
         image_atts = torch.ones(
@@ -190,15 +186,29 @@ class MiniGPT4(BaseModel):
             inputs_llama.size()[:-1], dtype=torch.long).to(images.device)
         return inputs_llama, atts_llama
 
-    def prompt_wrap(self, img_embeds, atts_img, prompt):
+    def prompt_wrap(self, img_embeds: torch.Tensor, atts_img: torch.Tensor,
+                    prompt: str) -> Tuple[torch.Tensor, torch.Tensor]:
+        """The function to wrap the image and prompt.
+
+        Currently, the function only supports applying one prompt to all input
+        images in the one batch.
+
+        Args:
+            img_embeds (torch.Tensor): The embedding of the input images.
+            atts_img (torch.Tensor): Attention map of the image embeddings.
+            prompt (str): The prompt of the batch data.
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: The embedding and attention map.
+        """
         if prompt:
             batch_size = img_embeds.shape[0]
             p_before, p_after = prompt.split('<ImageHere>')
             p_before_tokens = self.llama_tokenizer(
-                p_before, return_tensors="pt",
+                p_before, return_tensors='pt',
                 add_special_tokens=False).to(img_embeds.device)
             p_after_tokens = self.llama_tokenizer(
-                p_after, return_tensors="pt",
+                p_after, return_tensors='pt',
                 add_special_tokens=False).to(img_embeds.device)
             p_before_embeds = self.llama_model.model.embed_tokens(
                 p_before_tokens.input_ids).expand(batch_size, -1, -1)
@@ -214,25 +224,32 @@ class MiniGPT4(BaseModel):
 
     def loss(self,
              images: torch.Tensor,
-             data_samples: Optional[List[DataSample]] = None):
+             data_samples: Optional[List[DataSample]] = None) -> dict:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
         img_embeds, atts_img = self.encode_img(images)
-        if hasattr(data_samples, 'question_split'):  # VQA dataset
-            vqa_prompt = '###Human: <Img><ImageHere></Img> '
-            img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
-                                                    vqa_prompt)
-        elif self.prompt_list:
+
+        if self.task == 'caption' and self.prompt_list:
             prompt = random.choice(self.prompt_list)
             img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
                                                     prompt)
 
-        self.llama_tokenizer.padding_side = "right"
+        self.llama_tokenizer.padding_side = 'right'
 
-        text = [t + self.end_sym for t in data_samples["text_input"]]
+        text = [t + self.end_sym for t in data_samples['text_input']]
 
         to_regress_tokens = self.llama_tokenizer(
             text,
-            return_tensors="pt",
-            padding="longest",
+            return_tensors='pt',
+            padding='longest',
             truncation=True,
             max_length=self.max_txt_len,
             add_special_tokens=False).to(images.device)
@@ -272,17 +289,16 @@ class MiniGPT4(BaseModel):
         loss = outputs.loss
         return dict(loss=loss)
 
-    def predict(self,
-                images: torch.Tensor,
-                data_samples: Optional[List[DataSample]] = None):
+    def predict(
+            self,
+            images: torch.Tensor,
+            data_samples: Optional[List[DataSample]] = None
+    ) -> List[DataSample]:
+
         with torch.no_grad():
             img_embeds, atts_img = self.encode_img(images)
 
-        if hasattr(data_samples, 'question_split'):  # VQA dataset
-            vqa_prompt = '###Human: <Img><ImageHere></Img> '
-            img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
-                                                    vqa_prompt)
-        elif self.prompt_list:
+        if self.task == 'caption' and self.prompt_list:
             prompt = random.choice(self.prompt_list)
             img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
                                                     prompt)
@@ -321,10 +337,13 @@ class MiniGPT4(BaseModel):
             data_samples = [DataSample() for _ in range(len(outputs))]
 
         for output, data_sample in zip(outputs, data_samples):
-            output = output.split('###')[0]
-            output = output.split('Assistant:')[-1].strip()
-            data_sample.pred_answer = output
-
+            if self.task == 'caption':
+                output = output.split('###')[0]
+                output = output.split('Assistant:')[-1].strip()
+                data_sample.pred_caption = output
+            else:
+                # raw output
+                data_sample.pred_output = output
         return data_samples
 
     def forward(

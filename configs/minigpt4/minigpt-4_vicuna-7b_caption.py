@@ -58,6 +58,7 @@ model = dict(
         type='LlamaTokenizer',
         name_or_path=  # noqa
         '/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
+    task='caption',
     prompt_template='###Human: {} ###Assistant: ',
     raw_prompts=[
         '<Img><ImageHere></Img> Describe this image in detail.',
