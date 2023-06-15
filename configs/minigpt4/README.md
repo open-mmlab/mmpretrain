@@ -1,5 +1,7 @@
 # MiniGPT4
+
 > [MiniGPT-4: Enhancing Vision-language Understanding with Advanced Large Language Models](https://arxiv.org/abs/2304.10592)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -32,11 +34,11 @@ For Vicuna model, please refer to [MiniGPT-4 page](https://github.com/Vision-CAI
 
 ### Pretrained models
 
-| Model                           | Params (M) | Flops (G) |                  Config                  |                                                      Download                                                      |
-| :------------------------------ | :--------: | :-------: | :--------------------------------------: | :----------------------------------------------------------------------------------------------------------------: |
+| Model                           | Params (M) | Flops (G) |                  Config                  |                                                    Download                                                    |
+| :------------------------------ | :--------: | :-------: | :--------------------------------------: | :------------------------------------------------------------------------------------------------------------: |
 | `minigpt-4_vicuna-7b_caption`\* |  8121.32   |    N/A    | [config](minigpt-4_vicuna-7b_caption.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_linear-projection_20230615-714b5f52.pth) |
 
-*Models with \* are converted from the [official repo](https://github.com/Vision-CAIR/MiniGPT-4/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/Vision-CAIR/MiniGPT-4/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
@@ -48,4 +50,3 @@ For Vicuna model, please refer to [MiniGPT-4 page](https://github.com/Vision-CAI
   year={2023}
 }
 ```
-
