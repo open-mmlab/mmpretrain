@@ -4,14 +4,11 @@ from typing import List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from mmengine.device import get_device
 from mmengine.logging import MMLogger
 from mmengine.model import BaseModel
-from transformers import StoppingCriteriaList
 
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
-from .utils import StoppingCriteriaSub
 
 
 @MODELS.register_module()
@@ -106,8 +103,9 @@ class MiniGPT4(BaseModel):
             mean=0.0, std=self.q_former.config.initializer_range)
 
         if q_former_model_weight is not None:
-            logger.info(f'Loading checkpoint from {q_former_model_weight}')
-            state_dict = torch.load(q_former_model_weight)['state_dict']
+            from mmengine.runner.checkpoint import CheckpointLoader
+            state_dict = CheckpointLoader.load_checkpoint(
+                q_former_model_weight)['state_dict']
             incompatible_keys = self.load_state_dict(state_dict, strict=False)
             logger.info(incompatible_keys)
 
@@ -155,14 +153,6 @@ class MiniGPT4(BaseModel):
             length_penalty=1.0,
             temperature=1.0,
             **generation_cfg)
-
-        self.device = get_device()
-        stop_words_ids = [
-            torch.tensor([835]).to(self.device),
-            torch.tensor([2277, 29937]).to(self.device),
-        ]
-        self.stopping_criteria = StoppingCriteriaList(
-            [StoppingCriteriaSub(stops=stop_words_ids)])
 
     def encode_img(self,
                    images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -312,7 +302,7 @@ class MiniGPT4(BaseModel):
 
         outputs = self.llama_model.generate(
             inputs_embeds=inputs_embeds,
-            stopping_criteria=self.stopping_criteria,
+            eos_token_id=self.end_token_id,
             **self.generation_cfg)
 
         return self.post_process(outputs, data_samples)

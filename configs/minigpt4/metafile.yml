@@ -15,8 +15,11 @@ Models:
       FLOPs: null
       Parameters: 8121315072
     In Collection: Flamingo
-    Results: null
-    Weights: 
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_linear-projection_20230615-714b5f52.pth
     Config: configs/minigpt4/minigpt-4_vicuna-7b_caption.py
     Converted From:
       Weights: https://github.com/Vision-CAIR/MiniGPT-4/tree/main

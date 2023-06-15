@@ -15,7 +15,7 @@ test_pipeline = [
 ]
 
 val_dataloader = dict(
-    batch_size=4,
+    batch_size=1,
     dataset=dict(data_prefix=dict(img_path='images'), pipeline=test_pipeline))
 test_dataloader = val_dataloader
 
@@ -40,7 +40,9 @@ model = dict(
         final_norm=False,
         use_shared_rel_pos_bias=False,
         out_type='raw',
-        pretrained='../../../models/minigpt4/converted_eva_vit_g.pth'),
+        pretrained=  # noqa
+        'https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_eva-g-p14_20230615-e908c021.pth'  # noqa
+    ),
     q_former_model=dict(
         type='Qformer',
         model_style='bert-base-uncased',
@@ -49,7 +51,8 @@ model = dict(
         cross_attention_freq=2,
         num_query_token=32,
         pretrained=  # noqa
-        '../../../models/minigpt4/converted_blip2_qformer_flant5xxl.pth'),
+        'https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_qformer_20230615-1dfa889c.pth'  # noqa
+    ),
     lang_encoder=dict(
         type='AutoModelForCausalLM',
         name_or_path=  # noqa
