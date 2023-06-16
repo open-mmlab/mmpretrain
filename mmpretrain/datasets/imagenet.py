@@ -117,7 +117,7 @@ class ImageNet(CustomDataset):
             if ann_file == '':
                 _ann_path = fileio.join_path(data_root, 'meta', f'{split}.txt')
                 if fileio.exists(_ann_path):
-                    ann_file = _ann_path
+                    ann_file = fileio.join_path('meta', f'{split}.txt')
 
         super().__init__(
             data_root=data_root,
@@ -210,7 +210,7 @@ class ImageNet21k(CustomDataset):
             if not ann_file:
                 _ann_path = fileio.join_path(data_root, 'meta', f'{split}.txt')
                 if fileio.exists(_ann_path):
-                    ann_file = _ann_path
+                    ann_file = fileio.join_path('meta', f'{split}.txt')
 
         logger = MMLogger.get_current_instance()
 
