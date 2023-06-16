@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
+import re
 from typing import List, Optional, Tuple
 
 import torch
@@ -106,8 +107,7 @@ class MiniGPT4(BaseModel):
             from mmengine.runner.checkpoint import CheckpointLoader
             state_dict = CheckpointLoader.load_checkpoint(
                 q_former_model_weight)['state_dict']
-            incompatible_keys = self.load_state_dict(state_dict, strict=False)
-            logger.info(incompatible_keys)
+            self.load_state_dict(state_dict, strict=False)
 
         if freeze_q_former:
             for name, param in self.q_former.named_parameters():
@@ -153,6 +153,9 @@ class MiniGPT4(BaseModel):
             length_penalty=1.0,
             temperature=1.0,
             **generation_cfg)
+
+        if hasattr(self, 'register_load_state_dict_post_hook'):
+            self.register_load_state_dict_post_hook(self._load_llama_proj_hook)
 
     def encode_img(self,
                    images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -362,3 +365,17 @@ class MiniGPT4(BaseModel):
             return self.predict(images, data_samples, **kwargs)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
+
+    @staticmethod
+    def _load_llama_proj_hook(module, incompatible_keys):
+        """Avoid warning missing keys except LLaMA projection keys."""
+        proj_patterns = [
+            'vision_encoder.*',
+            'ln_vision.*',
+            'q_former.*',
+            'query_tokens',
+            'llama_model.*',
+        ]
+        for key in list(incompatible_keys.missing_keys):
+            if any(re.match(pattern, key) for pattern in proj_patterns):
+                incompatible_keys.missing_keys.remove(key)
