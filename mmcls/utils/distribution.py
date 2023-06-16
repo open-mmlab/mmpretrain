@@ -18,6 +18,8 @@ def wrap_non_distributed_model(model, device='cuda', dim=0, *args, **kwargs):
     """
     if device == 'npu':
         from mmcv.device.npu import NPUDataParallel
+        import torch
+        torch.npu.set_device(kwargs['device_ids'][0])
         model = NPUDataParallel(model.npu(), dim=dim, *args, **kwargs)
     elif device == 'mlu':
         from mmcv.device.mlu import MLUDataParallel
