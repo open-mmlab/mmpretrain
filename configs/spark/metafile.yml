@@ -16,7 +16,7 @@ Collections:
       Version: null
 
 Models:
-  - Name: spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k
+  - Name: spark_sparse-resnet50_800e_in1k
     Metadata:
       FLOPs: 4100000000
       Parameters: 37971000
@@ -27,8 +27,8 @@ Models:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k_20230612-e403c28f.pth
     Config: configs/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k.py
     Downstream:
-      - resnet50_spark-pre_8xb256-coslr-300e_in1k
-  - Name: resnet50_spark-pre_8xb256-coslr-300e_in1k
+      - resnet50_spark-pre_300e_in1k
+  - Name: resnet50_spark-pre_300e_in1k
     Metadata:
       FLOPs: 1310000000
       Parameters: 23520000
@@ -44,7 +44,7 @@ Models:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-resnet50_8xb512-amp-coslr-800e_in1k/resnet50_8xb256-coslr-300e_in1k/resnet50_8xb256-coslr-300e_in1k_20230612-f86aab51.pth
     Config: configs/spark/benchmarks/resnet50_8xb256-coslr-300e_in1k.py
 
-  - Name: spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k
+  - Name: spark_sparse-convnextv2-tiny_800e_in1k
     Metadata:
       FLOPs: 4470000000
       Parameters: 39732000
@@ -55,8 +55,8 @@ Models:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k_20230612-b0ea712e.pth
     Config: configs/spark/spark_sparse-convnextv2-tiny_16xb256-amp-coslr-800e_in1k.py
     Downstream:
-      - convnextv2-tiny_spark-pre_8xb256-coslr-300e_in1k
-  - Name: convnextv2-tiny_spark-pre_8xb256-coslr-300e_in1k
+      - convnextv2-tiny_spark-pre_300e_in1k
+  - Name: convnextv2-tiny_spark-pre_300e_in1k
     Metadata:
       FLOPs: 4469631744
       Parameters: 28635496
