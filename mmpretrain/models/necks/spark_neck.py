@@ -15,6 +15,7 @@ def is_pow2n(x):
 
 
 class ConvBlock2x(BaseModule):
+    """The definition of convolution block."""
 
     def __init__(self,
                  in_channels: int,
@@ -46,17 +47,18 @@ class ConvBlock2x(BaseModule):
 
 
 class DecoderConvModule(BaseModule):
+    """The convolution module of decoder with upsampling."""
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 mid_channels,
-                 kernel_size=4,
-                 scale_factor=2,
-                 num_conv_blocks=1,
-                 norm_cfg=dict(type='SyncBN'),
-                 act_cfg=dict(type='ReLU6'),
-                 last_act=True,
+                 in_channels: int,
+                 out_channels: int,
+                 mid_channels: int,
+                 kernel_size: int = 4,
+                 scale_factor: int = 2,
+                 num_conv_blocks: int = 1,
+                 norm_cfg: dict = dict(type='SyncBN'),
+                 act_cfg: dict = dict(type='ReLU6'),
+                 last_act: bool = True,
                  init_cfg: Optional[dict] = None):
         super().__init__(init_cfg=init_cfg)
 
@@ -94,18 +96,38 @@ class DecoderConvModule(BaseModule):
 
 @MODELS.register_module()
 class SparKLightDecoder(BaseModule):
+    """The decoder for SparK, which upsamples the feature maps.
+    
+    Args:
+        feature_dim (int): The dimension of feature map.
+        upsample_ratio (int): The ratio of upsample, equal to downsample_raito
+            of the algotrithm.
+        mid_channels (int): The middle channel of `DecoderConvModule`. Defaults
+            to 0.
+        kernel_size (int): The kernel size of `ConvTranspose2d` in
+            `DecoderConvModule`. Defaults to 4.
+        scale_factor (int): The scale_factor of `ConvTranspose2d` in
+            `DecoderConvModule`. Defaults to 2.
+        num_conv_blocks (int): The number of convolution blocks in
+            `DecoderConvModule`. Defaults to 1.
+        norm_cfg (dict): Normalization config. Defaults to dict(type='SyncBN').
+        act_cfg (dict): Activation config. Defaults to dict(type='ReLU6').
+        last_act (bool): Whether apply the last activation in
+            `DecoderConvModule`. Defaults to False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+    """
 
     def __init__(
         self,
-        feature_dim,
-        upsample_ratio,
-        mid_channels=0,
-        kernel_size=4,
-        scale_factor=2,
-        num_conv_blocks=1,
-        norm_cfg=dict(type='SyncBN'),
-        act_cfg=dict(type='ReLU6'),
-        last_act=False,
+        feature_dim: int,
+        upsample_ratio: int,
+        mid_channels: int = 0,
+        kernel_size: int = 4,
+        scale_factor: int = 2,
+        num_conv_blocks: int = 1,
+        norm_cfg: dict = dict(type='SyncBN'),
+        act_cfg: dict = dict(type='ReLU6'),
+        last_act: bool = False,
         init_cfg: Optional[dict] = [
             dict(type='Kaiming', layer=['Conv2d', 'ConvTranspose2d']),
             dict(type='TruncNormal', std=0.02, layer=['Linear']),
