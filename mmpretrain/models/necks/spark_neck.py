@@ -97,11 +97,11 @@ class DecoderConvModule(BaseModule):
 @MODELS.register_module()
 class SparKLightDecoder(BaseModule):
     """The decoder for SparK, which upsamples the feature maps.
-    
+
     Args:
         feature_dim (int): The dimension of feature map.
         upsample_ratio (int): The ratio of upsample, equal to downsample_raito
-            of the algotrithm.
+            of the algorithm.
         mid_channels (int): The middle channel of `DecoderConvModule`. Defaults
             to 0.
         kernel_size (int): The kernel size of `ConvTranspose2d` in
