@@ -105,6 +105,7 @@ class SparseResNet(ResNet):
             drop_path_rate=drop_path_rate,
             **kwargs)
         norm_type = norm_cfg['type']
+        enable_sync_bn = False
         if re.search('Sync', norm_type) is not None:
             enable_sync_bn = True
         self.dense_model_to_sparse(m=self, enable_sync_bn=enable_sync_bn)

@@ -26,7 +26,8 @@ from .position_encoding import (ConditionalPositionEncoding,
 from .res_layer_extra_norm import ResLayerExtraNorm
 from .se_layer import SELayer
 from .sparse_modules import (SparseAvgPooling, SparseConv2d, SparseHelper,
-                             SparseMaxPooling)
+                             SparseMaxPooling, SparseBatchNorm2d,
+                             SparseLayerNorm2D, SparseSyncBatchNorm2d)
 from .swiglu_ffn import SwiGLUFFN, SwiGLUFFNFused
 from .vector_quantizer import NormEMAVectorQuantizer
 

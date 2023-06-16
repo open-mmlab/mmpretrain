@@ -3,11 +3,11 @@ from typing import Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_norm_layer
 from mmengine.model.weight_init import trunc_normal_
 
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
+from ..utils.norm import build_norm_layer
 from ..utils.sparse_modules import SparseHelper
 from .base import BaseSelfSupervisor
 
@@ -61,7 +61,7 @@ class SparK(BaseSelfSupervisor):
         proj_out_dim = self.neck.feature_dim
         for i in range(len(self.backbone.out_indices)):
             enc_dec_norm = build_norm_layer(self.enc_dec_norm_cfg,
-                                            enc_dec_norm_dim)[1]
+                                            enc_dec_norm_dim)
             self.enc_dec_norms.append(enc_dec_norm)
 
             kernel_size = 1 if i <= 0 else 3
