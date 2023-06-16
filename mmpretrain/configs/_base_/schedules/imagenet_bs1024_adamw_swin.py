@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# This is a BETA new format config file, and the usage may change recently.
 from mmengine.optim import CosineAnnealingLR, LinearLR
 from torch.optim import AdamW
 
