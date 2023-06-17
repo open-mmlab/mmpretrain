@@ -19,6 +19,7 @@ class FlamingoLMAdapter:
         vis_hidden_size: int,
         cross_attn_every_n_layers: int,
         use_media_placement_augmentation: bool,
+        only_attend_previous: bool = False,
     ):
         """Initialize Flamingo by adding a new gated cross attn to the decoder.
 
@@ -48,6 +49,7 @@ class FlamingoLMAdapter:
             ]))
         base.use_media_placement_augmentation = use_media_placement_augmentation  # noqa
         base.initialized_flamingo = True
+        base.only_attend_previous = only_attend_previous
         return base
 
     def set_decoder_layers_attr_name(self, decoder_layers_attr_name):
@@ -67,8 +69,12 @@ class FlamingoLMAdapter:
         function."""
         input_ids = kwargs['input_ids'] if 'input_ids' in kwargs else input[0]
         media_locations = input_ids == self.media_token_id
-        attend_previous = ((random.random() < 0.5)
-                           if self.use_media_placement_augmentation else False)
+        if self.only_attend_previous:
+            attend_previous = True
+        elif self.use_media_placement_augmentation:
+            attend_previous = (random.random() < 0.5)
+        else:
+            attend_previous = False
 
         for layer in self.get_decoder().layers:
             layer.condition_media_locations(media_locations)

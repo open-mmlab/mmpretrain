@@ -144,6 +144,7 @@ Multi-Modality Algorithms
    Flamingo
    OFA
    MiniGPT4
+   Otter
 
 .. module:: mmpretrain.models.backbones
 
