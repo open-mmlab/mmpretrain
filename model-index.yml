@@ -80,3 +80,4 @@ Import:
   - configs/hivit/metafile.yml
   - configs/minigpt4/metafile.yml
   - configs/llava/metafile.yml
+  - configs/otter/metafile.yml

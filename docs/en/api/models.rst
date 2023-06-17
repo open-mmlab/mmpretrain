@@ -145,6 +145,7 @@ Multi-Modality Algorithms
    OFA
    MiniGPT4
    Llava
+   Otter
 
 .. module:: mmpretrain.models.backbones
 
