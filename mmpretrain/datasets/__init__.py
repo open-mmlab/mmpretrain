@@ -42,13 +42,17 @@ if WITH_MULTIMODAL:
     from .flickr30k_retrieval import Flickr30kRetrieval
     from .gqa_dataset import GQA
     from .nocaps import NoCaps
+    from .ocr_vqa import OCRVQA
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .textvqa import TextVQA
     from .visual_genome import VisualGenomeQA
+    from .vizwiz import VizWiz
+    from .vsr import VSR
 
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'Flickr30kCaption', 'Flickr30kRetrieval',
-        'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA'
+        'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA',
+        'VSR', 'VizWiz', 'OCRVQA'
     ])

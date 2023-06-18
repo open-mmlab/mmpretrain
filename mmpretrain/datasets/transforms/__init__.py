@@ -13,8 +13,9 @@ from .formatting import (Collect, NumpyToPIL, PackInputs, PackMultiTaskInputs,
 from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
                          ColorJitter, EfficientNetCenterCrop,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
-                         RandomErasing, RandomResizedCrop, RandomTranslatePad,
-                         ResizeEdge, SimMIMMaskGenerator)
+                         RandomErasing, RandomResizedCrop,
+                         RandomResizedCropAndInterpolationWithTwoPic,
+                         RandomTranslatePad, ResizeEdge, SimMIMMaskGenerator)
 from .wrappers import ApplyToList, MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
@@ -32,5 +33,6 @@ __all__ = [
     'PackMultiTaskInputs', 'GaussianBlur', 'BEiTMaskGenerator',
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
     'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
-    'ApplyToList', 'CleanCaption', 'RandomTranslatePad'
+    'ApplyToList', 'CleanCaption', 'RandomTranslatePad',
+    'RandomResizedCropAndInterpolationWithTwoPic'
 ]

@@ -78,3 +78,6 @@ Import:
   - configs/chinese_clip/metafile.yml
   - configs/itpn/metafile.yml
   - configs/hivit/metafile.yml
+  - configs/minigpt4/metafile.yml
+  - configs/llava/metafile.yml
+  - configs/otter/metafile.yml

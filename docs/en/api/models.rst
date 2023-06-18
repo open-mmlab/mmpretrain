@@ -143,6 +143,9 @@ Multi-Modality Algorithms
    BlipVQA
    Flamingo
    OFA
+   MiniGPT4
+   Llava
+   Otter
 
 .. module:: mmpretrain.models.backbones
 
