@@ -8,7 +8,6 @@ from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
 
-from mmpretrain.datasets import LoadImageFromFile
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
 from .base import BaseInferencer, InputType, ModelType
@@ -111,10 +110,11 @@ class ImageClassificationInferencer(BaseInferencer):
 
     def _init_pipeline(self, cfg: Config) -> Callable:
         test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
-        if (test_pipeline_cfg[0]['type'] == 'LoadImageFromFile'
-                or test_pipeline_cfg[0]['type'] is LoadImageFromFile):
-            # Image loading is finished in `self.preprocess`.
-            test_pipeline_cfg = test_pipeline_cfg[1:]
+        from mmpretrain.datasets import remove_transform
+
+        # Image loading is finished in `self.preprocess`.
+        test_pipeline_cfg = remove_transform(test_pipeline_cfg,
+                                             'LoadImageFromFile')
         test_pipeline = Compose(
             [TRANSFORMS.build(t) for t in test_pipeline_cfg])
         return test_pipeline
