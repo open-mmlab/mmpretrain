@@ -1,0 +1,43 @@
+Collections:
+  - Name: Otter
+    Metadata:
+      Architecture:
+        - Transformer
+        - Gated Cross-Attention Dense
+    Paper:
+      Title: 'Otter: A Multi-Modal Model with In-Context Instruction Tuning'
+      URL: https://arxiv.org/abs/2305.03726
+    README: configs/otter/README.md
+
+Models:
+  - Name: otter-9b_3rdparty_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Otter
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics:
+          BLEU-4: null
+          CIDER: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth
+    Config: configs/otter/otter-9b_caption.py
+    Converted From:
+      Weights: https://huggingface.co/luodian/otter-9b-hf
+      Code: https://github.com/Luodian/Otter/tree/main
+  - Name: otter-9b_3rdparty_vqa
+    Metadata:
+      FLOPs: null
+      Parameters: 8220452880
+    In Collection: Otter
+    Results:
+      - Task: Visual Question Answering
+        Dataset: VQAv2
+        Metrics:
+          Accuracy: null
+    Weights: https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth
+    Config: configs/otter/otter-9b_vqa.py
+    Converted From:
+      Weights: https://huggingface.co/luodian/otter-9b-hf
+      Code: https://github.com/Luodian/Otter/tree/main

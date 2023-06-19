@@ -40,14 +40,16 @@ if WITH_MULTIMODAL:
     from .flamingo import FlamingoEvalCOCOCaption, FlamingoEvalCOCOVQA
     from .gqa_dataset import GQA
     from .nocaps import NoCaps
+    from .ocr_vqa import OCRVQA
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .textvqa import TextVQA
     from .visual_genome import VisualGenomeQA
+    from .vizwiz import VizWiz
+    from .vsr import VSR
 
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
-        'FlamingoEvalCOCOVQA', 'RefCOCO', 'VisualGenomeQA', 'ScienceQA',
-        'NoCaps'
-        'GQA', 'TextVQA'
+        'FlamingoEvalCOCOVQA', 'OCRVQA', 'RefCOCO', 'VisualGenomeQA',
+        'ScienceQA', 'NoCaps', 'GQA', 'TextVQA', 'VSR', 'VizWiz'
     ])

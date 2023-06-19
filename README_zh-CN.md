@@ -251,6 +251,9 @@ mim install -e ".[multimodal]"
         <li><a href="configs/ofa">OFA (CoRR'2022)</a></li>
         <li><a href="configs/flamingo">Flamingo (NeurIPS'2022)</a></li>
         <li><a href="configs/chinese_clip">Chinese CLIP (arxiv'2022)</a></li>
+        <li><a href="configs/minigpt4">MiniGPT-4 (arxiv'2023)</a></li>
+        <li><a href="configs/llava">LLaVA (arxiv'2023)</a></li>
+        <li><a href="configs/otter">Otter (arxiv'2023)</a></li>
         </ul>
       </td>
       <td>

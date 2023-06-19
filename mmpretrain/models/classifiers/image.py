@@ -78,6 +78,12 @@ class ImageClassifier(BaseClassifier):
         self.neck = neck
         self.head = head
 
+        # If the model needs to load pretrain weights from a third party,
+        # the key can be modified with this hook
+        if hasattr(self.backbone, '_checkpoint_filter'):
+            self._register_load_state_dict_pre_hook(
+                self.backbone._checkpoint_filter)
+
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: Optional[List[DataSample]] = None,
