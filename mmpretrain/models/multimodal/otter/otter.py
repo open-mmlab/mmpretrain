@@ -10,13 +10,15 @@ from ..flamingo.flamingo import ExtendModule, Flamingo, PerceiverResampler
 
 @MODELS.register_module()
 class Otter(Flamingo):
-    """The Open Flamingo model for multiple tasks.
+    """The Otter model for multiple tasks.
 
     Args:
         vision_encoder (dict): The config of the vision encoder.
         lang_encoder (dict): The config of the language encoder.
         tokenizer (dict): The tokenizer to encode the text.
         task (int): The task to perform prediction.
+        zeroshot_prompt (str): Prompt used for zero-shot inference.
+            Defaults to an.
         shot_prompt_tmpl (str): Prompt used for few-shot inference.
             Defaults to '<image>User:Please describe the image.
             GPT:<answer>{caption}<|endofchunk|>'.
@@ -69,7 +71,7 @@ class Otter(Flamingo):
 
         # init tokenizer
         self.tokenizer = TOKENIZER.build(tokenizer)
-        # add Flamingo special tokens to the tokenizer
+        # add Otter special tokens to the tokenizer
         self.tokenizer.add_special_tokens({
             'additional_special_tokens':
             ['<|endofchunk|>', '<image>', '<answer>']

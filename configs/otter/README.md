@@ -22,9 +22,10 @@ Large language models (LLMs) have demonstrated significant universal capabilitie
 import torch
 from mmpretrain import get_model, inference_model
 
-model = get_model('otter-9b_3rdparty_caption', pretrained=True, device='cuda')
+model = get_model('otter-9b_3rdparty_caption', pretrained=True, device='cuda', generation_cfg=dict(max_new_tokens=50))
 out = inference_model(model, 'demo/cat-dog.png')
 print(out)
+# {'pred_caption': 'The image features two adorable small puppies sitting next to each other on the grass. One puppy is brown and white, while the other is tan and white. They appear to be relaxing outdoors, enjoying each other'}
 ```
 
 **Test Command**
@@ -43,17 +44,17 @@ python tools/test.py configs/otter/otter-9b_caption.py https://download.openmmla
 
 ### Image Caption on COCO
 
-| Model                         |   Pretrain   | Params (M) |  BLEU-4  |  CIDER   |            Config             |                                                 Download                                                 |
-| :---------------------------- | :----------: | :--------: | :------: | :------: | :---------------------------: | :------------------------------------------------------------------------------------------------------: |
-| `otter-9b_3rdparty_caption`\* | From scratch |  8220.45   | Upcoming | Upcoming | [config](otter-9b_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
+| Model                         | Params (M) |  BLEU-4  |  CIDER   |            Config             |                                                 Download                                                 |
+| :---------------------------- | :--------: | :------: | :------: | :---------------------------: | :------------------------------------------------------------------------------------------------------: |
+| `otter-9b_3rdparty_caption`\* |  8220.45   | Upcoming | Upcoming | [config](otter-9b_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ### Visual Question Answering on VQAv2
 
-| Model                     |   Pretrain   | Params (M) | Accuracy |          Config           |                                                 Download                                                 |
-| :------------------------ | :----------: | :--------: | :------: | :-----------------------: | :------------------------------------------------------------------------------------------------------: |
-| `otter-9b_3rdparty_vqa`\* | From scratch |  8220.45   | Upcoming | [config](otter-9b_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
+| Model                     | Params (M) | Accuracy |          Config           |                                                 Download                                                 |
+| :------------------------ | :--------: | :------: | :-----------------------: | :------------------------------------------------------------------------------------------------------: |
+| `otter-9b_3rdparty_vqa`\* |  8220.45   | Upcoming | [config](otter-9b_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
 

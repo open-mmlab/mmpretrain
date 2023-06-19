@@ -65,14 +65,10 @@ val_dataloader = dict(
     batch_size=8,
     num_workers=8,
     dataset=dict(
-        type='FlamingoEvalCOCOCaption',
+        type='COCOCaption',
         data_root='data/coco',
-        ann_file='annotations/captions_train2014.json',
-        data_prefix=dict(img_path='train2014'),
+        ann_file='annotations/coco_karpathy_val.json',
         pipeline=test_pipeline,
-        num_shots=0,
-        num_support_examples=2048,
-        num_query_examples=5000,
     ),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
@@ -80,7 +76,7 @@ val_dataloader = dict(
 
 val_evaluator = dict(
     type='COCOCaption',
-    ann_file='data/coco/annotations/captions_train2014.json')
+    ann_file='data/coco/annotations/coco_karpathy_val_gt.json')
 
 # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader
