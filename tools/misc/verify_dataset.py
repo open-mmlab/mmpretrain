@@ -52,9 +52,12 @@ class DatasetValidator():
     def __init__(self, dataset_cfg, log_file_path):
         super(DatasetValidator, self).__init__()
         # keep only LoadImageFromFile pipeline
-        assert dataset_cfg.pipeline[0]['type'] == 'LoadImageFromFile', (
-            'This tool is only for datasets needs to load image from files.')
-        self.pipeline = TRANSFORMS.build(dataset_cfg.pipeline[0])
+        from mmpretrain.datasets import get_transform_idx
+
+        load_idx = get_transform_idx(dataset_cfg.pipeline, 'LoadImageFromFile')
+        assert load_idx >= 0, \
+            'This tool is only for datasets needs to load image from files.'
+        self.pipeline = TRANSFORMS.build(dataset_cfg.pipeline[load_idx])
         dataset_cfg.pipeline = []
         dataset = build_dataset(dataset_cfg)
 

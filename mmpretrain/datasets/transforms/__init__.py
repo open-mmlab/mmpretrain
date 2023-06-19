@@ -16,6 +16,7 @@ from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
                          RandomErasing, RandomResizedCrop,
                          RandomResizedCropAndInterpolationWithTwoPic,
                          RandomTranslatePad, ResizeEdge, SimMIMMaskGenerator)
+from .utils import get_transform_idx, remove_transform
 from .wrappers import ApplyToList, MultiView
 
 for t in (CenterCrop, LoadImageFromFile, Normalize, RandomFlip,
@@ -34,5 +35,6 @@ __all__ = [
     'SimMIMMaskGenerator', 'CenterCrop', 'LoadImageFromFile', 'Normalize',
     'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
     'ApplyToList', 'CleanCaption', 'RandomTranslatePad',
-    'RandomResizedCropAndInterpolationWithTwoPic'
+    'RandomResizedCropAndInterpolationWithTwoPic', 'get_transform_idx',
+    'remove_transform'
 ]
