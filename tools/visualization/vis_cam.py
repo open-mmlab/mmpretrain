@@ -183,7 +183,7 @@ def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
         mmcv.imshow(visualization_img, win_name=title)
 
 
-def get_default_traget_layers(model, args):
+def get_default_target_layers(model, args):
     """get default target layers from given model, here choose nrom type layer
     as default target layer."""
     norm_layers = [
@@ -240,7 +240,7 @@ def main():
             get_layer(layer, model) for layer in args.target_layers
         ]
     else:
-        target_layers = get_default_traget_layers(model, args)
+        target_layers = get_default_target_layers(model, args)
 
     # init a cam grad calculator
     use_cuda = ('cuda' in args.device)
