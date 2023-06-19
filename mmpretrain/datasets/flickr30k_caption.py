@@ -10,7 +10,9 @@ from mmpretrain.registry import DATASETS
 
 @DATASETS.register_module()
 class Flickr30kCaption(BaseDataset):
-    """Flickr30k Caption dataset.
+    """Flickr30k Caption dataset. To generate coco-style GT annotation for
+    evaluation, refer to refer
+    tools/dataset_converters/convert_flickr30k_ann.py.
 
     Args:
         data_root (str): The root directory for ``data_prefix``, ``ann_file``

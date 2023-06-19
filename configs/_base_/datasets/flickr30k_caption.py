@@ -63,6 +63,7 @@ val_dataloader = dict(
     persistent_workers=True,
 )
 
+# refer tools/dataset_converters/convert_flickr30k_ann.py
 val_evaluator = dict(
     type='COCOCaption',
     ann_file='data/flickr30k_val_gt.json',
@@ -84,6 +85,7 @@ test_dataloader = dict(
     persistent_workers=True,
 )
 
+# refer tools/dataset_converters/convert_flickr30k_ann.py
 test_evaluator = dict(
     type='COCOCaption',
     ann_file='data/flickr30k_test_gt.json',
