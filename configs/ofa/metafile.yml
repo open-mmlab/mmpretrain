@@ -18,6 +18,7 @@ Collections:
         - YFCC100M
         - ImageNet-21K
         - Pile
+      Training Resources: 8x A100 GPUs
     Paper:
       Title: 'OFA: Unifying Architectures, Tasks, and Modalities Through a Simple
         Sequence-to-Sequence Learning Framework'
