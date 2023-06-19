@@ -34,6 +34,7 @@ from mmpretrain import get_model, inference_model
 model = get_model('llava-7b-v1_caption', pretrained='MERGED_CHECKPOINT_PATH', device='cuda')
 out = inference_model(model, 'demo/cat-dog.png')
 print(out)
+# {'pred_caption': 'In the image, there are two cats sitting on a blanket.'}
 ```
 
 **Test Command**

@@ -129,8 +129,9 @@ class Llava(BaseModel):
         mode: str = 'loss',
     ):
         """The unified entry for a forward process in both training and test.
-        The method should accept only one mode "loss":
 
+        - "predict": Forward and return the predictions, which are fully
+          processed to a list of :obj:`DataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
 
@@ -150,10 +151,10 @@ class Llava(BaseModel):
             - If ``mode="loss"``, return a dict of tensor.
         """
 
-        if mode == 'loss':
-            return self.loss(images, data_samples)
-        elif mode == 'predict':
+        if mode == 'predict':
             return self.predict(images, data_samples)
+        elif mode == 'loss':
+            raise NotImplementedError
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
