@@ -14,9 +14,7 @@ test_pipeline = [
     dict(type='PackInputs', meta_keys=['image_id']),
 ]
 
-val_dataloader = dict(
-    batch_size=1,
-    dataset=dict(data_prefix=dict(img_path='images'), pipeline=test_pipeline))
+val_dataloader = dict(batch_size=1, dataset=dict(pipeline=test_pipeline))
 test_dataloader = val_dataloader
 
 # model settings

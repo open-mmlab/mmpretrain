@@ -44,7 +44,7 @@ train_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        data_prefix='images/train2014',
+        data_prefix='train2014',
         question_file=
         'annotations/okvqa_OpenEnded_mscoco_train2014_questions.json',
         ann_file='annotations/okvqa_mscoco_train2014_annotations.json',
@@ -60,7 +60,7 @@ val_dataloader = dict(
     dataset=dict(
         type='COCOVQA',
         data_root='data/coco',
-        data_prefix='images/val2014',
+        data_prefix='val2014',
         question_file=
         'annotations/okvqa_OpenEnded_mscoco_val2014_questions.json',
         ann_file='annotations/okvqa_mscoco_val2014_annotations.json',
