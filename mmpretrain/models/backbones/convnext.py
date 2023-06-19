@@ -366,3 +366,47 @@ class ConvNeXt(BaseBackbone):
     def train(self, mode=True):
         super(ConvNeXt, self).train(mode)
         self._freeze_stages()
+
+    def get_layer_depth(self, param_name: str, prefix: str = ''):
+        """Get the layer-wise depth of a parameter.
+
+        Args:
+            param_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The layer-wise depth and the num of layers.
+        """
+
+        max_layer_id = 12 if self.depths[-2] > 9 else 6
+
+        if not param_name.startswith(prefix):
+            # For subsequent module like head
+            return max_layer_id + 1, max_layer_id + 2
+
+        param_name = param_name[len(prefix):]
+        if param_name.startswith('downsample_layers'):
+            stage_id = int(param_name.split('.')[1])
+            if stage_id == 0:
+                layer_id = 0
+            elif stage_id == 1 or stage_id == 2:
+                layer_id = stage_id + 1
+            else:  # stage_id == 3:
+                layer_id = max_layer_id
+
+        elif param_name.startswith('stages'):
+            stage_id = int(param_name.split('.')[1])
+            block_id = int(param_name.split('.')[2])
+            if stage_id == 0 or stage_id == 1:
+                layer_id = stage_id + 1
+            elif stage_id == 2:
+                layer_id = 3 + block_id // 3
+            else:  # stage_id == 3:
+                layer_id = max_layer_id
+
+        # final norm layer
+        else:
+            layer_id = max_layer_id + 1
+
+        return layer_id, max_layer_id + 2
