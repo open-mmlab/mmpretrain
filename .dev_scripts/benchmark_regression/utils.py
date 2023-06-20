@@ -6,6 +6,9 @@ METRICS_MAP = {
     'Top 1 Accuracy': 'accuracy/top1',
     'Top 5 Accuracy': 'accuracy/top5',
     'Recall@1': 'retrieval/Recall@1',
+    'Recall@5': 'retrieval/Recall@5',
+    'BLEU-4': 'Bleu_4',
+    'CIDER': 'CIDEr',
 }
 
 
