@@ -1,3 +1,0 @@
-vision_transformer/vit-base-p16_32xb128-mae_in1k.py
-resnet/resnet50_8xb256-rsb-a2-300e_in1k.py
-convnext/convnext-tiny_32xb128_in1k.py

@@ -3,7 +3,6 @@ Collections:
     Metadata:
       Architecture:
         - Global Response Normalization
-      Training Resources: 8x A100 GPUs
     Paper:
       Title: Co-designing and Scaling ConvNets with Masked Autoencoders
       URL: http://arxiv.org/abs/2301.00808

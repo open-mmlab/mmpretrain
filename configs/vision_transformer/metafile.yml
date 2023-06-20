@@ -11,7 +11,6 @@ Collections:
         - Multi-Head Attention
         - Scaled Dot-Product Attention
         - Tanh Activation
-      Training Resources: 8x A100 GPUs
     Paper:
       Title: 'An Image is Worth 16x16 Words: Transformers for Image Recognition at
         Scale'
