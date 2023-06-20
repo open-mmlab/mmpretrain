@@ -16,6 +16,7 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
+
 from .utils import METRICS_MAP, MMCLS_ROOT
 
 # Avoid to import MMPretrain to accelerate speed to show summary
