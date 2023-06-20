@@ -401,21 +401,20 @@ class VisionTransformer(BaseBackbone):
                 f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
                 f'to {self.pos_embed.shape}.')
 
-            if not self.with_cls_token and ckpt_pos_embed_shape[
-                    1] == self.pos_embed.shape[1] + 1:
-                state_dict[name] = state_dict[name][:, 1:]
-            else:
-                ckpt_pos_embed_shape = to_2tuple(
-                    int(
-                        np.sqrt(ckpt_pos_embed_shape[1] -
-                                self.num_extra_tokens)))
-                pos_embed_shape = self.patch_embed.init_out_size
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
+            pos_embed_shape = self.patch_embed.init_out_size
 
-                state_dict[name] = resize_pos_embed(state_dict[name],
-                                                    ckpt_pos_embed_shape,
-                                                    pos_embed_shape,
-                                                    self.interpolate_mode,
-                                                    self.num_extra_tokens)
+            if (not self.with_cls_token and ckpt_pos_embed_shape[1]
+                    == self.pos_embed.shape[1] + 1):
+                # Remove cls token from state dict if it's not used.
+                state_dict[name] = state_dict[name][:, 1:]
+
+            state_dict[name] = resize_pos_embed(state_dict[name],
+                                                ckpt_pos_embed_shape,
+                                                pos_embed_shape,
+                                                self.interpolate_mode,
+                                                self.num_extra_tokens)
 
     @staticmethod
     def resize_pos_embed(*args, **kwargs):
