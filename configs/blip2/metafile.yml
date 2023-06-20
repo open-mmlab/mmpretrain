@@ -8,6 +8,7 @@ Collections:
         - CC12M
         - SBU
         - LAION-400M
+      Training Resources: 8x A100 GPUs
       Architecture:
         - Transformer
         - Q-Former

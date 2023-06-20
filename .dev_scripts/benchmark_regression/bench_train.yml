@@ -1,10 +1,7 @@
 - Name: mobilenet-v2_8xb32_in1k
   Cycle: month
 
-- Name: resnet50_8xb32_in1k
-  Cycle: month
-
-- Name: seresnet50_8xb32_in1k
+- Name: resnet50_8xb256-rsb-a1-600e_in1k
   Cycle: month
 
 - Name: swin-small_16xb64_in1k
@@ -12,6 +9,12 @@
 
 - Name: vit-base-p16_32xb128-mae_in1k
   Cycle: month
+
+- Name: seresnet50_8xb32_in1k
+  Cycle: quarter
+
+- Name: resnet50_8xb32_in1k
+  Cycle: quarter
 
 - Name: resnet50_8xb256-rsb-a1-600e_in1k
   Cycle: quarter
