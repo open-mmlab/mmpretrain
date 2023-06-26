@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .ANLS import ANLS
 from .caption import COCOCaption
 from .gqa import GQAAcc
 from .multi_label import AveragePrecision, MultiLabelMetric
@@ -17,5 +18,5 @@ __all__ = [
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
     'ConfusionMatrix', 'RetrievalRecall', 'VQAAcc', 'ReportVQA', 'COCOCaption',
     'VisualGroundingMetric', 'ScienceQAMetric', 'GQAAcc', 'NocapsSave',
-    'RetrievalAveragePrecision', 'ShapeBiasMetric'
+    'RetrievalAveragePrecision', 'ShapeBiasMetric', 'ANLS'
 ]
