@@ -49,10 +49,12 @@ if WITH_MULTIMODAL:
     from .visual_genome import VisualGenomeQA
     from .vizwiz import VizWiz
     from .vsr import VSR
+    from .chartqa import ChartQA
+    
 
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'Flickr30kCaption', 'Flickr30kRetrieval',
         'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA',
-        'VSR', 'VizWiz', 'OCRVQA'
+        'VSR', 'VizWiz', 'OCRVQA', 'ChartQA'
     ])
