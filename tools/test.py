@@ -7,6 +7,7 @@ from copy import deepcopy
 import mmengine
 from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.evaluator import DumpResults
+from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
 
 
@@ -169,7 +170,13 @@ def main():
     cfg = merge_args(cfg, args)
 
     # build the runner from config
-    runner = Runner.from_cfg(cfg)
+    if 'runner_type' not in cfg:
+        # build the default runner
+        runner = Runner.from_cfg(cfg)
+    else:
+        # build customized runner from the registry
+        # if 'runner_type' is set in the cfg
+        runner = RUNNERS.build(cfg)
 
     if args.out and args.out_item in ['pred', None]:
         runner.test_evaluator.metrics.append(
