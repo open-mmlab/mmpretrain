@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .caption import COCOCaption
+from .chartqa import ChartQARelaxACC
 from .gqa import GQAAcc
 from .multi_label import AveragePrecision, MultiLabelMetric
 from .multi_task import MultiTasksMetric
@@ -10,7 +11,6 @@ from .single_label import Accuracy, ConfusionMatrix, SingleLabelMetric
 from .visual_grounding_eval import VisualGroundingMetric
 from .voc_multi_label import VOCAveragePrecision, VOCMultiLabelMetric
 from .vqa import ReportVQA, VQAAcc
-from .chartqa import ChartQARelaxACC
 
 __all__ = [
     'Accuracy', 'SingleLabelMetric', 'MultiLabelMetric', 'AveragePrecision',

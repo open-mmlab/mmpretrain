@@ -34,6 +34,7 @@ __all__ = [
 ]
 
 if WITH_MULTIMODAL:
+    from .chartqa import ChartQA
     from .coco_caption import COCOCaption
     from .coco_retrieval import COCORetrieval
     from .coco_vqa import COCOVQA
@@ -49,8 +50,6 @@ if WITH_MULTIMODAL:
     from .visual_genome import VisualGenomeQA
     from .vizwiz import VizWiz
     from .vsr import VSR
-    from .chartqa import ChartQA
-    
 
     __all__.extend([
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
