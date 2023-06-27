@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .caption import COCOCaption
+from .chartqa import ChartQARelaxACC
 from .gqa import GQAAcc
 from .multi_label import AveragePrecision, MultiLabelMetric
 from .multi_task import MultiTasksMetric
@@ -16,5 +17,5 @@ __all__ = [
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
     'ConfusionMatrix', 'RetrievalRecall', 'VQAAcc', 'ReportVQA', 'COCOCaption',
     'VisualGroundingMetric', 'ScienceQAMetric', 'GQAAcc', 'NocapsSave',
-    'RetrievalAveragePrecision'
+    'RetrievalAveragePrecision', 'ChartQARelaxACC'
 ]

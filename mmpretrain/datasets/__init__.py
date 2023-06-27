@@ -34,6 +34,7 @@ __all__ = [
 ]
 
 if WITH_MULTIMODAL:
+    from .chartqa import ChartQA
     from .coco_caption import COCOCaption
     from .coco_retrieval import COCORetrieval
     from .coco_vqa import COCOVQA
@@ -54,5 +55,5 @@ if WITH_MULTIMODAL:
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'Flickr30kCaption', 'Flickr30kRetrieval',
         'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA',
-        'VSR', 'VizWiz', 'OCRVQA'
+        'VSR', 'VizWiz', 'OCRVQA', 'ChartQA'
     ])
