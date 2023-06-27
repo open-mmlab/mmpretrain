@@ -130,8 +130,7 @@ strategy = dict(
         overlap_comm=True,
         contiguous_gradients=True,
         cpu_offload=False,
-    )
-)
+    ))
 
 # runner which supports strategies
 runner_type = 'FlexibleRunner'
