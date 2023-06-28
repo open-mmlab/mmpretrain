@@ -44,14 +44,18 @@ class SparseGTMetrics(BaseMetric):
         """
         for sample in data_samples:
             answer_options = sample.get('answer_options')
-
+            
+            G = torch.Generator()
+            G.manual_seed(0)
+            rank = torch.randperm(len(answer_options), generator=G)
+   
             pred_answer = sample.get('pred_answer')
+            
             if pred_answer in answer_options:
                 answer_index = answer_options.index(pred_answer)
-                rank = len(answer_options) - torch.zeros(len(answer_options))
                 rank[answer_index] = 1
-            else:
-                rank = torch.randperm(len(answer_options))
+    
+          
 
             gt_index = sample.get('gt_answer_index')
             gt_rank = rank[gt_index]
