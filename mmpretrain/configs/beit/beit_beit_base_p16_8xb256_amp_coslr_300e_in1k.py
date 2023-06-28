@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
-if '_base_':
+from mmengine.config import read_base
+
+with read_base():
     from .._base_.default_runtime import *
 
 from mmengine.dataset import DefaultSampler, default_collate
