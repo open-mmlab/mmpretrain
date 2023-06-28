@@ -3,6 +3,7 @@ from typing import List
 
 import mmengine
 from mmengine.dataset import BaseDataset
+from mmengine.fileio import get_file_backend
 
 from mmpretrain.registry import DATASETS
 
@@ -73,11 +74,22 @@ class VisDial(BaseDataset):
                 ]
 
                 data_info = dict(image_id=image_id)
+
+                img_prefix = self.data_prefix['img_path']
+                file_backend = get_file_backend(img_prefix)
+
+                data_info['img_path'] = file_backend.join_path(
+                    img_prefix,
+                    img_prefix.split('/')[-1] + '_' + str(image_id).zfill(12) +
+                    '.jpg')
+
                 data_info['dialog_history'] = historys[dialog_id]
 
                 data_info['question'] = questions[question_id]
                 data_info['answer'] = answers[answer_id]
                 data_info['answer_options'] = answer_options
+                data_info['gt_answer_index'] = data_info[
+                    'answer_options'].index(data_info['answer'])
 
                 data_list.append(data_info)
 
