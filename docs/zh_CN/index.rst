@@ -90,6 +90,7 @@ MMPretrain 上手路线
    useful_tools/log_result_analysis.md
    useful_tools/complexity_analysis.md
    useful_tools/confusion_matrix.md
+   useful_tools/shape_bias.md
 
 .. toctree::
    :maxdepth: 1
