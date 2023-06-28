@@ -1,8 +1,7 @@
-_base_ = ['vit-huge-p14_8xb128-coslr-50e_in1k.py']
-
+_base_ = ['./vit-huge-p14_8xb128-coslr-50e_in1k.py']
 
 # optimizer wrapper
-optim_wrapper = dict(type='DeepSpeedOptimWrapper',)
+optim_wrapper = dict(type='DeepSpeedOptimWrapper', )
 
 # training strategy
 # Deepspeed with ZeRO3 + fp16

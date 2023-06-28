@@ -1,4 +1,4 @@
-_base_ = ['vit-large-p16_8xb128-coslr-50e_in1k.py']
+_base_ = ['./vit-large-p16_8xb128-coslr-50e_in1k.py']
 
 # optimizer wrapper
 optim_wrapper = dict(type='DeepSpeedOptimWrapper')
