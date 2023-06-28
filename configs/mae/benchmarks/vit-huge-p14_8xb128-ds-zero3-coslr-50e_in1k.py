@@ -1,8 +1,7 @@
 _base_ = [
     '../../_base_/datasets/imagenet_bs64_swin_224.py',
     '../../_base_/schedules/imagenet_bs1024_adamw_swin.py',
-    '../../_base_/default_runtime.py',
-    'vit-huge-p14_8xb128-coslr-50e_in1k.py'
+    '../../_base_/default_runtime.py', 'vit-huge-p14_8xb128-coslr-50e_in1k.py'
 ]
 
 # optimizer wrapper
