@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from pathlib import Path
 from typing import Callable, List, Optional, Union
-
 import numpy as np
 import torch
 from mmcv.image import imread
@@ -133,7 +132,6 @@ class ImageClassificationInferencer(BaseInferencer):
         return test_pipeline
 
     def preprocess(self, inputs: List[InputType], batch_size: int = 1):
-
         def load_image(input_):
             img = imread(input_)
             if img is None:
@@ -147,6 +145,7 @@ class ImageClassificationInferencer(BaseInferencer):
         pipeline = Compose([load_image, self.pipeline])
 
         chunked_data = self._get_chunk_data(map(pipeline, inputs), batch_size)
+
         yield from map(self.collate_fn, chunked_data)
 
     def visualize(self,

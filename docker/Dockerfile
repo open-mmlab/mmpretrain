@@ -24,3 +24,4 @@ RUN conda clean --all
 RUN git clone https://github.com/open-mmlab/mmpretrain.git
 WORKDIR ./mmpretrain
 RUN mim install --no-cache-dir -e .
+RUN pip install future tensorboard

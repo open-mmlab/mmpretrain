@@ -44,7 +44,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=248,
+        scale=256,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
@@ -73,7 +73,7 @@ val_dataloader = dict(
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
-val_evaluator = dict(type='Accuracy', topk=(1, 5))
+val_evaluator = dict(type='Accuracy', topk=(1,))
 
 # If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader

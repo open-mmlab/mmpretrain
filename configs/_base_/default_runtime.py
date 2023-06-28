@@ -13,7 +13,7 @@ default_hooks = dict(
     param_scheduler=dict(type='ParamSchedulerHook'),
 
     # save checkpoint per epoch.
-    checkpoint=dict(type='CheckpointHook', interval=1),
+    checkpoint=dict(type='CheckpointHook', interval=100),
 
     # set sampler seed in distributed evrionment.
     sampler_seed=dict(type='DistSamplerSeedHook'),
@@ -35,7 +35,7 @@ env_cfg = dict(
 )
 
 # set visualizer
-vis_backends = [dict(type='LocalVisBackend')]
+vis_backends = [dict(type='LocalVisBackend'), dict(type='TensorboardVisBackend'),]
 visualizer = dict(type='UniversalVisualizer', vis_backends=vis_backends)
 
 # set log level

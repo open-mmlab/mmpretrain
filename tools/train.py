@@ -8,6 +8,8 @@ from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.runner import Runner
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
+import sys
+sys.path.insert(0, '/data/mmpretrain')
 
 
 def parse_args():

@@ -34,7 +34,7 @@ class AttentionWithBias(BaseModule):
                  num_heads=8,
                  key_dim=32,
                  attn_ratio=4.,
-                 resolution=7,
+                 resolution=4,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         self.num_heads = num_heads
@@ -82,10 +82,14 @@ class AttentionWithBias(BaseModule):
         qkv = self.qkv(x)
         qkv = qkv.reshape(B, N, self.num_heads, -1).permute(0, 2, 1, 3)
         q, k, v = qkv.split([self.key_dim, self.key_dim, self.d], dim=-1)
-
-        attn = ((q @ k.transpose(-2, -1)) * self.scale +
-                (self.attention_biases[:, self.attention_bias_idxs]
-                 if self.training else self.ab))
+        a = q @ k.transpose(-2, -1)
+        a = a * self.scale
+        b = (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab)
+        attn = a * b
+        # attn = ((q @ k.transpose(-2, -1)) * self.scale +
+        #         (self.attention_biases[:, self.attention_bias_idxs]
+        #          if self.training else self.ab))
         attn = attn.softmax(dim=-1)
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)
         x = self.proj(x)
@@ -214,10 +218,11 @@ class Meta3D(BaseModule):
                  drop=0.,
                  drop_path=0.,
                  use_layer_scale=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 resolution=7):
         super().__init__(init_cfg=init_cfg)
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
-        self.token_mixer = AttentionWithBias(dim)
+        self.token_mixer = AttentionWithBias(dim, resolution=resolution)
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = LinearMlp(
@@ -288,7 +293,8 @@ def basic_blocks(in_channels,
                  drop_path_rate=0.,
                  use_layer_scale=True,
                  vit_num=1,
-                 has_downsamper=False):
+                 has_downsamper=False,
+                 resolution=7):
     """generate EfficientFormer blocks for a stage."""
     blocks = []
     if has_downsamper:
@@ -316,6 +322,7 @@ def basic_blocks(in_channels,
                     drop=drop_rate,
                     drop_path=block_dpr,
                     use_layer_scale=use_layer_scale,
+                    resolution=resolution,
                 ))
         else:
             blocks.append(
@@ -438,7 +445,8 @@ class EfficientFormer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.,
                  use_layer_scale=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 resolution=7):
 
         super().__init__(init_cfg=init_cfg)
         self.num_extra_tokens = 0  # no cls_token, no dist_token
@@ -492,7 +500,8 @@ class EfficientFormer(BaseBackbone):
                 drop_path_rate=drop_path_rate,
                 vit_num=self.vit_num,
                 use_layer_scale=use_layer_scale,
-                has_downsamper=self.downsamples[i])
+                has_downsamper=self.downsamples[i],
+                resolution=resolution)
             network.append(stage)
 
         self.network = ModuleList(network)

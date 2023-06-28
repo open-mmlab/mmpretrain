@@ -30,7 +30,7 @@ param_scheduler = [
 ]
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=300, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=60, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
