@@ -82,7 +82,7 @@ After that, you should obtain a csv file in `csv_dir` folder, named `cue-conflic
 Then we can start to plot the shape bias:
 
 ```shell
-python tools/analysis_tools/visualize_shape_bias.py --csv-dir $CSV_DIR --result-dir $RESULT_DIR --colors $RGB --markers o --plotting-names $YOUR_MODEL_NAME --model-names $YOUR_MODEL_NAME
+python tools/analysis_tools/shape_bias.py --csv-dir $CSV_DIR --result-dir $RESULT_DIR --colors $RGB --markers o --plotting-names $YOUR_MODEL_NAME --model-names $YOUR_MODEL_NAME
 ```
 
 **Description of all arguments**:
