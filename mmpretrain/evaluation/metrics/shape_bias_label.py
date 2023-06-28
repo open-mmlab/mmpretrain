@@ -91,13 +91,11 @@ class ShapeBiasMetric(BaseMetric):
         """
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
-            if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
+            if 'pred_score' in data_sample:
+                result['pred_score'] = data_sample['pred_score'].cpu()
             else:
-                result['pred_label'] = pred_label['label'].cpu()
-            result['gt_label'] = gt_label['label'].cpu()
+                result['pred_label'] = data_sample['pred_label'].cpu()
+            result['gt_label'] = data_sample['gt_label'].cpu()
             result['gt_category'] = data_sample['img_path'].split('/')[-2]
             result['img_name'] = data_sample['img_path'].split('/')[-1]
 
