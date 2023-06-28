@@ -1,4 +1,4 @@
-RES = 128
+RES = 224
 # dataset settings
 dataset_type = 'CustomDataset'
 data_preprocessor = dict(

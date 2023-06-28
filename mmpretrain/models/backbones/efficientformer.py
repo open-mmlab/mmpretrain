@@ -218,10 +218,11 @@ class Meta3D(BaseModule):
                  drop=0.,
                  drop_path=0.,
                  use_layer_scale=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 resolution=7):
         super().__init__(init_cfg=init_cfg)
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
-        self.token_mixer = AttentionWithBias(dim)
+        self.token_mixer = AttentionWithBias(dim, resolution=resolution)
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = LinearMlp(
@@ -292,7 +293,8 @@ def basic_blocks(in_channels,
                  drop_path_rate=0.,
                  use_layer_scale=True,
                  vit_num=1,
-                 has_downsamper=False):
+                 has_downsamper=False,
+                 resolution=7):
     """generate EfficientFormer blocks for a stage."""
     blocks = []
     if has_downsamper:
@@ -320,6 +322,7 @@ def basic_blocks(in_channels,
                     drop=drop_rate,
                     drop_path=block_dpr,
                     use_layer_scale=use_layer_scale,
+                    resolution=resolution,
                 ))
         else:
             blocks.append(
@@ -442,7 +445,8 @@ class EfficientFormer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.,
                  use_layer_scale=True,
-                 init_cfg=None):
+                 init_cfg=None,
+                 resolution=7):
 
         super().__init__(init_cfg=init_cfg)
         self.num_extra_tokens = 0  # no cls_token, no dist_token
@@ -496,7 +500,8 @@ class EfficientFormer(BaseBackbone):
                 drop_path_rate=drop_path_rate,
                 vit_num=self.vit_num,
                 use_layer_scale=use_layer_scale,
-                has_downsamper=self.downsamples[i])
+                has_downsamper=self.downsamples[i],
+                resolution=resolution)
             network.append(stage)
 
         self.network = ModuleList(network)

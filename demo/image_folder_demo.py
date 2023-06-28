@@ -3,15 +3,14 @@ import sys
 sys.path.insert(0, '/data/mmpretrain')
 
 from argparse import ArgumentParser
-
+import os
 from mmengine.fileio import dump
 from rich import print_json
-
 from mmpretrain.apis import ImageClassificationInferencer
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('img', help='Image file')
+    parser.add_argument('img_folder', help='Image folder')
     parser.add_argument('model', help='Model name or config file path')
     parser.add_argument('--checkpoint', help='Checkpoint file path.')
     parser.add_argument(
@@ -36,10 +35,14 @@ def main():
             'name or a config file or find a model name from '
             'https://mmpretrain.readthedocs.io/en/latest/modelzoo_statistics.html#all-checkpoints'  # noqa: E501
         )
-    result = inferencer(args.img, show=args.show, show_dir=args.show_dir)[0]
-    # show the results
-    result.pop('pred_scores')  # pred_scores is too verbose for a demo.
-    print_json(dump(result, file_format='json', indent=4))
+    for img in os.listdir(args.img_folder):
+        result = inferencer(os.path.join(args.img_folder, img), show=args.show, show_dir=None)[0]
+        # show the results
+        result.pop('pred_scores')  # pred_scores is too verbose for a demo.
+        cls_show_dir = os.path.join(args.show_dir, result["pred_class"])
+        os.makedirs(cls_show_dir, exist_ok=True)
+        result = inferencer(os.path.join(args.img_folder, img), show=False, show_dir=cls_show_dir)[0]
+        print_json(dump(result, file_format='json', indent=4))
 
 
 if __name__ == '__main__':
