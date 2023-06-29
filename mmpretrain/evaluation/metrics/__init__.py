@@ -7,6 +7,7 @@ from .nocaps import NocapsSave
 from .retrieval import RetrievalAveragePrecision, RetrievalRecall
 from .scienceqa import ScienceQAMetric
 from .single_label import Accuracy, ConfusionMatrix, SingleLabelMetric
+from .visual_dialog import SparseGTMetrics
 from .visual_grounding_eval import VisualGroundingMetric
 from .voc_multi_label import VOCAveragePrecision, VOCMultiLabelMetric
 from .vqa import ReportVQA, VQAAcc
@@ -16,5 +17,5 @@ __all__ = [
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
     'ConfusionMatrix', 'RetrievalRecall', 'VQAAcc', 'ReportVQA', 'COCOCaption',
     'VisualGroundingMetric', 'ScienceQAMetric', 'GQAAcc', 'NocapsSave',
-    'RetrievalAveragePrecision'
+    'RetrievalAveragePrecision', 'SparseGTMetrics'
 ]

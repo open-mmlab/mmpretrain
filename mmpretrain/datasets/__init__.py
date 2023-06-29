@@ -46,6 +46,7 @@ if WITH_MULTIMODAL:
     from .refcoco import RefCOCO
     from .scienceqa import ScienceQA
     from .textvqa import TextVQA
+    from .visdial import VisDial
     from .visual_genome import VisualGenomeQA
     from .vizwiz import VizWiz
     from .vsr import VSR
@@ -54,5 +55,5 @@ if WITH_MULTIMODAL:
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'Flickr30kCaption', 'Flickr30kRetrieval',
         'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA',
-        'VSR', 'VizWiz', 'OCRVQA'
+        'VSR', 'VizWiz', 'OCRVQA', 'VisDial'
     ])
