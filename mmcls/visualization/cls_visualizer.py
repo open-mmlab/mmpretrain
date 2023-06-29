@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -7,7 +7,7 @@ from mmengine.dist import master_only
 from mmengine.visualization import Visualizer
 
 from mmcls.registry import VISUALIZERS
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 def _get_adaptive_scale(img_shape: Tuple[int, int],
@@ -84,7 +84,8 @@ class ClsVisualizer(Visualizer):
     def add_datasample(self,
                        name: str,
                        image: np.ndarray,
-                       data_sample: Optional[ClsDataSample] = None,
+                       data_sample: Optional[Union[
+                           ClsDataSample, MultiTaskDataSample]] = None,
                        draw_gt: bool = True,
                        draw_pred: bool = True,
                        draw_score: bool = True,
@@ -136,35 +137,11 @@ class ClsVisualizer(Visualizer):
         texts = []
         self.set_image(image)
 
-        if draw_gt and 'gt_label' in data_sample:
-            gt_label = data_sample.gt_label
-            idx = gt_label.label.tolist()
-            class_labels = [''] * len(idx)
-            if classes is not None:
-                class_labels = [f' ({classes[i]})' for i in idx]
-            labels = [str(idx[i]) + class_labels[i] for i in range(len(idx))]
-            prefix = 'Ground truth: '
-            texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
+        if draw_gt:
+            self.draw_label(data_sample, classes, texts)
 
-        if draw_pred and 'pred_label' in data_sample:
-            pred_label = data_sample.pred_label
-            idx = pred_label.label.tolist()
-            score_labels = [''] * len(idx)
-            class_labels = [''] * len(idx)
-            if draw_score and 'score' in pred_label:
-                score_labels = [
-                    f', {pred_label.score[i].item():.2f}' for i in idx
-                ]
-
-            if classes is not None:
-                class_labels = [f' ({classes[i]})' for i in idx]
-
-            labels = [
-                str(idx[i]) + score_labels[i] + class_labels[i]
-                for i in range(len(idx))
-            ]
-            prefix = 'Prediction: '
-            texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
+        if draw_pred:
+            self.draw_pred(data_sample, draw_score, classes, texts)
 
         img_scale = _get_adaptive_scale(image.shape[:2])
         text_cfg = {
@@ -186,3 +163,61 @@ class ClsVisualizer(Visualizer):
             mmcv.imwrite(drawn_img[..., ::-1], out_file)
         else:
             self.add_image(name, drawn_img, step=step)
+
+    def draw_pred(self,
+                  data_sample: Union[ClsDataSample, MultiTaskDataSample],
+                  draw_score: bool,
+                  classes: dict,
+                  texts: List[str],
+                  parent_task: str = ''):
+        if isinstance(data_sample, MultiTaskDataSample):
+            for task in data_sample.tasks:
+                parent_task = f'{parent_task}_{task}' if parent_task else task
+                self.draw_pred(
+                    data_sample.get(task), draw_score, classes, texts,
+                    parent_task)
+        else:
+            if 'pred_label' in data_sample:
+                pred_label = data_sample.pred_label
+                idx = pred_label.label.tolist()
+                score_labels = [''] * len(idx)
+                class_labels = [''] * len(idx)
+                if draw_score and 'score' in pred_label:
+                    score_labels = [
+                        f', {pred_label.score[i].item():.2f}' for i in idx
+                    ]
+
+                if classes is not None:
+                    class_labels = [f' ({classes[i]})' for i in idx]
+
+                labels = [
+                    str(idx[i]) + score_labels[i] + class_labels[i]
+                    for i in range(len(idx))
+                ]
+                prefix = f'{parent_task} Prediction: ' if parent_task \
+                    else 'Prediction: '
+                texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
+
+    def draw_label(self,
+                   data_sample: Union[ClsDataSample, MultiTaskDataSample],
+                   classes: dict,
+                   texts: List[str],
+                   parent_task: str = ''):
+        if isinstance(data_sample, MultiTaskDataSample):
+            for task in data_sample.tasks:
+                parent_task = f'{parent_task}_{task}' if parent_task else task
+                self.draw_label(
+                    data_sample.get(task), classes, texts, parent_task)
+        else:
+            if 'gt_label' in data_sample:
+                gt_label = data_sample.gt_label
+                idx = gt_label.label.tolist()
+                class_labels = [''] * len(idx)
+                if classes is not None:
+                    class_labels = [f' ({classes[i]})' for i in idx]
+                labels = [
+                    str(idx[i]) + class_labels[i] for i in range(len(idx))
+                ]
+                prefix = f'{parent_task} Ground truth: ' if parent_task \
+                    else 'Ground truth: '
+                texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))

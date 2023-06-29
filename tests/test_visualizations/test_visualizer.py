@@ -7,7 +7,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 from mmcls.visualization import ClsVisualizer
 
 
@@ -128,6 +128,45 @@ class TestClsVisualizer(TestCase):
                 image=np.ones((224, 384, 3), np.uint8),
                 rescale_factor=2.,
                 data_sample=data_sample)
+
+    def test_add_datasample_multitask(self):
+        image = np.ones((10, 10, 3), np.uint8)
+        gt_label = {'task0': {'task00': 2, 'task01': 1}, 'task1': 1}
+        data_sample = MultiTaskDataSample()
+        task_sample = ClsDataSample().set_gt_label(
+            gt_label['task1']).set_pred_label(1).set_pred_score(
+                torch.tensor([0.1, 0.8, 0.1]))
+        data_sample.set_field(task_sample, 'task1')
+        data_sample.set_field(MultiTaskDataSample(), 'task0')
+        for task_name in gt_label['task0']:
+            task_sample = ClsDataSample().set_gt_label(
+                gt_label['task0'][task_name]).set_pred_label(2).set_pred_score(
+                    torch.tensor([0.1, 0.4, 0.5]))
+            data_sample.task0.set_field(task_sample, task_name)
+
+        # Test show
+        def mock_show(drawn_img, win_name, wait_time):
+            self.assertFalse((image == drawn_img).all())
+            self.assertEqual(win_name, 'test')
+            self.assertEqual(wait_time, 0)
+
+        with patch.object(self.vis, 'show', mock_show):
+            self.vis.add_datasample(
+                'test',
+                image=image,
+                data_sample=data_sample,
+                show=True,
+                step=1)
+
+        # Test out_file
+        out_file = osp.join(self.tmpdir.name, 'results_1.png')
+        self.vis.add_datasample(
+            'test', image=image, data_sample=data_sample, out_file=out_file)
+        self.assertTrue(osp.exists(out_file))
+
+        # Test storage backend.
+        save_file = osp.join(self.tmpdir.name, 'vis_data/vis_image/test_1.png')
+        self.assertTrue(osp.exists(save_file))
 
     def tearDown(self):
         self.tmpdir.cleanup()
