@@ -47,7 +47,7 @@ class SparseGTMetrics(BaseMetric):
             
             G = torch.Generator()
             G.manual_seed(0)
-            rank = torch.randperm(len(answer_options), generator=G)
+            rank = 1 + torch.randperm(len(answer_options), generator=G)
    
             pred_answer = sample.get('pred_answer')
             
@@ -73,13 +73,13 @@ class SparseGTMetrics(BaseMetric):
             and the values are corresponding results.
         """
 
-        R1 = (torch.tensor(results).float() <= 1).mean()
-        R5 = (torch.tensor(results).float() <= 5).mean()
-        R10 = (torch.tensor(results).float() <= 5).mean()
-        Mean = (torch.tensor(results).float()).mean()
-        MRR = (torch.tensor(results).reciprocal()).mean()
+        R1 = (torch.tensor(results) <= 1).float().mean()
+        R5 = (torch.tensor(results) <= 5).float().mean()
+        R10 = (torch.tensor(results) <= 10).float().mean()
+        Mean = torch.tensor(results).float().mean()
+        MRR = torch.tensor(results).reciprocal().mean()
 
-        metrics = {'R@1': R1, 'R@5': R5, 'R@10': R10, 'Mean': Mean, 'MRR': MRR}
+        metrics = {'R@1': R1.item(), 'R@5': R5.item(), 'R@10': R10.item(), 'Mean': Mean.item(), 'MRR': MRR.item()}
         return metrics
 
     def _process_answer(self, answer) -> str:
