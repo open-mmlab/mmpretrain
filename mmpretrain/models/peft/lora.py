@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 import re
-from typing import List, Optional
+from typing import List
 
 import torch
+from mmengine.logging import print_log
 from mmengine.model import BaseModule
 from torch import nn
 
@@ -14,6 +15,7 @@ class LoRALinear(nn.Module):
     """
     TODO
     """
+
     def __init__(self,
                  original_layer: nn.Linear,
                  alpha: int = 1,
@@ -31,6 +33,8 @@ class LoRALinear(nn.Module):
         nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_down.weight)
 
+        self.original_layer = original_layer
+
     def forward(self, x: torch.Tensor):
         out = self.original_layer(x)
 
@@ -45,12 +49,13 @@ class LoRAModel(BaseModule):
     """
     TODO
     """
+
     def __init__(self,
                  module: dict,
                  alpha: int = 1,
                  rank: int = 0,
                  drop_rate: float = 0.,
-                 targets: Optional[List[dict]] = None):
+                 targets: List[dict] = list()):
 
         super().__init__(init_cfg=module['init_cfg'])
 
@@ -60,9 +65,15 @@ class LoRAModel(BaseModule):
         self.alpha = alpha
         self.rank = rank
         self.drop_rate = drop_rate
+
+        assert len(targets) == 0, \
+            "The length of target layers should not be 0."
+
         self.targets = targets
 
         self.apply_lora()
+        self._freeze_module()
+        self._register_hooks()
 
     def apply_lora(self):
         module_names = [k for k, _ in self.module.named_modules()]
@@ -75,34 +86,40 @@ class LoRAModel(BaseModule):
 
                 if re.fullmatch(target_name, module_name) or \
                         module_name.endswith(target_name):
-                    child_module = self.module.get_submodule(module_name)
-                    if isinstance(child_module, nn.Linear):
-                        self._replace_module(module_name,
-                                             child_module,
-                                             target_alpha,
-                                             target_rank,
+                    current_module = self.module.get_submodule(module_name)
+                    if isinstance(current_module, nn.Linear):
+                        print_log(f'Set LoRA for {module_name}')
+                        self._replace_module(module_name, current_module,
+                                             target_alpha, target_rank,
                                              target_drop_rate)
-                    else:
-                        raise NotImplementedError
 
-    def _replace_module(self,
-                        module_name: str,
-                        child_module: nn.Module,
-                        alpha: int,
-                        rank: int,
-                        drop_rate: float):
+    def _replace_module(self, module_name: str, current_module: nn.Module,
+                        alpha: int, rank: int, drop_rate: float):
         parent_module_name = ".".join(module_name.split(".")[:-1])
         parent_module = self.module.get_submodule(parent_module_name)
 
         target_name = module_name.split(".")[-1]
-        target_module = LoRALinear(child_module,
-                                   alpha,
-                                   rank,
-                                   drop_rate)
+        target_module = LoRALinear(current_module, alpha, rank, drop_rate)
         setattr(parent_module, target_name, target_module)
 
-    def _set_trainable(self):
-        raise NotImplementedError
+    def _freeze_module(self):
+        for name, param in self.named_parameters():
+            if 'lora_' not in name:
+                param.requires_grad = False
 
-    def state_dict(self):
-        raise NotImplementedError
+    def _register_hooks(self):
+
+        def _state_dict_hook(destination, state_dict, prefix, local_metadata):
+            for name, param in state_dict.items():
+                if not param.requires_grad:
+                    state_dict.pop(name)
+
+        self._register_state_dict_hook(_state_dict_hook)
+
+        def _load_state_dict_post_hook(module, incompatible_keys):
+            for i in range(incompatible_keys):
+                for key in incompatible_keys[i]:
+                    if 'lora_' not in key:
+                        incompatible_keys[i].pop(key)
+
+        self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
