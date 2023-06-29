@@ -89,7 +89,7 @@ backbone.switch_to_deploy()
 | `repmlp-base_3rdparty_8xb64_in1k`\*       | From scratch |   68.24    |   6.71    |   80.41   |   95.14   |    [config](repmlp-base_8xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k_20220330-1cb1f11b.pth) |
 | `repmlp-base_3rdparty_8xb64_in1k-256px`\* | From scratch |   96.45    |   9.69    |   81.11   |   95.50   | [config](repmlp-base_8xb64_in1k-256px.py) | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k-256px_20220330-7c5a91ce.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L278). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L278). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

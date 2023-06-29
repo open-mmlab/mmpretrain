@@ -63,7 +63,7 @@ python tools/test.py configs/convmixer/convmixer-768-32_10xb64_in1k.py https://d
 | `convmixer-1024-20_3rdparty_in1k`\* | From scratch |   24.38    |   5.55    |   76.94   |   93.36   | [config](convmixer-1024-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1024-20_3rdparty_10xb64_in1k_20220323-48f8aeba.pth) |
 | `convmixer-1536-20_3rdparty_in1k`\* | From scratch |   51.63    |   48.71   |   81.37   |   95.61   | [config](convmixer-1536-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1536_20_3rdparty_10xb64_in1k_20220323-ea5786f3.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/locuslab/convmixer). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/locuslab/convmixer). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

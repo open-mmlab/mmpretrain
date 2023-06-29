@@ -46,7 +46,7 @@ python tools/test.py configs/ofa/ofa-base_finetuned_refcoco.py https://download.
 | :-------------------------------------- | :--------: | :----: | :----: | :-------------------------------------: | :--------------------------------------------------------------------------------------------------: |
 | `ofa-base_3rdparty-finetuned_caption`\* |   182.24   | 42.64  | 144.50 | [config](ofa-base_finetuned_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-caption_20230418-de18914e.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Visual Grounding on RefCOCO
 
@@ -54,7 +54,7 @@ python tools/test.py configs/ofa/ofa-base_finetuned_refcoco.py https://download.
 | :-------------------------------------- | :--------: | :--------------: | :--------------: | :-------------------------------------: | :------------------------------------------------------------------------------: |
 | `ofa-base_3rdparty-finetuned_refcoco`\* |   182.24   |      90.49       |      83.63       | [config](ofa-base_finetuned_refcoco.py) | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_refcoco_20230418-2797d3ab.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Visual Question Answering on VQAv2
 
@@ -63,7 +63,7 @@ python tools/test.py configs/ofa/ofa-base_finetuned_refcoco.py https://download.
 | `ofa-base_3rdparty-finetuned_vqa`\* |   182.24   |  78.00   | [config](ofa-base_finetuned_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_coco-vqa_20230418-f38539a5.pth) |
 | `ofa-base_3rdparty-zeroshot_vqa`\*  |   182.24   |  58.32   | [config](ofa-base_zeroshot_vqa.py)  | [model](https://download.openmmlab.com/mmclassification/v1/ofa/ofa-base_3rdparty_pretrain_20230418-dccfc07f.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/OFA-Sys/OFA). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

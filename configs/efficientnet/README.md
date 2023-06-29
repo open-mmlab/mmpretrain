@@ -106,7 +106,7 @@ python tools/test.py configs/efficientnet/efficientnet-b0_8xb32_in1k.py https://
 | `efficientnet-l2_3rdparty-ra-noisystudent_in1k-800px`\* | From scratch |   480.31   |  174.20   |   88.33   |   98.65   |  [config](efficientnet-l2_8xb8_in1k-800px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnet/efficientnet-l2_3rdparty-ra-noisystudent_in1k_20221103-be73be13.pth) |
 | `efficientnet-l2_3rdparty-ra-noisystudent_in1k-475px`\* | From scratch |   480.31   |  484.98   |   88.18   |   98.55   | [config](efficientnet-l2_8xb32_in1k-475px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnet/efficientnet-l2_3rdparty-ra-noisystudent_in1k-475px_20221103-5a0d8058.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

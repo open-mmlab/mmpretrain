@@ -63,7 +63,7 @@ python tools/test.py configs/efficientformer/efficientformer-l1_8xb128_in1k.py h
 | `efficientformer-l3_3rdparty_8xb128_in1k`\* | From scratch |   31.41    |   3.74    |   82.45   |   96.18   | [config](efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220915-466793d6.pth) |
 | `efficientformer-l7_3rdparty_8xb128_in1k`\* | From scratch |   82.23    |   10.16   |   83.40   |   96.60   | [config](efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220915-185e30af.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/snap-research/EfficientFormer). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/snap-research/EfficientFormer). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

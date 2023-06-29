@@ -63,7 +63,7 @@ python tools/test.py configs/res2net/res2net50-w14-s8_8xb32_in1k.py https://down
 | `res2net50-w26-s8_3rdparty_8xb32_in1k`\*  | From scratch |   48.40    |   8.39    |   79.20   |   94.36   | [config](res2net50-w26-s8_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth) |
 | `res2net101-w26-s4_3rdparty_8xb32_in1k`\* | From scratch |   45.21    |   8.12    |   79.19   |   94.44   | [config](res2net101-w26-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L181). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L181). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

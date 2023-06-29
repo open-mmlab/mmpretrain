@@ -62,7 +62,7 @@ python tools/test.py configs/mlp_mixer/mlp-mixer-base-p16_64xb64_in1k.py https:/
 | `mlp-mixer-base-p16_3rdparty_64xb64_in1k`\*  | From scratch |   59.88    |   12.61   |   76.68   |   92.25   | [config](mlp-mixer-base-p16_64xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-base-p16_3rdparty_64xb64_in1k_20211124-1377e3e0.pth) |
 | `mlp-mixer-large-p16_3rdparty_64xb64_in1k`\* | From scratch |   208.20   |   44.57   |   72.34   |   88.02   | [config](mlp-mixer-large-p16_64xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-large-p16_3rdparty_64xb64_in1k_20211124-5a2519d2.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

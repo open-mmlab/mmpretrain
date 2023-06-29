@@ -91,7 +91,7 @@ python tools/test.py configs/swin_transformer/swin-tiny_16xb64_in1k.py https://d
 | `swin-large_in21k-pre-3rdparty_in1k`\*     | From scratch |   196.53   |   34.04   |   86.24   |   97.88   |    [config](swin-large_16xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_large_patch4_window7_224_22kto1k-5f0996db.pth) |
 | `swin-large_in21k-pre-3rdparty_in1k-384`\* | From scratch |   196.74   |  100.04   |   87.25   |   98.25   | [config](swin-large_16xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_large_patch4_window12_384_22kto1k-0a40944b.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on CUB-200-2011
 

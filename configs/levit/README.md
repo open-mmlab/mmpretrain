@@ -65,7 +65,7 @@ python tools/test.py configs/levit/levit-128s_8xb256_in1k.py https://download.op
 | `levit-256_3rdparty_in1k`\*  | From scratch |   18.38    |   1.14    |   81.59   |   95.46   | [config](levit-256_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth) |
 | `levit-384_3rdparty_in1k`\*  | From scratch |   38.36    |   2.37    |   82.59   |   95.95   | [config](levit-384_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

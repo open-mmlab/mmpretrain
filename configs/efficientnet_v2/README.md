@@ -64,7 +64,7 @@ python tools/test.py configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py htt
 | `efficientnetv2-l_3rdparty_in21k`\*  |   145.22   |   13.11   | [config](efficientnetv2-l_8xb32_in21k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in21k_20221220-f28f91e1.pth) |
 | `efficientnetv2-xl_3rdparty_in21k`\* |   234.82   |   18.86   | [config](efficientnetv2-xl_8xb32_in21k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_3rdparty_in21k_20221220-b2c9329c.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on ImageNet-1k
 
@@ -82,7 +82,7 @@ python tools/test.py configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py htt
 | `efficientnetv2-l_in21k-pre_3rdparty_in1k`\*  | ImageNet-21k |   118.52   |   60.14   |   86.31   |   97.99   | [config](efficientnetv2-l_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_in21k-pre-3rdparty_in1k_20221220-63df0efd.pth) |
 | `efficientnetv2-xl_in21k-pre_3rdparty_in1k`\* | ImageNet-21k |   208.12   |   98.34   |   86.39   |   97.83   | [config](efficientnetv2-xl_8xb32_in1k-512px.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_in21k-pre-3rdparty_in1k_20221220-583ac18b.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

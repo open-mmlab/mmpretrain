@@ -68,7 +68,7 @@ python tools/test.py configs/tinyvit/tinyvit-5m_8xb256_in1k.py https://download.
 | `tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px`\* | ImageNet-21k DISTILL |   21.23    |   13.85   |   86.21   |   97.77   | [config](tinyvit-21m-distill_8xb256_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-384px_20221021-65be6b3f.pth) |
 | `tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px`\* | ImageNet-21k DISTILL |   21.27    |   27.15   |   86.44   |   97.89   | [config](tinyvit-21m-distill_8xb256_in1k-512px.py) | [model](https://download.openmmlab.com/mmclassification/v0/tinyvit/tinyvit-21m_in21k-distill-pre_3rdparty_in1k-512px_20221021-e42a9bea.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/Cream/tree/main/TinyViT). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/Cream/tree/main/TinyViT). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

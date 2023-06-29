@@ -64,7 +64,7 @@ python tools/test.py configs/van/van-tiny_8xb128_in1k.py https://download.openmm
 | `van-base_3rdparty_in1k`\*  | From scratch |   26.58    |   5.03    |   82.80   |   96.21   | [config](van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth) |
 | `van-large_3rdparty_in1k`\* | From scratch |   44.77    |   8.99    |   83.86   |   96.73   | [config](van-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

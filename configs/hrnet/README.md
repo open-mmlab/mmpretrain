@@ -69,7 +69,7 @@ python tools/test.py configs/hrnet/hrnet-w18_4xb32_in1k.py https://download.open
 | `hrnet-w18_3rdparty_8xb32-ssld_in1k`\* | From scratch |   21.30    |   4.33    |   81.06   |   95.70   | [config](hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth) |
 | `hrnet-w48_3rdparty_8xb32-ssld_in1k`\* | From scratch |   77.47    |   17.36   |   83.63   |   96.79   | [config](hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/HRNet/HRNet-Image-Classification). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/HRNet/HRNet-Image-Classification). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

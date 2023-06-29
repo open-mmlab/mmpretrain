@@ -58,7 +58,7 @@ python tools/test.py configs/blip2/blip2_8xb32_retrieval.py https://download.ope
 | :--------------------------- | :--------: | :------: | :----------------------------------: | :-------------------------------------------------------------------------------------------------------------: |
 | `blip2_3rdparty_retrieval`\* |  1173.19   |  85.40   | [config](./blip2_8xb32_retrieval.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip2/blip2_3rdparty_pretrain_20230505-f7ef4390.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

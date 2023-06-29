@@ -67,7 +67,7 @@ python tools/test.py configs/vig/vig-tiny_8xb128_in1k.py https://download.openmm
 | `pvig-medium_3rdparty_in1k`\* | From scratch |   51.68    |   8.89    |   83.12   |   96.35   | [config](pvig-medium_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-medium_3rdparty_in1k_20230117-21057a6d.pth) |
 | `pvig-base_3rdparty_in1k`\*   | From scratch |   95.21    |   16.86   |   83.59   |   96.52   |  [config](pvig-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vig/pvig-base_3rdparty_in1k_20230117-dbab3c85.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

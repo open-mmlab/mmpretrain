@@ -71,7 +71,7 @@ python tools/test.py configs/mvit/mvitv2-tiny_8xb256_in1k.py https://download.op
 | `mvitv2-base_3rdparty_in1k`\*  | From scratch |   51.47    |   10.16   |   84.34   |   96.86   | [config](mvitv2-base_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth) |
 | `mvitv2-large_3rdparty_in1k`\* | From scratch |   217.99   |   43.87   |   85.25   |   97.14   | [config](mvitv2-large_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-large_3rdparty_in1k_20220722-2b57b983.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/mvit). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/mvit). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 
