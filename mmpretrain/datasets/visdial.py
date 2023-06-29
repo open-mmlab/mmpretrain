@@ -85,7 +85,7 @@ class VisDial(BaseDataset):
 
                 data_info['dialog_history'] = historys[dialog_id]
 
-                data_info['question'] = questions[question_id] + "?"
+                data_info['question'] = questions[question_id] + '?'
                 data_info['answer'] = answers[answer_id]
                 data_info['answer_options'] = answer_options
                 data_info['gt_answer_index'] = data_info[
