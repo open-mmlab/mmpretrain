@@ -66,7 +66,7 @@ class LoRAModel(BaseModule):
         self.rank = rank
         self.drop_rate = drop_rate
 
-        assert len(targets) == 0, \
+        assert len(targets) != 0, \
             "The length of target layers should not be 0."
 
         self.targets = targets
@@ -88,7 +88,10 @@ class LoRAModel(BaseModule):
                         module_name.endswith(target_name):
                     current_module = self.module.get_submodule(module_name)
                     if isinstance(current_module, nn.Linear):
-                        print_log(f'Set LoRA for {module_name}')
+                        print_log(f'Set LoRA for {module_name} '
+                                  f'with alpha: {target_alpha}, '
+                                  f'rank: {target_rank}, '
+                                  f'drop rate: {target_drop_rate}')
                         self._replace_module(module_name, current_module,
                                              target_alpha, target_rank,
                                              target_drop_rate)
@@ -109,17 +112,23 @@ class LoRAModel(BaseModule):
 
     def _register_hooks(self):
 
-        def _state_dict_hook(destination, state_dict, prefix, local_metadata):
-            for name, param in state_dict.items():
-                if not param.requires_grad:
-                    state_dict.pop(name)
+        def _state_dict_hook(module, state_dict, prefix, local_metadata):
+            keys = [k for k, _ in state_dict.items()]
+            for key in keys:
+                if 'lora_' not in key:
+                    state_dict.pop(key)
 
         self._register_state_dict_hook(_state_dict_hook)
 
         def _load_state_dict_post_hook(module, incompatible_keys):
-            for i in range(incompatible_keys):
-                for key in incompatible_keys[i]:
-                    if 'lora_' not in key:
-                        incompatible_keys[i].pop(key)
+            missing_keys = incompatible_keys.missing_keys.copy()
+            for key in missing_keys:
+                if 'lora_' not in key:
+                    incompatible_keys.missing_keys.remove(key)
+
+            unexpected_keys = incompatible_keys.unexpected_keys.copy()
+            for key in unexpected_keys:
+                if 'lora_' not in key:
+                    incompatible_keys.unexpected_keys.remove(key)
 
         self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
