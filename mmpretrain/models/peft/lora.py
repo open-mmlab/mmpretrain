@@ -135,3 +135,6 @@ class LoRAModel(BaseModule):
                     incompatible_keys.unexpected_keys.remove(key)
 
         self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
+
+    def get_layer_depth(self, param_name: str, prefix: str = ''):
+        return self.module.get_layer_depth(param_name, prefix)
