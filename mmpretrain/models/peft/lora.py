@@ -30,10 +30,11 @@ class LoRALinear(nn.Module):
         self.lora_up = nn.Linear(rank, out_features, bias=False)
         self.scaling = alpha / rank
 
+        self.original_layer = original_layer
+
+    def init_weights(self):
         nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_down.weight)
-
-        self.original_layer = original_layer
 
     def forward(self, x: torch.Tensor):
         out = self.original_layer(x)
@@ -57,7 +58,7 @@ class LoRAModel(BaseModule):
                  drop_rate: float = 0.,
                  targets: List[dict] = list()):
 
-        super().__init__(init_cfg=module['init_cfg'])
+        super().__init__()
 
         module = MODELS.build(module)
 
@@ -91,7 +92,9 @@ class LoRAModel(BaseModule):
                         print_log(f'Set LoRA for {module_name} '
                                   f'with alpha: {target_alpha}, '
                                   f'rank: {target_rank}, '
-                                  f'drop rate: {target_drop_rate}')
+                                  f'drop rate: {target_drop_rate}',
+                                  logger='current')
+
                         self._replace_module(module_name, current_module,
                                              target_alpha, target_rank,
                                              target_drop_rate)

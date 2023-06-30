@@ -12,8 +12,7 @@ def test_lora_model():
         patch_size=16,
         drop_path_rate=0.1,
         out_type='avg_featmap',
-        final_norm=False,
-        init_cfg=dict(type='Pretrained', checkpoint=''))
+        final_norm=False)
 
     lora_cfg = dict(
         module=module,
