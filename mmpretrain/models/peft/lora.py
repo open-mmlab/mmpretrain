@@ -30,11 +30,10 @@ class LoRALinear(nn.Module):
         self.lora_up = nn.Linear(rank, out_features, bias=False)
         self.scaling = alpha / rank
 
-        self.original_layer = original_layer
-
-    def init_weights(self):
         nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
         nn.init.zeros_(self.lora_down.weight)
+
+        self.original_layer = original_layer
 
     def forward(self, x: torch.Tensor):
         out = self.original_layer(x)
