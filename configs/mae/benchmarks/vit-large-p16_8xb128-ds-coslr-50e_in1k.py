@@ -18,7 +18,7 @@ strategy = dict(
     ),
     inputs_to_half=['inputs'],
     zero_optimization=dict(
-        stage=3,
+        stage=1,
         allgather_partitions=True,
         reduce_scatter=True,
         allgather_bucket_size=50000000,
