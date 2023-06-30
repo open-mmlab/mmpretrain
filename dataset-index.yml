@@ -1,0 +1,11 @@
+imagenet1k:
+  dataset: ImageNet-1K
+  download_root: data
+  data_root: data/imagenet
+  script: tools/dataset_converters/odl_imagenet1k_preprocess.sh
+
+cub:
+  dataset: CUB-200-2011
+  download_root: data
+  data_root: data/CUB_200_2011
+  script: tools/dataset_converters/odl_cub_preprocess.sh
