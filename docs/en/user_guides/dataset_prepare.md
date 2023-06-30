@@ -146,7 +146,7 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 
 MIM supports downloading from [OpenDataLab](https://opendatalab.com/) and preprocessing ImageNet dataset with one command line.
 
-> You need to register an account at [OpenDataLab official website](https://opendatalab.com/) and login by CLI.
+_You need to register an account at [OpenDataLab official website](https://opendatalab.com/) and login by CLI._
 
 ```Bash
 # install OpenDataLab CLI tools

@@ -144,7 +144,7 @@ ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.ima
 
 MIM支持使用一条命令行从 [OpenDataLab](https://opendatalab.com/) 下载并预处理 ImageNet 数据集。
 
-> 需要在 [OpenDataLab 官网](https://opendatalab.com/) 注册账号并命令行登录。
+_需要在 [OpenDataLab 官网](https://opendatalab.com/) 注册账号并命令行登录_。
 
 ```Bash
 # 安装opendatalab库
