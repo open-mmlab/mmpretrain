@@ -138,3 +138,6 @@ class LoRAModel(BaseModule):
 
     def get_layer_depth(self, param_name: str, prefix: str = ''):
         return self.module.get_layer_depth(param_name, prefix)
+
+    def forward(self, x: torch.Tensor):
+        return self.module(x)
