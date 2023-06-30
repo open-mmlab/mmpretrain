@@ -39,7 +39,7 @@ class LoRALinear(nn.Module):
         out = self.original_layer(x)
 
         lora_x = self.lora_dropout(x)
-        lora_out = self.lora_up(self.lora_down(lora_x)) / self.scaling
+        lora_out = self.lora_up(self.lora_down(lora_x)) * self.scaling
 
         return out + lora_out
 
