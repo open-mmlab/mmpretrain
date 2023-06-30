@@ -61,6 +61,7 @@ class LoRAModel(BaseModule):
         super().__init__()
 
         module = MODELS.build(module)
+        self.module.init_weights()
 
         self.module: nn.Module = module
         self.alpha = alpha
