@@ -146,12 +146,14 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 
 MIM supports downloading from [OpenDataLab](https://opendatalab.com/) and preprocessing ImageNet dataset with one command line.
 
+> You need to register an account at [OpenDataLab official website](https://opendatalab.com/) and login by CLI.
+
 ```Bash
 # install OpenDataLab CLI tools
 pip install -U opendatalab
-# log in OpenDataLab, registry
+# log in OpenDataLab, register if you don't have an account.
 odl login
-# download and preprocess by MIM
+# download and preprocess by MIM, better to execute in $MMPreTrain directory.
 mim download mmpretrain --dataset imagenet1k
 ```
 
