@@ -52,8 +52,8 @@ model = dict(
         'https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_qformer_20230615-1dfa889c.pth'  # noqa
     ),
     lang_encoder=dict(
-        type='AutoModelForCausalLM', name_or_path='YOUR_PATH_TO_VICUNA'),
-    tokenizer=dict(type='LlamaTokenizer', name_or_path='YOUR_PATH_TO_VICUNA'),
+        type='AutoModelForCausalLM', name_or_path='/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
+    tokenizer=dict(type='LlamaTokenizer', name_or_path='/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
     task='caption',
     prompt_template='###Human: {} ###Assistant: ',
     raw_prompts=[

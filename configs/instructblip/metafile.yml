@@ -1,0 +1,33 @@
+Collections:
+  - Name: InstructBLIP
+    Metadata:
+      Training Data:
+        - COCO
+        - VG
+        - CC3M
+        - CC12M
+        - SBU
+        - LAION-400M
+      Architecture:
+        - Transformer
+        - Q-Former
+    Paper:
+      Title: 'InstructBLIP: Towards General-purpose Vision-Language Models with Instruction Tuning'
+      URL: https://arxiv.org/abs/2305.06500
+    README: configs/instructblip/README.md
+
+Models:
+  - Name: instructblip-vicuna7b_3rdparty-zeroshot_caption
+    Metadata:
+      FLOPs: null
+      Parameters: xxx
+    In Collection: InstructBLIP
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics: null
+    Weights: /mnt/petrelfs/share_data/wangjiahao/llm_weights/instruct_blip_vicuna7b_trimmed.pth
+    Config: configs/instructblip/instructblip-vicuna7b_8xb32_caption.py
+    Converted From:
+      Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/InstructBLIP/instruct_blip_vicuna7b_trimmed.pth
+      Code: https://github.com/salesforce/LAVIS
