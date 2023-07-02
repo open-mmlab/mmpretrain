@@ -24,7 +24,7 @@ from mmpretrain import inference_model
 
 result = inference_model('instructblip-vicuna7b_3rdparty-zeroshot_caption', 'demo/cat-dog.png')
 print(result)
-# {'pred_caption': 'The image is a photograph of a beautiful garden. The garden is full of colorful flowers and green leaves.'}
+# {'pred_caption': 'a blanket next to each other in the grass\na cute puppy and kitten wallpapers'}
 ```
 
 <!-- [TABS-END] -->

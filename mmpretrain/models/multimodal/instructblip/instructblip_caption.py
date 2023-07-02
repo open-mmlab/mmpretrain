@@ -46,7 +46,6 @@ class InstructBlipCaption(BaseModel):
                  max_txt_len: int = 256,
                  end_sym: str = '\n',
                  num_captions: int = 1,
-                 generation_cfg: dict = dict(),
                  qformer_text_input = True,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
@@ -120,19 +119,6 @@ class InstructBlipCaption(BaseModel):
         prompt_tokens = self.llm_tokenizer(prompt, return_tensors='pt')
         self.prompt_length = prompt_tokens.attention_mask.sum(1)
         self.qformer_text_input = qformer_text_input
-
-
-        # update generation configs
-        self.generation_cfg = dict(
-            max_new_tokens=300,
-            num_beams=1,
-            do_sample=True,
-            min_length=1,
-            top_p=0.9,
-            repetition_penalty=1.0,
-            length_penalty=1.0,
-            temperature=1.0,
-            **generation_cfg)
 
         if hasattr(self, 'register_load_state_dict_post_hook'):
             self.register_load_state_dict_post_hook(self._ignore_llm_keys_hook)
@@ -232,9 +218,6 @@ class InstructBlipCaption(BaseModel):
         inputs_llama = self.llm_proj(query_outputs.last_hidden_state[:,:query_tokens.size(1),:])
         attns_llama = torch.ones(
             inputs_llama.size()[:-1], dtype=torch.long).to(images.device)
-
-
-# *******************************************************************?
 
         llama_tokens = self.llm_tokenizer(
             prompt, 
