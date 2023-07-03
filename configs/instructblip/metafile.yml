@@ -26,7 +26,7 @@ Models:
       - Task: Image Caption
         Dataset: COCO
         Metrics: null
-    Weights: /mnt/petrelfs/share_data/wangjiahao/llm_weights/instruct_blip_vicuna7b_trimmed.pth
+    Weights: https://download.openmmlab.com/mmclassification/v1/instructblip/instruct-blip_vicuna7b_trimmed.pth
     Config: configs/instructblip/instructblip-vicuna7b_8xb32_caption.py
     Converted From:
       Weights: https://storage.googleapis.com/sfr-vision-language-research/LAVIS/models/InstructBLIP/instruct_blip_vicuna7b_trimmed.pth

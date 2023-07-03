@@ -35,9 +35,9 @@ For Vicuna model, please refer to [MiniGPT-4 page](https://github.com/Vision-CAI
 
 ### Pretrained models
 
-| Model                                               | Params (M) | Flops (G) |                      Config                      |  Download   |
-| :-------------------------------------------------- | :--------: | :-------: | :----------------------------------------------: | :---------: |
-| `instructblip-vicuna7b_3rdparty-zeroshot_caption`\* |  8121.32   |    N/A    | [config](instructblip-vicuna7b_8xb32_caption.py) | [model](<>) |
+| Model                                               | Params (M) | Flops (G) |                      Config                      |                                      Download                                      |
+| :-------------------------------------------------- | :--------: | :-------: | :----------------------------------------------: | :--------------------------------------------------------------------------------: |
+| `instructblip-vicuna7b_3rdparty-zeroshot_caption`\* |  8121.32   |    N/A    | [config](instructblip-vicuna7b_8xb32_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/instructblip/instruct-blip_vicuna7b_trimmed.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS/tree/main/projects/instructblip). The config files of these models are only for inference. We haven't reproduce the training results.*
 
