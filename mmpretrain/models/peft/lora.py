@@ -12,8 +12,23 @@ from mmpretrain.registry import MODELS
 
 
 class LoRALinear(nn.Module):
-    """
-    TODO
+    r"""Implements LoRA in a linear layer.
+
+    The forward process is:
+
+    .. math::
+        `y = W_0 x + BAx / (\alpha / r)`
+
+    Where :math:`x` is the input, :math:`y` is the output,
+    :math:`W_0` is the parameter of the original layer,
+    :math:`A` and :math:`B` are the low-rank decomposition matrixs,
+    :math: `\alpha` is the scale factor and :math: `r` is the rank.
+
+    Args:
+        original_layer (nn.Linear): The linear layer to be finetuned.
+        alpha (int): The scale factor of LoRA. Defaults to 1.
+        rank (int): The rank of LoRA. Defaults to 0.
+        drop_rate (float): The drop out rate for LoRA. Defaults to 0.
     """
 
     def __init__(self,
@@ -46,8 +61,19 @@ class LoRALinear(nn.Module):
 
 @MODELS.register_module()
 class LoRAModel(BaseModule):
-    """
-    TODO
+    """Implements LoRA in a module.
+
+    An PyTorch implement of : `LoRA: Low-Rank Adaptation
+    of Large Language Models <https://arxiv.org/abs/2106.09685>`_
+
+    Args:
+        module (dict): The config of the module to be finetuned. See
+            :mod:`mmpretrain.models`
+        alpha (int): The scale factor of LoRA. Defaults to 1.
+        rank (int): The rank of LoRA. Defaults to 0.
+        drop_rate (float): The drop out rate for LoRA. Defaults to 0.
+        targets (List[dict]): The target layers to be applied with the LoRA.
+            Defaults to a empty list.
     """
 
     def __init__(self,
@@ -62,7 +88,7 @@ class LoRAModel(BaseModule):
         module = MODELS.build(module)
         module.init_weights()
 
-        self.module: nn.Module = module
+        self.module = module
         self.alpha = alpha
         self.rank = rank
         self.drop_rate = drop_rate
@@ -77,6 +103,7 @@ class LoRAModel(BaseModule):
         self._register_hooks()
 
     def apply_lora(self):
+        """Apply LoRA to target layers."""
         module_names = [k for k, _ in self.module.named_modules()]
         for module_name in module_names:
             for target in self.targets:
@@ -101,6 +128,7 @@ class LoRAModel(BaseModule):
 
     def _replace_module(self, module_name: str, current_module: nn.Module,
                         alpha: int, rank: int, drop_rate: float):
+        """Replace target layer with LoRA linear layer."""
         parent_module_name = ".".join(module_name.split(".")[:-1])
         parent_module = self.module.get_submodule(parent_module_name)
 
@@ -109,11 +137,17 @@ class LoRAModel(BaseModule):
         setattr(parent_module, target_name, target_module)
 
     def _freeze_module(self):
+        """
+        TODO
+        """
         for name, param in self.named_parameters():
             if 'lora_' not in name:
                 param.requires_grad = False
 
     def _register_hooks(self):
+        """
+        TODO
+        """
 
         def _state_dict_hook(module, state_dict, prefix, local_metadata):
             keys = [k for k, _ in state_dict.items()]
@@ -137,7 +171,13 @@ class LoRAModel(BaseModule):
         self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
 
     def get_layer_depth(self, param_name: str, prefix: str = ''):
+        """
+        TODO
+        """
         return self.module.get_layer_depth(param_name, prefix)
 
     def forward(self, x: torch.Tensor):
+        """
+        TODO
+        """
         return self.module(x)
