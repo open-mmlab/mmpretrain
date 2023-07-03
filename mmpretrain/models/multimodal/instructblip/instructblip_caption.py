@@ -4,10 +4,10 @@ from typing import List, Optional
 import torch
 from mmengine.model import BaseModel
 from torch import nn
+from transformers import BertTokenizer
 
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
-from transformers import BertTokenizer
 
 
 @MODELS.register_module()
@@ -46,7 +46,7 @@ class InstructBlipCaption(BaseModel):
                  max_txt_len: int = 256,
                  end_sym: str = '\n',
                  num_captions: int = 1,
-                 qformer_text_input = True,
+                 qformer_text_input=True,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None) -> None:
         if data_preprocessor is None:
@@ -68,10 +68,11 @@ class InstructBlipCaption(BaseModel):
             load_checkpoint(self.vision_encoder, vision_encoder_weight)
 
         # build Qformer
-        self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased", truncation_side="left")
-        self.tokenizer.add_special_tokens({"bos_token": "[DEC]"})
+        self.tokenizer = BertTokenizer.from_pretrained(
+            'bert-base-uncased', truncation_side='left')
+        self.tokenizer.add_special_tokens({'bos_token': '[DEC]'})
         self.Qformer = MODELS.build(Qformer)
-        
+
         if not qformer_text_input:
             self.Qformer.bert.embeddings.word_embeddings = None
             self.Qformer.bert.embeddings.position_embeddings = None
@@ -104,12 +105,11 @@ class InstructBlipCaption(BaseModel):
             torch.zeros(1, self.Qformer.bert.config.query_length,
                         self.Qformer.bert.config.hidden_size))
         self.query_tokens.data.normal_(
-            mean=0.0,
-            std=self.Qformer.bert.config.initializer_range)
+            mean=0.0, std=self.Qformer.bert.config.initializer_range)
 
         # build linear projection layer
         self.llm_proj = nn.Linear(self.Qformer.config.hidden_size,
-                                    self.text_backbone.config.hidden_size)
+                                  self.text_backbone.config.hidden_size)
 
         self.prompt = prompt
         self.max_txt_len = max_txt_len
@@ -173,7 +173,7 @@ class InstructBlipCaption(BaseModel):
         Returns:
             List[DataSample]: Return list of data samples.
         """
-        self.llm_tokenizer.padding_side = "left"
+        self.llm_tokenizer.padding_side = 'left'
 
         # extract image features from
         image_embeds = self.ln_vision(self.vision_encoder(images)[0])
@@ -193,10 +193,12 @@ class InstructBlipCaption(BaseModel):
                 padding='longest',
                 truncation=True,
                 max_length=self.max_txt_len,
-                return_tensors="pt",
+                return_tensors='pt',
             ).to(images.device)
-            query_atts = torch.ones(query_tokens.size()[:-1], dtype=torch.long).to(images.device)
-            Qformer_atts = torch.cat([query_atts, text_Qformer.attention_mask], dim=1)
+            query_atts = torch.ones(
+                query_tokens.size()[:-1], dtype=torch.long).to(images.device)
+            Qformer_atts = torch.cat([query_atts, text_Qformer.attention_mask],
+                                     dim=1)
 
         if self.qformer_text_input:
             query_outputs = self.Qformer.bert(
@@ -215,17 +217,16 @@ class InstructBlipCaption(BaseModel):
                 encoder_attention_mask=image_atts,
                 return_dict=True,
             )
-        inputs_llama = self.llm_proj(query_outputs.last_hidden_state[:,:query_tokens.size(1),:])
+        inputs_llama = self.llm_proj(
+            query_outputs.last_hidden_state[:, :query_tokens.size(1), :])
         attns_llama = torch.ones(
             inputs_llama.size()[:-1], dtype=torch.long).to(images.device)
 
         llama_tokens = self.llm_tokenizer(
-            prompt, 
-            padding="longest",
-            return_tensors='pt'
-        ).to(images.device)
-        
-        inputs_embeds = self.text_backbone.get_input_embeddings()(llama_tokens.input_ids)
+            prompt, padding='longest', return_tensors='pt').to(images.device)
+
+        inputs_embeds = self.text_backbone.get_input_embeddings()(
+            llama_tokens.input_ids)
         inputs_embeds = torch.cat([inputs_llama, inputs_embeds], dim=1)
         attention_mask = torch.cat([attns_llama, llama_tokens.attention_mask],
                                    dim=1)

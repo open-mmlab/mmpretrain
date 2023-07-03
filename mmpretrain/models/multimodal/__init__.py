@@ -6,8 +6,8 @@ if WITH_MULTIMODAL:
     from .blip2 import *  # noqa: F401,F403
     from .chinese_clip import *  # noqa: F401, F403
     from .flamingo import *  # noqa: F401, F403
-    from .llava import *  # noqa: F401, F403
     from .instructblip import *  # noqa: F401,F403
+    from .llava import *  # noqa: F401, F403
     from .minigpt4 import *  # noqa: F401, F403
     from .ofa import *  # noqa: F401, F403
     from .otter import *  # noqa: F401, F403
@@ -18,5 +18,6 @@ else:
     register_multimodal_placeholder([
         'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'BlipCaption',
         'BlipNLVR', 'BlipRetrieval', 'BlipGrounding', 'BlipVQA', 'Flamingo',
-        'OFA', 'ChineseCLIP', 'InstructBlipCaption', 'MiniGPT4', 'Llava', 'Otter'
+        'OFA', 'ChineseCLIP', 'InstructBlipCaption', 'MiniGPT4', 'Llava',
+        'Otter'
     ], MODELS)

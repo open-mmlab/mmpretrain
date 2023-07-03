@@ -6,7 +6,10 @@ _base_ = [
 # model settings
 model = dict(
     type='InstructBlipCaption',
-    llm_tokenizer=dict(type='LlamaTokenizer', name_or_path='/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
+    llm_tokenizer=dict(
+        type='LlamaTokenizer',
+        name_or_path=
+        '/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
     vision_encoder=dict(
         type='BEiTViT',
         # eva-g without the final layer
@@ -30,7 +33,9 @@ model = dict(
         'https://download.openmmlab.com/mmpretrain/v1.0/minigpt4/minigpt-4_eva-g-p14_20230615-e908c021.pth'  # noqa
     ),
     text_backbone=dict(
-        type='AutoModelForCausalLM', name_or_path='/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
+        type='AutoModelForCausalLM',
+        name_or_path=
+        '/mnt/petrelfs/share_data/liuyuan/llm_weights/vicuna_weights_7b'),
     Qformer=dict(
         type='Qformer',
         model_style='bert-base-uncased',
@@ -38,7 +43,7 @@ model = dict(
         add_cross_attention=True,
         cross_attention_freq=2,
         num_query_token=32),
-    prompt="Write a short description for the image.",
+    prompt='Write a short description for the image.',
     max_txt_len=30)
 
 # schedule settings
