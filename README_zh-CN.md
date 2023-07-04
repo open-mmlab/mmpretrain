@@ -84,28 +84,26 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## 更新日志
 
+
+🌟 v1.0.0 was released in 04/07/2023
+
+- 支持更多**多模态**算法的推理, 例如 **LLaVA**, **MiniGPT-4**, **Otter** 等。
+- 支持约 **10 个多模态数据集**!
+- 添加自监督学习算法 **iTPN**, **SparK**。
+- 提供[新配置文件](./mmpretrain/configs/)和 [DeepSpeed/FSDP](./configs/mae/benchmarks/) 的样例。
+
 🌟 2023/5/22 发布了 v1.0.0rc8 版本
 
 - 支持多种多模态算法和推理器。您可以通过 [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo) 探索这些功能!
 - 新增 EVA-02，Dino-V2，ViT-SAM 和 GLIP 主干网络。
 - 将 torchvision 变换注册到 MMPretrain，现在您可以轻松地将 torchvision 的数据增强集成到 MMPretrain 中。
 
-🌟 2023/4/7 发布了 v1.0.0rc7 版本
+之前版本更新内容
 
 - 整和来自 MMSelfSup 的自监督学习算法，例如 `MAE`, `BEiT` 等
 - 支持了 **RIFormer**，简单但有效的视觉主干网络，却移除了 token mixer
-- 支持 t-SNE 可视化
 - 重构数据管道可视化
-
-之前版本更新内容
-
 - 支持了 **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
-- 复现了 ConvNeXt 和 RepVGG 的训练精度。
-- 支持混淆矩阵计算和画图。
-- 支持了 **多任务** 训练和测试。
-- 支持了测试时增强（TTA）。
-- 更新了主要 API 接口，用以方便地获取 MMPreTrain 中预定义的模型。
-- 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据 [文档](https://mmpretrain.readthedocs.io/zh_CN/latest/) 进行试用。
 
@@ -220,6 +218,10 @@ mim install -e ".[multimodal]"
         <li><a href="configs/levit">LeViT</a></li>
         <li><a href="configs/riformer">RIFormer</a></li>
         <li><a href="configs/glip">GLIP</a></li>
+        <li><a href="configs/sam">ViT SAM</a></li>
+        <li><a href="configs/eva02">EVA02</a></li>
+        <li><a href="configs/dinov2">DINO V2</a></li>
+        <li><a href="configs/hivit">HiViT</a></li>
         </ul>
       </td>
       <td>
@@ -242,6 +244,8 @@ mim install -e ".[multimodal]"
         <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
         <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
         <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        <li><a href="configs/itpn">iTPN (CVPR'2023)</a></li>
+        <li><a href="configs/spark">SparK (ICLR'2023)</a></li>
         </ul>
       </td>
       <td>
