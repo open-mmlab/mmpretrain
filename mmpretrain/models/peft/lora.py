@@ -128,11 +128,12 @@ class LoRAModel(BaseModule):
                         module_name.endswith(target_name):
                     current_module = self.module.get_submodule(module_name)
                     if isinstance(current_module, nn.Linear):
-                        print_log(f'Set LoRA for {module_name} '
-                                  f'with alpha: {target_alpha}, '
-                                  f'rank: {target_rank}, '
-                                  f'drop rate: {target_drop_rate}',
-                                  logger='current')
+                        print_log(
+                            f'Set LoRA for {module_name} '
+                            f'with alpha: {target_alpha}, '
+                            f'rank: {target_rank}, '
+                            f'drop rate: {target_drop_rate}',
+                            logger='current')
 
                         self._replace_module(module_name, current_module,
                                              target_alpha, target_rank,
