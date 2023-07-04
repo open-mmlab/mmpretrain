@@ -84,7 +84,7 @@ class LoRAModel(BaseModule):
         ...     drop_rate=0.1,
         ...     targets=[
         ...         dict(type='qkv'),
-        ...         dict(type='.*proj', alpha=8, rank=8, drop_rate=0.2)
+        ...         dict(type='.*proj', alpha=8, rank=8, drop_rate=0.2),
         ...     ])
     """
 
