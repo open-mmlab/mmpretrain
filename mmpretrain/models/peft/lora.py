@@ -106,7 +106,7 @@ class LoRAModel(BaseModule):
         self.drop_rate = drop_rate
 
         assert len(targets) != 0, \
-            "The length of target layers should not be 0."
+            'The length of target layers should not be 0.'
 
         self.targets = targets
 
@@ -158,9 +158,9 @@ class LoRAModel(BaseModule):
     def _register_state_dict_hooks(self):
         """Register state dict hooks.
 
-        Register state dict saving hooks to save only the lora
-        parameters to the state dict. And register state dict loading
-        hooks to handle the incompatible keys while loading the state dict.
+        Register state dict saving hooks to save only the lora parameters to
+        the state dict. And register state dict loading hooks to handle the
+        incompatible keys while loading the state dict.
         """
 
         def _state_dict_hook(module, state_dict, prefix, local_metadata):
