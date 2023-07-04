@@ -1,9 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import re
+import pytest
+
+from mmengine.utils import digit_version
+from mmengine.utils.dl_utils import TORCH_VERSION
 
 from mmpretrain.models.peft import LoRAModel
 
 
+@pytest.mark.skipif(
+    digit_version(TORCH_VERSION) < digit_version('1.9.0'),
+    reason='get_submodule requires torch >= 1.9.0')
 def test_lora_model():
     module = dict(
         type='VisionTransformer',
