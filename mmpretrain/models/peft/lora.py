@@ -142,10 +142,10 @@ class LoRAModel(BaseModule):
     def _replace_module(self, module_name: str, current_module: nn.Module,
                         alpha: int, rank: int, drop_rate: float):
         """Replace target layer with LoRA linear layer in place."""
-        parent_module_name = ".".join(module_name.split(".")[:-1])
+        parent_module_name = '.'.join(module_name.split('.')[:-1])
         parent_module = self.module.get_submodule(parent_module_name)
 
-        target_name = module_name.split(".")[-1]
+        target_name = module_name.split('.')[-1]
         target_module = LoRALinear(current_module, alpha, rank, drop_rate)
         setattr(parent_module, target_name, target_module)
 
