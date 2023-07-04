@@ -86,10 +86,10 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 🌟 2023/7/4 发布了 v1.0.0 版本
 
-- 支持更多**多模态**算法的推理, 例如 **LLaVA**, **MiniGPT-4**, **Otter** 等。
-- 支持约 **10 个多模态数据集**!
-- 添加自监督学习算法 **iTPN**, **SparK**。
-- 提供[新配置文件](./mmpretrain/configs/)和 [DeepSpeed/FSDP](./configs/mae/benchmarks/) 的样例。
+- 支持更多**多模态**算法的推理, 例如 [**LLaVA**](./configs/llava/), [**MiniGPT-4**](./configs/minigpt4), [**Otter**](./configs/otter/) 等。
+- 支持约 **10 个多模态**数据集!
+- 添加自监督学习算法 [**iTPN**](./configs/itpn/), [**SparK**](./configs/spark/)。
+- 提供[新配置文件](./mmpretrain/configs/)和 [DeepSpeed/FSDP](./configs/mae/benchmarks/) 的样例。这是[新配置文件](https://mmengine.readthedocs.io/en/latest/advanced_tutorials/config.html#a-pure-python-style-configuration-file-beta) 和 [DeepSpeed/FSDP with FlexibleRunner](https://mmengine.readthedocs.io/en/latest/api/generated/mmengine.runner.FlexibleRunner.html#mmengine.runner.FlexibleRunner) 的文档链接。
 
 🌟 2023/5/22 发布了 v1.0.0rc8 版本
 
