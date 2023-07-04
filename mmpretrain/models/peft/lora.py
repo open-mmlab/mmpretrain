@@ -14,21 +14,22 @@ from mmpretrain.registry import MODELS
 class LoRALinear(nn.Module):
     r"""Implements LoRA in a linear layer.
 
-    The forward process is:
-
-    .. math::
-        `y = W_0 x + BAx / (\alpha / r)`
-
-    Where :math:`x` is the input, :math:`y` is the output,
-    :math:`W_0` is the parameter of the original layer,
-    :math:`A` and :math:`B` are the low-rank decomposition matrixs,
-    :math: `\alpha` is the scale factor and :math: `r` is the rank.
-
     Args:
         original_layer (nn.Linear): The linear layer to be finetuned.
         alpha (int): The scale factor of LoRA. Defaults to 1.
         rank (int): The rank of LoRA. Defaults to 0.
         drop_rate (float): The drop out rate for LoRA. Defaults to 0.
+
+    Note:
+        The forward process of LoRA linear layer is:
+
+        .. math::
+            `y = W_0 x + BAx * (\alpha / r)`
+
+        Where :math:`x` is the input, :math:`y` is the output,
+        :math:`W_0` is the parameter of the original layer,
+        :math:`A` and :math:`B` are the low-rank decomposition matrixs,
+        :math: `\alpha` is the scale factor and :math: `r` is the rank.
     """
 
     def __init__(self,
@@ -74,6 +75,17 @@ class LoRAModel(BaseModule):
         drop_rate (float): The drop out rate for LoRA. Defaults to 0.
         targets (List[dict]): The target layers to be applied with the LoRA.
             Defaults to a empty list.
+
+    Examples:
+        >>> model = LoRAModel(
+        ...     module=dict(type='VisionTransformer', arch='b'),
+        ...     alpha=4,
+        ...     rank=4,
+        ...     drop_rate=0.1,
+        ...     targets=[
+        ...         dict(type='qkv'),
+        ...         dict(type='.*proj', alpha=8, rank=8, drop_rate=0.2)
+        ...     ])
     """
 
     def __init__(self,
@@ -99,8 +111,8 @@ class LoRAModel(BaseModule):
         self.targets = targets
 
         self.apply_lora()
-        self._freeze_module()
-        self._register_hooks()
+        self._set_lora_trainable()
+        self._register_state_dict_hooks()
 
     def apply_lora(self):
         """Apply LoRA to target layers."""
@@ -128,7 +140,7 @@ class LoRAModel(BaseModule):
 
     def _replace_module(self, module_name: str, current_module: nn.Module,
                         alpha: int, rank: int, drop_rate: float):
-        """Replace target layer with LoRA linear layer."""
+        """Replace target layer with LoRA linear layer in place."""
         parent_module_name = ".".join(module_name.split(".")[:-1])
         parent_module = self.module.get_submodule(parent_module_name)
 
@@ -136,20 +148,22 @@ class LoRAModel(BaseModule):
         target_module = LoRALinear(current_module, alpha, rank, drop_rate)
         setattr(parent_module, target_name, target_module)
 
-    def _freeze_module(self):
-        """
-        TODO
-        """
+    def _set_lora_trainable(self):
+        """Set only the lora parameters trainable."""
         for name, param in self.named_parameters():
             if 'lora_' not in name:
                 param.requires_grad = False
 
-    def _register_hooks(self):
-        """
-        TODO
+    def _register_state_dict_hooks(self):
+        """Register state dict hooks.
+
+        Register state dict saving hooks to save only the lora
+        parameters to the state dict. And register state dict loading
+        hooks to handle the incompatible keys while loading the state dict.
         """
 
         def _state_dict_hook(module, state_dict, prefix, local_metadata):
+            """Save only the lora parameters to the state dict."""
             keys = [k for k, _ in state_dict.items()]
             for key in keys:
                 if 'lora_' not in key:
@@ -158,6 +172,7 @@ class LoRAModel(BaseModule):
         self._register_state_dict_hook(_state_dict_hook)
 
         def _load_state_dict_post_hook(module, incompatible_keys):
+            """Handle the incompatible keys while loading the state dict."""
             missing_keys = incompatible_keys.missing_keys.copy()
             for key in missing_keys:
                 if 'lora_' not in key:
@@ -171,13 +186,8 @@ class LoRAModel(BaseModule):
         self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
 
     def get_layer_depth(self, param_name: str, prefix: str = ''):
-        """
-        TODO
-        """
+        """Get the layer-wise depth of a parameter for learning rate decay."""
         return self.module.get_layer_depth(param_name, prefix)
 
     def forward(self, x: torch.Tensor):
-        """
-        TODO
-        """
         return self.module(x)
