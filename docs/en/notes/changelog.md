@@ -1,5 +1,59 @@
 # Changelog (MMPreTrain)
 
+## v1.0.0(04/07/2023)
+
+### Highlights
+
+- Support inference of more **multi-modal** algorithms, such as **LLaVA**, **MiniGPT-4**, **Otter**, etc.
+- Support around **10 multi-modal datasets**!
+- Add **iTPN**, **SparK** self-supervised learning algorithms.
+- Provide examples of [New Config](./mmpretrain/configs/) and [DeepSpeed/FSDP](./configs/mae/benchmarks/).
+
+### New Features
+
+- Transfer shape-bias tool from mmselfsup ([#1658](https://github.com/open-mmlab/mmpretrain/pull/1685))
+- Download dataset by using MIM&OpenDataLab ([#1630](https://github.com/open-mmlab/mmpretrain/pull/1630))
+- Support New Configs ([#1639](https://github.com/open-mmlab/mmpretrain/pull/1639), [#1647](https://github.com/open-mmlab/mmpretrain/pull/1647), [#1665](https://github.com/open-mmlab/mmpretrain/pull/1665))
+- Support Flickr30k Retrieval dataset ([#1625](https://github.com/open-mmlab/mmpretrain/pull/1625))
+- Support SparK ([#1531](https://github.com/open-mmlab/mmpretrain/pull/1531))
+- Support LLaVA ([#1652](https://github.com/open-mmlab/mmpretrain/pull/1652))
+- Support Otter ([#1651](https://github.com/open-mmlab/mmpretrain/pull/1651))
+- Support MiniGPT-4 ([#1642](https://github.com/open-mmlab/mmpretrain/pull/1642))
+- Add support for VizWiz dataset ([#1636](https://github.com/open-mmlab/mmpretrain/pull/1636))
+- Add support for vsr dataset ([#1634](https://github.com/open-mmlab/mmpretrain/pull/1634))
+- Add InternImage Classification project ([#1569](https://github.com/open-mmlab/mmpretrain/pull/1569))
+- Support OCR-VQA dataset ([#1621](https://github.com/open-mmlab/mmpretrain/pull/1621))
+- Support OK-VQA dataset ([#1615](https://github.com/open-mmlab/mmpretrain/pull/1615))
+- Support TextVQA dataset ([#1569](https://github.com/open-mmlab/mmpretrain/pull/1569))
+- Support iTPN and HiViT ([#1584](https://github.com/open-mmlab/mmpretrain/pull/1584))
+- Add retrieval mAP metric ([#1552](https://github.com/open-mmlab/mmpretrain/pull/1552))
+- Support NoCap dataset based on BLIP. ([#1582](https://github.com/open-mmlab/mmpretrain/pull/1582))
+- Add GQA dataset ([#1585](https://github.com/open-mmlab/mmpretrain/pull/1585))
+
+### Improvements
+
+- Update fsdp vit-huge and vit-large config ([#1675](https://github.com/open-mmlab/mmpretrain/pull/1675))
+- Support deepspeed with flexible runner ([#1673](https://github.com/open-mmlab/mmpretrain/pull/1673))
+- Update Otter and LLaVA docs and config. ([#1653](https://github.com/open-mmlab/mmpretrain/pull/1653))
+- Add image_only param of ScienceQA ([#1613](https://github.com/open-mmlab/mmpretrain/pull/1613))
+- Support to use "split" to specify training set/validation ([#1535](https://github.com/open-mmlab/mmpretrain/pull/1535))
+
+### Bug Fixes
+
+- Refactor \_prepare_pos_embed in ViT ([#1656](https://github.com/open-mmlab/mmpretrain/pull/1656)， [#1679](https://github.com/open-mmlab/mmpretrain/pull/1679))
+- Freeze pre norm in vision transformer ([#1672](https://github.com/open-mmlab/mmpretrain/pull/1672))
+- Fix bug loading IN1k dataset ([#1641](https://github.com/open-mmlab/mmpretrain/pull/1641))
+- Fix sam bug ([#1633](https://github.com/open-mmlab/mmpretrain/pull/1633))
+- Fixed circular import error for new transform ([#1609](https://github.com/open-mmlab/mmpretrain/pull/1609))
+- Update torchvision transform wrapper ([#1595](https://github.com/open-mmlab/mmpretrain/pull/1595))
+- Set default out_type in CAM visualization ([#1586](https://github.com/open-mmlab/mmpretrain/pull/1586))
+
+### Docs Update
+
+- Fix spelling ([#1681](https://github.com/open-mmlab/mmpretrain/pull/1681))
+- Fix doc typos ([#1671](https://github.com/open-mmlab/mmpretrain/pull/1671), [#1644](https://github.com/open-mmlab/mmpretrain/pull/1644), [#1629](https://github.com/open-mmlab/mmpretrain/pull/1629))
+- Add t-SNE visualization doc ([#1555](https://github.com/open-mmlab/mmpretrain/pull/1555))
+
 ## v1.0.0rc8(22/05/2023)
 
 ### Highlights

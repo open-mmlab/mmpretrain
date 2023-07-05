@@ -1,7 +1,7 @@
 - Name: convnext-base_32xb128_in1k
 - Name: convnext-v2-atto_fcmae-pre_3rdparty_in1k
 - Name: mobilenet-v2_8xb32_in1k
-- Name: mobilenet-v3-small-050_8xb128_in1k
+- Name: mobilenet-v3-small-050_3rdparty_in1k
 - Name: swin-tiny_16xb64_in1k
 - Name: swinv2-tiny-w8_3rdparty_in1k-256px
 - Name: vit-base-p16_32xb128-mae_in1k
