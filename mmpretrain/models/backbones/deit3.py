@@ -126,7 +126,7 @@ class DeiT3TransformerEncoderLayer(BaseModule):
         use_layer_scale (bool): Whether to use layer_scale in
             DeiT3TransformerEncoderLayer. Defaults to True.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.

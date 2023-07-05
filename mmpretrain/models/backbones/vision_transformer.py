@@ -33,7 +33,7 @@ class TransformerEncoderLayer(BaseModule):
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         ffn_type (str): Select the type of ffn layers. Defaults to 'origin'.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.
