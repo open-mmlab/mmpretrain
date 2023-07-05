@@ -369,7 +369,7 @@ test_dataloader = val_dataloader
 
 - 原先的 **`ToTensor`**、**`ImageToTensor`** 和 **`Collect`** 被合并为 [`PackInputs`](mmpretrain.datasets.transforms.PackInputs)
 - 我们建议去除数据集流水线中的 **`Normalize`** 变换，转而使用 `data_preprocessor` 字段进行归一化预处理。
-- [**`RandomFlip`**](mmcv.transforms.RandomFlip) 中的 `flip_prob` 参数被重命名为 `flip`
+- [**`RandomFlip`**](mmcv.transforms.RandomFlip) 中的 `flip_prob` 参数被重命名为 `prob`
 - [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) 中的 `size` 参数被重命名为 `crop_size`
 - [**`RandomResizedCrop`**](mmpretrain.datasets.transforms.RandomResizedCrop) 中的 `size` 参数被重命名为 `scale`
 - [**`Resize`**](mmcv.transforms.Resize) 中的 `size` 参数被重命名为 `scale`。并且不再支持形如 `(256, -1)` 的尺寸，请使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge)
