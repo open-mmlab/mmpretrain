@@ -50,6 +50,9 @@
 
 ### Docs Update
 
+- Fix spelling ([#1681](https://github.com/open-mmlab/mmpretrain/pull/1681))
+- Fix typo in docs/*/migration.md ([#1671](https://github.com/open-mmlab/mmpretrain/pull/1671))
+- Fix doc typos ([#1644](https://github.com/open-mmlab/mmpretrain/pull/1644))
 - Add t-SNE visualization doc ([#1555](https://github.com/open-mmlab/mmpretrain/pull/1555))
 
 ## v1.0.0rc8(22/05/2023)
