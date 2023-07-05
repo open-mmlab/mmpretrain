@@ -190,5 +190,5 @@ class LoRAModel(BaseModule):
         """Get the layer-wise depth of a parameter for learning rate decay."""
         return self.module.get_layer_depth(param_name, prefix)
 
-    def forward(self, x: torch.Tensor):
-        return self.module(x)
+    def forward(self, *args, **kwargs):
+        return self.module(*args, **kwargs)
