@@ -104,8 +104,8 @@ model = dict(
 - `data_preprocessor`: 模型输入预处理配置，与 `model.data_preprocessor` 相同，但优先级更低。
 - `train_evaluator | val_evaluator | test_evaluator`: 构建评估器，参考 [API 文档](mmpretrain.evaluation)。
 - `train_dataloader | val_dataloader | test_dataloader`: 构建 dataloader
-  - `samples_per_gpu`: 每个 GPU 的 batch size
-  - `workers_per_gpu`: 每个 GPU 的线程数
+  - `batch_size`: 每个 GPU 的 batch size
+  - `num_workers`: 每个 GPU 的线程数
   - `sampler`: 采样器配置
   - `dataset`: 数据集配置
     - `type`:  数据集类型， MMPretrain 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](mmpretrain.datasets)
