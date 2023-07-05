@@ -163,7 +163,7 @@ class BlipRetrieval(BaseModel):
         ]
         self.copy_params()
 
-        # multimodal backone shares weights with text backbone in BLIP
+        # multimodal backbone shares weights with text backbone in BLIP
         # No need to set up
 
         # Notice that this topk is used for select k candidate to compute
