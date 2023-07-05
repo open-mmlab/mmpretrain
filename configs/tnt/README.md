@@ -61,7 +61,7 @@ python tools/test.py configs/tnt/tnt-s-p16_16xb64_in1k.py https://download.openm
 | :------------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------: | :------------------------------------------------------------------------------------: |
 | `tnt-small-p16_3rdparty_in1k`\* | From scratch |   23.76    |   3.36    |   81.52   |   95.73   | [config](tnt-s-p16_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/contrastive/pytorch-image-models/blob/809271b0f3e5d9be4e11c0c5cec1dbba8b5e2c60/timm/models/tnt.py#L144). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/contrastive/pytorch-image-models/blob/809271b0f3e5d9be4e11c0c5cec1dbba8b5e2c60/timm/models/tnt.py#L144). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

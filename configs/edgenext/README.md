@@ -66,7 +66,7 @@ python tools/test.py configs/edgenext/edgenext-xxsmall_8xb256_in1k.py https://do
 | `edgenext-base_3rdparty_in1k`\*      | From scratch |   18.51    |   3.81    |   82.48   |   96.20   |   [config](edgenext-base_8xb256_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty_in1k_20220801-9ade408b.pth) |
 | `edgenext-base_3rdparty-usi_in1k`\*  | From scratch |   18.51    |   3.81    |   83.67   |   96.70   | [config](edgenext-base_8xb256-usi_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/edgenext/edgenext-base_3rdparty-usi_in1k_20220801-909e8939.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/mmaaz60/EdgeNeXt). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/mmaaz60/EdgeNeXt). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

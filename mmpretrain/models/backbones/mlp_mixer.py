@@ -28,7 +28,7 @@ class MixerBlock(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.

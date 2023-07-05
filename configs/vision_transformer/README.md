@@ -85,7 +85,7 @@ python tools/test.py configs/vision_transformer/vit-base-p32_64xb64_in1k-384px.p
 | `vit-base-p16_in21k-pre_3rdparty_in1k-384px`\*  | ImageNet-21k |   86.86    |   55.54   |   85.43   |   97.77   | [config](vit-base-p16_64xb64_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth) |
 | `vit-large-p16_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   304.72   |  191.21   |   85.63   |   97.63   | [config](vit-large-p16_64xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

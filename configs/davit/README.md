@@ -63,7 +63,7 @@ python tools/test.py configs/davit/davit-tiny_4xb256_in1k.py https://download.op
 | `davit-small_3rdparty_in1k`\* | From scratch |   49.75    |   8.80    |   83.61   |   96.75   | [config](davit-small_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-small_3rdparty_in1k_20221116-51a849a6.pth) |
 | `davit-base_3rdparty_in1k`\*  | From scratch |   87.95    |   15.51   |   84.09   |   96.82   | [config](davit-base_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-base_3rdparty_in1k_20221116-19e0d956.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

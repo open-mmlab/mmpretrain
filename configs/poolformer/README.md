@@ -65,7 +65,7 @@ python tools/test.py configs/poolformer/poolformer-s12_32xb128_in1k.py https://d
 | `poolformer-m36_3rdparty_32xb128_in1k`\* | From scratch |   56.17    |   8.96    |   82.14   |   95.71   | [config](poolformer-m36_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m36_3rdparty_32xb128_in1k_20220414-c55e0949.pth) |
 | `poolformer-m48_3rdparty_32xb128_in1k`\* | From scratch |   73.47    |   11.80   |   82.51   |   95.95   | [config](poolformer-m48_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m48_3rdparty_32xb128_in1k_20220414-9378f3eb.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/sail-sg/poolformer). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/sail-sg/poolformer). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

@@ -46,7 +46,7 @@ python tools/test.py configs/flamingo/flamingo_zeroshot_caption.py https://downl
 | :------------------------------------- | :--------: | :---: | :------------------------------------: | :-----------------------------------------------------------------------------------------------------------: |
 | `flamingo_3rdparty-zeroshot_caption`\* |   8.220    | 65.50 | [config](flamingo_zeroshot_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth) |
 
-*Models with * are converted from the [openflamingo](https://github.com/mlfoundations/open_flamingo). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [openflamingo](https://github.com/mlfoundations/open_flamingo). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Visual Question Answering on VQAv2
 
@@ -54,7 +54,7 @@ python tools/test.py configs/flamingo/flamingo_zeroshot_caption.py https://downl
 | :--------------------------------- | :--------: | :------: | :--------------------------------: | :----------------------------------------------------------------------------------------------------------------: |
 | `flamingo_3rdparty-zeroshot_vqa`\* |    8.22    |  43.50   | [config](flamingo_zeroshot_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/flamingo/openflamingo-9b-adapter_20230505-554310c8.pth) |
 
-*Models with * are converted from the [openflamingo](https://github.com/mlfoundations/open_flamingo). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [openflamingo](https://github.com/mlfoundations/open_flamingo). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

@@ -75,7 +75,7 @@ python tools/test.py configs/deit/deit-tiny_4xb256_in1k.py https://download.open
 | `deit-base_224px-pre_3rdparty_in1k-384px`\*       |    224px     |   86.86    |   55.54   |   83.04   |   96.31   |      [config](deit-base_16xb32_in1k-384px.py)      | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_ft-16xb32_in1k-384px_20211124-822d02f2.pth) |
 | `deit-base-distilled_224px-pre_3rdparty_in1k-384px`\* |    224px     |   87.63    |   55.65   |   85.55   |   97.35   | [config](deit-base-distilled_16xb32_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_ft-16xb32_in1k-384px_20211216-e48d6000.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L168). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L168). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ```{warning}
 MMPretrain doesn't support training the distilled version DeiT.

@@ -81,7 +81,7 @@ python tools/test.py configs/convnext/convnext-tiny_32xb128_in1k.py https://down
 | `convnext-large_3rdparty_in21k`\*  |   197.77   |   34.37   | [config](convnext-large_64xb64_in21k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_in21k_20220124-41b5a79f.pth) |
 | `convnext-xlarge_3rdparty_in21k`\* |   350.20   |   60.93   | [config](convnext-xlarge_64xb64_in21k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on ImageNet-1k
 
@@ -109,7 +109,7 @@ python tools/test.py configs/convnext/convnext-tiny_32xb128_in1k.py https://down
 | `convnext-xlarge_in21k-pre_3rdparty_in1k`\*       | ImageNet-21k |   350.20   |   60.93   |   86.97   |   98.20   |    [config](convnext-xlarge_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_in21k-pre-3rdparty_64xb64_in1k_20220124-76b6863d.pth) |
 | `convnext-xlarge_in21k-pre-3rdparty_in1k-384px`\* | From scratch |   350.20   |  179.20   |   87.76   |   98.55   | [config](convnext-xlarge_64xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_in21k-pre-3rdparty_in1k-384px_20221219-b161bc14.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

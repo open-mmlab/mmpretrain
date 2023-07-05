@@ -44,7 +44,7 @@ print(type(feats))
 | `vit-large-p14_dinov2-pre_3rdparty`\* |   304.00   |  507.00   | [config](vit-large-p14_dinov2-pre_headless.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-large-p14_dinov2-pre_3rdparty_20230426-f3302d9e.pth) |
 | `vit-giant-p14_dinov2-pre_3rdparty`\* |  1136.00   |  1784.00  | [config](vit-giant-p14_dinov2-pre_headless.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/dinov2/vit-giant-p14_dinov2-pre_3rdparty_20230426-2934a630.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/dinov2). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/dinov2). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

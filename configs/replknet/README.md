@@ -93,7 +93,7 @@ backbone.switch_to_deploy()
 | `replknet-31L_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   172.67   |   97.24   |   86.63   |   98.00   | [config](replknet-31L_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth) |
 | `replknet-XL_meg73m-pre_3rdparty_in1k-320px`\* |    MEG73M    |   335.44   |  129.57   |   87.57   |   98.39   | [config](replknet-XL_32xb64_in1k-320px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

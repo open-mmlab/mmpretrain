@@ -86,7 +86,7 @@ python tools/test.py configs/swin_transformer_v2/swinv2-tiny-w8_16xb64_in1k-256p
 | `swinv2-base-w12_3rdparty_in21k-192px`\*  |   87.92    |   8.51    | [config](swinv2-base-w12_8xb128_in21k-192px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth) |
 | `swinv2-large-w12_3rdparty_in21k-192px`\* |   196.74   |   19.04   | [config](swinv2-large-w12_8xb128_in21k-192px.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-large-w12_3rdparty_in21k-192px_20220803-d9073fee.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on ImageNet-1k
 
@@ -103,7 +103,7 @@ python tools/test.py configs/swin_transformer_v2/swinv2-tiny-w8_16xb64_in1k-256p
 | `swinv2-large-w16_in21k-pre_3rdparty_in1k-256px`\* | ImageNet-21k |   196.75   |   33.86   |   86.93   |   98.06   | [config](swinv2-large-w16_in21k-pre_16xb64_in1k-256px.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w16_in21k-pre_3rdparty_in1k-256px_20220803-c40cbed7.pth) |
 | `swinv2-large-w24_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   196.75   |   76.20   |   87.59   |   98.27   | [config](swinv2-large-w24_in21k-pre_16xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-large-w24_in21k-pre_3rdparty_in1k-384px_20220803-3b36c165.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

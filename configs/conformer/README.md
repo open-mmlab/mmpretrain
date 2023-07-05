@@ -70,7 +70,7 @@ python tools/test.py configs/conformer/conformer-tiny-p16_8xb128_in1k.py https:/
 | `conformer-small-p32_8xb128_in1k`     | From scratch |   38.85    |   7.09    |   81.96   |   96.02   | [config](conformer-small-p32_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p32_8xb128_in1k_20211206-947a0816.pth) |
 | `conformer-base-p16_3rdparty_in1k`\*  | From scratch |   83.29    |   22.89   |   83.82   |   96.59   | [config](conformer-base-p16_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/conformer/conformer-base-p16_3rdparty_8xb128_in1k_20211206-bfdf8637.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/pengzhiliang/Conformer/blob/main/models.py#L89). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/pengzhiliang/Conformer/blob/main/models.py#L89). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

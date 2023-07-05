@@ -112,7 +112,7 @@ python tools/test.py configs/blip/blip-base_8xb32_caption.py https://download.op
 | :-------------------------- | :--------: | :-------: | :---------------------------------: | :------------------------------------------------------------------------------------------------------------: |
 | `blip-base_3rdparty_nlvr`\* |   259.37   |   82.33   | [config](./blip-base_8xb32_nlvr.py) | [model](https://download.openmmlab.com/mmclassification/v1/blip/blip-base_3rdparty_nlvr_20230427-3b14d33f.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/salesforce/LAVIS). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 *Results with # denote zero-shot evaluation. The corresponding model hasn't been finetuned on that dataset.*
 

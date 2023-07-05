@@ -43,7 +43,7 @@ print(type(feats))
 | `vit-large-p16_sam-pre_3rdparty_sa1b-1024px`\* |   308.00   |  1494.00  | [config](vit-large-p16_sam_headless.py) | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-large-p16_sam-pre_3rdparty_sa1b-1024px_20230411-595feafd.pth) |
 | `vit-huge-p16_sam-pre_3rdparty_sa1b-1024px`\*  |   637.00   |  2982.00  | [config](vit-huge-p16_sam_headless.py)  | [model](https://download.openmmlab.com/mmclassification/v1/vit_sam/vit-huge-p16_sam-pre_3rdparty_sa1b-1024px_20230411-3f13c653.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/segment-anything/). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/segment-anything/). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 
