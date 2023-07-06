@@ -110,7 +110,13 @@ class LoRAModel(BaseModule):
 
         self.targets = targets
 
+        self.applied = False
         self.apply_lora()
+
+        if not self.applied:
+            raise ValueError(
+                'No lora layer is replaced. Please check targets.')
+
         self._set_lora_trainable()
         self._register_state_dict_hooks()
 
@@ -138,6 +144,7 @@ class LoRAModel(BaseModule):
                         self._replace_module(module_name, current_module,
                                              target_alpha, target_rank,
                                              target_drop_rate)
+                        self.applied = True
 
     def _replace_module(self, module_name: str, current_module: nn.Module,
                         alpha: int, rank: int, drop_rate: float):
