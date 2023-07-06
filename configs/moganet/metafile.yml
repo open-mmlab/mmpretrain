@@ -26,7 +26,7 @@ Models:
           Top 1 Accuracy: 76.48
           Top 5 Accuracy: 93.49
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_xtiny_sz224_8xb128_fp16_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-xtiny_3rdparty_8xb128_in1k.pth
     Config: configs/moganet/moganet-xtiny_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_xtiny_sz224_8xb128_fp16_ep300.pth
@@ -42,7 +42,7 @@ Models:
           Top 1 Accuracy: 77.24
           Top 5 Accuracy: 93.51
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_tiny_sz224_8xb128_fp16_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-tiny_3rdparty_8xb128_in1k.pth
     Config: configs/moganet/moganet-tiny_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_tiny_sz224_8xb128_fp16_ep300.pth
@@ -58,7 +58,7 @@ Models:
           Top 1 Accuracy: 83.38
           Top 5 Accuracy: 96.58
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_small_sz224_8xb128_fp16_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-small_3rdparty_8xb128_in1k.pth
     Config: configs/moganet/moganet-small_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_small_sz224_8xb128_fp16_ep300.pth
@@ -74,7 +74,7 @@ Models:
           Top 1 Accuracy: 84.20
           Top 5 Accuracy: 96.77
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_base_sz224_8xb128_fp16_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-base_3rdparty_8xb128_in1k.pth
     Config: configs/moganet/moganet-base_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_base_sz224_8xb128_fp16_ep300.pth
@@ -90,7 +90,7 @@ Models:
           Top 1 Accuracy: 84.76
           Top 5 Accuracy: 97.15
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_large_sz224_8xb64_accu2_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-large_3rdparty_8xb128_in1k.pth
     Config: configs/moganet/moganet-large_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_large_sz224_8xb64_accu2_ep300.pth
@@ -106,25 +106,8 @@ Models:
           Top 1 Accuracy: 85.11
           Top 5 Accuracy: 97.38
         Task: Image Classification
-    Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_xlarge_ema_sz224_8xb32_accu2_ep300.pth
+    Weights: https://github.com/Lupin1998/mmpretrain/releases/download/moganet-in1k-weights/moganet-xlarge_3rdparty_16xb32_in1k.pth
     Config: configs/moganet/moganet-xlarge_16xb32_in1k.py
     Converted From:
       Weights: https://github.com/Westlake-AI/openmixup/releases/download/moganet-in1k-weights/moga_xlarge_ema_sz224_8xb32_accu2_ep300.pth
       Code: https://github.com/Westlake-AI/openmixup
-
-  # - Name: poolformer-m48_3rdparty_32xb128_in1k
-  #   Metadata:
-  #     FLOPs: 11801805696
-  #     Parameters: 73473448
-  #   In Collection: PoolFormer
-  #   Results:
-  #     - Dataset: ImageNet-1k
-  #       Metrics:
-  #         Top 1 Accuracy: 82.51
-  #         Top 5 Accuracy: 95.95
-  #       Task: Image Classification
-  #   Weights: https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-m48_3rdparty_32xb128_in1k_20220414-9378f3eb.pth
-  #   Config: configs/poolformer/poolformer-m48_32xb128_in1k.py
-  #   Converted From:
-  #     Weights: https://github.com/sail-sg/poolformer/releases/download/v1.0/poolformer_m48.pth.tar
-  #     Code: https://github.com/sail-sg/poolformer
