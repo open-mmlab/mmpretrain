@@ -45,7 +45,8 @@ class iTPNClipHead(BaseModule):
         """
         if torch.cuda.is_available():
             mask = mask.to(torch.device('cuda'), non_blocking=True)
-        elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+        elif hasattr(torch.backends,
+                     'mps') and torch.backends.mps.is_available():
             mask = mask.to(torch.device('mps'), non_blocking=True)
         mask = mask.flatten(1).to(torch.bool)
         target = target[mask]

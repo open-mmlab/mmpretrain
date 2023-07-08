@@ -103,7 +103,8 @@ class SwAVHook(Hook):
                     self.queue_length // runner.world_size,
                     self.feat_dim,
                 ).cuda()
-            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+            elif hasattr(torch.backends,
+                         'mps') and torch.backends.mps.is_available():
                 self.queue = torch.zeros(
                     len(self.crops_for_assign),
                     self.queue_length // runner.world_size,
