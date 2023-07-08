@@ -9,6 +9,7 @@ Collections:
         - SBU captions
       Architecture:
         - Transformer
+      Training Resources: 8x A100 GPUs
     Paper:
       Title: 'BLIP: Bootstrapping Language-Image Pre-training for Unified Vision-Language
         Understanding and Generation'

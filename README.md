@@ -86,28 +86,25 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## What's new
 
+🌟 v1.0.0 was released in 04/07/2023
+
+- Support inference of more **multi-modal** algorithms, such as [**LLaVA**](./configs/llava/), [**MiniGPT-4**](./configs/minigpt4), [**Otter**](./configs/otter/), etc.
+- Support around **10 multi-modal** datasets!
+- Add [**iTPN**](./configs/itpn/), [**SparK**](./configs/spark/) self-supervised learning algorithms.
+- Provide examples of [New Config](./mmpretrain/configs/) and [DeepSpeed/FSDP with FlexibleRunner](./configs/mae/benchmarks/). Here are the documentation links of [New Config](https://mmengine.readthedocs.io/en/latest/advanced_tutorials/config.html#a-pure-python-style-configuration-file-beta) and [DeepSpeed/FSDP with FlexibleRunner](https://mmengine.readthedocs.io/en/latest/api/generated/mmengine.runner.FlexibleRunner.html#mmengine.runner.FlexibleRunner).
+
 🌟 v1.0.0rc8 was released in 22/05/2023
 
 - Support multiple **multi-modal** algorithms and inferencers. You can explore these features by the [gradio demo](https://github.com/open-mmlab/mmpretrain/tree/main/projects/gradio_demo)!
 - Add EVA-02, Dino-V2, ViT-SAM and GLIP backbones.
 - Register torchvision transforms into MMPretrain, you can now easily integrate torchvision's data augmentations in MMPretrain. See [the doc](https://mmpretrain.readthedocs.io/en/latest/api/data_process.html#torchvision-transforms)
 
-🌟 v1.0.0rc7 was released in 07/04/2023
+Update of previous versions
 
 - Integrated Self-supervised learning algorithms from **MMSelfSup**, such as **MAE**, **BEiT**, etc.
 - Support **RIFormer**, a simple but effective vision backbone by removing token mixer.
-- Add t-SNE visualization.
 - Refactor dataset pipeline visualization.
-
-Update of previous versions
-
 - Support **LeViT**, **XCiT**, **ViG**, **ConvNeXt-V2**, **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
-- Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
-- Support confusion matrix calculation and plot.
-- Support **multi-task** training and testing.
-- Support Test-time Augmentation.
-- Upgrade API to get pre-defined models of MMPreTrain.
-- Refactor BEiT backbone and support v1/v2 inference.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
 to try according to [the documentation](https://mmpretrain.readthedocs.io/en/latest/).
@@ -224,6 +221,10 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/levit">LeViT</a></li>
         <li><a href="configs/riformer">RIFormer</a></li>
         <li><a href="configs/glip">GLIP</a></li>
+        <li><a href="configs/sam">ViT SAM</a></li>
+        <li><a href="configs/eva02">EVA02</a></li>
+        <li><a href="configs/dinov2">DINO V2</a></li>
+        <li><a href="configs/hivit">HiViT</a></li>
         </ul>
       </td>
       <td>
@@ -246,6 +247,8 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/beitv2">BEiT V2 (arXiv'2022)</a></li>
         <li><a href="configs/eva">EVA (CVPR'2023)</a></li>
         <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
+        <li><a href="configs/itpn">iTPN (CVPR'2023)</a></li>
+        <li><a href="configs/spark">SparK (ICLR'2023)</a></li>
         </ul>
       </td>
       <td>
@@ -255,6 +258,9 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/ofa">OFA (CoRR'2022)</a></li>
         <li><a href="configs/flamingo">Flamingo (NeurIPS'2022)</a></li>
         <li><a href="configs/chinese_clip">Chinese CLIP (arxiv'2022)</a></li>
+        <li><a href="configs/minigpt4">MiniGPT-4 (arxiv'2023)</a></li>
+        <li><a href="configs/llava">LLaVA (arxiv'2023)</a></li>
+        <li><a href="configs/otter">Otter (arxiv'2023)</a></li>
         </ul>
       </td>
       <td>

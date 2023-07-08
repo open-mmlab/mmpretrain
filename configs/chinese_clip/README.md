@@ -55,7 +55,7 @@ python tools/test.py configs/chinese_clip/cn-clip_resnet50_zeroshot-cls_cifar100
 | `cn-clip_vit-large-p14_zeroshot-cls_cifar100`\* |   406.00   |   74.80   | [config](cn-clip_vit-large-p14_zeroshot-cls_cifar100.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-large-p14_3rdparty_20230519-3f844503.pth) |
 | `cn-clip_vit-huge-p14_zeroshot-cls_cifar100`\*  |   958.00   |   79.10   | [config](cn-clip_vit-huge-p14_zeroshot-cls_cifar100.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/chinese_clip/cn-clip_vit-huge-p14_3rdparty_20230519-e4f49b00.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/OFA-Sys/Chinese-CLIP). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/OFA-Sys/Chinese-CLIP). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

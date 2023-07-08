@@ -85,7 +85,7 @@ python tools/test.py configs/eva02/eva02-tiny-p14_in1k.py /path/to/eva02-tiny-p1
 | `vit-small-p14_eva02-in21k-pre_3rdparty_in1k-336px`\* | EVA02 ImageNet-21k |   22.13    |   15.48   |   85.78   |   97.60   | [config](./eva02-small-p14_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-small-p14_in21k-pre_3rdparty_in1k-336px_20230505-9c5b0e85.pth) |
 | `vit-base-p14_eva02-in21k-pre_3rdparty_in1k-448px`\*  | EVA02 ImageNet-21k |   87.13    |  107.11   |   88.29   |   98.53   | [config](./eva02-base-p14_in1k.py)  | [model](https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-base-p14_in21k-pre_3rdparty_in1k-448px_20230505-8ad211c5.pth) |
 
-*Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 #### (*w* IN-21K intermediate fine-tuning)
 
@@ -95,7 +95,7 @@ python tools/test.py configs/eva02/eva02-tiny-p14_in1k.py /path/to/eva02-tiny-p1
 | `vit-large-p14_eva02-in21k-pre_in21k-medft_3rdparty_in1k-448px`\* | EVA02 ImageNet-21k |   305.08   |  362.33   |   89.65   |   98.95   | [config](./eva02-large-p14_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_in21k-pre_in21k-medft_3rdparty_in1k-448px_20230505-926d1599.pth) |
 | `vit-large-p14_eva02_m38m-pre_in21k-medft_3rdparty_in1k-448px`\* |  EVA02 Merged-38M  |   305.10   |  362.33   |   89.83   |   99.00   | [config](./eva02-large-p14_in1k.py) | [model](https://download.openmmlab.com/mmpretrain/v1.0/eva02/eva02-large-p14_m38m-pre_in21k-medft_3rdparty_in1k-448px_20230505-150dc5ed.pth) |
 
-*Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the  [official repo](https://github.com/baaivision/EVA/tree/master/EVA-02). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

@@ -235,7 +235,7 @@ class TransformerEncoderLayer(BaseModule):
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         use_rel_pos (bool):Whether to use relative position embedding.
@@ -593,11 +593,11 @@ class ViTSAM(BaseBackbone):
 
             if i in self.out_indices:
                 # (B, H, W, C) -> (B, C, H, W)
-                x = x.permute(0, 3, 1, 2)
+                x_reshape = x.permute(0, 3, 1, 2)
 
                 if self.out_channels > 0:
-                    x = self.channel_reduction(x)
-                outs.append(self._format_output(x))
+                    x_reshape = self.channel_reduction(x_reshape)
+                outs.append(self._format_output(x_reshape))
 
         return tuple(outs)
 

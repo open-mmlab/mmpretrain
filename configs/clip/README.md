@@ -74,7 +74,7 @@ python tools/test.py configs/clip/vit-base-p32_pt-64xb64_in1k.py https://downloa
 | `vit-base-p16_clip-openai-in12k-pre_3rdparty_in1k-384px`\* | CLIP OPENAI ImageNet-12k  |   86.57    |   49.37   |   86.87   |   98.05   | [config](vit-base-p16_pt-64xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k-384px_20221220-8df86b74.pth) |
 | `vit-base-p16_clip-openai-pre_3rdparty_in1k-384px`\* |        CLIP OPENAI        |   86.57    |   49.37   |   86.25   |   97.90   | [config](vit-base-p16_pt-64xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-pre_3rdparty_in1k-384px_20221220-eb012e87.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

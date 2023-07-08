@@ -84,7 +84,7 @@ python tools/test.py configs/mobilenet_v3/mobilenet-v3-small-050_8xb128_in1k.py 
 | `mobilenet-v3-large_8xb128_in1k`         | From scratch |    5.48    |   0.23    |   73.49   |   91.31   |   [config](mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.json) |
 | `mobilenet-v3-large_3rdparty_in1k`\*     | From scratch |    5.48    |   0.23    |   74.04   |   91.34   |   [config](mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv3.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv3.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

@@ -7,6 +7,7 @@ import mmengine.dist as dist
 import numpy as np
 import torch
 from mmengine.fileio import LocalBackend, exists, get_file_backend, join_path
+from mmengine.logging import MMLogger
 
 from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -23,13 +24,11 @@ class MNIST(BaseDataset):
     https://github.com/pytorch/vision/blob/master/torchvision/datasets/mnist.py
 
     Args:
-        data_prefix (str): Prefix for data.
-        test_mode (bool): ``test_mode=True`` means in test phase.
-            It determines to use the training set or test set.
+        data_root (str): The root directory of the MNIST Dataset.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str): The root directory for ``data_prefix``.
-            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
@@ -49,12 +48,29 @@ class MNIST(BaseDataset):
     METAINFO = {'classes': MNIST_CATEGORITES}
 
     def __init__(self,
-                 data_prefix: str,
-                 test_mode: bool,
-                 metainfo: Optional[dict] = None,
                  data_root: str = '',
+                 split: str = 'train',
+                 metainfo: Optional[dict] = None,
                  download: bool = True,
+                 data_prefix: str = '',
+                 test_mode: bool = False,
                  **kwargs):
+
+        splits = ['train', 'test']
+        assert split in splits, \
+            f"The split must be one of {splits}, but get '{split}'"
+        self.split = split
+
+        # To handle the BC-breaking
+        if split == 'train' and test_mode:
+            logger = MMLogger.get_current_instance()
+            logger.warning('split="train" but test_mode=True. '
+                           'The training set will be used.')
+
+        if not data_root and not data_prefix:
+            raise RuntimeError('Please set ``data_root`` to'
+                               'specify the dataset path')
+
         self.download = download
         super().__init__(
             # The MNIST dataset doesn't need specify annotation file
@@ -138,13 +154,11 @@ class FashionMNIST(MNIST):
     Dataset.
 
     Args:
-        data_prefix (str): Prefix for data.
-        test_mode (bool): ``test_mode=True`` means in test phase.
-            It determines to use the training set or test set.
+        data_root (str): The root directory of the MNIST Dataset.
+        split (str, optional): The dataset split, supports "train" and "test".
+            Default to "train".
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str): The root directory for ``data_prefix``.
-            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.

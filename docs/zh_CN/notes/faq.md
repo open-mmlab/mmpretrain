@@ -13,7 +13,8 @@
 
   | MMPretrain 版本 |   MMEngine 版本   |    MMCV 版本     |
   | :-------------: | :---------------: | :--------------: |
-  | 1.0.0rc8 (main) | mmengine >= 0.7.1 | mmcv >= 2.0.0rc4 |
+  |  1.0.0 (main)   | mmengine >= 0.8.0 |  mmcv >= 2.0.0   |
+  |    1.0.0rc8     | mmengine >= 0.7.1 | mmcv >= 2.0.0rc4 |
   |    1.0.0rc7     | mmengine >= 0.5.0 | mmcv >= 2.0.0rc4 |
 
   ```{note}

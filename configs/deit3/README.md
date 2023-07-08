@@ -76,7 +76,7 @@ python tools/test.py configs/deit3/deit3-small-p16_64xb64_in1k.py https://downlo
 | `deit3-huge-p14_3rdparty_in1k`\*                  | From scratch |   632.13   |  167.40   |   85.21   |   97.36   |    [config](deit3-huge-p14_64xb32_in1k.py)     | [model](https://download.openmmlab.com/mmclassification/v0/deit3/deit3-huge-p14_3rdparty_in1k_20221009-e107bcb7.pth) |
 | `deit3-huge-p14_in21k-pre_3rdparty_in1k`\*        | ImageNet-21k |   632.13   |  167.40   |   87.19   |   98.26   |    [config](deit3-huge-p14_64xb32_in1k.py)     | [model](https://download.openmmlab.com/mmclassification/v0/deit3/deit3-huge-p14_in21k-pre_3rdparty_in1k_20221009-19b8a535.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

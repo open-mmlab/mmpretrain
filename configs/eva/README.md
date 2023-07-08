@@ -72,7 +72,7 @@ python tools/test.py configs/eva/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.
 | `beit-g-p14_3rdparty-eva_30m`\*                      |  1011.60   |  267.17   |                 [config](eva-g-p14_headless.py)                 | [model](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_3rdparty_30m_20221213-3b7aca97.pth) |
 | `beit-g-p14_eva-30m-pre_3rdparty_in21k`\*            |  1011.60   |  267.17   |                 [config](eva-g-p14_headless.py)                 | [model](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-pre_3rdparty_in21k_20221213-d72285b7.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/baaivision/EVA). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/baaivision/EVA). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on ImageNet-1k
 
@@ -87,7 +87,7 @@ python tools/test.py configs/eva/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.
 | `beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-336px`\* | [EVA 30M ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-pre_3rdparty_in21k_20221213-d72285b7.pth) |  1013.01   |  620.64   |   89.61   |   98.93   | [config](eva-g-p14_8xb16_in1k-336px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-in21k-pre_3rdparty_in1k-336px_20221213-210f9071.pth) |
 | `beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-560px`\* | [EVA 30M ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-pre_3rdparty_in21k_20221213-d72285b7.pth) |  1014.45   |  1906.76  |   89.71   |   98.96   | [config](eva-g-p14_8xb16_in1k-560px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/eva/eva-g-p14_30m-in21k-pre_3rdparty_in1k-560px_20221213-fa1c3652.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/baaivision/EVA). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/baaivision/EVA). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

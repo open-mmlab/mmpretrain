@@ -38,7 +38,7 @@ class T2TTransformerLayer(BaseModule):
         qk_scale (float, optional): Override default qk scale of
             ``(input_dims // num_heads) ** -0.5`` if set. Defaults to None.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.

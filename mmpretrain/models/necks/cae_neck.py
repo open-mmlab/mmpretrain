@@ -39,7 +39,7 @@ class CAETransformerRegressorLayer(BaseModule):
         layer_scale_init_value (float): The init value of gamma.
             Defaults to 0.0.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
     """

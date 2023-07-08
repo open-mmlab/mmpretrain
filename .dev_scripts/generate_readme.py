@@ -301,7 +301,7 @@ def generate_model_table(models,
     if any('Converted From' in model.data for model in models):
         table_string += (
             f"\n*Models with \* are converted from the [official repo]({converted_from['Code']}). "
-            "The config files of these models are only for inference. We haven't reprodcue the training results.*\n"
+            "The config files of these models are only for inference. We haven't reproduce the training results.*\n"
         )
 
     return table_string

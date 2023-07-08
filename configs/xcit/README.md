@@ -92,7 +92,7 @@ python tools/test.py configs/xcit/xcit-nano-12-p16_8xb128_in1k.py https://downlo
 | `xcit-medium-24-p8_3rdparty-dist_in1k-384px`\*  |   84.32    |  186.67   | [config](xcit-medium-24-p8_8xb128_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty-dist_in1k-384px_20230214-5db925e0.pth) |
 | `xcit-large-24-p8_3rdparty-dist_in1k-384px`\*   |   188.93   |  415.00   |  [config](xcit-large-24-p8_8xb128_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty-dist_in1k-384px_20230214-9f718b1a.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/xcit). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/xcit). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

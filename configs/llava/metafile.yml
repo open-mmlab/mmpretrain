@@ -1,0 +1,25 @@
+Collections:
+  - Name: LLaVA
+    Metadata:
+      Architecture:
+        - LLaMA
+        - CLIP
+    Paper:
+      Title: Visual Instruction Tuning
+      URL: https://arxiv.org/abs/2304.08485
+    README: configs/llava/README.md
+
+Models:
+  - Name: llava-7b-v1_caption
+    Metadata:
+      FLOPs: null
+      Parameters: 7045816320
+    In Collection: LLaVA
+    Results:
+      - Task: Image Caption
+        Dataset: COCO
+        Metrics:
+          BLEU-4: null
+          CIDER: null
+    Weights: null
+    Config: configs/llava/llava-7b-v1_caption.py

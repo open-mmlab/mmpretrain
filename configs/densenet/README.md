@@ -64,7 +64,7 @@ python tools/test.py configs/densenet/densenet121_4xb256_in1k.py https://downloa
 | `densenet201_3rdparty_in1k`\* | From scratch |   20.01    |   4.37    |   77.32   |   93.64   | [config](densenet201_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth) |
 | `densenet161_3rdparty_in1k`\* | From scratch |   28.68    |   7.82    |   77.61   |   93.83   | [config](densenet161_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220426-ee6a80a9.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

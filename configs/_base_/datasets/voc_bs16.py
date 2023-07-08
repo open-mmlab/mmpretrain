@@ -22,7 +22,12 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=256, edge='short'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackInputs'),
+    dict(
+        type='PackInputs',
+        # `gt_label_difficult` is needed for VOC evaluation
+        meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                   'scale_factor', 'flip', 'flip_direction',
+                   'gt_label_difficult')),
 ]
 
 train_dataloader = dict(
@@ -30,8 +35,8 @@ train_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007',
-        image_set_path='ImageSets/Layout/val.txt',
+        data_root='data/VOC2007',
+        split='trainval',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -41,22 +46,13 @@ val_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007',
-        image_set_path='ImageSets/Layout/val.txt',
+        data_root='data/VOC2007',
+        split='test',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
 
-test_dataloader = dict(
-    batch_size=16,
-    num_workers=5,
-    dataset=dict(
-        type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007',
-        image_set_path='ImageSets/Layout/val.txt',
-        pipeline=test_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-)
+test_dataloader = val_dataloader
 
 # calculate precision_recall_f1 and mAP
 val_evaluator = [
@@ -65,6 +61,5 @@ val_evaluator = [
     dict(type='VOCAveragePrecision')
 ]
 
-# If you want standard test, please manually configure the test dataset
 test_dataloader = val_dataloader
 test_evaluator = val_evaluator

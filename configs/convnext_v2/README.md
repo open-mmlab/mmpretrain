@@ -68,7 +68,7 @@ python tools/test.py configs/convnext_v2/convnext-v2-atto_32xb32_in1k.py https:/
 | `convnext-v2-large_3rdparty-fcmae_in1k`\* |   197.96   |   34.40   | [config](convnext-v2-large_32xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-large_3rdparty-fcmae_in1k_20230104-bf38df92.pth) |
 | `convnext-v2-huge_3rdparty-fcmae_in1k`\*  |   660.29   |  115.00   | [config](convnext-v2-huge_32xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_3rdparty-fcmae_in1k_20230104-fe43ae6c.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt-V2). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt-V2). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Image Classification on ImageNet-1k
 
@@ -93,7 +93,7 @@ python tools/test.py configs/convnext_v2/convnext-v2-atto_32xb32_in1k.py https:/
 | `convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-384px`\* | FCMAE ImageNet-21k |   660.29   |  337.96   |   88.68   |   98.73   | [config](convnext-v2-huge_32xb32_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-02a4eb35.pth) |
 | `convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-512px`\* | FCMAE ImageNet-21k |   660.29   |  600.81   |   88.86   |   98.74   | [config](convnext-v2-huge_32xb32_in1k-512px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-512px_20230104-ce32e63c.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt-V2). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt-V2). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

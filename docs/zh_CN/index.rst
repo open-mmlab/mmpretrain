@@ -78,6 +78,7 @@ MMPretrain 上手路线
    useful_tools/dataset_visualization.md
    useful_tools/scheduler_visualization.md
    useful_tools/cam_visualization.md
+   useful_tools/t-sne_visualization.md
 
 .. _分析工具:
 .. toctree::
@@ -89,6 +90,7 @@ MMPretrain 上手路线
    useful_tools/log_result_analysis.md
    useful_tools/complexity_analysis.md
    useful_tools/confusion_matrix.md
+   useful_tools/shape_bias.md
 
 .. toctree::
    :maxdepth: 1

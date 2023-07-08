@@ -63,7 +63,7 @@ python tools/test.py configs/cspnet/cspdarknet50_8xb32_in1k.py https://download.
 | `cspresnet50_3rdparty_8xb32_in1k`\*  | From scratch |   21.62    |   3.48    |   79.55   |   94.68   | [config](cspresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth) |
 | `cspresnext50_3rdparty_8xb32_in1k`\* | From scratch |   20.57    |   3.11    |   79.96   |   94.96   | [config](cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

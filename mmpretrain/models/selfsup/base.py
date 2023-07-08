@@ -175,5 +175,5 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
             return self.backbone.get_layer_depth(param_name, 'backbone.')
         else:
             raise NotImplementedError(
-                f"The babckone {type(self.backbone)} doesn't "
+                f"The backbone {type(self.backbone)} doesn't "
                 'support `get_layer_depth` by now.')

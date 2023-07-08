@@ -61,7 +61,7 @@ python tools/test.py configs/inception_v3/inception-v3_8xb32_in1k.py https://dow
 | :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :-----------------------------------------------------------------------------: |
 | `inception-v3_3rdparty_8xb32_in1k`\* | From scratch |   23.83    |   5.75    |   77.57   |   93.58   | [config](inception-v3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/inception.py#L28). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/inception.py#L28). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

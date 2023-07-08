@@ -10,6 +10,7 @@ from .efficientformer_head import EfficientFormerClsHead
 from .grounding_head import GroundingHead
 from .itc_head import ITCHead
 from .itm_head import ITMHead
+from .itpn_clip_head import iTPNClipHead
 from .latent_heads import LatentCrossCorrelationHead, LatentPredictHead
 from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
@@ -24,6 +25,7 @@ from .multi_label_linear_head import MultiLabelLinearClsHead
 from .multi_task_head import MultiTaskHead
 from .seq_gen_head import SeqGenerationHead
 from .simmim_head import SimMIMHead
+from .spark_head import SparKPretrainHead
 from .stacked_head import StackedLinearClsHead
 from .swav_head import SwAVHead
 from .vig_head import VigClsHead
@@ -62,4 +64,6 @@ __all__ = [
     'ITCHead',
     'ITMHead',
     'GroundingHead',
+    'iTPNClipHead',
+    'SparKPretrainHead',
 ]

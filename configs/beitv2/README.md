@@ -74,7 +74,7 @@ python tools/test.py configs/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_i
 | `beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k` | [BEITV2](https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221212-a157be30.pth) |   86.53    |   17.58   |   85.00   |    N/A    | [config](benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.json) |
 | `beit-base-p16_beitv2-in21k-pre_3rdparty_in1k`\* |            BEITV2 ImageNet-21k             |   86.53    |   17.58   |   86.47   |   97.99   | [config](benchmarks/beit-base-p16_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/beit/beitv2-base_3rdparty_in1k_20221114-73e11905.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit2). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit2). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

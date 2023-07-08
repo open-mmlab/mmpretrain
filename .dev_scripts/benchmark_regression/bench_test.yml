@@ -1,0 +1,14 @@
+- Name: convnext-base_32xb128_in1k
+- Name: convnext-v2-atto_fcmae-pre_3rdparty_in1k
+- Name: mobilenet-v2_8xb32_in1k
+- Name: mobilenet-v3-small-050_3rdparty_in1k
+- Name: swin-tiny_16xb64_in1k
+- Name: swinv2-tiny-w8_3rdparty_in1k-256px
+- Name: vit-base-p16_32xb128-mae_in1k
+- Name: resnet34_8xb32_in1k
+- Name: resnext50-32x4d_8xb32_in1k
+- Name: shufflenet-v2-1x_16xb64_in1k
+- Name: riformer-s12_in1k
+- Name: blip-base_3rdparty_retrieval
+- Name: blip2-opt2.7b_3rdparty-zeroshot_caption
+- Name: ofa-base_3rdparty-finetuned_caption

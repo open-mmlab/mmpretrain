@@ -66,7 +66,7 @@ python tools/test.py configs/twins/twins-pcpvt-small_8xb128_in1k.py https://down
 | `twins-svt-base_8xb128_3rdparty_in1k`\*    | From scratch |   56.07    |   8.35    |   83.13   |   96.29   |  [config](twins-svt-base_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-base_3rdparty_8xb128_in1k_20220126-e31cc8e9.pth) |
 | `twins-svt-large_3rdparty_16xb64_in1k`\*   | From scratch |   99.27    |   14.82   |   83.60   |   96.50   |  [config](twins-svt-large_16xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-large_3rdparty_16xb64_in1k_20220126-4817645f.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

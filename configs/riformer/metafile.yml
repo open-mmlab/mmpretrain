@@ -2,6 +2,7 @@ Collections:
   - Name: RIFormer
     Metadata:
       Training Data: ImageNet-1k
+      Training Resources: 8x A100 GPUs
       Architecture:
         - Affine
         - 1x1 Convolution

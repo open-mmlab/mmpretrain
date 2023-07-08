@@ -16,7 +16,8 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
-from utils import METRICS_MAP, MMCLS_ROOT
+
+from .utils import METRICS_MAP, MMCLS_ROOT
 
 # Avoid to import MMPretrain to accelerate speed to show summary
 
@@ -147,6 +148,9 @@ def create_train_job_batch(model_info, args, port, pretrain_info=None):
     if not args.local:
         launcher = 'slurm'
         runner = 'srun python'
+        if gpus > 8:
+            gpus = 8
+            cfg_options.append('auto_scale_lr.enable=True')
     elif not args.non_distributed:
         launcher = 'pytorch'
         if gpus > 8:

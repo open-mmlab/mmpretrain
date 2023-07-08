@@ -29,7 +29,7 @@ class PromptTransformerEncoderLayer(TransformerEncoderLayer):
             Defaults to 2.
         qkv_bias (bool): Enable bias for qkv if True. Defaults to True.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         batch_first (bool): Key, Query and Value are shape of

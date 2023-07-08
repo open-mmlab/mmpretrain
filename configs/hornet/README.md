@@ -66,7 +66,7 @@ python tools/test.py configs/hornet/hornet-tiny_8xb128_in1k.py https://download.
 | `hornet-base_3rdparty_in1k`\*     | From scratch |   87.26    |   15.58   |   84.24   |   96.94   |   [config](hornet-base_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth) |
 | `hornet-base-gf_3rdparty_in1k`\*  | From scratch |   88.42    |   15.42   |   84.32   |   96.95   | [config](hornet-base-gf_8xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

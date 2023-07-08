@@ -33,7 +33,7 @@ class TransformerEncoderLayer(BaseModule):
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         ffn_type (str): Select the type of ffn layers. Defaults to 'origin'.
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.
@@ -305,6 +305,7 @@ class VisionTransformer(BaseBackbone):
         self.out_type = out_type
 
         # Set cls token
+        self.with_cls_token = with_cls_token
         if with_cls_token:
             self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
         elif out_type != 'cls_token':
@@ -393,6 +394,12 @@ class VisionTransformer(BaseBackbone):
             return
 
         ckpt_pos_embed_shape = state_dict[name].shape
+        if (not self.with_cls_token
+                and ckpt_pos_embed_shape[1] == self.pos_embed.shape[1] + 1):
+            # Remove cls token from state dict if it's not used.
+            state_dict[name] = state_dict[name][:, 1:]
+            ckpt_pos_embed_shape = state_dict[name].shape
+
         if self.pos_embed.shape != ckpt_pos_embed_shape:
             from mmengine.logging import MMLogger
             logger = MMLogger.get_current_instance()
@@ -424,6 +431,9 @@ class VisionTransformer(BaseBackbone):
         # freeze patch embedding
         self.patch_embed.eval()
         for param in self.patch_embed.parameters():
+            param.requires_grad = False
+        # freeze pre-norm
+        for param in self.pre_norm.parameters():
             param.requires_grad = False
         # freeze cls_token
         self.cls_token.requires_grad = False

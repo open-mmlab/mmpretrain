@@ -63,7 +63,7 @@ python tools/test.py configs/wrn/wide-resnet50_8xb32_in1k.py https://download.op
 | `wide-resnet101_3rdparty_8xb32_in1k`\*     | From scratch |   126.89   |   22.81   |   78.84   |   94.28   |   [config](wide-resnet101_8xb32_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
 | `wide-resnet50_3rdparty-timm_8xb32_in1k`\* | From scratch |   68.88    |   11.44   |   81.45   |   95.53   | [config](wide-resnet50_timm_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth) |
 
-*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 

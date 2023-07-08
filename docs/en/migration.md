@@ -410,7 +410,7 @@ Changes in **`pipeline`**:
 
 - The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackInputs`](mmpretrain.datasets.transforms.PackInputs).
 - We don't recommend to do **`Normalize`** in the dataset pipeline. Please remove it from pipelines and set it in the `data_preprocessor` field.
-- The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `flip`.
+- The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `prob`.
 - The argument `size` in [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) is renamed to `crop_size`.
 - The argument `size` in [**`RandomResizedCrop`**](mmpretrain.datasets.transforms.RandomResizedCrop) is renamed to `scale`.
 - The argument `size` in [**`Resize`**](mmcv.transforms.Resize) is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge) to replace it.
