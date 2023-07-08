@@ -24,6 +24,8 @@ if torch.cuda.is_available():
         torch.device(f'cuda:{i}') for i in range(torch.cuda.device_count())
     ]
     logger.info(f'Available GPUs: {len(gpus)}')
+elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+    logger.info('Available MPS.')
 else:
     gpus = None
     logger.info('No available GPU.')
@@ -58,6 +60,11 @@ class InferencerCache:
         if len(cls._cache) == cls.max_size:
             cls._cache.pop(cls.max_size - 1)
             torch.cuda.empty_cache()
+            try:
+                import torch.mps
+                torch.mps.empty_cache()
+            except:
+                pass
         device = get_free_device()
         instance = callback(device=device)
         logger.info(f'New instance {instance_name} on {device}.')

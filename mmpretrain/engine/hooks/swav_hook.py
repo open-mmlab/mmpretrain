@@ -97,11 +97,24 @@ class SwAVHook(Hook):
         if self.queue_length > 0 \
             and runner.epoch >= self.epoch_queue_starts \
                 and self.queue is None:
-            self.queue = torch.zeros(
-                len(self.crops_for_assign),
-                self.queue_length // runner.world_size,
-                self.feat_dim,
-            ).cuda()
+            if torch.cuda.is_available():
+                self.queue = torch.zeros(
+                    len(self.crops_for_assign),
+                    self.queue_length // runner.world_size,
+                    self.feat_dim,
+                ).cuda()
+            elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+                self.queue = torch.zeros(
+                    len(self.crops_for_assign),
+                    self.queue_length // runner.world_size,
+                    self.feat_dim,
+                ).to(torch.device('mps'))
+            else:
+                self.queue = torch.zeros(
+                    len(self.crops_for_assign),
+                    self.queue_length // runner.world_size,
+                    self.feat_dim,
+                )
 
         # set the boolean type of use_the_queue
         get_ori_model(runner.model).head.loss_module.queue = self.queue
