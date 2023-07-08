@@ -63,7 +63,7 @@ class InferencerCache:
             try:
                 import torch.mps
                 torch.mps.empty_cache()
-            except:
+            except ImportError:
                 pass
         device = get_free_device()
         instance = callback(device=device)
