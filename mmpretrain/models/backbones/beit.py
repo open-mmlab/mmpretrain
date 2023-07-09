@@ -304,6 +304,7 @@ class BEiTViT(VisionTransformer):
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
+                 pre_norm=False,
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
 
@@ -415,6 +416,11 @@ class BEiTViT(VisionTransformer):
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
         self.frozen_stages = frozen_stages
+        if pre_norm:
+            self.pre_norm = build_norm_layer(norm_cfg, self.embed_dims)
+        else:
+            self.pre_norm = nn.Identity()
+
         self.final_norm = final_norm
         if final_norm:
             self.ln1 = build_norm_layer(norm_cfg, self.embed_dims)
