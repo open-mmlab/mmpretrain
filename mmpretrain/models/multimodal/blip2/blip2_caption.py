@@ -165,7 +165,7 @@ class Blip2Caption(BaseModel):
         attns_opt = torch.ones(
             inputs_opt.size()[:-1], dtype=torch.long).to(images.device)
 
-        self.tokenizer.padding_side = "right"
+        self.tokenizer.padding_side = 'right'
 
         prompt = [
             data_sample.gt_caption + '\n' for data_sample in data_samples
