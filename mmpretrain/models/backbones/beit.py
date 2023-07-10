@@ -306,6 +306,54 @@ class BEiTViT(BaseBackbone):
                 'num_heads': 16,
                 'feedforward_channels': 4096
             }),
+        **dict.fromkeys(
+            ['h', 'huge'],
+            {
+                # The same as the implementation in MAE
+                # <https://arxiv.org/abs/2111.06377>
+                'embed_dims': 1280,
+                'num_layers': 32,
+                'num_heads': 16,
+                'feedforward_channels': 5120
+            }),
+        **dict.fromkeys(
+            ['eva-g', 'eva-giant'],
+            {
+                # The implementation in EVA
+                # <https://arxiv.org/abs/2211.07636>
+                'embed_dims': 1408,
+                'num_layers': 40,
+                'num_heads': 16,
+                'feedforward_channels': 6144
+            }),
+        **dict.fromkeys(
+            ['deit-t', 'deit-tiny'], {
+                'embed_dims': 192,
+                'num_layers': 12,
+                'num_heads': 3,
+                'feedforward_channels': 192 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-s', 'deit-small', 'dinov2-s', 'dinov2-small'], {
+                'embed_dims': 384,
+                'num_layers': 12,
+                'num_heads': 6,
+                'feedforward_channels': 384 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-b', 'deit-base'], {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 768 * 4
+            }),
+        **dict.fromkeys(
+            ['dinov2-g', 'dinov2-giant'], {
+                'embed_dims': 1536,
+                'num_layers': 40,
+                'num_heads': 24,
+                'feedforward_channels': 6144
+            }),
     }
     num_extra_tokens = 1  # class token
     OUT_TYPES = {'raw', 'cls_token', 'featmap', 'avg_featmap'}
