@@ -355,6 +355,7 @@ class BEiTViT(VisionTransformer):
         else:
             raise ValueError(
                 'with_cls_token must be True when `out_type="cls_token"`.')
+        self.with_cls_token = with_cls_token
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
