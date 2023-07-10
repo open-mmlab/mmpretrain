@@ -11,7 +11,7 @@ from mmengine.visualization import Visualizer
 from mmengine.visualization.utils import img_from_canvas
 
 from mmpretrain.registry import VISUALIZERS
-from mmpretrain.structures import DataSample
+from mmpretrain.structures import DataSample, MultiTaskDataSample
 from .utils import create_figure, get_adaptive_scale
 
 
@@ -99,6 +99,67 @@ class UniversalVisualizer(Visualizer):
         Returns:
             np.ndarray: The visualization image.
         """
+
+        def _draw_gt(data_sample: DataSample,
+                     classes: Optional[Sequence[str]],
+                     draw_gt: bool,
+                     texts: Sequence[str],
+                     parent_task: str = ''):
+            if isinstance(data_sample, MultiTaskDataSample):
+                for task in data_sample.tasks:
+                    sub_task = f'{parent_task}_{task}' if parent_task else task
+                    _draw_gt(
+                        data_sample.get(task), classes, draw_gt, texts,
+                        sub_task)
+            else:
+                if draw_gt and 'gt_label' in data_sample:
+                    idx = data_sample.gt_label.tolist()
+                    class_labels = [''] * len(idx)
+                    if classes is not None:
+                        class_labels = [f' ({classes[i]})' for i in idx]
+                    labels = [
+                        str(idx[i]) + class_labels[i] for i in range(len(idx))
+                    ]
+                    prefix = f'{parent_task} Ground truth: ' if parent_task \
+                        else 'Ground truth: '
+                    texts.append(prefix +
+                                 ('\n' + ' ' * len(prefix)).join(labels))
+
+        def _draw_pred(data_sample: DataSample,
+                       classes: Optional[Sequence[str]],
+                       draw_pred: bool,
+                       draw_score: bool,
+                       texts: Sequence[str],
+                       parent_task: str = ''):
+            if isinstance(data_sample, MultiTaskDataSample):
+                for task in data_sample.tasks:
+                    sub_task = f'{parent_task}_{task}' if parent_task else task
+                    _draw_pred(
+                        data_sample.get(task), classes, draw_pred, draw_score,
+                        texts, sub_task)
+            else:
+                if draw_pred and 'pred_label' in data_sample:
+                    idx = data_sample.pred_label.tolist()
+                    score_labels = [''] * len(idx)
+                    class_labels = [''] * len(idx)
+                    if draw_score and 'pred_score' in data_sample:
+                        score_labels = [
+                            f', {data_sample.pred_score[i].item():.2f}'
+                            for i in idx
+                        ]
+
+                    if classes is not None:
+                        class_labels = [f' ({classes[i]})' for i in idx]
+
+                    labels = [
+                        str(idx[i]) + score_labels[i] + class_labels[i]
+                        for i in range(len(idx))
+                    ]
+                    prefix = f'{parent_task} Prediction: ' if parent_task \
+                        else 'Prediction: '
+                    texts.append(prefix +
+                                 ('\n' + ' ' * len(prefix)).join(labels))
+
         if self.dataset_meta is not None:
             classes = classes or self.dataset_meta.get('classes', None)
 
@@ -114,33 +175,9 @@ class UniversalVisualizer(Visualizer):
         texts = []
         self.set_image(image)
 
-        if draw_gt and 'gt_label' in data_sample:
-            idx = data_sample.gt_label.tolist()
-            class_labels = [''] * len(idx)
-            if classes is not None:
-                class_labels = [f' ({classes[i]})' for i in idx]
-            labels = [str(idx[i]) + class_labels[i] for i in range(len(idx))]
-            prefix = 'Ground truth: '
-            texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
+        _draw_gt(data_sample, classes, draw_gt, texts)
 
-        if draw_pred and 'pred_label' in data_sample:
-            idx = data_sample.pred_label.tolist()
-            score_labels = [''] * len(idx)
-            class_labels = [''] * len(idx)
-            if draw_score and 'pred_score' in data_sample:
-                score_labels = [
-                    f', {data_sample.pred_score[i].item():.2f}' for i in idx
-                ]
-
-            if classes is not None:
-                class_labels = [f' ({classes[i]})' for i in idx]
-
-            labels = [
-                str(idx[i]) + score_labels[i] + class_labels[i]
-                for i in range(len(idx))
-            ]
-            prefix = 'Prediction: '
-            texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
+        _draw_pred(data_sample, classes, draw_pred, draw_score, texts)
 
         img_scale = get_adaptive_scale(image.shape[:2])
         text_cfg = {
