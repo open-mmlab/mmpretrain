@@ -173,7 +173,7 @@ class RandomCrop(BaseTransform):
             return 0, 0, h, w
         elif w < target_w or h < target_h:
             target_w = min(w, target_w)
-            target_h = min(w, target_h)
+            target_h = min(h, target_h)
 
         offset_h = np.random.randint(0, h - target_h + 1)
         offset_w = np.random.randint(0, w - target_w + 1)
