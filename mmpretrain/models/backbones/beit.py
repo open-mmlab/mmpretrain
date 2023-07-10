@@ -307,16 +307,6 @@ class BEiTViT(BaseBackbone):
                 'feedforward_channels': 4096
             }),
         **dict.fromkeys(
-            ['h', 'huge'],
-            {
-                # The same as the implementation in MAE
-                # <https://arxiv.org/abs/2111.06377>
-                'embed_dims': 1280,
-                'num_layers': 32,
-                'num_heads': 16,
-                'feedforward_channels': 5120
-            }),
-        **dict.fromkeys(
             ['eva-g', 'eva-giant'],
             {
                 # The implementation in EVA
@@ -334,7 +324,7 @@ class BEiTViT(BaseBackbone):
                 'feedforward_channels': 192 * 4
             }),
         **dict.fromkeys(
-            ['deit-s', 'deit-small', 'dinov2-s', 'dinov2-small'], {
+            ['deit-s', 'deit-small'], {
                 'embed_dims': 384,
                 'num_layers': 12,
                 'num_heads': 6,
@@ -346,13 +336,6 @@ class BEiTViT(BaseBackbone):
                 'num_layers': 12,
                 'num_heads': 12,
                 'feedforward_channels': 768 * 4
-            }),
-        **dict.fromkeys(
-            ['dinov2-g', 'dinov2-giant'], {
-                'embed_dims': 1536,
-                'num_layers': 40,
-                'num_heads': 24,
-                'feedforward_channels': 6144
             }),
     }
     num_extra_tokens = 1  # class token
