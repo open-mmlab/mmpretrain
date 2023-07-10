@@ -159,7 +159,9 @@ class LoRAModel(BaseModule):
     def _set_lora_trainable(self):
         """Set only the lora parameters trainable."""
         for name, param in self.named_parameters():
-            if 'lora_' not in name:
+            if 'lora_' in name:
+                param.requires_grad = True
+            else:
                 param.requires_grad = False
 
     def _register_state_dict_hooks(self):
