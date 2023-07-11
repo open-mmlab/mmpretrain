@@ -433,8 +433,9 @@ class VisionTransformer(BaseBackbone):
         for param in self.patch_embed.parameters():
             param.requires_grad = False
         # freeze pre-norm
-        for param in self.pre_norm.parameters():
-            param.requires_grad = False
+        if hasattr(self, 'pre_norm'):
+            for param in self.pre_norm.parameters():
+                param.requires_grad = False
         # freeze cls_token
         self.cls_token.requires_grad = False
         # freeze layers
