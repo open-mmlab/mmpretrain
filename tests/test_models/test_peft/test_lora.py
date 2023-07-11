@@ -11,7 +11,7 @@ from mmpretrain.models.peft import LoRAModel
 @pytest.mark.skipif(
     digit_version(TORCH_VERSION) < digit_version('1.9.0'),
     reason='get_submodule requires torch >= 1.9.0')
-def test_lora_beckbone():
+def test_lora_backbone():
     module = dict(
         type='VisionTransformer',
         arch='base',
