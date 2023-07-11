@@ -275,7 +275,7 @@ class Blip2Caption(BaseModel):
         )
 
         output_text = self.tokenizer.batch_decode(
-            outputs[:, self.prompt_length:], skip_special_tokens=True)
+            outputs, skip_special_tokens=True)
         output_text = [text.strip() for text in output_text]
 
         out_data_samples = []
