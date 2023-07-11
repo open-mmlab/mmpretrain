@@ -555,13 +555,16 @@ class BEiTViT(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
         # freeze the last layer norm
-        if self.frozen_stages == len(self.layers) and self.final_norm:
-            self.ln1.eval()
-            for param in self.ln1.parameters():
-                param.requires_grad = False
-            self.ln2.eval()
-            for param in self.ln2.parameters():
-                param.requires_grad = False
+        if self.frozen_stages == len(self.layers):
+            if self.final_norm:
+                self.ln1.eval()
+                for param in self.ln1.parameters():
+                    param.requires_grad = False
+
+            if self.out_type == 'avg_featmap':
+                self.ln2.eval()
+                for param in self.ln2.parameters():
+                    param.requires_grad = False
 
     def forward(self, x):
         B = x.shape[0]
