@@ -93,7 +93,12 @@ class Blip2Caption(BaseModel):
             param.requires_grad = False
 
         if hasattr(self, 'register_load_state_dict_post_hook'):
-            self.register_load_state_dict_post_hook(self._ignore_llm_keys_hook)
+            self.register_load_state_dict_post_hook(
+                self._ignore_loading_llm_keys_hook)
+
+        if hasattr(self, '_register_state_dict_hook'):
+            self._register_state_dict_hook(
+                self._igonre_saving_llm_keys_hook)
 
     def forward(self,
                 images: torch.Tensor,
@@ -291,10 +296,20 @@ class Blip2Caption(BaseModel):
         return out_data_samples
 
     @staticmethod
-    def _ignore_llm_keys_hook(module, incompatible_keys):
+    def _ignore_loading_llm_keys_hook(module, incompatible_keys):
         """Avoid warning missing keys of the LLM model."""
         import re
         llm_pattern = '^text_backbone'
         for key in list(incompatible_keys.missing_keys):
             if re.match(llm_pattern, key):
                 incompatible_keys.missing_keys.remove(key)
+
+    @staticmethod
+    def _igonre_saving_llm_keys_hook(module, state_dict, prefix, metadata):
+        """Avoid saving llm state dict"""
+        import re
+        llm_pattern = '^text_backbone'
+        keys = [k for k, _ in state_dict.items()]
+        for key in keys:
+            if re.match(llm_pattern, key):
+                state_dict.pop(key)
