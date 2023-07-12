@@ -97,8 +97,7 @@ class Blip2Caption(BaseModel):
                 self._ignore_loading_llm_keys_hook)
 
         if hasattr(self, '_register_state_dict_hook'):
-            self._register_state_dict_hook(
-                self._igonre_saving_llm_keys_hook)
+            self._register_state_dict_hook(self._igonre_saving_llm_keys_hook)
 
     def forward(self,
                 images: torch.Tensor,
@@ -306,7 +305,7 @@ class Blip2Caption(BaseModel):
 
     @staticmethod
     def _igonre_saving_llm_keys_hook(module, state_dict, prefix, metadata):
-        """Avoid saving llm state dict"""
+        """Avoid saving llm state dict."""
         import re
         llm_pattern = '^text_backbone'
         keys = [k for k, _ in state_dict.items()]
