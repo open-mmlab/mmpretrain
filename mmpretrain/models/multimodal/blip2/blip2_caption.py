@@ -172,7 +172,8 @@ class Blip2Caption(BaseModel):
         self.tokenizer.padding_side = 'right'
 
         prompt = [
-            data_sample.gt_caption + '\n' for data_sample in data_samples
+            self.prompt + data_sample.gt_caption + '\n'
+            for data_sample in data_samples
         ]
 
         opt_tokens = self.tokenizer(
@@ -182,8 +183,6 @@ class Blip2Caption(BaseModel):
             truncation=True,
             max_length=self.max_txt_len,
         ).to(images.device)
-        attention_mask = torch.cat([attns_opt, opt_tokens.attention_mask],
-                                   dim=1)
 
         targets = opt_tokens.input_ids.masked_fill(
             opt_tokens.input_ids == self.tokenizer.pad_token_id, -100)
@@ -199,6 +198,8 @@ class Blip2Caption(BaseModel):
             self.text_backbone.model.decoder.embed_tokens(
                 opt_tokens.input_ids))
         inputs_embeds = torch.cat([inputs_opt, inputs_embeds], dim=1)
+        attention_mask = torch.cat([attns_opt, opt_tokens.attention_mask],
+                                   dim=1)
 
         outputs = self.text_backbone(
             inputs_embeds=inputs_embeds,
