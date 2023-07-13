@@ -39,7 +39,7 @@ class SimMIMSwinTransformer(SwinTransformer):
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Defaults to False.
         norm_cfg (dict): Config dict for normalization layer at end
-            of backone. Defaults to dict(type='LN')
+            of backbone. Defaults to dict(type='LN')
         stage_cfgs (Sequence | dict): Extra config dict for each
             stage. Defaults to empty dict.
         patch_cfg (dict): Extra config dict for patch embedding.

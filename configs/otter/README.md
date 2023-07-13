@@ -48,7 +48,7 @@ python tools/test.py configs/otter/otter-9b_caption.py https://download.openmmla
 | :---------------------------- | :--------: | :------: | :------: | :---------------------------: | :------------------------------------------------------------------------------------------------------: |
 | `otter-9b_3rdparty_caption`\* |  8220.45   | Upcoming | Upcoming | [config](otter-9b_caption.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ### Visual Question Answering on VQAv2
 
@@ -56,7 +56,7 @@ python tools/test.py configs/otter/otter-9b_caption.py https://download.openmmla
 | :------------------------ | :--------: | :------: | :-----------------------: | :------------------------------------------------------------------------------------------------------: |
 | `otter-9b_3rdparty_vqa`\* |  8220.45   | Upcoming | [config](otter-9b_vqa.py) | [model](https://download.openmmlab.com/mmclassification/v1/otter/otter-9b-adapter_20230613-51c5be8d.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reprodcue the training results.*
+*Models with * are converted from the [official repo](https://github.com/Luodian/Otter/tree/main). The config files of these models are only for inference. We haven't reproduce the training results.*
 
 ## Citation
 
