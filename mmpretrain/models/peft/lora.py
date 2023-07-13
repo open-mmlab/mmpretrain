@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 import re
-from typing import List
+from typing import Any, List
 
 import torch
 from mmengine.logging import print_log
@@ -195,9 +195,11 @@ class LoRAModel(BaseModule):
 
         self.register_load_state_dict_post_hook(_load_state_dict_post_hook)
 
-    def get_layer_depth(self, param_name: str, prefix: str = ''):
-        """Get the layer-wise depth of a parameter for learning rate decay."""
-        return self.module.get_layer_depth(param_name, prefix)
-
     def forward(self, *args, **kwargs):
         return self.module(*args, **kwargs)
+
+    def __getattr__(self, name: str) -> Any:
+        try:
+            return super(LoRAModel, self).__getattr__(name)
+        except AttributeError:
+            return self.module.__getattribute__(name)
