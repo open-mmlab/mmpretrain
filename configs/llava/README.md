@@ -21,7 +21,7 @@ Instruction tuning large language models (LLMs) using machine-generated instruct
 According to the license of LLaMA, we cannot provide the merged checkpoint directly. Please use the below
 script to download and get the merged the checkpoint.
 
-```baseh
+```shell
 python tools/model_converters/llava-delta2mmpre.py huggyllama/llama-7b liuhaotian/LLaVA-Lightning-7B-delta-v1-1 ./LLaVA-Lightning-7B-delta-v1-1.pth
 ```
 

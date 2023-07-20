@@ -23,7 +23,7 @@ class Flamingo(BaseModel):
         zeroshot_prompt (str): Prompt used for zero-shot inference.
             Defaults to '<image>Output:'.
         shot_prompt_tmpl (str): Prompt used for few-shot inference.
-            Defaults to '<image>Output:{caption}<|endofchunk|>'.
+            Defaults to ``<image>Output:{caption}<|endofchunk|>``.
         final_prompt_tmpl (str): Final part of prompt used for inference.
             Defaults to '<image>Output:'.
         generation_cfg (dict): The extra generation config, accept the keyword

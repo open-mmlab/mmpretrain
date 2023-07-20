@@ -36,7 +36,7 @@ class MiniGPT4(BaseModel):
         raw_prompts (list): Prompts for training. Defaults to None.
         max_txt_len (int): Max token length while doing tokenization. Defaults
             to 32.
-        end_sym (str): Ended symbol of the sequence. Defaults to '\n'.
+        end_sym (str): Ended symbol of the sequence. Defaults to '\\n'.
         generation_cfg (dict): The config of text generation. Defaults to
             dict().
         data_preprocessor (:obj:`BaseDataPreprocessor`): Used for
