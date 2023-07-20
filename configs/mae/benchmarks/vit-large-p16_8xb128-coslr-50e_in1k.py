@@ -58,7 +58,7 @@ model = dict(
         drop_path_rate=0.2,  # set to 0.2
         out_type='avg_featmap',
         final_norm=False,
-        init_cfg=dict(type='Pretrained', checkpoint='')),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     neck=None,
     head=dict(
         type='LinearClsHead',

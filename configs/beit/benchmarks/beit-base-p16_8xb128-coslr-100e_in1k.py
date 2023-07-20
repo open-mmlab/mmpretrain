@@ -23,7 +23,8 @@ model = dict(
         out_type='avg_featmap',
         use_abs_pos_emb=False,
         use_rel_pos_bias=True,
-        use_shared_rel_pos_bias=False),
+        use_shared_rel_pos_bias=False,
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     neck=None,
     head=dict(
         type='LinearClsHead',

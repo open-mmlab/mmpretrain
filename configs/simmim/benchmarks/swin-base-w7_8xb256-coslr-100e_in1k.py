@@ -52,7 +52,8 @@ model = dict(
     backbone=dict(
         img_size=224,
         drop_path_rate=0.1,
-        stage_cfgs=dict(block_cfgs=dict(window_size=7))))
+        stage_cfgs=dict(block_cfgs=dict(window_size=7)),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')))
 
 # optimizer settings
 optim_wrapper = dict(

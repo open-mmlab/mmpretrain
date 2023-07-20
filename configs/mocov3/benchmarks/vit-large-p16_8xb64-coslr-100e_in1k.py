@@ -12,7 +12,7 @@ model = dict(
         img_size=224,
         patch_size=16,
         drop_path_rate=0.5,
-    ),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',

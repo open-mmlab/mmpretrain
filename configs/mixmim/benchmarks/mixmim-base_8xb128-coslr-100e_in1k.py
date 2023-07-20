@@ -86,6 +86,10 @@ val_dataloader = dict(
 )
 test_dataloader = val_dataloader
 
+model = dict(
+    backbone=dict(
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')))
+
 # optimizer
 optim_wrapper = dict(
     type='OptimWrapper',
