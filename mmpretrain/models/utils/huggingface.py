@@ -86,7 +86,9 @@ def register_hf_model(
                                   kwargs.pop('name_or_path'))
 
         if kwargs.pop('load_pretrained', True) and _load_hf_pretrained_model:
-            return cls.from_pretrained(name_or_path, **kwargs)
+            model = cls.from_pretrained(name_or_path, **kwargs)
+            setattr(model, 'is_init', True)
+            return model
         else:
             cfg = get_config(name_or_path, **kwargs)
             return from_config(cfg)

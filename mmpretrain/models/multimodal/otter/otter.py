@@ -98,6 +98,7 @@ class Otter(Flamingo):
                 map_location='cpu',
                 revise_keys=[(r'^backbone\.', '')],
             )
+            self.vision_encoder.is_init = True
 
         self.perceiver = PerceiverResampler(dim=self.vision_encoder.embed_dims)
 
