@@ -31,7 +31,6 @@ model = dict(
         init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-5)],
     ))
 
-
 # dataset setting
 data_preprocessor = dict(
     mean=[127.5, 127.5, 127.5],
