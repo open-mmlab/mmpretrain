@@ -15,6 +15,7 @@ The ``models`` package contains several sub-packages for addressing the differen
 - :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :mod:`~mmpretrain.models.heads`: The component for specific tasks.
 - :mod:`~mmpretrain.models.losses`: Loss functions.
+- :mod:`~mmpretrain.models.peft`: The PEFT (Parameter-Efficient Fine-Tuning) module, e.g. LoRAModel.
 - :mod:`~mmpretrain.models.utils`: Some helper functions and common components used in various networks.
 
   - :mod:`~mmpretrain.models.utils.data_preprocessor`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
@@ -305,6 +306,17 @@ Losses
    PixelReconstructionLoss
    SeesawLoss
    SwAVLoss
+
+.. module:: mmpretrain.models.peft
+
+PEFT
+------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   LoRAModel
 
 .. module:: mmpretrain.models.utils
 
