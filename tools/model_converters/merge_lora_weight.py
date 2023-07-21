@@ -57,7 +57,7 @@ def merge_lora_weight(cfg, lora_weight):
 
 
 def get_scaling(model, prefix):
-    """Get the scaling of speified layer.
+    """Get the scaling of target layer.
 
     Args:
         model (LoRAModel): the LoRAModel.
