@@ -9,6 +9,7 @@ from .eva import EVA
 from .itpn import iTPN, iTPNHiViT
 from .mae import MAE, MAEHiViT, MAEViT
 from .maskfeat import HOGGenerator, MaskFeat, MaskFeatViT
+from .mff import MFF, MFFViT
 from .milan import MILAN, CLIPGenerator, MILANViT
 from .mixmim import MixMIM, MixMIMPretrainTransformer
 from .moco import MoCo
@@ -20,37 +21,10 @@ from .spark import SparK
 from .swav import SwAV
 
 __all__ = [
-    'BaseSelfSupervisor',
-    'BEiTPretrainViT',
-    'VQKD',
-    'CAEPretrainViT',
-    'DALLEEncoder',
-    'MAEViT',
-    'MAEHiViT',
-    'iTPNHiViT',
-    'iTPN',
-    'HOGGenerator',
-    'MaskFeatViT',
-    'CLIPGenerator',
-    'MILANViT',
-    'MixMIMPretrainTransformer',
-    'MoCoV3ViT',
-    'SimMIMSwinTransformer',
-    'MoCo',
-    'MoCoV3',
-    'BYOL',
-    'SimCLR',
-    'SimSiam',
-    'BEiT',
-    'CAE',
-    'MAE',
-    'MaskFeat',
-    'MILAN',
-    'MixMIM',
-    'SimMIM',
-    'EVA',
-    'DenseCL',
-    'BarlowTwins',
-    'SwAV',
-    'SparK',
+    'BaseSelfSupervisor', 'BEiTPretrainViT', 'VQKD', 'CAEPretrainViT',
+    'DALLEEncoder', 'MAEViT', 'MAEHiViT', 'iTPNHiViT', 'iTPN', 'HOGGenerator',
+    'MaskFeatViT', 'CLIPGenerator', 'MILANViT', 'MixMIMPretrainTransformer',
+    'MoCoV3ViT', 'SimMIMSwinTransformer', 'MoCo', 'MoCoV3', 'BYOL', 'SimCLR',
+    'SimSiam', 'BEiT', 'CAE', 'MAE', 'MaskFeat', 'MILAN', 'MixMIM', 'SimMIM',
+    'EVA', 'DenseCL', 'BarlowTwins', 'SwAV', 'SparK', 'MFF', 'MFFViT'
 ]
