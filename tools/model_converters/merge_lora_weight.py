@@ -74,7 +74,7 @@ def get_scaling(model, prefix):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Merge LoRA weight')
     parser.add_argument('cfg', help='cfg path')
-    parser.add_argument('src', help='src detectron lora model path')
+    parser.add_argument('src', help='src lora model path')
     parser.add_argument('dst', help='save path')
     args = parser.parse_args()
     dst = Path(args.dst)
