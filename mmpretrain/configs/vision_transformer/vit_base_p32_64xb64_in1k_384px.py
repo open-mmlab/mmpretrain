@@ -11,7 +11,7 @@ from mmpretrain.datasets import (CenterCrop, LoadImageFromFile,
 with read_base():
     from .._base_.models.vit_base_p32 import *
     from .._base_.datasets.imagenet_bs64_pil_resize import *
-    from .._base_.schedules.imagenet_bs4096_AdamW import *
+    from .._base_.schedules.imagenet_bs4096_adamw import *
     from .._base_.default_runtime import *
 
 # model setting
