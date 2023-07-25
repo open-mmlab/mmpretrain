@@ -1285,9 +1285,10 @@ class TestGaussianBlur(TestCase):
 
     def test_transform(self):
         transform_func = 'PIL.ImageFilter.GaussianBlur'
+        from PIL.ImageFilter import GaussianBlur
 
         # test params inputs
-        with patch(transform_func, autospec=True) as mock:
+        with patch(transform_func, wraps=GaussianBlur) as mock:
             cfg = {
                 **self.DEFAULT_ARGS,
                 'radius': 0.5,
@@ -1297,7 +1298,7 @@ class TestGaussianBlur(TestCase):
             mock.assert_called_once_with(radius=0.5)
 
         # test prob
-        with patch(transform_func, autospec=True) as mock:
+        with patch(transform_func, wraps=GaussianBlur) as mock:
             cfg = {
                 **self.DEFAULT_ARGS,
                 'radius': 0.5,
@@ -1307,7 +1308,7 @@ class TestGaussianBlur(TestCase):
             mock.assert_not_called()
 
         # test magnitude_range
-        with patch(transform_func, autospec=True) as mock:
+        with patch(transform_func, wraps=GaussianBlur) as mock:
             cfg = {
                 **self.DEFAULT_ARGS,
                 'magnitude_range': (0.1, 2),
