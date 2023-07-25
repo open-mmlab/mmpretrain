@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
-from mmpretrain.models import (VisionTransformer, ImageClassifier, VisionTransformerClsHead)
-
+from mmpretrain.models import (VisionTransformer, ImageClassifier, VisionTransformerClsHead, CrossEntropyLoss)
 from mmengine.model.weight_init import KaimingInit
 
 # model settings
@@ -25,6 +24,6 @@ model = dict(
         type=VisionTransformerClsHead,
         num_classes=1000,
         in_channels=768,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
         topk=(1, 5),
     ))

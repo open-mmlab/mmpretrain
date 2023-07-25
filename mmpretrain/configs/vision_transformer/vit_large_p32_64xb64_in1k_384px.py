@@ -1,15 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
 from mmengine.config import read_base
-
 from mmcv.transforms import (LoadImageFromFile, RandomFlip)
-
 from mmpretrain.datasets import (CenterCrop, LoadImageFromFile,
                                  PackInputs, RandomFlip, RandomResizedCrop,
                                  ResizeEdge)
 
 with read_base():
-    from .._base_.models.vit_base_p32 import *
+    from .._base_.models.vit_large_p32 import *
     from .._base_.datasets.imagenet_bs64_pil_resize import *
     from .._base_.schedules.imagenet_bs4096_AdamW import *
     from .._base_.default_runtime import *

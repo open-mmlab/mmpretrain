@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
 from mmpretrain.models import (VisionTransformer, ImageClassifier, VisionTransformerClsHead, CrossEntropyLoss)
-
 from mmengine.model.weight_init import KaimingInit
 
 # model settings
