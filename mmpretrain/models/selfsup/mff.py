@@ -163,10 +163,10 @@ class MFFViT(MAEViT):
 
 @MODELS.register_module()
 class MFF(MAE):
-    """MAE.
+    """MFF.
 
-    Implementation of `Masked Autoencoders Are Scalable Vision Learners
-    <https://arxiv.org/abs/2111.06377>`_.
+    Implementation of `Improving Pixel-based MIM by Reducing Wasted Modeling
+    Capability`.
     """
 
     def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
