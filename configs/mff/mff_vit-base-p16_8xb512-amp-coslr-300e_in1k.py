@@ -21,4 +21,4 @@ train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 
 # model config
 model = dict(
-    type='MFF', backbone=dict(type='MFFViT', out_indices=[1, 3, 5, 7, 9, 11]))
+    type='MFF', backbone=dict(type='MFFViT', out_indices=[0, 2, 4, 6, 8, 11]))
