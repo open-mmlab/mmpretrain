@@ -20,27 +20,26 @@ mmpretrain.utils.progress.disable_progress_bar = True
 
 logger = MMLogger('mmpretrain', logger_name='mmpre')
 if torch.cuda.is_available():
-    gpus = [
+    devices = [
         torch.device(f'cuda:{i}') for i in range(torch.cuda.device_count())
     ]
-    logger.info(f'Available GPUs: {len(gpus)}')
+    logger.info(f'Available GPUs: {len(devices)}')
 elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
+    devices = [torch.device('mps')]
     logger.info('Available MPS.')
 else:
-    gpus = None
-    logger.info('No available GPU.')
+    devices = [torch.device('cpu')]
+    logger.info('Available CPU.')
 
 
 def get_free_device():
-    if gpus is None:
-        return torch.device('cpu')
     if hasattr(torch.cuda, 'mem_get_info'):
-        free = [torch.cuda.mem_get_info(gpu)[0] for gpu in gpus]
+        free = [torch.cuda.mem_get_info(gpu)[0] for gpu in devices]
         select = max(zip(free, range(len(free))))[1]
     else:
         import random
-        select = random.randint(0, len(gpus) - 1)
-    return gpus[select]
+        select = random.randint(0, len(devices) - 1)
+    return devices[select]
 
 
 class InferencerCache:
