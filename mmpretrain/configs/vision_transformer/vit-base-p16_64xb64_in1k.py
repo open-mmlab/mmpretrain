@@ -1,14 +1,19 @@
-_base_ = [
-    '../_base_/models/vit-base-p16.py',
-    '../_base_/datasets/imagenet_bs64_pil_resize_autoaug.py',
-    '../_base_/schedules/imagenet_bs4096_AdamW.py',
-    '../_base_/default_runtime.py'
-]
+# Copyright (c) OpenMMLab. All rights reserved.
+# This is a BETA new format config file, and the usage may change recently.
+from mmengine.config import read_base
+
+from mmpretrain.models import Mixup
+
+with read_base():
+    from .._base_.models.vit_base_p16 import *
+    from .._base_.datasets.imagenet_bs32 import *
+    from .._base_.schedules.imagenet_bs4096_AdamW import *
+    from .._base_.default_runtime import *
 
 # model setting
 model = dict(
     head=dict(hidden_dim=3072),
-    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2)),
+    train_cfg=dict(augments=dict(type=Mixup, alpha=0.2)),
 )
 
 # schedule setting

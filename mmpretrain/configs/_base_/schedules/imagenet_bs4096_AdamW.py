@@ -1,6 +1,12 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+# This is a BETA new format config file, and the usage may change recently.
+from mmengine.optim import CosineAnnealingLR, LinearLR
+
+from torch.optim import AdamW
+
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='AdamW', lr=0.003, weight_decay=0.3),
+    optimizer=dict(type=AdamW, lr=0.003, weight_decay=0.3),
     # specific to vit pretrain
     paramwise_cfg=dict(custom_keys={
         '.cls_token': dict(decay_mult=0.0),
@@ -12,7 +18,7 @@ optim_wrapper = dict(
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
-        type='LinearLR',
+        type=LinearLR,
         start_factor=1e-4,
         by_epoch=True,
         begin=0,
@@ -21,7 +27,7 @@ param_scheduler = [
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
-        type='CosineAnnealingLR',
+        type=CosineAnnealingLR,
         T_max=270,
         by_epoch=True,
         begin=30,
