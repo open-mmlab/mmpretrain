@@ -59,11 +59,6 @@ class InferencerCache:
         if len(cls._cache) == cls.max_size:
             cls._cache.pop(cls.max_size - 1)
             torch.cuda.empty_cache()
-            try:
-                import torch.mps
-                torch.mps.empty_cache()
-            except ImportError:
-                pass
         device = get_free_device()
         instance = callback(device=device)
         logger.info(f'New instance {instance_name} on {device}.')
