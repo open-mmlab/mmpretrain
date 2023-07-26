@@ -146,6 +146,9 @@ def main():
     # load config
     cfg = Config.fromfile(args.config)
 
+    cfg.train_dataloader.dataset.data_root = 'xyz'
+    cfg.val_dataloader.dataset.data_root = 'xyz'
+
     # merge cli arguments to config
     cfg = merge_args(cfg, args)
 
