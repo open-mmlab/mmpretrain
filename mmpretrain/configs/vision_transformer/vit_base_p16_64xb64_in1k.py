@@ -11,10 +11,10 @@ with read_base():
     from .._base_.default_runtime import *
 
 # model setting
-model = dict(
+model.update(
     head=dict(hidden_dim=3072),
     train_cfg=dict(augments=dict(type=Mixup, alpha=0.2)),
 )
 
 # schedule setting
-optim_wrapper = dict(clip_grad=dict(max_norm=1.0))
+optim_wrapper.update(clip_grad=dict(max_norm=1.0))

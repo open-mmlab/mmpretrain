@@ -33,7 +33,7 @@ train_pipeline = [
         scale=224,
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type=RandomFlip, prob=0.5, direction='horizontal'),
     dict(
         type=AutoAugment,
         policies='imagenet',

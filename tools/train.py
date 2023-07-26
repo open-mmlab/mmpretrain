@@ -146,8 +146,17 @@ def main():
     # load config
     cfg = Config.fromfile(args.config)
 
-    cfg.train_dataloader.dataset.data_root = 'xyz'
-    cfg.val_dataloader.dataset.data_root = 'xyz'
+    # print('default train data root: ', cfg.train_dataloader.dataset.data_root)
+    # print('default val data root: ', cfg.val_dataloader.dataset.data_root)
+
+    cfg.train_dataloader.dataset.data_root = '/home/zeyuan.yin/imagenet'
+    cfg.val_dataloader.dataset.data_root = '/home/zeyuan.yin/imagenet'
+
+    print('dataset cfg', cfg.train_dataloader.dataset)
+    print('---')
+    # print('model cfg', cfg.model)
+    # print('optim_wrapper cfg', cfg.optim_wrapper)
+    exit()
 
     # merge cli arguments to config
     cfg = merge_args(cfg, args)

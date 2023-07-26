@@ -40,10 +40,10 @@ model = dict(
     ]))
 
 # dataset settings
-train_dataloader = dict(batch_size=128)
+train_dataloader.update(batch_size=128)
 
 # schedule settings
-optim_wrapper = dict(
+optim_wrapper.update(
     optimizer=dict(
         type=AdamW,
         lr=1e-4 * 4096 / 256,
@@ -64,4 +64,4 @@ custom_hooks = [dict(type=EMAHook, momentum=1e-4)]
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.
 # base_batch_size = (32 GPUs) x (128 samples per GPU)
-auto_scale_lr = dict(base_batch_size=4096)
+auto_scale_lr.update(base_batch_size=4096)

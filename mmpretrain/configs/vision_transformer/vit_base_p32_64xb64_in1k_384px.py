@@ -15,10 +15,10 @@ with read_base():
     from .._base_.default_runtime import *
 
 # model setting
-model = dict(backbone=dict(img_size=384))
+model.update(backbone=dict(img_size=384))
 
 # dataset setting
-data_preprocessor = dict(
+data_preprocessor.update(
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     # convert image from BGR to RGB
@@ -39,9 +39,9 @@ test_pipeline = [
     dict(type=PackInputs),
 ]
 
-train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
-val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
-test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+train_dataloader.update(dataset=dict(pipeline=train_pipeline))
+val_dataloader.update(dataset=dict(pipeline=test_pipeline))
+test_dataloader.update(dataset=dict(pipeline=test_pipeline))
 
 # schedule setting
-optim_wrapper = dict(clip_grad=dict(max_norm=1.0))
+optim_wrapper.update(clip_grad=dict(max_norm=1.0))
