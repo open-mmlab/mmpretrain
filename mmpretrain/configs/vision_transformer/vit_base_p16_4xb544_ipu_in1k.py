@@ -1,18 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
+from mmcv.transforms import (CenterCrop, ImageToTensor, Normalize, Resize,
+                             ToTensor)
 from mmengine.config import read_base
 from mmengine.model import PretrainedInit
 from mmengine.optim import CosineAnnealingLR, LinearLR
-from mmcv.transforms import (Normalize, ImageToTensor, ToTensor, Resize, CenterCrop)
-from mmengine.runner import IterBasedRunner, CheckpointHook
+from mmengine.runner import CheckpointHook, IterBasedRunner
+from torch.optim import SGD
 
 from mmpretrain.datasets import Collect
-from torch.optim import SGD
 
 with read_base():
     from .._base_.datasets.imagenet_bs64_pil_resize_autoaug import *
-    from .._base_.models.vit_base_p16 import *
     from .._base_.default_runtime import *
+    from .._base_.models.vit_base_p16 import *
 
 # specific to vit pretrain
 paramwise_cfg = dict(custom_keys={

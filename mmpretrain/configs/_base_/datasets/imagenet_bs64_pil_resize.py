@@ -1,13 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
+from mmcv.transforms import LoadImageFromFile, RandomFlip
 from mmengine.dataset import DefaultSampler
 
-from mmcv.transforms import (LoadImageFromFile, RandomFlip)
-
-from mmpretrain.datasets import (ImageNet, CenterCrop, LoadImageFromFile,
+from mmpretrain.datasets import (CenterCrop, ImageNet, LoadImageFromFile,
                                  PackInputs, RandomFlip, RandomResizedCrop,
                                  ResizeEdge)
-
 from mmpretrain.evaluation import Accuracy
 
 # dataset settings

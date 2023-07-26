@@ -4,7 +4,7 @@ from mmcv.transforms import (LoadImageFromFile, RandomApply, RandomFlip,
                              RandomGrayscale)
 from mmengine.dataset import DefaultSampler, default_collate
 
-from mmpretrain.datasets import (ImageNet, ColorJitter, GaussianBlur, ImageNet,
+from mmpretrain.datasets import (ColorJitter, GaussianBlur, ImageNet,
                                  MultiView, PackInputs, RandomResizedCrop)
 from mmpretrain.models import SelfSupDataPreprocessor
 
