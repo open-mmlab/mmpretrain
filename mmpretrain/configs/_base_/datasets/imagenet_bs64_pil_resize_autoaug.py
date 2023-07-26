@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
-from mmcv.transforms import LoadImageFromFile
 from mmengine.dataset import DefaultSampler
 
 from mmpretrain.datasets import (CenterCrop, ImageNet, LoadImageFromFile,
