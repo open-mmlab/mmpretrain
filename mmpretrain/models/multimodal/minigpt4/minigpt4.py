@@ -109,6 +109,8 @@ class MiniGPT4(BaseModel):
             state_dict = CheckpointLoader.load_checkpoint(
                 q_former_model_weight)['state_dict']
             self.load_state_dict(state_dict, strict=False)
+            # The ln_vision weights are also in the q-former checkpoint.
+            setattr(self.ln_vision, 'is_init', True)
             setattr(self.q_former, 'is_init', True)
 
         if freeze_q_former:
