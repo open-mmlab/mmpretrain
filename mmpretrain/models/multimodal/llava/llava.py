@@ -94,6 +94,7 @@ class Llava(BaseModel):
                 map_location='cpu',
                 revise_keys=[(r'^backbone\.', '')],
             )
+            vision_encoder.is_init = True
 
         # init language encoder related modules
         if load_lang_pretrained:

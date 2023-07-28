@@ -79,6 +79,7 @@ class MiniGPT4(BaseModel):
         if vision_encoder_weight is not None:
             from mmengine.runner.checkpoint import load_checkpoint
             load_checkpoint(self.vision_encoder, vision_encoder_weight)
+            self.vision_encoder.is_init = True
         if freeze_vit:
             for name, param in self.ln_vision.named_parameters():
                 param.requires_grad = False
@@ -108,6 +109,9 @@ class MiniGPT4(BaseModel):
             state_dict = CheckpointLoader.load_checkpoint(
                 q_former_model_weight)['state_dict']
             self.load_state_dict(state_dict, strict=False)
+            # The ln_vision weights are also in the q-former checkpoint.
+            setattr(self.ln_vision, 'is_init', True)
+            setattr(self.q_former, 'is_init', True)
 
         if freeze_q_former:
             for name, param in self.q_former.named_parameters():
