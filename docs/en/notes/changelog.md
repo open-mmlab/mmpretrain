@@ -21,7 +21,6 @@
 
 ### Docs Update
 
-- Fix docs
 - Fix spelling ([#1689](https://github.com/open-mmlab/mmpretrain/pull/1689)
 
 ## v1.0.0(04/07/2023)
