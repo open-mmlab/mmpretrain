@@ -4,18 +4,23 @@ from mmengine.config import read_base
 
 from mmpretrain.datasets import (CenterCrop, LoadImageFromFile, PackInputs,
                                  RandomFlip, RandomResizedCrop, ResizeEdge)
+from mmpretrain.models import CrossEntropyLoss
 
 with read_base():
     from .._base_.datasets.imagenet_bs64_pil_resize import *
     from .._base_.default_runtime import *
-    from .._base_.models.vit_large_p32 import *
+    from .._base_.models.vit_base_p16 import *
     from .._base_.schedules.imagenet_bs4096_adamw import *
 
 # model setting
-model.update(backbone=dict(img_size=384))
+model.update(
+    backbone=dict(arch='l', img_size=384, patch_size=32),
+    head=dict(in_channels=1024, topk=(1, 5)))
+
+model.head.loss = dict(type=CrossEntropyLoss, loss_weight=1.0)
 
 # dataset setting
-data_preprocessor = dict(
+data_preprocessor.update(
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     # convert image from BGR to RGB

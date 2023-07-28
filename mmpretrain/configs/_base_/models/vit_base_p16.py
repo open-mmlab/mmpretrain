@@ -2,7 +2,7 @@
 # This is a BETA new format config file, and the usage may change recently.
 from mmengine.model.weight_init import KaimingInit
 
-from mmpretrain.models import (CrossEntropyLoss, ImageClassifier,
+from mmpretrain.models import (ImageClassifier, LabelSmoothLoss,
                                VisionTransformer, VisionTransformerClsHead)
 
 # model settings
@@ -10,7 +10,7 @@ model = dict(
     type=ImageClassifier,
     backbone=dict(
         type=VisionTransformer,
-        arch='l',
+        arch='b',
         img_size=224,
         patch_size=16,
         drop_rate=0.1,
@@ -25,7 +25,7 @@ model = dict(
     head=dict(
         type=VisionTransformerClsHead,
         num_classes=1000,
-        in_channels=1024,
-        loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
-        topk=(1, 5),
+        in_channels=768,
+        loss=dict(
+            type=LabelSmoothLoss, label_smooth_val=0.1, mode='classy_vision'),
     ))
