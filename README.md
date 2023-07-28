@@ -86,6 +86,10 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## What's new
 
+🌟 v1.0.1 was released in 28/07/2023
+
+Fix some bugs and enhance the codebase. Please refer to [changelog](https://mmpretrain.readthedocs.io/en/latest/notes/changelog.html) for more details.
+
 🌟 v1.0.0 was released in 04/07/2023
 
 - Support inference of more **multi-modal** algorithms, such as [**LLaVA**](./configs/llava/), [**MiniGPT-4**](./configs/minigpt4), [**Otter**](./configs/otter/), etc.
