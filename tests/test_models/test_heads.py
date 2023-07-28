@@ -549,7 +549,7 @@ class TestMultiTaskHead(TestCase):
                 data_sample.set_field(task_sample, task_name)
             data_samples.append(data_sample)
         head = MODELS.build(self.DEFAULT_ARGS)
-        # with without data_samples
+        # without data_samples
         predictions = head.predict(feats)
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for pred in predictions:
@@ -563,6 +563,32 @@ class TestMultiTaskHead(TestCase):
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
             self.assertIn('task0', pred)
+
+        # with data samples and nested
+        head_nested = MODELS.build(self.DEFAULT_ARGS2)
+        # adding a None data sample at the beginning
+        data_samples_nested = [None]
+        for _ in range(3):
+            data_sample_nested = MultiTaskDataSample()
+            data_sample_nested0 = MultiTaskDataSample()
+            data_sample_nested0.set_field(DataSample().set_gt_label(1),
+                                          'task00')
+            data_sample_nested0.set_field(DataSample().set_gt_label(1),
+                                          'task01')
+            data_sample_nested.set_field(data_sample_nested0, 'task0')
+            data_sample_nested.set_field(DataSample().set_gt_label(1), 'task1')
+            data_samples_nested.append(data_sample_nested)
+
+        predictions = head_nested.predict(feats, data_samples_nested)
+        self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
+        for i in range(3):
+            sample = data_samples_nested[i + 1]
+            pred = predictions[i + 1]
+            self.assertIn('task0', pred)
+            self.assertIn('task1', pred)
+            self.assertIn('task01', pred.get('task0'))
+            self.assertEqual(
+                sample.get('task0').get('task01').gt_label.numpy()[0], 1)
 
     def test_loss_empty_data_sample(self):
         feats = (torch.rand(4, 10), )

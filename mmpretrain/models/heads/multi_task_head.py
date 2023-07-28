@@ -119,12 +119,24 @@ class MultiTaskHead(BaseModule):
         predictions_dict = dict()
 
         for task_name, head in self.task_heads.items():
-            task_samples = head.predict(feats)
+            task_samples = None
+            if data_samples is not None:
+                task_samples = [
+                    data_sample.get(task_name, None) if data_sample else None
+                    for data_sample in data_samples
+                ]
+
+            task_samples = head.predict(feats, task_samples)
             batch_size = len(task_samples)
             predictions_dict[task_name] = task_samples
 
         if data_samples is None:
             data_samples = [MultiTaskDataSample() for _ in range(batch_size)]
+        else:
+            data_samples = [
+                MultiTaskDataSample() if data_sample is None else data_sample
+                for data_sample in data_samples
+            ]
 
         for task_name, task_samples in predictions_dict.items():
             for data_sample, task_sample in zip(data_samples, task_samples):
