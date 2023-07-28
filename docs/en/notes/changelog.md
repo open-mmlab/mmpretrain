@@ -1,5 +1,8 @@
 # Changelog (MMPreTrain)
 
+## v1.0.1(28/07/2023)
+
+
 ## v1.0.0(04/07/2023)
 
 ### Highlights
