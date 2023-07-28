@@ -16,7 +16,8 @@ model = dict(
         patch_size=16,
         stop_grad_conv1=True,
         frozen_stages=12,
-        norm_eval=True),
+        norm_eval=True,
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     head=dict(
         type='VisionTransformerClsHead',
         num_classes=1000,

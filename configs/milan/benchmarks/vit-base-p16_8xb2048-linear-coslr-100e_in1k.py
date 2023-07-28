@@ -19,7 +19,7 @@ model = dict(
         frozen_stages=12,
         out_type='cls_token',
         final_norm=True,
-        init_cfg=dict(type='Pretrained', checkpoint='')),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     neck=dict(type='ClsBatchNormNeck', input_features=768),
     head=dict(
         type='VisionTransformerClsHead',

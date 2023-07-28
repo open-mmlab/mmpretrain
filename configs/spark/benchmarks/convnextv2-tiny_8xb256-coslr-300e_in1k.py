@@ -55,7 +55,7 @@ model = dict(
         drop_path_rate=0.1,
         layer_scale_init_value=0.,
         use_grn=True,
-    ),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,

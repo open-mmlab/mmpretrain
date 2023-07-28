@@ -74,7 +74,7 @@ model = dict(
         use_abs_pos_emb=True,
         use_rel_pos_bias=True,
         use_shared_rel_pos_bias=False,
-        init_cfg=dict(type='Pretrained', checkpoint='')),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     neck=None,
     head=dict(
         type='LinearClsHead',

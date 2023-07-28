@@ -48,7 +48,7 @@ model = dict(
     backbone=dict(
         norm_cfg=dict(type='SyncBN', requires_grad=True),
         drop_path_rate=0.05,
-    ),
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     head=dict(
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, use_sigmoid=True)),

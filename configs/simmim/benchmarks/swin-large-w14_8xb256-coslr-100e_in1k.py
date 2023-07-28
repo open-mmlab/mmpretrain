@@ -54,7 +54,8 @@ model = dict(
         img_size=224,
         drop_path_rate=0.2,
         stage_cfgs=dict(block_cfgs=dict(window_size=14)),
-        pad_small_map=True),
+        pad_small_map=True,
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')),
     head=dict(in_channels=1536))
 
 # optimizer settings

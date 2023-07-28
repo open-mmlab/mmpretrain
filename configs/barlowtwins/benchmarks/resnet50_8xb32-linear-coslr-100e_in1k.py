@@ -5,7 +5,10 @@ _base_ = [
     '../../_base_/default_runtime.py',
 ]
 
-model = dict(backbone=dict(frozen_stages=4))
+model = dict(
+    backbone=dict(
+        frozen_stages=4,
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')))
 
 # runtime settings
 default_hooks = dict(

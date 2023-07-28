@@ -8,7 +8,11 @@ _base_ = [
 # dataset settings
 train_dataloader = dict(batch_size=128)
 
-model = dict(backbone=dict(frozen_stages=4, norm_eval=True))
+model = dict(
+    backbone=dict(
+        frozen_stages=4,
+        norm_eval=True,
+        init_cfg=dict(type='Pretrained', checkpoint='', prefix='backbone.')))
 
 # optimizer
 optim_wrapper = dict(
