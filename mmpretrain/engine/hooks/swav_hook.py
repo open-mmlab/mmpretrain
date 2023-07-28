@@ -3,6 +3,7 @@ import os.path as osp
 from typing import Dict, List, Optional, Sequence
 
 import torch
+from mmengine.device import get_device
 from mmengine.dist import get_rank, get_world_size, is_distributed
 from mmengine.hooks import Hook
 from mmengine.logging import MMLogger
@@ -97,11 +98,13 @@ class SwAVHook(Hook):
         if self.queue_length > 0 \
             and runner.epoch >= self.epoch_queue_starts \
                 and self.queue is None:
+
             self.queue = torch.zeros(
                 len(self.crops_for_assign),
                 self.queue_length // runner.world_size,
                 self.feat_dim,
-            ).cuda()
+                device=get_device(),
+            )
 
         # set the boolean type of use_the_queue
         get_ori_model(runner.model).head.loss_module.queue = self.queue

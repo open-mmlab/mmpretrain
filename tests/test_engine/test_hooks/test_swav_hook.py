@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import torch
 import torch.nn as nn
+from mmengine.device import get_device
 from mmengine.logging import MMLogger
 from mmengine.model import BaseModule
 from mmengine.optim import OptimWrapper
@@ -86,7 +87,7 @@ class TestSwAVHook(TestCase):
         self.temp_dir.cleanup()
 
     def test_swav_hook(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         dummy_dataset = DummyDataset()
         toy_model = ToyModel().to(device)
         swav_hook = SwAVHook(

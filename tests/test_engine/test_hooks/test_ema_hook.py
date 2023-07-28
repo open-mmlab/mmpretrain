@@ -8,6 +8,7 @@ from unittest.mock import ANY, MagicMock, call
 
 import torch
 import torch.nn as nn
+from mmengine.device import get_device
 from mmengine.evaluator import Evaluator
 from mmengine.logging import MMLogger
 from mmengine.model import BaseModel
@@ -70,7 +71,7 @@ class TestEMAHook(TestCase):
         self.temp_dir.cleanup()
 
     def test_load_state_dict(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
         ema_hook = EMAHook()
         runner = Runner(
@@ -95,7 +96,7 @@ class TestEMAHook(TestCase):
 
     def test_evaluate_on_ema(self):
 
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
 
         # Test validate on ema model

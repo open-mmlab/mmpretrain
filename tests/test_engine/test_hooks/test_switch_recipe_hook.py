@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 from mmcv.transforms import Compose
 from mmengine.dataset import BaseDataset, ConcatDataset, RepeatDataset
+from mmengine.device import get_device
 from mmengine.logging import MMLogger
 from mmengine.model import BaseDataPreprocessor, BaseModel
 from mmengine.optim import OptimWrapper
@@ -130,7 +131,7 @@ class TestSwitchRecipeHook(TestCase):
         self.assertIsNone(hook.schedule[1]['batch_augments'])
 
     def test_do_switch(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
 
         loss = CrossEntropyLoss(use_soft=True)
@@ -205,7 +206,7 @@ class TestSwitchRecipeHook(TestCase):
         #     runner.train()
 
     def test_resume(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
 
         loss = CrossEntropyLoss(use_soft=True)
@@ -275,7 +276,7 @@ class TestSwitchRecipeHook(TestCase):
                       logs.output)
 
     def test_switch_train_pipeline(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
 
         runner = Runner(
@@ -324,7 +325,7 @@ class TestSwitchRecipeHook(TestCase):
                       pipeline)
 
     def test_switch_loss(self):
-        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        device = get_device()
         model = SimpleModel().to(device)
 
         runner = Runner(

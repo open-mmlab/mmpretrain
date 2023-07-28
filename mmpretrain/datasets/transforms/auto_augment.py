@@ -1169,7 +1169,7 @@ class GaussianBlur(BaseAugTransform):
 
         img = results['img']
         pil_img = Image.fromarray(img)
-        pil_img.filter(ImageFilter.GaussianBlur(radius=radius))
+        pil_img = pil_img.filter(ImageFilter.GaussianBlur(radius=radius))
         results['img'] = np.array(pil_img, dtype=img.dtype)
 
         return results

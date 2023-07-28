@@ -7,7 +7,7 @@
 - Support inference of more **multi-modal** algorithms, such as **LLaVA**, **MiniGPT-4**, **Otter**, etc.
 - Support around **10 multi-modal datasets**!
 - Add **iTPN**, **SparK** self-supervised learning algorithms.
-- Provide examples of [New Config](./mmpretrain/configs/) and [DeepSpeed/FSDP](./configs/mae/benchmarks/).
+- Provide examples of [New Config](https://github.com/open-mmlab/mmpretrain/tree/main/mmpretrain/configs/) and [DeepSpeed/FSDP](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mae/benchmarks/).
 
 ### New Features
 
