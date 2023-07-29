@@ -257,6 +257,78 @@ val_dataloader = dict(
 
 test_dataloader = val_dataloader
 ```
+## RefCOCO Dataset
+
+RefCOCO is a popular dataset used for the task of visual grounding. Here are the steps for accessing and utilizing the RefCOCO dataset.
+
+### Downloading
+
+The RefCOCO dataset can be downloaded directly from the following link:
+[https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip](https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip)
+After downloading, you need to unzip the file to retrieve the dataset.
+
+### Official Source
+
+Alternatively, you can access the RefCOCO dataset from the official source:
+[https://github.com/lichengunc/refer](https://github.com/lichengunc/refer)
+
+### Directory Structure of the RefCOCO Dataset
+
+The RefCOCO dataset is organized in a structured format. The structure of the features is as follows:
+
+```python
+FeaturesDict({
+    'coco_annotations': Sequence({
+        'area': int64,
+        'bbox': BBoxFeature(shape=(4,), dtype=float32),
+        'id': int64,
+        'label': int64,
+    }),
+    'image': Image(shape=(None, None, 3), dtype=uint8),
+    'image/id': int64,
+    'objects': Sequence({
+        'area': int64,
+        'bbox': BBoxFeature(shape=(4,), dtype=float32),
+        'gt_box_index': int64,
+        'id': int64,
+        'label': int64,
+        'refexp': Sequence({
+            'raw': Text(shape=(), dtype=string),
+            'refexp_id': int64,
+        }),
+    }),
+})
+```
+
+### Configuration
+
+Once the RefCOCO dataset is organized as above, you can configure your project to use the dataset. An example of how to set up a data loader using the RefCOCO dataset is provided below:
+
+```python
+train_dataloader = dict(
+    ...
+    # Training dataset configurations
+    dataset=dict(
+        type='RefCOCO',
+        data_root='data/refcoco',
+        split='train',
+        pipeline=...,
+    )
+)
+
+val_dataloader = dict(
+    ...
+    # Validation dataset configurations
+    dataset=dict(
+        type='RefCOCO',
+        data_root='data/refcoco',
+        split='val',
+        pipeline=...,
+    )
+)
+
+test_dataloader = val_dataloader
+```
 
 ## Supported Image Classification Datasets
 
@@ -279,6 +351,14 @@ test_dataloader = val_dataloader
 | [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])       | ["train", "val", "tranval", "test"] | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                      |
 
 Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [Stanford Cars](https://opendatalab.com/Stanford_Cars/download).
+
+## Supported Multi-modality Datasets
+
+| Datasets                                                                           | split                               | HomePage                                                                            |
+| ---------------------------------------------------------------------------------- | :---------------------------------- | ----------------------------------------------------------------------------------- |
+| [`RefCOCO`](mmpretrain.datasets.RefCOCO)(data_root[, split, pipeline, ...])       | ["train", "val", "test"]           | [RefCOCO](https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip) Dataset. |
+
+Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [RefCOCO](https://opendatalab.com/RefCOCO/download).
 
 ## OpenMMLab 2.0 Standard Dataset
 
