@@ -84,6 +84,10 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## 更新日志
 
+🌟 2023/7/28 发布了 v1.0.1 版本
+
+修复部分 bug 和增强算法库功能。细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
+
 🌟 2023/7/4 发布了 v1.0.0 版本
 
 - 支持更多**多模态**算法的推理, 例如 [**LLaVA**](./configs/llava/), [**MiniGPT-4**](./configs/minigpt4), [**Otter**](./configs/otter/) 等。

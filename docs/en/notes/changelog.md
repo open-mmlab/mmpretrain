@@ -1,5 +1,28 @@
 # Changelog (MMPreTrain)
 
+## v1.0.1(28/07/2023)
+
+### Improvements
+
+- Add init_cfg with type='pretrained' to downstream tasks ([#1717](https://github.com/open-mmlab/mmpretrain/pull/1717)
+- Set 'is_init' in some multimodal methods ([#1718](https://github.com/open-mmlab/mmpretrain/pull/1718)
+- Adapt test cases on Ascend NPU ([#1728](https://github.com/open-mmlab/mmpretrain/pull/1728)
+- Add GPU Acceleration Apple silicon mac ([#1699](https://github.com/open-mmlab/mmpretrain/pull/1699)
+- BEiT refactor ([#1705](https://github.com/open-mmlab/mmpretrain/pull/1705)
+
+### Bug Fixes
+
+- Fix dict update in minigpt4. ([#1709](https://github.com/open-mmlab/mmpretrain/pull/1709)
+- Fix nested predict for multi-task prediction ([#1716](https://github.com/open-mmlab/mmpretrain/pull/1716)
+- Fix the issue #1711 "GaussianBlur doesn't work" ([#1722](https://github.com/open-mmlab/mmpretrain/pull/1722)
+- Just to correct a typo of 'target' ([#1655](https://github.com/open-mmlab/mmpretrain/pull/1655)
+- Fix freeze without cls_token in vit ([#1693](https://github.com/open-mmlab/mmpretrain/pull/1693)
+- Fix RandomCrop bug ([#1706](https://github.com/open-mmlab/mmpretrain/pull/1706)
+
+### Docs Update
+
+- Fix spelling ([#1689](https://github.com/open-mmlab/mmpretrain/pull/1689)
+
 ## v1.0.0(04/07/2023)
 
 ### Highlights
