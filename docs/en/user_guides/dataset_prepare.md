@@ -280,6 +280,14 @@ test_dataloader = val_dataloader
 
 Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [Stanford Cars](https://opendatalab.com/Stanford_Cars/download).
 
+## Supported Multi-modality Datasets
+
+| Datasets                                                                    | split                    | HomePage                                                                            |
+| --------------------------------------------------------------------------- | :----------------------- | ----------------------------------------------------------------------------------- |
+| [`RefCOCO`](mmpretrain.datasets.RefCOCO)(data_root[, split, pipeline, ...]) | ["train", "val", "test"] | [RefCOCO](https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip) Dataset. |
+
+Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [RefCOCO](https://opendatalab.com/RefCOCO/download).
+
 ## OpenMMLab 2.0 Standard Dataset
 
 In order to facilitate the training of multi-task algorithm models, we unify the dataset interfaces of different tasks. OpenMMLab has formulated the **OpenMMLab 2.0 Dataset Format Specification**. When starting a trainning task, the users can choose to convert their dataset annotation into the specified format, and use the algorithm library of OpenMMLab to perform algorithm training and testing based on the data annotation file.
