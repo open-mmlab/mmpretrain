@@ -14,7 +14,7 @@ with read_base():
     from .._base_.schedules.imagenet_bs1024_adamw_swin import *
 
 model.update(
-    backbone=dict(drop_rate=0, drop_path_rate=0.1),
+    backbone=dict(drop_rate=0, drop_path_rate=0.1, init_cfg=None),
     head=dict(loss=dict(mode='original')),
     init_cfg=[
         dict(type=TruncNormalInit, layer='Linear', std=.02),
@@ -23,7 +23,6 @@ model.update(
     train_cfg=dict(
         augments=[dict(type=Mixup, alpha=0.8),
                   dict(type=CutMix, alpha=1.0)]))
-model.backbone.init_cfg = []
 
 # dataset settings
 train_dataloader.update(batch_size=128)

@@ -15,7 +15,6 @@ model.update(
     backbone=dict(patch_size=32),
     head=dict(
         hidden_dim=3072,
-        # loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
         topk=(1, 5),
     ),
     train_cfg=dict(augments=dict(type=Mixup, alpha=0.2)),
