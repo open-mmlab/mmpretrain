@@ -25,6 +25,11 @@ ImageNet
 
 .. autoclass:: ImageNet21k
 
+RefCOCO
+--------
+
+.. autoclass:: RefCOCO
+
 CIFAR
 -----
 

@@ -257,6 +257,7 @@ val_dataloader = dict(
 
 test_dataloader = val_dataloader
 ```
+
 ## RefCOCO Dataset
 
 RefCOCO is a popular dataset used for the task of visual grounding. Here are the steps for accessing and utilizing the RefCOCO dataset.
@@ -329,6 +330,7 @@ val_dataloader = dict(
 
 test_dataloader = val_dataloader
 ```
+
 ## Supported Image Classification Datasets
 
 | Datasets                                                                           | split                               | HomePage                                                                            |
@@ -353,9 +355,9 @@ Some dataset homepage links may be unavailable, and you can download datasets th
 
 ## Supported Multi-modality Datasets
 
-| Datasets                                                                           | split                               | HomePage                                                                            |
-| ---------------------------------------------------------------------------------- | :---------------------------------- | ----------------------------------------------------------------------------------- |
-| [`RefCOCO`](mmpretrain.datasets.RefCOCO)(data_root[, split, pipeline, ...])       | ["train", "val", "test"]           | [RefCOCO](https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip) Dataset. |
+| Datasets                                                                    | split                    | HomePage                                                                            |
+| --------------------------------------------------------------------------- | :----------------------- | ----------------------------------------------------------------------------------- |
+| [`RefCOCO`](mmpretrain.datasets.RefCOCO)(data_root[, split, pipeline, ...]) | ["train", "val", "test"] | [RefCOCO](https://bvisionweb1.cs.unc.edu/licheng/referit/data/refcoco.zip) Dataset. |
 
 Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [RefCOCO](https://opendatalab.com/RefCOCO/download).
 
