@@ -1,4 +1,4 @@
-cl_base_ = '../_base_/default_runtime.py'
+_base_ = '../_base_/default_runtime.py'
 
 # data settings
 data_preprocessor = dict(
