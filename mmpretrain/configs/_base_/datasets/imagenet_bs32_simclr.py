@@ -9,7 +9,7 @@ from mmpretrain.datasets import (ColorJitter, GaussianBlur, ImageNet,
 from mmpretrain.models import SelfSupDataPreprocessor
 
 # dataset settings
-dataset_type = 'ImageNet'
+dataset_type = ImageNet
 data_root = 'data/imagenet/'
 data_preprocessor = dict(
     type=SelfSupDataPreprocessor,
