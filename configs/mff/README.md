@@ -1,6 +1,6 @@
 # MFF
 
-> [Improving Pixel-based MIM by Reducing Wasted Modeling Capability](https://arxiv.org/abs/2111.06377)
+> [Improving Pixel-based MIM by Reducing Wasted Modeling Capability](https://arxiv.org/abs/2308.00261)
 
 <!-- [ALGORITHM] -->
 
