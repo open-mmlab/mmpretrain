@@ -157,7 +157,6 @@ class MFFViT(MAEViT):
 
             # Use final norm
             x = self.norm1(res)
-
             return (x, mask, ids_restore, proj_weights.view(-1))
 
 

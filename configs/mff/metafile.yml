@@ -13,7 +13,7 @@ Collections:
     README: configs/mff/README.md
 
 Models:
-  - Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k
+  - Name: mff_vit-base-p16_8xb512-amp-coslr-300e_in1k
     Metadata:
       Epochs: 300
       Batch Size: 2048
@@ -25,9 +25,9 @@ Models:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k_20230801-3c1bcce4.pth
     Config: configs/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k.py
     Downstream:
-      - vit-base-p16_8xb128-coslr-100e_in1k
-      - vit-base-p16_8xb2048-linear-coslr-90e_in1k
-  - Name: maskfeat_vit-base-p16_8xb256-amp-coslr-800e_in1k
+      - vit-base-p16_mff-300e-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_mff-300e-pre_8xb2048-linear-coslr-90e_in1k
+  - Name: mff_vit-base-p16_8xb512-amp-coslr-800e_in1k
     Metadata:
       Epochs: 800
       Batch Size: 2048
@@ -39,9 +39,9 @@ Models:
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k_20230801-3af7cd9d.pth
     Config: configs/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k.py
     Downstream:
-      - vit-base-p16_8xb128-coslr-100e_in1k
-      - vit-base-p16_8xb2048-linear-coslr-90e_in1k
-  - Name: vit-base-p16_8xb128-coslr-100e_in1k
+      - vit-base-p16_mff-800e-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_mff-800e-pre_8xb2048-linear-coslr-90e_in1k
+  - Name: vit-base-p16_mff-300e-pre_8xb128-coslr-100e_in1k
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -56,7 +56,7 @@ Models:
           Top 1 Accuracy: 83.0
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k/vit-base-p16_8xb128-coslr-100e_in1k/vit-base-p16_8xb128-coslr-100e_in1k_20230802-d746fdb7.pth
     Config: configs/mff/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
-  - Name: vit-base-p16_8xb128-coslr-100e_in1k
+  - Name: vit-base-p16_mff-800e-pre_8xb128-coslr-100e_in1k
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -71,7 +71,7 @@ Models:
           Top 1 Accuracy: 83.7
     Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k/vit-base-p16_8xb128-coslr-100e/vit-base-p16_8xb128-coslr-100e_20230802-6780e47d.pth
     Config: configs/mff/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
-  - Name: vit-base-p16_8xb2048-linear-coslr-90e_in1k
+  - Name: vit-base-p16_mff-300e-pre_8xb2048-linear-coslr-90e_in1k
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -86,7 +86,7 @@ Models:
           Top 1 Accuracy: 64.2
     Weights:
     Config: configs/mff/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
-  - Name: vit-base-p16_8xb2048-linear-coslr-90e_in1k
+  - Name: vit-base-p16_mff-800e-pre_8xb2048-linear-coslr-90e_in1k
     Metadata:
       Epochs: 90
       Batch Size: 16384
