@@ -25,11 +25,6 @@ ImageNet
 
 .. autoclass:: ImageNet21k
 
-RefCOCO
---------
-
-.. autoclass:: RefCOCO
-
 CIFAR
 -----
 
@@ -111,6 +106,11 @@ SUN397
 ----------------
 
 .. autoclass:: SUN397
+
+RefCOCO
+--------
+
+.. autoclass:: RefCOCO
 
 Dataset Wrappers
 ----------------
