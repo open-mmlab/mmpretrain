@@ -12,8 +12,9 @@ from .formatting import (Collect, NumpyToPIL, PackInputs, PackMultiTaskInputs,
                          PILToNumpy, Transpose)
 from .processing import (Albumentations, BEiTMaskGenerator, CleanCaption,
                          ColorJitter, EfficientNetCenterCrop,
-                         EfficientNetRandomCrop, Lighting, RandomCrop,
-                         RandomErasing, RandomResizedCrop,
+                         EfficientNetRandomCrop, Lighting,
+                         MAERandomResizedCrop, RandomCrop, RandomErasing,
+                         RandomResizedCrop,
                          RandomResizedCropAndInterpolationWithTwoPic,
                          RandomTranslatePad, ResizeEdge, SimMIMMaskGenerator)
 from .utils import get_transform_idx, remove_transform
@@ -36,5 +37,5 @@ __all__ = [
     'RandomFlip', 'RandomGrayscale', 'RandomResize', 'Resize', 'MultiView',
     'ApplyToList', 'CleanCaption', 'RandomTranslatePad',
     'RandomResizedCropAndInterpolationWithTwoPic', 'get_transform_idx',
-    'remove_transform'
+    'remove_transform', 'MAERandomResizedCrop'
 ]

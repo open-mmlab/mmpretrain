@@ -82,3 +82,4 @@ Import:
   - configs/minigpt4/metafile.yml
   - configs/llava/metafile.yml
   - configs/otter/metafile.yml
+  - configs/mff/metafile.yml

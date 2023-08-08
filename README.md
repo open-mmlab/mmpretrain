@@ -253,6 +253,7 @@ Results and models are available in the [model zoo](https://mmpretrain.readthedo
         <li><a href="configs/mixmim">MixMIM (arXiv'2022)</a></li>
         <li><a href="configs/itpn">iTPN (CVPR'2023)</a></li>
         <li><a href="configs/spark">SparK (ICLR'2023)</a></li>
+        <li><a href="configs/mff">MFF (ICCV'2023)</a></li>
         </ul>
       </td>
       <td>
