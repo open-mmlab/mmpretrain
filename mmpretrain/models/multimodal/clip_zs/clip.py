@@ -12,17 +12,19 @@ from mmpretrain.datasets.categories import (CIFAR100_CATEGORIES,
 from mmpretrain.registry import MODELS, TOKENIZER
 from mmpretrain.structures import DataSample
 from mmpretrain.utils import track_on_main_process
-from .utils import OPENAI_CIFAR100_PROMPT, OPENAI_IMAGENET_PROMPT
+from .utils import (OPENAI_CIFAR100_PROMPT, OPENAI_IMAGENET_PROMPT,
+                    OPENAI_IMAGENET_PROMPT_SUB)
 
 CIFAR100_CATEGORIES = [' '.join(c.split('_')) for c in CIFAR100_CATEGORIES]
 PROTOTYPE_MAP = {
     'imagenet': IMAGENET_SIMPLE_CATEGORIES,
-    'cifar100': CIFAR100_CATEGORIES
+    'cifar100': CIFAR100_CATEGORIES,
 }
 PROMPT_MAP = {
     'openai_imagenet': OPENAI_IMAGENET_PROMPT,
     'openai_cifar100': OPENAI_CIFAR100_PROMPT,
-    'vanilla': [lambda c: f'a photo of a {c}']
+    'vanilla': [lambda c: f'a photo of a {c}'],
+    'openai_imagenet_sub': OPENAI_IMAGENET_PROMPT_SUB
 }
 
 
