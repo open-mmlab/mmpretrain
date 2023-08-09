@@ -6,7 +6,6 @@ from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
 
-import pdb
 
 @MODELS.register_module()
 class DINOHead(BaseModule):

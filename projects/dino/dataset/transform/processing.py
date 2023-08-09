@@ -7,7 +7,6 @@ from mmpretrain.datasets.transforms import (ColorJitter, GaussianBlur,
 from mmpretrain.registry import TRANSFORMS
 
 import random
-import pdb
 
 @TRANSFORMS.register_module()
 class DINOMultiCrop(BaseTransform):

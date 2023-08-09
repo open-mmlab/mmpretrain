@@ -2,8 +2,8 @@
 
 **NOTE**: We only guarantee correctness of the forward pass, not responsible for full reimplementation.
 
-First, ensure you are in the root directory of MMSelfSup, then you have two choices
-to play with DINO in MMSelfSup:
+First, ensure you are in the root directory of MMPretrain, then you have two choices
+to play with DINO in MMPretrain:
 
 ## Slurm
 

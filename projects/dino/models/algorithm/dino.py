@@ -8,7 +8,6 @@ from mmpretrain.models import BaseSelfSupervisor, CosineEMA
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 
-import pdb
 
 @MODELS.register_module()
 class DINO(BaseSelfSupervisor):
