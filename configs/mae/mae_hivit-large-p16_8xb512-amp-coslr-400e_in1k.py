@@ -6,7 +6,7 @@ _base_ = [
 
 # model settings
 model = dict(
-    backbone=dict(type='MIMHiViT', arch='large'),
+    backbone=dict(type='MAEHiViT', arch='large'),
     neck=dict(type='MAEPretrainDecoder', embed_dim=768))
 
 # optimizer wrapper
