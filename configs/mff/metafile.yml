@@ -1,0 +1,103 @@
+Collections:
+  - Name: MFF
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+      Training Resources: 8x A100-80G GPUs
+      Architecture:
+        - ViT
+    Paper:
+      Title: Improving Pixel-based MIM by Reducing Wasted Modeling Capability
+      URL: https://arxiv.org/pdf/2308.00261.pdf
+    README: configs/mff/README.md
+
+Models:
+  - Name: mff_vit-base-p16_8xb512-amp-coslr-300e_in1k
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+      FLOPs: 17581972224
+      Parameters: 85882692
+      Training Data: ImageNet-1k
+    In Collection: MaskFeat
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k_20230801-3c1bcce4.pth
+    Config: configs/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k.py
+    Downstream:
+      - vit-base-p16_mff-300e-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_mff-300e-pre_8xb2048-linear-coslr-90e_in1k
+  - Name: mff_vit-base-p16_8xb512-amp-coslr-800e_in1k
+    Metadata:
+      Epochs: 800
+      Batch Size: 2048
+      FLOPs: 17581972224
+      Parameters: 85882692
+      Training Data: ImageNet-1k
+    In Collection: MaskFeat
+    Results: null
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k_20230801-3af7cd9d.pth
+    Config: configs/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k.py
+    Downstream:
+      - vit-base-p16_mff-800e-pre_8xb128-coslr-100e_in1k
+      - vit-base-p16_mff-800e-pre_8xb2048-linear-coslr-90e_in1k
+  - Name: vit-base-p16_mff-300e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MaskFeat
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.0
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k/vit-base-p16_8xb128-coslr-100e_in1k/vit-base-p16_8xb128-coslr-100e_in1k_20230802-d746fdb7.pth
+    Config: configs/mff/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mff-800e-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MFF
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.7
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-800e_in1k/vit-base-p16_8xb128-coslr-100e/vit-base-p16_8xb128-coslr-100e_20230802-6780e47d.pth
+    Config: configs/mff/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
+  - Name: vit-base-p16_mff-300e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MFF
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 64.2
+    Weights:
+    Config: configs/mff/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
+  - Name: vit-base-p16_mff-800e-pre_8xb2048-linear-coslr-90e_in1k
+    Metadata:
+      Epochs: 90
+      Batch Size: 16384
+      FLOPs: 17581215744
+      Parameters: 86566120
+      Training Data: ImageNet-1k
+    In Collection: MFF
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 68.3
+    Weights: https://download.openmmlab.com/mmpretrain/v1.0/mff/mff_vit-base-p16_8xb512-amp-coslr-300e_in1k/vit-base-p16_8xb128-coslr-100e_in1k/vit-base-p16_8xb128-coslr-100e_in1k_20230802-d746fdb7.pth
+    Config: configs/mff/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py

@@ -436,7 +436,7 @@ class VisionTransformer(BaseBackbone):
         for param in self.pre_norm.parameters():
             param.requires_grad = False
         # freeze cls_token
-        if self.cls_token:
+        if self.cls_token is not None:
             self.cls_token.requires_grad = False
         # freeze layers
         for i in range(1, self.frozen_stages + 1):

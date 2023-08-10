@@ -9,6 +9,7 @@ from .eva import EVA
 from .itpn import iTPN, iTPNHiViT
 from .mae import MAE, MAEHiViT, MAEViT
 from .maskfeat import HOGGenerator, MaskFeat, MaskFeatViT
+from .mff import MFF, MFFViT
 from .milan import MILAN, CLIPGenerator, MILANViT
 from .mixmim import MixMIM, MixMIMPretrainTransformer
 from .moco import MoCo
@@ -53,4 +54,6 @@ __all__ = [
     'BarlowTwins',
     'SwAV',
     'SparK',
+    'MFF',
+    'MFFViT',
 ]
