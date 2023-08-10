@@ -57,7 +57,7 @@ param_scheduler = [
     )
 ]
 
-train_cfg = dict(by_epocgh=True, max_epochs=10)
+train_cfg = dict(by_epoch=True, max_epochs=10)
 val_cfg = dict()
 test_cfg = dict()
 
