@@ -1,4 +1,6 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmengine.config import read_base
+
 from mmpretrain.engine import EMAHook
 
 with read_base():
@@ -6,8 +8,6 @@ with read_base():
     from .._base_.default_runtime import *
     from .._base_.models.convnext_base import *
     from .._base_.schedules.imagenet_bs1024_adamw_swin import *
-
-
 
 # dataset setting
 train_dataloader.update(batch_size=128)
