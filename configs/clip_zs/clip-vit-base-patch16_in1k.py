@@ -64,6 +64,6 @@ model = dict(
     transformer_width=512,
     proj_dim=512,
     text_prototype='imagenet',
-    text_prompt='openai_imagenet_sub',
+    text_prompt='openai_imagenet_sub',  # openai_imagenet, openai_imagenet_sub
     context_length=77,
 )

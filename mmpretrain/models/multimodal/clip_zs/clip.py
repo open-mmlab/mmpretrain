@@ -49,8 +49,9 @@ class CLIP_zs(BaseModel):
         proj_dim (int): Projection dimension for similarity computation.
         text_prototype (str): Text prototype, which can be a key in
             `PROTOTYPE_MAP` or list of text.
-        text_prompt (str): The prompt for text prototype. Defaults to 'openai'.
-        context_length (int): The context length to use. Defaults to 52.
+        text_prompt (str): The prompt for text prototype.
+            Defaults to 'vanilla',which refers to "a photo of {cls}".
+        context_length (int): The context length to use. Defaults to 77.
         data_preprocessor (Union[dict, nn.Module], optional): The config for
             preprocessing input data. If None or no specified type, it will use
             "MultiModalDataPreprocessor" as type.
@@ -83,6 +84,8 @@ class CLIP_zs(BaseModel):
         self.context_length = context_length
 
         self.visual = MODELS.build(vision_backbone)
+
+        # build attn_mask for casual-attn
         text_backbone['attn_mask'] = self.build_attention_mask()
         self.transformer = MODELS.build(text_backbone)
 
