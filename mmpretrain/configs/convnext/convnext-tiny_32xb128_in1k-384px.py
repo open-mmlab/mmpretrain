@@ -1,14 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# This is a BETA new format config file, and the usage may change recently.
 from mmengine.config import read_base
+
+from mmpretrain.engine import EMAHook
 
 with read_base():
     from .._base_.datasets.imagenet_bs64_swin_384 import *
     from .._base_.default_runtime import *
     from .._base_.models.convnext_base import *
     from .._base_.schedules.imagenet_bs1024_adamw_swin import *
-
-from mmpretrain.engine import EMAHook
 
 # dataset setting
 train_dataloader.update(batch_size=128)
