@@ -142,15 +142,15 @@ ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.ima
 
 ````{group-tab} MIM 下载
 
-MIM支持使用一条命令行从 [OpenDataLab](https://opendatalab.com/) 下载并预处理 ImageNet 数据集。
+MIM支持使用一条命令行从 [OpenXLab](https://openxlab.org.cn/datasets?lang=zh-CN) 下载并预处理 ImageNet 数据集。
 
-_需要在 [OpenDataLab 官网](https://opendatalab.com/) 注册账号并命令行登录_。
+_需要在 [OpenXLab 官网](https://openxlab.org.cn/datasets?lang=zh-CN) 注册账号并命令行登录_。
 
 ```Bash
-# 安装opendatalab库
-pip install -U opendatalab
-# 登录到 OpenDataLab, 如果还没有注册，请到官网注册一个
-odl login
+# 安装 OpenXLab CLI 工具
+pip install -U openxlab
+# 登录 OpenXLab
+openxlab login
 # 使用 MIM 下载数据集, 最好在 $MMPreTrain 目录执行
 mim download mmpretrain --dataset imagenet1k
 ```
@@ -276,7 +276,7 @@ test_dataloader = val_dataloader
 | [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])           | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) 数据集                   |
 | [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])        | ["train", "val", "tranval", "test"] | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) 数据集                       |
 
-有些数据集主页链接可能已经失效，您可以通过[OpenDataLab](https://opendatalab.com/)下载数据集，例如 [Stanford Cars](https://opendatalab.com/Stanford_Cars/download)数据集。
+有些数据集主页链接可能已经失效，您可以通过[OpenXLab](https://openxlab.org.cn/datasets?lang=zh-CN)下载数据集，例如 [Stanford Cars](https://openxlab.org.cn/datasets/OpenDataLab/Stanford_Cars)数据集。
 
 ## OpenMMLab 2.0 标准数据集
 
