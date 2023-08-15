@@ -86,7 +86,7 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 🌟 2023/8/15 发布了 v1.0.2 版本
 
-支持了 MFF 自监督算法，增强算法库功能。细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
+支持了 [MFF](./configs/mff/) 自监督算法，增强算法库功能。细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
 
 🌟 2023/7/28 发布了 v1.0.1 版本
 
