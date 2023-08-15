@@ -2,7 +2,7 @@
 model = dict(
     type='MAE',
     backbone=dict(
-        type='MIMHiViT', patch_size=16, arch='base', mask_ratio=0.75),
+        type='MAEHiViT', patch_size=16, arch='base', mask_ratio=0.75),
     neck=dict(
         type='MAEPretrainDecoder',
         patch_size=16,

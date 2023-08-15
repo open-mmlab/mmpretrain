@@ -107,6 +107,11 @@ SUN397
 
 .. autoclass:: SUN397
 
+RefCOCO
+--------
+
+.. autoclass:: RefCOCO
+
 Dataset Wrappers
 ----------------
 
