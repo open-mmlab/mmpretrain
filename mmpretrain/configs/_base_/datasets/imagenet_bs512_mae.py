@@ -7,7 +7,7 @@ from mmpretrain.datasets import ImageNet, PackInputs, RandomResizedCrop
 from mmpretrain.models import SelfSupDataPreprocessor
 
 # dataset settings
-dataset_type = 'ImageNet'
+dataset_type = ImageNet
 data_root = 'data/imagenet/'
 data_preprocessor = dict(
     type=SelfSupDataPreprocessor,
@@ -34,8 +34,7 @@ train_dataloader = dict(
     sampler=dict(type=DefaultSampler, shuffle=True),
     collate_fn=dict(type='default_collate'),
     dataset=dict(
-        type=ImageNet,
+        type=dataset_type,
         data_root=data_root,
-        ann_file='meta/train.txt',
-        data_prefix=dict(img_path='train/'),
+        split='train',
         pipeline=train_pipeline))

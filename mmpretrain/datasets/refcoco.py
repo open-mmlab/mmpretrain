@@ -14,6 +14,37 @@ from mmpretrain.registry import DATASETS
 class RefCOCO(BaseDataset):
     """RefCOCO dataset.
 
+    RefCOCO is a popular dataset used for the task of visual grounding.
+    Here are the steps for accessing and utilizing the
+    RefCOCO dataset.
+
+    You can access the RefCOCO dataset from the official source:
+    https://github.com/lichengunc/refer
+
+    The RefCOCO dataset is organized in a structured format: ::
+
+        FeaturesDict({
+            'coco_annotations': Sequence({
+                'area': int64,
+                'bbox': BBoxFeature(shape=(4,), dtype=float32),
+                'id': int64,
+                'label': int64,
+            }),
+            'image': Image(shape=(None, None, 3), dtype=uint8),
+            'image/id': int64,
+            'objects': Sequence({
+                'area': int64,
+                'bbox': BBoxFeature(shape=(4,), dtype=float32),
+                'gt_box_index': int64,
+                'id': int64,
+                'label': int64,
+                'refexp': Sequence({
+                    'raw': Text(shape=(), dtype=string),
+                    'refexp_id': int64,
+                }),
+            }),
+        })
+
     Args:
         ann_file (str): Annotation file path.
         data_root (str): The root directory for ``data_prefix`` and
