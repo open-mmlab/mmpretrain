@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import random
+
 from mmcv.transforms import RandomApply  # noqa: E501
 from mmcv.transforms import BaseTransform, Compose, RandomFlip, RandomGrayscale
 
 from mmpretrain.datasets.transforms import (ColorJitter, GaussianBlur,
-                                           RandomResizedCrop, Solarize)
+                                            RandomResizedCrop, Solarize)
 from mmpretrain.registry import TRANSFORMS
 
-import random
 
 @TRANSFORMS.register_module()
 class DINOMultiCrop(BaseTransform):
@@ -42,14 +43,18 @@ class DINOMultiCrop(BaseTransform):
 
         self.global_transform_1 = Compose([
             RandomResizedCrop(
-                224, crop_ratio_range=global_crops_scale, interpolation='bicubic'),
+                224,
+                crop_ratio_range=global_crops_scale,
+                interpolation='bicubic'),
             flip_and_color_jitter,
             GaussianBlur(prob=1.0, radius=random.uniform(0.1, 2.0)),
         ])
 
         self.global_transform_2 = Compose([
             RandomResizedCrop(
-                224, crop_ratio_range=global_crops_scale, interpolation='bicubic'),
+                224,
+                crop_ratio_range=global_crops_scale,
+                interpolation='bicubic'),
             flip_and_color_jitter,
             GaussianBlur(prob=1.0, radius=random.uniform(0.1, 2.0)),
             Solarize(thr=128, prob=0.2),
@@ -58,7 +63,9 @@ class DINOMultiCrop(BaseTransform):
         self.local_crops_number = local_crops_number
         self.local_transform = Compose([
             RandomResizedCrop(
-                96, crop_ratio_range=local_crops_scale, interpolation='bicubic'),
+                96,
+                crop_ratio_range=local_crops_scale,
+                interpolation='bicubic'),
             flip_and_color_jitter,
             GaussianBlur(prob=1.0, radius=random.uniform(0.1, 2.0)),
         ])
