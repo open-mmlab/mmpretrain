@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from abc import abstractmethod
 from typing import List, Optional, Tuple, Union
 
 import numpy as np
@@ -38,8 +39,7 @@ class LayerNorm(nn.LayerNorm):
         return ret.type(orig_type)
 
 
-@MODELS.register_module()
-class CLIP_zs(BaseModel):
+class CLIP(BaseModel):
     """The implementation of `ChineseCLIP <https://arxiv.org/abs/2211.01335>`_.
 
     Args:
@@ -68,8 +68,6 @@ class CLIP_zs(BaseModel):
                  vocab_size: int,
                  transformer_width: int,
                  proj_dim: int,
-                 text_prototype: Union[str, List[str]],
-                 text_prompt: str = 'vanilla',
                  context_length: int = 77,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
@@ -102,16 +100,6 @@ class CLIP_zs(BaseModel):
         self.initialize_parameters()
 
         self.tokenizer = TOKENIZER.build(tokenizer)
-
-        # for zero-shot classification
-        if isinstance(text_prototype,
-                      str) and text_prototype in PROTOTYPE_MAP.keys():
-            self.prototype = PROTOTYPE_MAP[text_prototype]
-        else:
-            self.prototype = text_prototype
-        self.text_prototype_embeds = None
-
-        self.prompt = PROMPT_MAP[text_prompt]
 
         self.tokenizer.vocab = self.tokenizer.get_vocab(
         )  # CLIPTokenizer has no attribute named 'vocab', so manually
@@ -233,6 +221,81 @@ class CLIP_zs(BaseModel):
         # shape (N, N)
         return logits_per_image, logits_per_text
 
+    @abstractmethod
+    def predict(self,
+                images: torch.Tensor,
+                data_samples: DataSample = None) -> DataSample:
+        raise NotImplementedError
+
+    def tokenize(self, texts: Union[str, List[str]]) -> torch.LongTensor:
+        """Returns the tokenized representation of given input string(s)
+
+        Args:
+            texts (Union[str, List[str]]): An input string or a list of input
+                strings to tokenize
+            context_length (int): The context length to use. Defaults to 52.
+
+        Returns:
+            torch.Tensor: Resulting tokens.
+        """
+        if isinstance(texts, str):
+            texts = [texts]
+
+        all_tokens = []
+        for text in texts:
+            # adapt the text to Chinese BERT vocab
+            # text = text.lower().replace('“', "\"").replace('”', "\"")
+
+            # add special tokens
+            all_tokens.append(
+                [self.tokenizer.vocab['<|startoftext|>']
+                 ] +  # <|startoftext|>代表[CLS] token
+                self.tokenizer.convert_tokens_to_ids(
+                    self.tokenizer.tokenize(text))[:self.context_length - 2] +
+                [self.tokenizer.vocab['<|endoftext|>']])
+
+        result = torch.zeros(
+            len(all_tokens), self.context_length, dtype=torch.long)
+
+        for i, tokens in enumerate(all_tokens):
+            assert len(tokens) <= self.context_length
+            result[i, :len(tokens)] = torch.tensor(tokens)
+
+        return result
+
+
+@MODELS.register_module()
+class CLIP_zs(CLIP):
+
+    def __init__(
+        self,
+        vision_backbone: dict,
+        text_backbone: dict,
+        tokenizer: dict,
+        vocab_size: int,
+        transformer_width: int,
+        proj_dim: int,
+        context_length: int = 77,
+        data_preprocessor: Optional[dict] = None,
+        init_cfg: Optional[dict] = None,
+        text_prototype: Union[str, List[str]] = 'imagenet',
+        text_prompt: str = 'vanilla',
+    ):
+        super(CLIP_zs,
+              self).__init__(vision_backbone, text_backbone, tokenizer,
+                             vocab_size, transformer_width, proj_dim,
+                             context_length, data_preprocessor, init_cfg)
+
+        # for zero-shot classification
+        if isinstance(text_prototype,
+                      str) and text_prototype in PROTOTYPE_MAP.keys():
+            self.prototype = PROTOTYPE_MAP[text_prototype]
+        else:
+            self.prototype = text_prototype
+        self.text_prototype_embeds = None
+
+        self.prompt = PROMPT_MAP[text_prompt]
+
     def predict(self,
                 images: torch.Tensor,
                 data_samples: DataSample = None) -> DataSample:
@@ -291,39 +354,3 @@ class CLIP_zs(BaseModel):
             class_embeddings.append(class_feature)
         self.text_prototype_embeds = torch.stack(
             class_embeddings, dim=1).to(device)
-
-    def tokenize(self, texts: Union[str, List[str]]) -> torch.LongTensor:
-        """Returns the tokenized representation of given input string(s)
-
-        Args:
-            texts (Union[str, List[str]]): An input string or a list of input
-                strings to tokenize
-            context_length (int): The context length to use. Defaults to 52.
-
-        Returns:
-            torch.Tensor: Resulting tokens.
-        """
-        if isinstance(texts, str):
-            texts = [texts]
-
-        all_tokens = []
-        for text in texts:
-            # adapt the text to Chinese BERT vocab
-            # text = text.lower().replace('“', "\"").replace('”', "\"")
-
-            # add special tokens
-            all_tokens.append(
-                [self.tokenizer.vocab['<|startoftext|>']
-                 ] +  # <|startoftext|>代表[CLS] token
-                self.tokenizer.convert_tokens_to_ids(
-                    self.tokenizer.tokenize(text))[:self.context_length - 2] +
-                [self.tokenizer.vocab['<|endoftext|>']])
-
-        result = torch.zeros(
-            len(all_tokens), self.context_length, dtype=torch.long)
-
-        for i, tokens in enumerate(all_tokens):
-            assert len(tokens) <= self.context_length
-            result[i, :len(tokens)] = torch.tensor(tokens)
-
-        return result
