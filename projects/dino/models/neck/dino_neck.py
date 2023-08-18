@@ -35,7 +35,7 @@ class DINONeck(BaseModule):
             bottleneck_channels, out_channels, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.mlp(x[0][1])
+        x = self.mlp(x[0])
         x = nn.functional.normalize(x, dim=-1, p=2)
         x = self.last_layer(x)
         return x

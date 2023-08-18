@@ -93,9 +93,6 @@ def main():
         cfg.resume = True
         cfg.load_from = args.resume
 
-    # debug code
-    cfg.find_unused_parameters = True
-
     # build the runner from config
     runner = Runner.from_cfg(cfg)
 

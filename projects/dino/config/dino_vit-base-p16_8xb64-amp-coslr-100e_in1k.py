@@ -4,7 +4,7 @@ model = dict(
         mean=[123.675, 116.28, 103.53],
         std=[58.395, 57.12, 57.375],
         bgr_to_rgb=True),
-    backbone=dict(type='mmcls.VisionTransformer', arch='b', patch_size=16),
+    backbone=dict(type='mmpretrain.VisionTransformer', arch='b', patch_size=16),
     neck=dict(
         type='DINONeck',
         in_channels=768,
@@ -24,7 +24,7 @@ train_pipeline = [
         global_crops_scale=(0.4, 1.0),
         local_crops_scale=(0.05, 0.4),
         local_crops_number=8),
-    dict(type='PackInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 train_dataloader = dict(
     batch_size=32,
@@ -33,9 +33,9 @@ train_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=True),
     collate_fn=dict(type='default_collate'),
     dataset=dict(
-        type='mmcls.ImageNet',
-        data_root='/home/liushi_22151211/imagenet/classification',
-        # ann_file='meta/train.txt',
+        type='mmpretrain.ImageNet',
+        data_root='/data/imagenet/',
+        ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline,
     ))

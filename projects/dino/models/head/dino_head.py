@@ -44,6 +44,7 @@ class DINOHead(BaseModule):
 
         total_loss = 0
         n_loss_terms = 0
+
         for i in range(len(teacher_output)):
             for j in range(len(student_output)):
                 if i == j:
