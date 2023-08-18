@@ -4,7 +4,8 @@ model = dict(
         mean=[123.675, 116.28, 103.53],
         std=[58.395, 57.12, 57.375],
         bgr_to_rgb=True),
-    backbone=dict(type='mmpretrain.VisionTransformer', arch='b', patch_size=16),
+    backbone=dict(
+        type='mmpretrain.VisionTransformer', arch='b', patch_size=16),
     neck=dict(
         type='DINONeck',
         in_channels=768,
