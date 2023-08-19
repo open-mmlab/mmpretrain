@@ -40,7 +40,7 @@ class LayerNorm(nn.LayerNorm):
 
 
 class CLIP(BaseModel):
-    """The implementation of `ChineseCLIP <https://arxiv.org/abs/2211.01335>`_.
+    """The implementation of `CLIP <https://arxiv.org/abs/2103.00020>`_.
 
     Args:
         vision_backbone (dict): Config dict for vision backbone.

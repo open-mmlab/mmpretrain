@@ -23,7 +23,7 @@ test_dataloader = dict(
     num_workers=8,
     dataset=dict(
         type='CIFAR100',
-        data_root='/public/DATA/qbw/img_cls_dataset/cifar100',
+        data_root='data/cifar100',
         split='test',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),

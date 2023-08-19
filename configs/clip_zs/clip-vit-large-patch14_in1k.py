@@ -24,8 +24,7 @@ test_dataloader = dict(
     num_workers=8,
     dataset=dict(
         type='ImageNet',
-        data_root=
-        '/public/DATA/qbw/img_cls_dataset/in1k/imagenet-1k-huggingface/data/',
+        data_root='data/imagenet',
         split='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
