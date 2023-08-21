@@ -18,5 +18,5 @@ else:
     register_multimodal_placeholder([
         'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'BlipCaption',
         'BlipNLVR', 'BlipRetrieval', 'BlipGrounding', 'BlipVQA', 'Flamingo',
-        'OFA', 'ChineseCLIP', 'MiniGPT4', 'Llava', 'Otter', 'CLIP_zs'
+        'OFA', 'ChineseCLIP', 'MiniGPT4', 'Llava', 'Otter', 'CLIP', 'CLIP_zs'
     ], MODELS)

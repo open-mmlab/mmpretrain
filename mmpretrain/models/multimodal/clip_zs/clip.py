@@ -63,6 +63,7 @@ class CLIP(BaseModel):
 
     def __init__(self,
                  vision_backbone: dict,
+                 projection: dict,
                  text_backbone: dict,
                  tokenizer: dict,
                  vocab_size: int,
@@ -81,10 +82,16 @@ class CLIP(BaseModel):
 
         self.context_length = context_length
 
+        # build the vision transformer
         self.visual = MODELS.build(vision_backbone)
+
+        # build the visual projection
+        self.visual_proj = MODELS.build(projection)
 
         # build attn_mask for casual-attn
         text_backbone['attn_mask'] = self.build_attention_mask()
+
+        # build the text transformer
         self.transformer = MODELS.build(text_backbone)
 
         self.vocab_size = vocab_size
@@ -163,8 +170,7 @@ class CLIP(BaseModel):
 
     def extract_image_feat(self, images: torch.Tensor) -> torch.Tensor:
         """The function to extract image latent features."""
-        # return self.vision_backbone(images)[-1] @ self.vision_projection
-        return self.visual(images)[0]
+        return self.visual_proj(self.visual(images))[0]
 
     def extract_text_feat(self, texts: torch.Tensor) -> torch.Tensor:
         """The function to extract text latent features."""
@@ -270,6 +276,7 @@ class CLIP_zs(CLIP):
     def __init__(
         self,
         vision_backbone: dict,
+        projection: dict,
         text_backbone: dict,
         tokenizer: dict,
         vocab_size: int,
@@ -282,9 +289,10 @@ class CLIP_zs(CLIP):
         text_prompt: str = 'vanilla',
     ):
         super(CLIP_zs,
-              self).__init__(vision_backbone, text_backbone, tokenizer,
-                             vocab_size, transformer_width, proj_dim,
-                             context_length, data_preprocessor, init_cfg)
+              self).__init__(vision_backbone, projection, text_backbone,
+                             tokenizer, vocab_size, transformer_width,
+                             proj_dim, context_length, data_preprocessor,
+                             init_cfg)
 
         # for zero-shot classification
         if isinstance(text_prototype,

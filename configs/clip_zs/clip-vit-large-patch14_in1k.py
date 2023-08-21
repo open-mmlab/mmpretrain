@@ -40,14 +40,15 @@ test_cfg = dict()
 model = dict(
     type='CLIP_zs',
     vision_backbone=dict(
-        type='CLIPVisionTransformer',
-        input_resolution=224,
+        type='VisionTransformer',
+        arch='large',
+        img_size=224,
         patch_size=14,
-        width=1024,
-        layers=24,
-        heads=16,
-        output_dim=768,
+        drop_rate=0.,
+        layer_cfgs=dict(act_cfg=dict(type='QuickGELU')),
+        pre_norm=True,
     ),
+    projection=dict(type='CLIPProjection', in_channels=1024, out_channels=768),
     text_backbone=dict(
         type='CLIPTransformer',
         width=768,
