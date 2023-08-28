@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .mplug_owl import mPLUGOwl
+from .mplug_owl import MplugOwl
 
-__all__ = ['mPLUGOwl']
+__all__ = ['MplugOwl']
