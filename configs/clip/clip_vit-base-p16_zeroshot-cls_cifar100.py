@@ -37,7 +37,7 @@ test_cfg = dict()
 
 # model settings
 model = dict(
-    type='CLIP_zs',
+    type='CLIPZeroShot',
     vision_backbone=dict(
         type='VisionTransformer',
         arch='base',

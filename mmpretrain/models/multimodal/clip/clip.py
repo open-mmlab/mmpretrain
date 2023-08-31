@@ -271,7 +271,7 @@ class CLIP(BaseModel):
 
 
 @MODELS.register_module()
-class CLIP_zs(CLIP):
+class CLIPZeroShot(CLIP):
 
     def __init__(
         self,
@@ -288,7 +288,7 @@ class CLIP_zs(CLIP):
         text_prototype: Union[str, List[str]] = 'imagenet',
         text_prompt: str = 'vanilla',
     ):
-        super(CLIP_zs,
+        super(CLIPZeroShot,
               self).__init__(vision_backbone, projection, text_backbone,
                              tokenizer, vocab_size, transformer_width,
                              proj_dim, context_length, data_preprocessor,

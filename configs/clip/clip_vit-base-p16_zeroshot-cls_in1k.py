@@ -38,31 +38,31 @@ test_cfg = dict()
 
 # model settings
 model = dict(
-    type='CLIP_zs',
+    type='CLIPZeroShot',
     vision_backbone=dict(
         type='VisionTransformer',
-        arch='large',
+        arch='base',
         img_size=224,
-        patch_size=14,
+        patch_size=16,
         drop_rate=0.,
         layer_cfgs=dict(act_cfg=dict(type='QuickGELU')),
         pre_norm=True,
     ),
-    projection=dict(type='CLIPProjection', in_channels=1024, out_channels=768),
+    projection=dict(type='CLIPProjection', in_channels=768, out_channels=512),
     text_backbone=dict(
         type='CLIPTransformer',
-        width=768,
+        width=512,
         layers=12,
-        heads=12,
+        heads=8,
         attn_mask=True,
     ),
     tokenizer=dict(
         type='AutoTokenizer',
-        name_or_path='openai/clip-vit-large-patch14',
+        name_or_path='openai/clip-vit-base-patch16',
         use_fast=False),
     vocab_size=49408,
-    transformer_width=768,
-    proj_dim=768,
+    transformer_width=512,
+    proj_dim=512,
     text_prototype='imagenet',
     text_prompt='openai_imagenet_sub',  # openai_imagenet, openai_imagenet_sub
     context_length=77,
