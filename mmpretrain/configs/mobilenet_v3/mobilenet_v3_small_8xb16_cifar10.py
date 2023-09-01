@@ -3,13 +3,25 @@
 from mmengine.config import read_base
 
 with read_base():
-    from .._base_.models.mobilenet_v3.mobilenet_v3_small_cifar import *
+    from .._base_.models.mobilenet_v3_small import *
     from .._base_.datasets.cifar10_bs16 import *
     from .._base_.schedules.cifar10_bs128 import *
     from .._base_.default_runtime import *
 
 from mmengine.optim import MultiStepLR
 
+# model settings
+model.merge(
+    dict(
+        head=dict(
+            _delete_=True,
+            type=StackedLinearClsHead,
+            num_classes=10,
+            in_channels=576,
+            mid_channels=[1280],
+            act_cfg=dict(type=Hardswish),
+            loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
+            topk=(1, 5))))
 # schedule settings
 param_scheduler.merge(
     dict(

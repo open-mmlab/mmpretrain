@@ -5,7 +5,7 @@
 from mmengine.config import read_base
 
 with read_base():
-    from .._base_.models.mobilenet_v3.mobilenet_v3_small_imagenet import *
+    from .._base_.models.mobilenet_v3_small import *
     from .._base_.datasets.imagenet_bs128_mbv3 import *
     from .._base_.default_runtime import *
 

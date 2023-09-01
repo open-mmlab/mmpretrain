@@ -5,13 +5,19 @@
 from mmengine.config import read_base
 
 with read_base():
-    from .._base_.models.mobilenet_v3.mobilenet_v3_large_imagenet import *
+    from .._base_.models.mobilenet_v3_small import *
     from .._base_.datasets.imagenet_bs128_mbv3 import *
     from .._base_.default_runtime import *
 
 from mmengine.optim import StepLR
 from torch.optim import RMSprop
 
+# model settings
+model.merge(
+    dict(
+        backbone=dict(arch='large'),
+        head=dict(in_channels=960, mid_channels=[1280]),
+    ))
 # schedule settings
 optim_wrapper = dict(
     optimizer=dict(

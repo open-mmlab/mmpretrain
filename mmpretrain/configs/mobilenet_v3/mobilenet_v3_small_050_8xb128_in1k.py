@@ -5,7 +5,7 @@
 from mmengine.config import read_base
 
 with read_base():
-    from .._base_.models.mobilenet_v3.mobilenet_v3_small_050_imagenet import *
+    from .._base_.models.mobilenet_v3_small import *
     from .._base_.datasets.imagenet_bs128_mbv3 import *
     from .._base_.default_runtime import *
 
@@ -17,7 +17,10 @@ from torch.optim import RMSprop
 model.merge(
     dict(
         backbone=dict(
-            norm_cfg=dict(type=BatchNorm2d, eps=1e-5, momentum=0.1))))
+            arch='small_050',
+            norm_cfg=dict(type=BatchNorm2d, eps=1e-5, momentum=0.1)),
+        head=dict(in_channels=288),
+    ))
 
 train_pipeline = [
     dict(type=LoadImageFromFile),
