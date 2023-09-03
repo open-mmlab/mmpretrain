@@ -82,7 +82,8 @@ class iTPNHiViT(HiViT):
             ape=ape,
             rpe=rpe,
             layer_scale_init_value=layer_scale_init_value,
-            **kwargs,)
+            **kwargs,
+        )
 
         self.pos_embed.requires_grad = False
         self.mask_ratio = mask_ratio
