@@ -16,11 +16,6 @@ with read_base():
 # model settings
 checkpoint = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k-384px.pth'  # noqa
 
-model.update(
-    backbone=dict(arch='large'),
-    head=dict(in_channels=1536),
-)
-
 model = dict(
     type=ImageClassifier,
     backbone=dict(
