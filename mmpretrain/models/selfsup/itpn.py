@@ -64,6 +64,7 @@ class iTPNHiViT(HiViT):
         layer_scale_init_value: float = 0.0,
         mask_ratio: float = 0.75,
         reconstruction_type: str = 'pixel',
+        **kwargs,
     ):
         super().__init__(
             arch=arch,
@@ -80,7 +81,9 @@ class iTPNHiViT(HiViT):
             norm_cfg=norm_cfg,
             ape=ape,
             rpe=rpe,
-            layer_scale_init_value=layer_scale_init_value)
+            layer_scale_init_value=layer_scale_init_value,
+            **kwargs,
+        )
 
         self.pos_embed.requires_grad = False
         self.mask_ratio = mask_ratio
