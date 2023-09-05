@@ -4,7 +4,6 @@ from mmpretrain.models import (CrossEntropyLoss, GlobalAveragePooling,
                                ImageClassifier, LinearClsHead, SwinTransformer)
 
 # model settings
-# Only for evaluation
 model = dict(
     type=ImageClassifier,
     backbone=dict(

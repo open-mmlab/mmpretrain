@@ -5,7 +5,7 @@ from mmengine.config import read_base
 with read_base():
     from .._base_.datasets.imagenet21k_bs128 import *
     from .._base_.default_runtime import *
-    from .._base_.models.swin_transformer_v2.base_256 import *
+    from .._base_.models.swin_transformer_v2_base import *
     from .._base_.schedules.imagenet_bs1024_adamw_swin import *
 
 # model settings
