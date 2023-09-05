@@ -10,11 +10,17 @@ from mmpretrain.models import ImageClassifier
 with read_base():
     from .._base_.datasets.cub_bs8_384 import *
     from .._base_.default_runtime import *
-    from .._base_.models.swin_transformer.large_384 import *
+    from .._base_.models.swin_transformer_base import *
     from .._base_.schedules.cub_bs64 import *
 
 # model settings
 checkpoint = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k-384px.pth'  # noqa
+
+model.update(
+    backbone=dict(arch='large'),
+    head=dict(in_channels=1536),
+)
+
 model = dict(
     type=ImageClassifier,
     backbone=dict(
