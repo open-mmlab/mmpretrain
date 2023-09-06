@@ -1,7 +1,7 @@
 import gradio as gr
 import numpy as np
 import torch
-from conversation import CONV_VISION, Chat
+from conversation import EN_CONV_VISION, ZH_CONV_VISION, Chat
 
 from mmpretrain import ImageCaptionInferencer
 
@@ -28,7 +28,7 @@ def get_free_device():
 device = get_free_device()
 inferencer = ImageCaptionInferencer('minigpt-4_vicuna-7b_caption')
 model = inferencer.model
-chat = Chat(inferencer, device=device)
+chat = Chat(inferencer, device=device, is_half=True)
 
 
 def reset(chat_state, img_list):
@@ -42,23 +42,35 @@ def reset(chat_state, img_list):
                 placeholder='Please upload your image first',
                 interactive=False),
             gr.update(value='Upload & Start Chat',
-                      interactive=True), chat_state, img_list)
+                      interactive=True), chat_state, img_list,
+            gr.update(value='Restart', interactive=False),
+            gr.update(value='English', interactive=True))
 
 
-def upload_img(gr_img, chat_state):
+def upload_img(gr_img, language, chat_state):
     if gr_img is None:
-        return None, gr.update(
-            placeholder='Please upload your image first',
-            interactive=False), gr.update(
-                value='Upload & Start Chat',
-                interactive=True), chat_state, None
-    chat_state = CONV_VISION.copy()
+        return (None,
+                gr.update(
+                    placeholder='Please upload your image first',
+                    interactive=False),
+                gr.update(value='Upload & Start Chat',
+                          interactive=True), chat_state, None,
+                gr.update(value='Restart', interactive=False),
+                gr.update(value='English', interactive=True))
+
+    if (language == 'English'):
+        chat_state = EN_CONV_VISION.copy()
+    else:
+        chat_state = ZH_CONV_VISION.copy()
     img_list = []
     gr_img_array = np.asarray(gr_img)
     chat.upload_img(gr_img_array, chat_state, img_list)
-    return gr.update(interactive=False), gr.update(
-        placeholder='Type and press Enter', interactive=True), gr.update(
-            value='Start Chatting', interactive=False), chat_state, img_list
+    return (gr.update(interactive=False),
+            gr.update(placeholder='Type and press Enter', interactive=True),
+            gr.update(value='Start Chatting',
+                      interactive=False), chat_state, img_list,
+            gr.update(value='Restart',
+                      interactive=True), gr.update(interactive=False))
 
 
 def ask(user_message, chatbot, chat_state):
@@ -72,10 +84,11 @@ def ask(user_message, chatbot, chat_state):
     return '', chatbot, chat_state
 
 
-def answer(chatbot, chat_state, img_list):
+def answer(chatbot, chat_state, img_list, language):
     llm_message = chat.answer(
         conv=chat_state,
         img_list=img_list,
+        language=language,
         generation_cfg=model.generation_cfg)
     chatbot[-1][1] = llm_message
     return chatbot, chat_state, img_list
@@ -88,28 +101,37 @@ if __name__ == '__main__':
         with gr.Row():
             with gr.Column():
                 image = gr.Image(type='pil')
+                language = gr.Dropdown(['English', 'Chinese'],
+                                       label='Language',
+                                       info='Select chatbot\'s language',
+                                       value='English',
+                                       interactive=True)
                 upload_button = gr.Button(
                     value='Upload & Start Chat', interactive=True)
-                clear = gr.Button(value='Restart', interactive=True)
+                clear = gr.Button(value='Restart', interactive=False)
 
             with gr.Column():
                 chat_state = gr.State()
                 img_list = gr.State()
-                chatbot = gr.Chatbot(label='MiniGPT-4')
+                chatbot = gr.Chatbot(
+                    label='MiniGPT-4', min_width=320, height=600)
                 text_input = gr.Textbox(
                     label='User',
                     placeholder='Please upload your image first',
                     interactive=False)
 
-        upload_button.click(
-            upload_img, [image, chat_state],
-            [image, text_input, upload_button, chat_state, img_list])
+        upload_button.click(upload_img, [image, language, chat_state], [
+            image, text_input, upload_button, chat_state, img_list, clear,
+            language
+        ])
         text_input.submit(ask, [text_input, chatbot, chat_state],
                           [text_input, chatbot, chat_state]).then(
-                              answer, [chatbot, chat_state, img_list],
+                              answer,
+                              [chatbot, chat_state, img_list, language],
                               [chatbot, chat_state, img_list])
-        clear.click(
-            reset, [chat_state, img_list],
-            [chatbot, image, text_input, upload_button, chat_state, img_list])
+        clear.click(reset, [chat_state, img_list], [
+            chatbot, image, text_input, upload_button, chat_state, img_list,
+            clear, language
+        ])
 
-    demo.launch()
+    demo.launch(share=True)

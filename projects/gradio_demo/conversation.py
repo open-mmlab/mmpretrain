@@ -41,11 +41,18 @@ class Conversation:
         }
 
 
-CONV_VISION = Conversation(
-    system='Give the following image: <Img>ImageContent</Img>. '
+EN_CONV_VISION = Conversation(
+    system='Give the following image. '
     'You will be able to see the image once I provide it to you. '
-    'Please answer my questions.',
-    roles=['Human', 'Assistant'],
+    'Please answer my questions in detail.',
+    roles=['Ask', 'Answer'],
+    messages=[],
+    sep='###',
+)
+
+ZH_CONV_VISION = Conversation(
+    system='给定一张图片，请仔细观察这张图片，并回答我的问题。',
+    roles=['问', '答'],
     messages=[],
     sep='###',
 )
@@ -53,10 +60,13 @@ CONV_VISION = Conversation(
 
 class Chat:
 
-    def __init__(self, inferencer, device):
+    def __init__(self, inferencer, device, is_half=False):
         self.device = device
         self.inferencer = inferencer
         self.model = inferencer.model
+        if is_half:
+            self.model = self.model.half()
+        self.model = self.model.to(device)
         self.max_length = 2000
 
     def upload_img(self, image, conv, img_list):
@@ -69,6 +79,7 @@ class Chat:
 
     def get_context_emb(self, conv, img_list):
         prompt = conv.get_prompt()
+        print('prompt: ', prompt)
         prompt_segs = prompt.split('<ImageHere>')
         seg_tokens = [
             self.model.llama_tokenizer(
@@ -93,7 +104,7 @@ class Chat:
         else:
             conv.append_message(conv.roles[0], text)
 
-    def answer(self, conv, img_list, generation_cfg):
+    def answer(self, conv, img_list, language, generation_cfg):
         conv.append_message(conv.roles[1], None)
         embs = self.get_context_emb(conv, img_list)
         cur_max_len = generation_cfg['max_new_tokens'] + embs.shape[1]
@@ -118,6 +129,9 @@ class Chat:
                 add_special_tokens=False,
                 skip_special_tokens=True)
         output_text = output_text.split('###')[0]
-        output_text = output_text.split('Assistant:')[-1].strip()
+        if language == 'English':
+            output_text = output_text.split('Answer: ')[-1].strip()
+        else:
+            output_text = output_text.split('答：')[-1].strip()
         conv.messages[-1][1] = output_text
         return output_text
