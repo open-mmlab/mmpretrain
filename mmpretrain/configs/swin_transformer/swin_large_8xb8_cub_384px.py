@@ -16,12 +16,12 @@ with read_base():
 # model settings
 checkpoint = 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k-384px.pth'  # noqa
 
-model = dict(
-    type=ImageClassifier,
+model.update(
     backbone=dict(
+        arch='large',
         init_cfg=dict(
             type=PretrainedInit, checkpoint=checkpoint, prefix='backbone')),
-    head=dict(num_classes=200, ))
+    head=dict(num_classes=200, in_channels=1536))
 
 # schedule settings
 optim_wrapper = dict(
