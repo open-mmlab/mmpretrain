@@ -41,8 +41,7 @@ if WITH_MULTIMODAL:
     from .flickr30k_caption import Flickr30kCaption
     from .flickr30k_retrieval import Flickr30kRetrieval
     from .gqa_dataset import GQA
-    from .iconqa import IconQA
-    from .infographic_vqa import InfographicVQA
+    from .minigpt4_dataset import MiniGPT4Dataset
     from .nocaps import NoCaps
     from .ocr_vqa import OCRVQA
     from .refcoco import RefCOCO
@@ -56,5 +55,5 @@ if WITH_MULTIMODAL:
         'COCOCaption', 'COCORetrieval', 'COCOVQA', 'FlamingoEvalCOCOCaption',
         'FlamingoEvalCOCOVQA', 'Flickr30kCaption', 'Flickr30kRetrieval',
         'RefCOCO', 'VisualGenomeQA', 'ScienceQA', 'NoCaps', 'GQA', 'TextVQA',
-        'VSR', 'VizWiz', 'OCRVQA', 'InfographicVQA', 'IconQA'
+        'VSR', 'VizWiz', 'OCRVQA', 'MiniGPT4Dataset'
     ])
