@@ -84,11 +84,10 @@ def ask(user_message, chatbot, chat_state):
     return '', chatbot, chat_state
 
 
-def answer(chatbot, chat_state, img_list, language):
+def answer(chatbot, chat_state, img_list):
     llm_message = chat.answer(
         conv=chat_state,
         img_list=img_list,
-        language=language,
         generation_cfg=model.generation_cfg)
     chatbot[-1][1] = llm_message
     return chatbot, chat_state, img_list
@@ -126,8 +125,7 @@ if __name__ == '__main__':
         ])
         text_input.submit(ask, [text_input, chatbot, chat_state],
                           [text_input, chatbot, chat_state]).then(
-                              answer,
-                              [chatbot, chat_state, img_list, language],
+                              answer, [chatbot, chat_state, img_list],
                               [chatbot, chat_state, img_list])
         clear.click(reset, [chat_state, img_list], [
             chatbot, image, text_input, upload_button, chat_state, img_list,

@@ -64,6 +64,7 @@ class Chat:
         self.device = device
         self.inferencer = inferencer
         self.model = inferencer.model
+        self.is_half = is_half
         if is_half:
             self.model = self.model.half()
         self.model = self.model.to(device)
@@ -79,7 +80,6 @@ class Chat:
 
     def get_context_emb(self, conv, img_list):
         prompt = conv.get_prompt()
-        print('prompt: ', prompt)
         prompt_segs = prompt.split('<ImageHere>')
         seg_tokens = [
             self.model.llama_tokenizer(
@@ -104,7 +104,7 @@ class Chat:
         else:
             conv.append_message(conv.roles[0], text)
 
-    def answer(self, conv, img_list, language, generation_cfg):
+    def answer(self, conv, img_list, generation_cfg):
         conv.append_message(conv.roles[1], None)
         embs = self.get_context_emb(conv, img_list)
         cur_max_len = generation_cfg['max_new_tokens'] + embs.shape[1]
@@ -114,6 +114,8 @@ class Chat:
                   'The model will not see the contexts outside the range.')
         begin_idx = max(0, cur_max_len - self.max_length)
         embs = embs[:, begin_idx:]
+        if self.is_half:
+            embs = embs.half()
         outputs = self.model.llama_model.generate(
             inputs_embeds=embs,
             eos_token_id=self.model.end_token_id,
@@ -129,9 +131,5 @@ class Chat:
                 add_special_tokens=False,
                 skip_special_tokens=True)
         output_text = output_text.split('###')[0]
-        if language == 'English':
-            output_text = output_text.split('Answer: ')[-1].strip()
-        else:
-            output_text = output_text.split('答：')[-1].strip()
         conv.messages[-1][1] = output_text
         return output_text
