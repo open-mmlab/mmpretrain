@@ -384,7 +384,7 @@ class VisionTransformer(BaseBackbone):
         super(VisionTransformer, self).init_weights()
 
         if not (isinstance(self.init_cfg, dict)
-                and self.init_cfg['type'] == 'Pretrained'):
+                and self.init_cfg['type'] == 'Pretrained' or self.is_init()):
             if self.pos_embed is not None:
                 trunc_normal_(self.pos_embed, std=0.02)
 
