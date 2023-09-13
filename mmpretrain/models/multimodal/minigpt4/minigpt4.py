@@ -201,13 +201,12 @@ class MiniGPT4(BaseModel):
                     prompt: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         """The function to wrap the image and prompt.
 
-        Currently, the function only supports applying one prompt to all input
-        images in the one batch.
+        Make sure that len(prompt) == img_embeds.shape[0].
 
         Args:
             img_embeds (torch.Tensor): The embedding of the input images.
             atts_img (torch.Tensor): Attention map of the image embeddings.
-            prompt (str): The prompt of the batch data.
+            prompt (List[str]): The prompt of the batch data.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The embedding and attention map.

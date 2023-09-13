@@ -1,9 +1,26 @@
+import argparse
+
 import gradio as gr
 import numpy as np
 import torch
 from conversation import EN_CONV_VISION, ZH_CONV_VISION, Chat
 
 from mmpretrain import ImageCaptionInferencer
+
+parser = argparse.ArgumentParser(description='MiniGPT4 demo')
+parser.add_argument(
+    '-mp',
+    '--model_path',
+    type=str,
+    required=True,
+    help='config file for minigpt4 (absolute path)')
+parser.add_argument(
+    '-pp',
+    '--pretrained_path',
+    type=str,
+    required=True,
+    help='pretrained file for minigpt4 (absolute path)')
+args = parser.parse_args()
 
 if torch.cuda.is_available():
     devices = [
@@ -26,7 +43,8 @@ def get_free_device():
 
 
 device = get_free_device()
-inferencer = ImageCaptionInferencer('minigpt-4_vicuna-7b_caption')
+inferencer = ImageCaptionInferencer(
+    model=args.model_path, pretrained=args.pretrained_path)
 model = inferencer.model
 chat = Chat(inferencer, device=device, is_half=True)
 
