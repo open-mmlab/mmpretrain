@@ -7,7 +7,6 @@ from copy import deepcopy
 from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.registry import RUNNERS
 from mmengine.runner import Runner
-from mmengine.runner._flexible_runner import FlexibleRunner
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
@@ -153,10 +152,7 @@ def main():
     # build the runner from config
     if 'runner_type' not in cfg:
         # build the default runner
-        if 'strategy' in cfg:
-            runner = FlexibleRunner.from_cfg(cfg)
-        else:
-            runner = Runner.from_cfg(cfg)
+        runner = Runner.from_cfg(cfg)
     else:
         # build customized runner from the registry
         # if 'runner_type' is set in the cfg

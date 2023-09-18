@@ -108,22 +108,25 @@ model = dict(
         name_or_path='YOUR_PATH_TO_BAICHUAN',
         trust_remote_code=True),
     task='caption',
-    en_prompt_template='###Ask: {} ###Answer: ',
-    zh_prompt_template='###问：{} ###答：',
-    raw_prompts=[
-        [
-            '<Img><ImageHere></Img> Describe this image in detail.',
-            '<Img><ImageHere></Img> Take a look at this image and describe what you notice.',  # noqa
-            '<Img><ImageHere></Img> Please provide a detailed description of the picture.',  # noqa
-            '<Img><ImageHere></Img> Could you describe the contents of this image for me?'  # noqa
-        ],
-        [
-            '<Img><ImageHere></Img> 详细描述这张图片。',
-            '<Img><ImageHere></Img> 浏览这张图片并描述你注意到什么。',
-            '<Img><ImageHere></Img> 请对这张图片进行详细的描述。',
-            '<Img><ImageHere></Img> 你能为我描述这张图片的内容吗？'
-        ]
-    ],
+    prompt_template=dict([('en', '###Ask: {} ###Answer: '),
+                          ('zh', '###问：{} ###答：')]),
+    raw_prompts=dict([
+        ('en', [('<Img><ImageHere></Img> '
+                 'Describe this image in detail.'),
+                ('<Img><ImageHere></Img> '
+                 'Take a look at this image and describe what you notice.'),
+                ('<Img><ImageHere></Img> '
+                 'Please provide a detailed description of the picture.'),
+                ('<Img><ImageHere></Img> '
+                 'Could you describe the contents of this image for me?')]),
+        ('zh', [('<Img><ImageHere></Img> '
+                 '详细描述这张图片。'), ('<Img><ImageHere></Img> '
+                                '浏览这张图片并描述你注意到什么。'),
+                ('<Img><ImageHere></Img> '
+                 '请对这张图片进行详细的描述。'),
+                ('<Img><ImageHere></Img> '
+                 '你能为我描述这张图片的内容吗？')])
+    ]),
     max_txt_len=160,
     end_sym='###')
 
@@ -174,6 +177,8 @@ param_scheduler = [
 
 train_cfg = dict(by_epoch=True, max_epochs=6)
 test_cfg = dict()
+
+runner_type = 'FlexibleRunner'
 
 default_hooks = dict(
     checkpoint=dict(

@@ -1,3 +1,5 @@
+# Modified from
+# https://github.com/Vision-CAIR/MiniGPT-4/blob/main/minigpt4/conversation/conversation.py
 import dataclasses
 from typing import List
 

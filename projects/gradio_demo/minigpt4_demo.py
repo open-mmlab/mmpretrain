@@ -9,17 +9,9 @@ from mmpretrain import ImageCaptionInferencer
 
 parser = argparse.ArgumentParser(description='MiniGPT4 demo')
 parser.add_argument(
-    '-mp',
-    '--model_path',
-    type=str,
-    required=True,
-    help='config file for minigpt4 (absolute path)')
+    'cfg', type=str, help='config file for minigpt4 (absolute path)')
 parser.add_argument(
-    '-pp',
-    '--pretrained_path',
-    type=str,
-    required=True,
-    help='pretrained file for minigpt4 (absolute path)')
+    'ckpt', type=str, help='pretrained file for minigpt4 (absolute path)')
 args = parser.parse_args()
 
 if torch.cuda.is_available():
@@ -43,8 +35,7 @@ def get_free_device():
 
 
 device = get_free_device()
-inferencer = ImageCaptionInferencer(
-    model=args.model_path, pretrained=args.pretrained_path)
+inferencer = ImageCaptionInferencer(model=args.cfg, pretrained=args.ckpt)
 model = inferencer.model
 chat = Chat(inferencer, device=device, is_half=True)
 

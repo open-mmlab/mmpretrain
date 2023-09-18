@@ -31,14 +31,12 @@ class MiniGPT4(BaseModel):
             True.
         num_query_token (int): Number of query tokens of Qformer. Defaults to
             32.
-        en_prompt_template (str): English prompt template of the model. Defaults to
-            '###Ask: {} ###Answer: '.
-        zh_prompt_template (str): Chinese prompt template of the model. Defaults to
-            '###问：{} ###答：'.
-        raw_prompts (list): Prompts for training. Defaults to None.
+        prompt_template (dict): Multi-language prompt template of the model. Defaults to dict([ ('en', '###Ask: {} ###Answer: '),
+                                                                                                ('zh', '###问：{} ###答：')])
+        raw_prompts (dict): Prompts for training. Defaults to dict().
         max_txt_len (int): Max token length while doing tokenization. Defaults
             to 32.
-        end_sym (str): Ended symbol of the sequence. Defaults to '\\n'.
+        end_sym (str): Ended symbol of the sequence. Defaults to '###'.
         generation_cfg (dict): The config of text generation. Defaults to
             dict().
         data_preprocessor (:obj:`BaseDataPreprocessor`): Used for
@@ -56,11 +54,12 @@ class MiniGPT4(BaseModel):
                  freeze_vit: bool = True,
                  freeze_q_former: bool = True,
                  num_query_token: int = 32,
-                 en_prompt_template: str = '###Ask: {} ###Answer: ',
-                 zh_prompt_template: str = '###问：{} ###答：',
-                 raw_prompts: Optional[list] = None,
+                 prompt_template: dict = dict([('en',
+                                                '###Ask: {} ###Answer: '),
+                                               ('zh', '###问：{} ###答：')]),
+                 raw_prompts: dict = dict(),
                  max_txt_len: int = 32,
-                 end_sym: str = '\n',
+                 end_sym: str = '###',
                  generation_cfg: dict = dict(),
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
@@ -138,23 +137,23 @@ class MiniGPT4(BaseModel):
         self.end_token_id = self.llama_tokenizer.encode(end_sym)[-1]
 
         # set prompts
-        if raw_prompts is not None and len(raw_prompts) == 2:
+        self.en_prompt_list, self.zh_prompt_list = [], []
+        if raw_prompts.get('en') is not None:
             en_filted_prompts = [
-                raw_prompt for raw_prompt in raw_prompts[0]
-                if '<ImageHere>' in raw_prompt
-            ]
-            zh_filted_prompts = [
-                raw_prompt for raw_prompt in raw_prompts[1]
+                raw_prompt for raw_prompt in raw_prompts['en']
                 if '<ImageHere>' in raw_prompt
             ]
             self.en_prompt_list = [
-                en_prompt_template.format(p) for p in en_filted_prompts
+                prompt_template['en'].format(p) for p in en_filted_prompts
+            ]
+        if raw_prompts.get('zh') is not None:
+            zh_filted_prompts = [
+                raw_prompt for raw_prompt in raw_prompts['zh']
+                if '<ImageHere>' in raw_prompt
             ]
             self.zh_prompt_list = [
-                zh_prompt_template.format(p) for p in zh_filted_prompts
+                prompt_template['zh'].format(p) for p in zh_filted_prompts
             ]
-        else:
-            self.en_prompt_list, self.zh_prompt_list = [], []
 
         # update generation configs
         self.generation_cfg = dict(
