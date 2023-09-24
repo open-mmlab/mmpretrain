@@ -11,13 +11,29 @@ if WITH_MULTIMODAL:
     from .minigpt4 import *  # noqa: F401, F403
     from .ofa import *  # noqa: F401, F403
     from .otter import *  # noqa: F401, F403
+    from .ram import *  # noqa: F401, F403
 else:
     from mmpretrain.registry import MODELS
     from mmpretrain.utils.dependency import register_multimodal_placeholder
 
     register_multimodal_placeholder([
-        'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'BlipCaption',
-        'BlipNLVR', 'BlipRetrieval', 'BlipGrounding', 'BlipVQA', 'Flamingo',
-        'OFA', 'ChineseCLIP', 'MiniGPT4', 'Llava', 'Otter', 'CLIP',
-        'CLIPZeroShot'
+        'Blip2Caption',
+        'Blip2Retrieval',
+        'Blip2VQA',
+        'BlipCaption',
+        'BlipNLVR',
+        'BlipRetrieval',
+        'BlipGrounding',
+        'BlipVQA',
+        'Flamingo',
+        'OFA',
+        'ChineseCLIP',
+        'MiniGPT4',
+        'Llava',
+        'Otter',
+        'CLIP',
+        'CLIPZeroShot',
+        'RAM',
+        'RAMNormal',
+        'RAMOpenset',
     ], MODELS)
