@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import json
-from collections import OrderedDict
-from typing import List, Sequence, Union
-from os import PathLike
-from mmengine import get_file_backend
 import os.path as osp
+from collections import OrderedDict
+from os import PathLike
+from typing import List, Sequence, Union
+
+from mmengine import get_file_backend
+
 from mmpretrain.registry import DATASETS, TRANSFORMS
 from .base_dataset import BaseDataset
 
@@ -14,13 +16,16 @@ def expanduser(data_prefix):
         return osp.expanduser(data_prefix)
     else:
         return data_prefix
+
+
 @DATASETS.register_module()
 class COCORetrieval(BaseDataset):
     """COCO Retrieval dataset.
 
-    COCO (Common Objects in Context): The COCO dataset contains more than 330K images,
-    each of which has approximately 5 descriptive annotations. This dataset was released
-    in collaboration between Microsoft and Carnegie Mellon University
+    COCO (Common Objects in Context): The COCO dataset contains more than
+    330K images,each of which has approximately 5 descriptive annotations.
+    This dataset was releasedin collaboration between Microsoft and Carnegie
+    Mellon University
 
     COCO_2014 dataset directory: ::
 
@@ -48,14 +53,14 @@ class COCORetrieval(BaseDataset):
 
     Examples:
         >>> from mmpretrain.datasets import COCORetrieval
-        >>> train_dataset = COCORetrieval(data_root='data/coco2014/',ann_file='data/coco2014/annotations/captions_train2014.json')
+        >>> train_dataset=COCORetrieval(data_root='coco2014/')
         >>> train_dataset
         Dataset COCORetrieval
             Number of samples: 	414113
             Annotation file: data/coco2014/annotations/captions_train2014.json
             Prefix of images: 	data/coco2014/
         >>>from mmpretrain.datasets import COCORetrieval
-        >>>val_dataset = COCORetrieval(data_root='data/coco2014/',ann_file='data/coco2014/annotations/captions_val2014.json')
+        >>>val_dataset = COCORetrieval(data_root='coco2014/')
         >>>val_dataset
          Dataset COCORetrieval
              Number of samples: 	202654
@@ -90,7 +95,6 @@ class COCORetrieval(BaseDataset):
             ann_file=ann_file,
             **kwargs,
         )
-
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
