@@ -57,15 +57,15 @@ class COCORetrieval(BaseDataset):
         >>> train_dataset
         Dataset COCORetrieval
             Number of samples: 	414113
-            Annotation file: data/coco2014/annotations/captions_train2014.json
-            Prefix of images: 	data/coco2014/
+            Annotation file:  /coco2014/annotations/captions_train2014.json
+            Prefix of images:  /coco2014/
         >>> from mmpretrain.datasets import COCORetrieval
         >>> val_dataset = COCORetrieval(data_root='coco2014/')
         >>> val_dataset
          Dataset COCORetrieval
              Number of samples: 	202654
-             Annotation file: 	data/coco2014/annotations/captions_val2014.json
-             Prefix of images: 	data/coco2014/
+             Annotation file: 	/coco2014/annotations/captions_val2014.json
+             Prefix of images: 	/coco2014/
     """
 
     def __init__(self,
