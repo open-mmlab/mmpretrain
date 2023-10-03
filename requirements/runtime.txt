@@ -2,6 +2,6 @@ einops
 importlib-metadata
 mat4py
 matplotlib
-modelindex
+model-index
 numpy
 rich
