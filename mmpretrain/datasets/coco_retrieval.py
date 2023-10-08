@@ -1,17 +1,44 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import json
+import os.path as osp
 from collections import OrderedDict
-from typing import List
+from os import PathLike
+from typing import List, Sequence, Union
 
 from mmengine import get_file_backend
 
-from mmpretrain.registry import DATASETS
+from mmpretrain.registry import DATASETS, TRANSFORMS
 from .base_dataset import BaseDataset
+
+
+def expanduser(data_prefix):
+    if isinstance(data_prefix, (str, PathLike)):
+        return osp.expanduser(data_prefix)
+    else:
+        return data_prefix
 
 
 @DATASETS.register_module()
 class COCORetrieval(BaseDataset):
     """COCO Retrieval dataset.
+
+    COCO (Common Objects in Context): The COCO dataset contains more than
+    330K images,each of which has approximately 5 descriptive annotations.
+    This dataset was releasedin collaboration between Microsoft and Carnegie
+    Mellon University
+
+    COCO_2014 dataset directory: ::
+
+        COCO_2014
+        ├── val2014
+        ├── train2014
+        ├── annotations
+                 ├── instances_train2014.json
+                 ├── instances_val2014.json
+                 ├── person_keypoints_train2014.json
+                 ├── person_keypoints_val2014.json
+                 ├── captions_train2014.json
+                 ├── captions_val2014.json
 
     Args:
         ann_file (str): Annotation file path.
@@ -23,7 +50,51 @@ class COCORetrieval(BaseDataset):
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
         pipeline (Sequence): Processing pipeline. Defaults to an empty tuple.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
+
+    Examples:
+        >>> from mmpretrain.datasets import COCORetrieval
+        >>> train_dataset=COCORetrieval(data_root='coco2014/')
+        >>> train_dataset
+        Dataset COCORetrieval
+            Number of samples: 	414113
+            Annotation file:  /coco2014/annotations/captions_train2014.json
+            Prefix of images:  /coco2014/
+        >>> from mmpretrain.datasets import COCORetrieval
+        >>> val_dataset = COCORetrieval(data_root='coco2014/')
+        >>> val_dataset
+         Dataset COCORetrieval
+             Number of samples: 	202654
+             Annotation file: 	/coco2014/annotations/captions_val2014.json
+             Prefix of images: 	/coco2014/
     """
+
+    def __init__(self,
+                 ann_file: str,
+                 test_mode: bool = False,
+                 data_prefix: Union[str, dict] = '',
+                 data_root: str = '',
+                 pipeline: Sequence = (),
+                 **kwargs):
+
+        if isinstance(data_prefix, str):
+            data_prefix = dict(img_path=expanduser(data_prefix))
+
+        ann_file = expanduser(ann_file)
+        transforms = []
+        for transform in pipeline:
+            if isinstance(transform, dict):
+                transforms.append(TRANSFORMS.build(transform))
+            else:
+                transforms.append(transform)
+
+        super().__init__(
+            data_root=data_root,
+            data_prefix=data_prefix,
+            test_mode=test_mode,
+            pipeline=transforms,
+            ann_file=ann_file,
+            **kwargs,
+        )
 
     def load_data_list(self) -> List[dict]:
         """Load data list."""
