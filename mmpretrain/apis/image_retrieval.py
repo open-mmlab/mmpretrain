@@ -108,6 +108,7 @@ class ImageRetrievalInferencer(BaseInferencer):
             # A config of dataset
             from mmpretrain.registry import DATASETS
             test_pipeline = [dict(type='LoadImageFromFile'), self.pipeline]
+            prototype.setdefault('pipeline', test_pipeline)
             dataset = DATASETS.build(prototype)
             dataloader = build_dataloader(dataset)
         elif isinstance(prototype, DataLoader):
