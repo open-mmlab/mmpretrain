@@ -10,7 +10,7 @@ try:
     from model_archiver.model_packaging_utils import ModelExportUtils
 except ImportError:
     raise ImportError(
-        'Please run `pip install torchserve==0.7.1 torch-model-archiver==0.7.1"` to '
+        'Please run `pip install torchserve==0.7.1 torch-model-archiver==0.7.1 "` to '
         "install required third-party libraries."
     )
 
