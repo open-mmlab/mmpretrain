@@ -1301,6 +1301,7 @@ class OFAEncoderDecoder(BaseModule, GenerationMixin):
             Defaults to an empty dict.
         init_cfg (dict, optional): The initialization config. Defaults to None.
     """
+    base_model_prefix = ''
 
     def __init__(
             self,
