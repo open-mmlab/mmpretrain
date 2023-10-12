@@ -31,12 +31,12 @@ class MiniGPT4(BaseModel):
             True.
         num_query_token (int): Number of query tokens of Qformer. Defaults to
             32.
-        prompt_template (str): Prompt template of the model. Defaults to
-            '###Human: {} ###Assistant: '.
-        raw_prompts (list): Prompts for training. Defaults to None.
+        prompt_template (dict): Multi-language prompt template of the model. Defaults to dict([ ('en', '###Ask: {} ###Answer: '),
+                                                                                                ('zh', '###问：{} ###答：')])
+        raw_prompts (dict): Prompts for training. Defaults to dict().
         max_txt_len (int): Max token length while doing tokenization. Defaults
             to 32.
-        end_sym (str): Ended symbol of the sequence. Defaults to '\\n'.
+        end_sym (str): Ended symbol of the sequence. Defaults to '###'.
         generation_cfg (dict): The config of text generation. Defaults to
             dict().
         data_preprocessor (:obj:`BaseDataPreprocessor`): Used for
@@ -54,10 +54,12 @@ class MiniGPT4(BaseModel):
                  freeze_vit: bool = True,
                  freeze_q_former: bool = True,
                  num_query_token: int = 32,
-                 prompt_template: str = '###Human: {} ###Assistant: ',
-                 raw_prompts: Optional[list] = None,
+                 prompt_template: dict = dict([('en',
+                                                '###Ask: {} ###Answer: '),
+                                               ('zh', '###问：{} ###答：')]),
+                 raw_prompts: dict = dict(),
                  max_txt_len: int = 32,
-                 end_sym: str = '\n',
+                 end_sym: str = '###',
                  generation_cfg: dict = dict(),
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
@@ -135,16 +137,23 @@ class MiniGPT4(BaseModel):
         self.end_token_id = self.llama_tokenizer.encode(end_sym)[-1]
 
         # set prompts
-        if raw_prompts is not None:
-            filted_prompts = [
-                raw_prompt for raw_prompt in raw_prompts
+        self.en_prompt_list, self.zh_prompt_list = [], []
+        if raw_prompts.get('en') is not None:
+            en_filted_prompts = [
+                raw_prompt for raw_prompt in raw_prompts['en']
                 if '<ImageHere>' in raw_prompt
             ]
-            self.prompt_list = [
-                prompt_template.format(p) for p in filted_prompts
+            self.en_prompt_list = [
+                prompt_template['en'].format(p) for p in en_filted_prompts
             ]
-        else:
-            self.prompt_list = []
+        if raw_prompts.get('zh') is not None:
+            zh_filted_prompts = [
+                raw_prompt for raw_prompt in raw_prompts['zh']
+                if '<ImageHere>' in raw_prompt
+            ]
+            self.zh_prompt_list = [
+                prompt_template['zh'].format(p) for p in zh_filted_prompts
+            ]
 
         # update generation configs
         self.generation_cfg = dict(
@@ -153,13 +162,17 @@ class MiniGPT4(BaseModel):
             do_sample=True,
             min_length=1,
             top_p=0.9,
-            repetition_penalty=1.0,
+            repetition_penalty=1.1,
             length_penalty=1.0,
             temperature=1.0)
         self.generation_cfg.update(**generation_cfg)
 
         if hasattr(self, 'register_load_state_dict_post_hook'):
             self.register_load_state_dict_post_hook(self._load_llama_proj_hook)
+
+    def half(self):
+        self.llama_model = self.llama_model.half()
+        return self
 
     def encode_img(self,
                    images: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -184,33 +197,39 @@ class MiniGPT4(BaseModel):
         return inputs_llama, atts_llama
 
     def prompt_wrap(self, img_embeds: torch.Tensor, atts_img: torch.Tensor,
-                    prompt: str) -> Tuple[torch.Tensor, torch.Tensor]:
+                    prompt: List[str]) -> Tuple[torch.Tensor, torch.Tensor]:
         """The function to wrap the image and prompt.
 
-        Currently, the function only supports applying one prompt to all input
-        images in the one batch.
+        Make sure that len(prompt) == img_embeds.shape[0].
 
         Args:
             img_embeds (torch.Tensor): The embedding of the input images.
             atts_img (torch.Tensor): Attention map of the image embeddings.
-            prompt (str): The prompt of the batch data.
+            prompt (List[str]): The prompt of the batch data.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor]: The embedding and attention map.
         """
-        if prompt:
-            batch_size = img_embeds.shape[0]
-            p_before, p_after = prompt.split('<ImageHere>')
+        if len(prompt) > 0:
+            p_before_list, p_after_list = [], []
+            for pro in prompt:
+                p_before, p_after = pro.split('<ImageHere>')
+                p_before_list.append(p_before)
+                p_after_list.append(p_after)
             p_before_tokens = self.llama_tokenizer(
-                p_before, return_tensors='pt',
+                p_before_list,
+                return_tensors='pt',
+                padding='longest',
                 add_special_tokens=False).to(img_embeds.device)
             p_after_tokens = self.llama_tokenizer(
-                p_after, return_tensors='pt',
+                p_after_list,
+                return_tensors='pt',
+                padding='longest',
                 add_special_tokens=False).to(img_embeds.device)
             p_before_embeds = self.llama_model.model.embed_tokens(
-                p_before_tokens.input_ids).expand(batch_size, -1, -1)
+                p_before_tokens.input_ids)
             p_after_embeds = self.llama_model.model.embed_tokens(
-                p_after_tokens.input_ids).expand(batch_size, -1, -1)
+                p_after_tokens.input_ids)
             wrapped_img_embeds = torch.cat(
                 [p_before_embeds, img_embeds, p_after_embeds], dim=1)
             wrapped_atts_img = atts_img[:, :1].expand(
@@ -234,17 +253,22 @@ class MiniGPT4(BaseModel):
         """
         img_embeds, atts_img = self.encode_img(images)
 
-        if self.task == 'caption' and self.prompt_list:
-            prompt = random.choice(self.prompt_list)
-            img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
-                                                    prompt)
-
         self.llama_tokenizer.padding_side = 'right'
 
-        text = [t + self.end_sym for t in data_samples['text_input']]
+        prompts, texts = [], []
+        for t in data_samples:
+            chat_content = t.chat_content
+            split_mark = '###Answer: ' if t.lang == 'en' else '###答：'
+            prompt, text = chat_content.split(split_mark)
+            prompt += split_mark
+            text += self.end_sym
+            prompts.append(prompt)
+            texts.append(text)
+
+        img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img, prompts)
 
         to_regress_tokens = self.llama_tokenizer(
-            text,
+            texts,
             return_tensors='pt',
             padding='longest',
             truncation=True,
@@ -295,10 +319,12 @@ class MiniGPT4(BaseModel):
         with torch.no_grad():
             img_embeds, atts_img = self.encode_img(images)
 
-        if self.task == 'caption' and self.prompt_list:
-            prompt = random.choice(self.prompt_list)
-            img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img,
-                                                    prompt)
+        prompts = [
+            random.choice(self.zh_prompt_list) if hasattr(t, 'lang')
+            and t.lang == 'zh' else random.choice(self.en_prompt_list)
+            for t in data_samples
+        ]
+        img_embeds, atts_img = self.prompt_wrap(img_embeds, atts_img, prompts)
 
         batch_size = img_embeds.shape[0]
         bos = torch.ones(
@@ -336,7 +362,6 @@ class MiniGPT4(BaseModel):
         for output, data_sample in zip(outputs, data_samples):
             if self.task == 'caption':
                 output = output.split('###')[0]
-                output = output.split('Assistant:')[-1].strip()
                 data_sample.pred_caption = output
             else:
                 # raw output
