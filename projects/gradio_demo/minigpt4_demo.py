@@ -37,7 +37,7 @@ def get_free_device():
 device = get_free_device()
 inferencer = ImageCaptionInferencer(model=args.cfg, pretrained=args.ckpt)
 model = inferencer.model
-chat = Chat(inferencer, device=device, is_half=True)
+chat = Chat(inferencer, device=device, is_half=(device.type != 'cpu'))
 
 
 def reset(chat_state, img_list):

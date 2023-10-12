@@ -101,11 +101,11 @@ model = dict(
     ),
     lang_encoder=dict(
         type='AutoModelForCausalLM',
-        name_or_path='YOUR_PATH_TO_BAICHUAN',
+        name_or_path='baichuan-inc/baichuan-7B',
         trust_remote_code=True),
     tokenizer=dict(
         type='AutoTokenizer',
-        name_or_path='YOUR_PATH_TO_BAICHUAN',
+        name_or_path='baichuan-inc/baichuan-7B',
         trust_remote_code=True),
     task='caption',
     prompt_template=dict([('en', '###Ask: {} ###Answer: '),
