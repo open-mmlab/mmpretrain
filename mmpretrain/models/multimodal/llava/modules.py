@@ -31,10 +31,10 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
                  lang_encoder,
                  mm_hidden_size,
                  use_im_start_end=True,
-                 use_mm_proj=True,
+                 mm_proj_depth=1,
                  im_start_token: Optional[int] = None,
                  im_end_token: Optional[int] = None,
-                 im_patch_token: Optional[int] = None,
+                 im_token_index: int = -200,
                  mm_vision_select_layer: int = -1):
         super().__init__(lang_encoder.config)
         self.vision_tower = vision_encoder
@@ -43,16 +43,25 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
         self.use_im_start_end = use_im_start_end
         self.im_start_token = im_start_token
         self.im_end_token = im_end_token
-        self.im_patch_token = im_patch_token
         self.mm_hidden_size = mm_hidden_size
         self.mm_vision_select_layer = mm_vision_select_layer
+        self.im_token_index = im_token_index
         self.lang_hidden_size = lang_encoder.config.hidden_size
 
-        if use_mm_proj and not hasattr(lang_encoder.model, 'mm_projector'):
+        if mm_proj_depth == 1:
+            # Llava V1
             mm_projector = nn.Linear(self.mm_hidden_size,
                                      self.lang_hidden_size)
             self.lang_encoder.model.add_module('mm_projector', mm_projector)
-        elif not use_mm_proj:
+        elif mm_proj_depth > 1:
+            # Llava V1.5
+            modules = [nn.Linear(self.mm_hidden_size, self.lang_hidden_size)]
+            for _ in range(1, mm_proj_depth):
+                modules.append(nn.GELU())
+                modules.append(nn.Linear(self.lang_hidden_size, self.lang_hidden_size))
+            mm_projector = nn.Sequential(*modules)
+            self.lang_encoder.model.add_module('mm_projector', mm_projector)
+        elif mm_proj_depth == 0:
             self.lang_encoder.model.add_module('mm_projector', nn.Identity())
 
         self.post_init()
@@ -80,16 +89,12 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
             return_dict
             if return_dict is not None else self.config.use_return_dict)
 
-        # decoder outputs consists of
-        # (dec_features, layer_state, dec_hidden, dec_attn)
-        if inputs_embeds is None:
-            inputs_embeds = self.lang_encoder.model.embed_tokens(input_ids)
-
-        inputs_embeds = self.forward_vision_tower(input_ids, inputs_embeds,
-                                                  images)
+        (input_ids, attention_mask, past_key_values, inputs_embeds,
+         labels) = self.forward_vision_tower(input_ids, attention_mask,
+                                             past_key_values, labels, images)
 
         return self.lang_encoder(
-            input_ids=None,
+            input_ids=input_ids,
             attention_mask=attention_mask,
             past_key_values=past_key_values,
             inputs_embeds=inputs_embeds,
@@ -127,106 +132,85 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
     def forward_vision_tower(
         self,
         input_ids: torch.LongTensor,
-        inputs_embeds: torch.FloatTensor,
-        images: Union[torch.FloatTensor, list, None] = None,
+        attention_mask: torch.LongTensor,
+        past_key_values: torch.FloatTensor,
+        labels: torch.LongTensor,
+        images: Union[torch.FloatTensor, None] = None,
     ):
-        if self.use_im_start_end:
-            assert self.im_start_token is not None
-            assert self.im_end_token is not None
-        if images is not None:
-            assert self.im_patch_token is not None
-
-        if self.vision_tower is None or images is None or (
-                input_ids.shape[1] == 1 and not self.training):
-            return inputs_embeds
+        if self.vision_tower is None or images is None or input_ids.shape[1] == 1:
+            if past_key_values is not None and self.vision_tower is not None and images is not None and input_ids.shape[1] == 1:
+                attention_mask = torch.ones((attention_mask.shape[0], past_key_values[-1][-1].shape[-2] + 1), dtype=attention_mask.dtype, device=attention_mask.device)
+            return input_ids, attention_mask, past_key_values, None, labels
 
         with torch.no_grad():
-            if isinstance(images, (list, tuple)):
-                # variable length images
-                image_features = []
-                for image in images:
-                    feats = self.vision_tower(image.unsqueeze(0))
-                    image_feature = feats[self.mm_vision_select_layer][:, 1:]
-                    image_features.append(image_feature)
-            else:
-                feats = self.vision_tower(images)
-                image_features = feats[self.mm_vision_select_layer][:, 1:]
+            # TODO: support variable number of images (single now)
+            feats = self.vision_tower(images)
+            image_features = feats[-1][:, 1:]
 
-        mm_projector = self.lang_encoder.model.mm_projector
-        if isinstance(images, (list, tuple)):
-            image_features = [
-                mm_projector(image_feature)[0]
-                for image_feature in image_features
-            ]
-        else:
-            image_features = mm_projector(image_features)
-
-        dummy_image_features = torch.zeros(
-            256, 1024, device=inputs_embeds.device, dtype=inputs_embeds.dtype)
-        dummy_image_features = mm_projector(dummy_image_features)
+        image_features = self.lang_encoder.model.mm_projector(image_features)
 
         new_input_embeds = []
-        cur_image_idx = 0
-        for cur_input_ids, cur_input_embeds in zip(input_ids, inputs_embeds):
-            if (cur_input_ids != self.im_patch_token).all():
-                # multimodal LLM, but the current sample is not multimodal
-                cur_input_embeds = cur_input_embeds + (
-                    0. * dummy_image_features).sum()
-                new_input_embeds.append(cur_input_embeds)
-                cur_image_idx += 1
-                continue
-            if self.use_im_start_end:
-                cur_image_features = image_features[cur_image_idx]
-                num_patches = cur_image_features.shape[0]
-                if (cur_input_ids == self.im_start_token).sum() != (
-                        cur_input_ids == self.im_end_token).sum():
-                    raise ValueError('The number of image start tokens and '
-                                     'image end tokens should be the same.')
-                image_start_tokens = torch.where(
-                    cur_input_ids == self.im_start_token)[0]
-                for image_start_token_pos in image_start_tokens:
-                    cur_image_features = image_features[cur_image_idx].to(
-                        device=cur_input_embeds.device)
-                    num_patches = cur_image_features.shape[0]
-                    if cur_input_ids[image_start_token_pos + num_patches +
-                                     1] != self.im_end_token:
-                        raise ValueError('The image end token should follow '
-                                         'the image start token.')
-                    cur_new_input_embeds = torch.cat(
-                        (cur_input_embeds[:image_start_token_pos + 1],
-                         cur_image_features,
-                         cur_input_embeds[image_start_token_pos + num_patches +
-                                          1:]),
-                        dim=0)
-                    cur_image_idx += 1
-                new_input_embeds.append(cur_new_input_embeds)
-            else:
-                cur_image_features = image_features[cur_image_idx]
-                num_patches = cur_image_features.shape[0]
-                if (cur_input_ids == self.im_patch_token).sum() != num_patches:
-                    print(f'Debug: num_patches: {num_patches}')
-                    raise ValueError(
-                        'The number of image patch tokens should '
-                        'be the same as the number of image patches.')
-                masked_indices = torch.where(
-                    cur_input_ids == self.im_patch_token)[0]
-                mask_index_start = masked_indices[0]
-                if (masked_indices != torch.arange(
-                        mask_index_start,
-                        mask_index_start + num_patches,
-                        device=masked_indices.device,
-                        dtype=masked_indices.dtype)).any():
-                    raise ValueError(
-                        'The image patch tokens should be consecutive.')
-                cur_new_input_embeds = torch.cat(
-                    (cur_input_embeds[:mask_index_start], cur_image_features,
-                     cur_input_embeds[mask_index_start + num_patches:]),
-                    dim=0)
-                new_input_embeds.append(cur_new_input_embeds)
-                cur_image_idx += 1
-        inputs_embeds = torch.stack(new_input_embeds, dim=0)
+        new_labels = [] if labels is not None else None
+        new_attn_mask = [] if attention_mask is not None else None
+        for batch_idx, cur_input_ids in enumerate(input_ids):
+            cur_img = image_features[batch_idx]
 
-        return inputs_embeds
+            if (cur_input_ids != self.im_token_index).all():
+                # multimodal LLM, but the current sample is not multimodal
+                new_input_embeds.append(self.embed_tokens(cur_input_ids))
+                if labels is not None:
+                    new_labels.append(labels[batch_idx])
+                if attention_mask is not None:
+                    new_attn_mask.append(attention_mask[batch_idx])
+                continue
+
+            img_idx = torch.where(cur_input_ids == self.im_token_index)[0][0]
+            if self.use_im_start_end:
+                cur_new_input_embeds = torch.cat(
+                    [
+                        self.embed_tokens(cur_input_ids[:img_idx - 1]),
+                        self.embed_tokens(cur_input_ids[img_idx - 1:img_idx]),
+                        cur_img,
+                        self.embed_tokens(
+                            cur_input_ids[img_idx + 1:img_idx + 2]),
+                        self.embed_tokens(cur_input_ids[img_idx + 2:]),
+                    ],
+                    dim=0,
+                )
+            else:
+                cur_new_input_embeds = torch.cat(
+                    [
+                        self.embed_tokens(cur_input_ids[:img_idx]),
+                        cur_img,
+                        self.embed_tokens(cur_input_ids[img_idx + 1:]),
+                    ],
+                    dim=0,
+                )
+            new_input_embeds.append(cur_new_input_embeds)
+
+            if labels is not None:
+                cur_new_labels = torch.cat([
+                    labels[batch_idx, :img_idx],
+                    labels.new_full((cur_img.size(0), ), -100),
+                    labels[batch_idx, img_idx+1:],
+                ], dim=0)
+                new_labels.append(cur_new_labels)
+
+            if attention_mask is not None:
+                cur_attn_mask = torch.cat([
+                    attention_mask[batch_idx, :img_idx],
+                    attention_mask.new_full((cur_img.size(0), ), True),
+                    attention_mask[batch_idx, img_idx+1:],
+                ], dim=0)
+                new_attn_mask.append(cur_attn_mask)
+
+        inputs_embeds = torch.stack(new_input_embeds, dim=0)
+        if labels is not None:
+            labels = torch.stack(new_labels, dim=0)
+        if attention_mask is not None:
+            attention_mask = torch.stack(new_attn_mask, dim=0)
+
+        return None, attention_mask, past_key_values, inputs_embeds, labels
 
     @staticmethod
     def _reorder_cache(past_key_values, beam_idx):
@@ -236,3 +220,6 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
                 past_state.index_select(0, beam_idx)
                 for past_state in layer_past), )
         return reordered_past
+
+    def embed_tokens(self, input_ids):
+        return self.lang_encoder.model.embed_tokens(input_ids)

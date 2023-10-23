@@ -16,35 +16,15 @@ Instruction tuning large language models (LLMs) using machine-generated instruct
 
 <!-- [TABS-BEGIN] -->
 
-**Prepare the checkpoint**
-
-According to the license of LLaMA, we cannot provide the merged checkpoint directly. Please use the below
-script to download and get the merged the checkpoint.
-
-```shell
-python tools/model_converters/llava-delta2mmpre.py huggyllama/llama-7b liuhaotian/LLaVA-Lightning-7B-delta-v1-1 ./LLaVA-Lightning-7B-delta-v1-1.pth
-```
-
 **Use the model**
 
 ```python
 import torch
 from mmpretrain import get_model, inference_model
 
-model = get_model('llava-7b-v1_caption', pretrained='MERGED_CHECKPOINT_PATH', device='cuda')
-out = inference_model(model, 'demo/cat-dog.png')
+out = inference_model('llava-7b-v1_caption', 'demo/cat-dog.png', device='cuda')
 print(out)
 # {'pred_caption': 'In the image, there are two cats sitting on a blanket.'}
-```
-
-**Test Command**
-
-Prepare your dataset according to the [docs](https://mmpretrain.readthedocs.io/en/latest/user_guides/dataset_prepare.html#prepare-dataset).
-
-Test:
-
-```shell
-python tools/test.py configs/llava/llava-7b-v1_caption.py MERGED_CHECKPOINT_PATH
 ```
 
 <!-- [TABS-END] -->
@@ -53,9 +33,11 @@ python tools/test.py configs/llava/llava-7b-v1_caption.py MERGED_CHECKPOINT_PATH
 
 ### Image Caption on COCO
 
-| Model                 | Params (M) |  BLEU-4  |  CIDER   |              Config              |        Download        |
-| :-------------------- | :--------: | :------: | :------: | :------------------------------: | :--------------------: |
-| `llava-7b-v1_caption` |  7045.82   | Upcoming | Upcoming | [config](llava-7b-v1_caption.py) | See the above tutorial |
+| Model                 | Params (M) |              Config              |        Download        |
+| :-------------------- | :--------: | :------------------------------: | :--------------------: |
+| `llava-7b-v1_caption` |  7045.82   | [config](llava-7b-v1_caption.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1_liuhaotian_20231025-c9e119b6.pth) |
+| `llava-7b-v1.5_caption` |  7062.90   | [config](llava-7b-v1.5_caption.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1.5_liuhaotian_20231025-5828aa5a.pth) |
+| `llava-7b-v1.5_vqa` |  7062.90   | [config](llava-7b-v1.5_vqa.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1.5_liuhaotian_20231025-5828aa5a.pth) |
 
 ## Citation
 

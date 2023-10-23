@@ -1,16 +1,15 @@
 _base_ = '../_base_/default_runtime.py'
 
-meta_prompt = 'You are LLaVA, a large language and vision assistant trained by UW Madison WAIV Lab.You are able to understand the visual content that the user provides, and assist the user with a variety of tasks using natural language.Follow the instructions carefully and explain your answers in detail.'  # noqa: E501
-image_size = 224
-prompt_tmpl = f'''{meta_prompt} User: <im_start><image><im_end>
+meta_prompt = "A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions."  # noqa: E501
+image_size = 336
+prompt_tmpl = f'''{meta_prompt} User: <image>
 Describe the image in detail. ASSISTANT:'''
 
 # model settings
 model = dict(
     type='Llava',
     tokenizer=dict(
-        type='AutoTokenizer',
-        name_or_path='liuhaotian/LLaVA-Lightning-7B-delta-v1-1'),
+        type='AutoTokenizer', name_or_path='liuhaotian/llava-v1.5-7b'),
     vision_encoder=dict(
         type='VisionTransformer',
         arch='l',
@@ -21,22 +20,20 @@ model = dict(
         layer_cfgs=dict(act_cfg=dict(type='mmpretrain.QuickGELU')),
         final_norm=False,
         out_type='raw',
-        pretrained=(
-            'https://download.openmmlab.com/mmclassification/v0/clip/'
-            'vit-large-p14_clip-openai-pre_3rdparty_20230517-95e2af0b.pth'),
+        pretrained='https://download.openmmlab.com/mmclassification/v0/clip/'
+        'vit-large-p14_clip-openai-pre_336px_20231025-fb1315ed.pth',
     ),
     mm_hidden_size=1024,
     use_im_patch=False,
-    use_im_start_end=True,
-    mm_proj_depth=1,
+    use_im_start_end=False,
+    mm_proj_depth=2,
     lang_encoder=dict(
         type='AutoModelForCausalLM',
         name_or_path='huggyllama/llama-7b',
     ),
     task='caption',
     prompt_tmpl=prompt_tmpl,
-    #  generation_cfg=dict(num_beams=3, max_new_tokens=50, length_penalty=-1.0),
-    generation_cfg=dict(max_new_tokens=50),
+    generation_cfg=dict(num_beams=3, max_new_tokens=50, length_penalty=-1.0),
 )
 
 # data settings
