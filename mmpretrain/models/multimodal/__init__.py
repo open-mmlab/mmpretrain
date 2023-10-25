@@ -17,23 +17,8 @@ else:
     from mmpretrain.utils.dependency import register_multimodal_placeholder
 
     register_multimodal_placeholder([
-        'Blip2Caption',
-        'Blip2Retrieval',
-        'Blip2VQA',
-        'BlipCaption',
-        'BlipNLVR',
-        'BlipRetrieval',
-        'BlipGrounding',
-        'BlipVQA',
-        'Flamingo',
-        'OFA',
-        'ChineseCLIP',
-        'MiniGPT4',
-        'Llava',
-        'Otter',
-        'CLIP',
-        'CLIPZeroShot',
-        'RAM',
-        'RAMNormal',
-        'RAMOpenset',
+        'Blip2Caption', 'Blip2Retrieval', 'Blip2VQA', 'BlipCaption',
+        'BlipNLVR', 'BlipRetrieval', 'BlipGrounding', 'BlipVQA', 'Flamingo',
+        'OFA', 'ChineseCLIP', 'MiniGPT4', 'Llava', 'Otter', 'CLIP',
+        'CLIPZeroShot', 'RAM', 'RAMNormal', 'RAMOpenset'
     ], MODELS)
