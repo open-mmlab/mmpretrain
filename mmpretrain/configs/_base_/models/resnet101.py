@@ -20,4 +20,3 @@ model = dict(
         loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
         topk=(1, 5),
     ))
-

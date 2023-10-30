@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # This is a BETA new format config file, and the usage may change recently.
 from mmpretrain.models import (CrossEntropyLoss, GlobalAveragePooling,
-                               ImageClassifier, MultiLabelLinearClsHead, ResNet_CIFAR, Mixup)
+                               ImageClassifier, Mixup, MultiLabelLinearClsHead,
+                               ResNet_CIFAR)
 
 # model settings
 model = dict(
@@ -10,7 +11,7 @@ model = dict(
         type=ResNet_CIFAR,
         depth=50,
         num_stages=4,
-        out_indices=(3,),
+        out_indices=(3, ),
         style='pytorch'),
     neck=dict(type=GlobalAveragePooling),
     head=dict(

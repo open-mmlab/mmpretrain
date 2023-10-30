@@ -19,4 +19,3 @@ model = dict(
         in_channels=2048,
         loss=dict(type=CrossEntropyLoss, loss_weight=1.0),
     ))
-
