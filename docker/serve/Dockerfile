@@ -3,7 +3,7 @@ ARG CUDA="11.7"
 ARG CUDNN="8"
 FROM pytorch/torchserve:latest-gpu
 
-ARG MMPRE="1.1.0"
+ARG MMPRE="1.1.1"
 
 ENV PYTHONUNBUFFERED TRUE
 
