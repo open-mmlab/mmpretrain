@@ -35,7 +35,6 @@ model = dict(
     ),
     task='caption',
     prompt_tmpl=prompt_tmpl,
-    #  generation_cfg=dict(num_beams=3, max_new_tokens=50, length_penalty=-1.0),
     generation_cfg=dict(max_new_tokens=50),
 )
 

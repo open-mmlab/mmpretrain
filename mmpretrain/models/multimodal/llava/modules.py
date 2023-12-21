@@ -58,7 +58,8 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
             modules = [nn.Linear(self.mm_hidden_size, self.lang_hidden_size)]
             for _ in range(1, mm_proj_depth):
                 modules.append(nn.GELU())
-                modules.append(nn.Linear(self.lang_hidden_size, self.lang_hidden_size))
+                modules.append(
+                    nn.Linear(self.lang_hidden_size, self.lang_hidden_size))
             mm_projector = nn.Sequential(*modules)
             self.lang_encoder.model.add_module('mm_projector', mm_projector)
         elif mm_proj_depth == 0:
@@ -137,9 +138,15 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
         labels: torch.LongTensor,
         images: Union[torch.FloatTensor, None] = None,
     ):
-        if self.vision_tower is None or images is None or input_ids.shape[1] == 1:
-            if past_key_values is not None and self.vision_tower is not None and images is not None and input_ids.shape[1] == 1:
-                attention_mask = torch.ones((attention_mask.shape[0], past_key_values[-1][-1].shape[-2] + 1), dtype=attention_mask.dtype, device=attention_mask.device)
+        if self.vision_tower is None or images is None or input_ids.shape[
+                1] == 1:
+            if (past_key_values is not None and self.vision_tower is not None
+                    and images is not None and input_ids.shape[1] == 1):
+                attention_mask = torch.ones(
+                    (attention_mask.shape[0],
+                     past_key_values[-1][-1].shape[-2] + 1),
+                    dtype=attention_mask.dtype,
+                    device=attention_mask.device)
             return input_ids, attention_mask, past_key_values, None, labels
 
         with torch.no_grad():
@@ -192,16 +199,18 @@ class LlavaLlamaForCausalLM(PreTrainedModel):
                 cur_new_labels = torch.cat([
                     labels[batch_idx, :img_idx],
                     labels.new_full((cur_img.size(0), ), -100),
-                    labels[batch_idx, img_idx+1:],
-                ], dim=0)
+                    labels[batch_idx, img_idx + 1:],
+                ],
+                                           dim=0)
                 new_labels.append(cur_new_labels)
 
             if attention_mask is not None:
                 cur_attn_mask = torch.cat([
                     attention_mask[batch_idx, :img_idx],
                     attention_mask.new_full((cur_img.size(0), ), True),
-                    attention_mask[batch_idx, img_idx+1:],
-                ], dim=0)
+                    attention_mask[batch_idx, img_idx + 1:],
+                ],
+                                          dim=0)
                 new_attn_mask.append(cur_attn_mask)
 
         inputs_embeds = torch.stack(new_input_embeds, dim=0)

@@ -33,11 +33,11 @@ print(out)
 
 ### Image Caption on COCO
 
-| Model                 | Params (M) |              Config              |        Download        |
-| :-------------------- | :--------: | :------------------------------: | :--------------------: |
-| `llava-7b-v1_caption` |  7045.82   | [config](llava-7b-v1_caption.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1_liuhaotian_20231025-c9e119b6.pth) |
+| Model                   | Params (M) |               Config               |                                                    Download                                                     |
+| :---------------------- | :--------: | :--------------------------------: | :-------------------------------------------------------------------------------------------------------------: |
+| `llava-7b-v1_caption`   |  7045.82   |  [config](llava-7b-v1_caption.py)  |  [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1_liuhaotian_20231025-c9e119b6.pth)  |
 | `llava-7b-v1.5_caption` |  7062.90   | [config](llava-7b-v1.5_caption.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1.5_liuhaotian_20231025-5828aa5a.pth) |
-| `llava-7b-v1.5_vqa` |  7062.90   | [config](llava-7b-v1.5_vqa.py) | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1.5_liuhaotian_20231025-5828aa5a.pth) |
+| `llava-7b-v1.5_vqa`     |  7062.90   |   [config](llava-7b-v1.5_vqa.py)   | [ckpt](https://download.openmmlab.com/mmclassification/v1/llava/llava-7b-v1.5_liuhaotian_20231025-5828aa5a.pth) |
 
 ## Citation
 

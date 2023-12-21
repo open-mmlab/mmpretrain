@@ -77,7 +77,8 @@ class Llava(BaseModel):
         self.tokenizer = TOKENIZER.build(tokenizer)
         # add Llava special tokens to the tokenizer
         if use_im_patch:
-            self.tokenizer.add_tokens([self.im_patch_token], special_tokens=True)
+            self.tokenizer.add_tokens([self.im_patch_token],
+                                      special_tokens=True)
         if use_im_start_end:
             self.tokenizer.add_tokens([self.im_start_token, self.im_end_token],
                                       special_tokens=True)
