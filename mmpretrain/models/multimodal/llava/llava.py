@@ -24,8 +24,8 @@ class Llava(BaseModel):
         use_im_start_end (bool): Whether to use the im_start and im_end tokens
         mm_vision_select_layer (int): The index from vision encoder output.
             Defaults to -1.
-        use_mm_proj (bool): Whether to enable multi-modal projection.
-            Defaults to True.
+        mm_proj_depth (int): The number of linear layers for multi-modal
+            projection. Defaults to 1.
         load_lang_pretrained (bool): Whether to load the pretrained model of
             language encoder. Defaults to False.
         generation_cfg (dict): The extra generation config, accept the keyword
@@ -51,9 +51,10 @@ class Llava(BaseModel):
                  mm_hidden_size: int,
                  prompt_tmpl: str,
                  task: str = 'caption',
+                 use_im_patch: bool = True,
                  use_im_start_end: bool = False,
                  mm_vision_select_layer: int = -1,
-                 use_mm_proj: bool = True,
+                 mm_proj_depth: int = 1,
                  generation_cfg: dict = dict(),
                  load_lang_pretrained: bool = False,
                  data_preprocessor: Optional[dict] = None,
@@ -75,7 +76,9 @@ class Llava(BaseModel):
         # init tokenizer
         self.tokenizer = TOKENIZER.build(tokenizer)
         # add Llava special tokens to the tokenizer
-        self.tokenizer.add_tokens([self.im_patch_token], special_tokens=True)
+        if use_im_patch:
+            self.tokenizer.add_tokens([self.im_patch_token],
+                                      special_tokens=True)
         if use_im_start_end:
             self.tokenizer.add_tokens([self.im_start_token, self.im_end_token],
                                       special_tokens=True)
@@ -108,14 +111,12 @@ class Llava(BaseModel):
             vision_encoder=vision_encoder,
             lang_encoder=lang_encoder,
             mm_hidden_size=mm_hidden_size,
-            use_mm_proj=use_mm_proj,
+            mm_proj_depth=mm_proj_depth,
             use_im_start_end=use_im_start_end,
             im_start_token=self.tokenizer.convert_tokens_to_ids(
                 self.im_start_token),
             im_end_token=self.tokenizer.convert_tokens_to_ids(
                 self.im_end_token),
-            im_patch_token=self.tokenizer.convert_tokens_to_ids(
-                self.im_patch_token),
             mm_vision_select_layer=mm_vision_select_layer)
 
         self.generation_cfg = generation_cfg
@@ -207,16 +208,24 @@ class Llava(BaseModel):
         Returns:
             List[DataSample]: Return list of data samples.
         """
-        prompts = []
+        tokens = []
         for sample in data_samples:
-            final_prompt = self.prompt_tmpl.format(**sample.to_dict())
-            prompts.append(final_prompt)
+            prompt = self.prompt_tmpl.format(**sample.to_dict())
+            input_ids = []
+            while '<image>' in prompt:
+                prefix, _, prompt = prompt.partition('<image>')
+                input_ids.extend(
+                    self.tokenizer(prefix, add_special_tokens=False).input_ids)
+                input_ids.append(-200)
+            if prompt:
+                input_ids.extend(
+                    self.tokenizer(prompt, add_special_tokens=False).input_ids)
+            tokens.append(dict(input_ids=input_ids))
 
         self.tokenizer.padding_side = 'left'
-        input_text = self.tokenizer(
-            prompts,
+        input_text = self.tokenizer.pad(
+            tokens,
             padding='longest',
-            truncation=True,
             return_tensors='pt',
             max_length=2000,
         ).to(device)
