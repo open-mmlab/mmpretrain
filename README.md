@@ -86,6 +86,11 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## What's new
 
+🌟 v1.2.0 was released in 04/01/2023
+
+- Support LLaVA 1.5.
+- Implement of RAM with a gradio interface.
+
 🌟 v1.1.0 was released in 12/10/2023
 
 - Support Mini-GPT4 training and provide a Chinese model (based on Baichuan-7B)

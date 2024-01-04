@@ -16,7 +16,8 @@ and make sure you fill in all required information in the template.
 
   | MMPretrain version | MMEngine version  |   MMCV version   |
   | :----------------: | :---------------: | :--------------: |
-  |    1.1.1 (main)    | mmengine >= 0.8.3 |  mmcv >= 2.0.0   |
+  |    1.2.0 (main)    | mmengine >= 0.8.3 |  mmcv >= 2.0.0   |
+  |       1.1.1        | mmengine >= 0.8.3 |  mmcv >= 2.0.0   |
   |       1.0.0        | mmengine >= 0.8.0 |  mmcv >= 2.0.0   |
   |      1.0.0rc8      | mmengine >= 0.7.1 | mmcv >= 2.0.0rc4 |
   |      1.0.0rc7      | mmengine >= 0.5.0 | mmcv >= 2.0.0rc4 |
