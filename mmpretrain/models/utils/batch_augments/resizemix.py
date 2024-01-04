@@ -87,7 +87,7 @@ class ResizeMix(CutMix):
         (y1, y2, x1, x2), lam = self.cutmix_bbox_and_lam(img_shape, lam)
         batch_inputs[:, :, y1:y2, x1:x2] = F.interpolate(
             batch_inputs[index],
-            size=(y2 - y1, x2 - x1),
+            size=(int(y2 - y1), int(x2 - x1)),
             mode=self.interpolation,
             align_corners=False)
         mixed_scores = lam * batch_scores + (1 - lam) * batch_scores[index, :]
