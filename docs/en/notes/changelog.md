@@ -1,5 +1,16 @@
 # Changelog (MMPreTrain)
 
+## v1.2.0(04/01/2024)
+
+### New Features
+
+- [Feature] Support LLaVA 1.5 ([#1853](https://github.com/open-mmlab/mmpretrain/pull/1853))
+- [Feature] Implement of RAM with a gradio interface. ([#1802](https://github.com/open-mmlab/mmpretrain/pull/1802))
+
+### Bug Fix
+
+- [Fix] Fix resize mix argument bug.
+
 ## v1.1.0(12/10/2023)
 
 ### New Features
