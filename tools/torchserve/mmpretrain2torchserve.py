@@ -10,7 +10,8 @@ try:
     from model_archiver.model_packaging_utils import ModelExportUtils
 except ImportError:
     raise ImportError(
-        'Please run `pip install torchserve torch-model-archiver"` to '
+        'Please run '
+        '`pip install torchserve==0.7.1 torch-model-archiver==0.7.1"` to '
         'install required third-party libraries.')
 
 
@@ -106,7 +107,7 @@ if __name__ == '__main__':
 
     if package_model is None:
         raise ImportError('`torch-model-archiver` is required.'
-                          'Try: pip install torch-model-archiver')
+                          'Try: pip install torch-model-archiver==0.7.1')
 
     mmpretrain2torchserve(args.config, args.checkpoint, args.output_folder,
                           args.model_name, args.model_version, args.force)

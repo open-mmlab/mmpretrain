@@ -1,6 +1,7 @@
 ARG PYTORCH="2.0.1"
 ARG CUDA="11.7"
 ARG CUDNN="8"
+ARG TORCHSERVE="0.7.1"
 FROM pytorch/torchserve:latest-gpu
 
 ARG MMPRE="1.2.0"
@@ -11,8 +12,8 @@ ENV HOME="/home/model-server"
 ENV PATH="/opt/conda/bin:$HOME/.local/bin:$PATH"
 RUN export FORCE_CUDA=1
 
-# TORCHSEVER
-RUN pip install torchserve torch-model-archiver
+# TORCHSERVE
+RUN pip install torchserve==${TORCHSERVE} torch-model-archiver==${TORCHSERVE}
 RUN pip install nvgpu
 
 # OPEN-MMLAB
