@@ -25,6 +25,7 @@ from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .mobileone import MobileOne
 from .mobilevit import MobileViT
+from .moganet import MogaNet
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
@@ -112,6 +113,7 @@ __all__ = [
     'DeiT3',
     'HorNet',
     'MobileViT',
+    'MogaNet',
     'DaViT',
     'BEiTViT',
     'RevVisionTransformer',
