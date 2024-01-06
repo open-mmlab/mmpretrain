@@ -221,6 +221,8 @@ Backbones
    ViTSAM
    XCiT
    ViTEVA02
+   PromptedViT
+   PromptedViTEVA02
 
 .. module:: mmpretrain.models.necks
 
