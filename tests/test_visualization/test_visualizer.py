@@ -7,7 +7,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from mmpretrain.structures import DataSample
+from mmpretrain.structures import DataSample, MultiTaskDataSample
 from mmpretrain.visualization import UniversalVisualizer
 
 
@@ -122,6 +122,46 @@ class TestUniversalVisualizer(TestCase):
                 np.ones((224, 384, 3), np.uint8),
                 data_sample,
                 rescale_factor=2.)
+
+    def test_visualize_multitask_cls(self):
+        image = np.ones((1000, 1000, 3), np.uint8)
+        gt_label = {'task0': {'task00': 2, 'task01': 1}, 'task1': 1}
+        data_sample = MultiTaskDataSample()
+        task_sample = DataSample().set_gt_label(
+            gt_label['task1']).set_pred_label(1).set_pred_score(
+                torch.tensor([0.1, 0.8, 0.1]))
+        data_sample.set_field(task_sample, 'task1')
+        data_sample.set_field(MultiTaskDataSample(), 'task0')
+        for task_name in gt_label['task0']:
+            task_sample = DataSample().set_gt_label(
+                gt_label['task0'][task_name]).set_pred_label(2).set_pred_score(
+                    torch.tensor([0.1, 0.4, 0.5]))
+            data_sample.task0.set_field(task_sample, task_name)
+
+        # Test show
+        def mock_show(drawn_img, win_name, wait_time):
+            self.assertFalse((image == drawn_img).all())
+            self.assertEqual(win_name, 'test_cls')
+            self.assertEqual(wait_time, 0)
+
+        with patch.object(self.vis, 'show', mock_show):
+            self.vis.visualize_cls(
+                image=image,
+                data_sample=data_sample,
+                show=True,
+                name='test_cls',
+                step=2)
+
+        # Test storage backend.
+        save_file = osp.join(self.tmpdir.name,
+                             'vis_data/vis_image/test_cls_2.png')
+        self.assertTrue(osp.exists(save_file))
+
+        # Test out_file
+        out_file = osp.join(self.tmpdir.name, 'results_2.png')
+        self.vis.visualize_cls(
+            image=image, data_sample=data_sample, out_file=out_file)
+        self.assertTrue(osp.exists(out_file))
 
     def test_visualize_image_retrieval(self):
         image = np.ones((10, 10, 3), np.uint8)
