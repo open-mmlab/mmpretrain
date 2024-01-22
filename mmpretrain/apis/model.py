@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import inspect
 import fnmatch
+import inspect
 import os.path as osp
 import re
 import warnings
