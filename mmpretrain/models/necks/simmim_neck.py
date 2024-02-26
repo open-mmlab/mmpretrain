@@ -18,7 +18,8 @@ class SimMIMLinearDecoder(BaseModule):
         target_channels (int): Channel dimensions of original image.
     """
 
-    def __init__(self, in_channels: int, encoder_stride: int, target_channels: int = 3) -> None:
+    def __init__(self, in_channels: int, encoder_stride: int,
+                 target_channels: int = 3) -> None:
         super().__init__()
         self.decoder = nn.Sequential(
             nn.Conv2d(
