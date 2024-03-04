@@ -3,7 +3,7 @@ import argparse
 import os
 import os.path as osp
 from copy import deepcopy
-
+import mmengine
 from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.runner import Runner
 from mmengine.utils import digit_version
@@ -155,6 +155,8 @@ def main():
 
     # start training
     runner.train()
+    metrics = runner.test()
+    mmengine.dump(metrics, os.path.join(args.work_dir, "metrics.json"))
 
 
 if __name__ == '__main__':

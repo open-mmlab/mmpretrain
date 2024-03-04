@@ -85,6 +85,7 @@ val_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
 
+# If you want standard test, please manually configure the test dataset
 test_dataloader = dict(
     batch_size=32,
     num_workers=5,
@@ -100,7 +101,9 @@ val_evaluator = [
     dict(type='AveragePrecision', prefix='val'),
     dict(type='SingleLabelMetric', prefix='val'),
 ]
+test_evaluator = [
+    dict(type='Accuracy', topk=(1,), prefix='test'),
+    dict(type='AveragePrecision', prefix='test'),
+    dict(type='SingleLabelMetric', prefix='test'),
+]
 
-# If you want standard test, please manually configure the test dataset
-test_dataloader = test_dataloader
-test_evaluator = val_evaluator
