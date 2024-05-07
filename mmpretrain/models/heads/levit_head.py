@@ -59,7 +59,7 @@ class LeViTClsHead(ClsHead):
             self.head_dist = BatchNormLinear(in_channels, num_classes)
 
         if self.deploy:
-            self.switch_to_deploy(self)
+            self.switch_to_deploy()
 
     def switch_to_deploy(self):
         if self.deploy:
