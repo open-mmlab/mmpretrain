@@ -1,5 +1,38 @@
 # Changelog (MMPreTrain)
 
+## v1.2.0(04/01/2024)
+
+### New Features
+
+- [Feature] Support LLaVA 1.5 ([#1853](https://github.com/open-mmlab/mmpretrain/pull/1853))
+- [Feature] Implement of RAM with a gradio interface. ([#1802](https://github.com/open-mmlab/mmpretrain/pull/1802))
+
+### Bug Fix
+
+- [Fix] Fix resize mix argument bug.
+
+## v1.1.0(12/10/2023)
+
+### New Features
+
+- [Feature] Implement of Zero-Shot CLIP Classifier ([#1737](https://github.com/open-mmlab/mmpretrain/pull/1737))
+- [Feature] Add minigpt4 gradio demo and training script. ([#1758](https://github.com/open-mmlab/mmpretrain/pull/1758))
+
+### Improvements
+
+- [Config] New Version of config Adapting MobileNet Algorithm ([#1774](https://github.com/open-mmlab/mmpretrain/pull/1774))
+- [Config] Support DINO self-supervised learning in project ([#1756](https://github.com/open-mmlab/mmpretrain/pull/1756))
+- [Config] New Version of config Adapting Swin Transformer Algorithm ([#1780](https://github.com/open-mmlab/mmpretrain/pull/1780))
+- [Enhance] Add iTPN Supports for Non-three channel image ([#1735](https://github.com/open-mmlab/mmpretrain/pull/1735))
+- [Docs] Update dataset download script from opendatalab to openXlab ([#1765](https://github.com/open-mmlab/mmpretrain/pull/1765))
+- [Docs] Update COCO-Retrieval dataset docs. ([#1806](https://github.com/open-mmlab/mmpretrain/pull/1806))
+
+### Bug Fix
+
+- Update `train.py` to compat with new config.
+- Update OFA module to compat with the latest huggingface.
+- Fix pipeline bug in ImageRetrievalInferencer.
+
 ## v1.0.2(15/08/2023)
 
 ### New Features

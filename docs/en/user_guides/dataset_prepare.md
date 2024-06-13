@@ -144,15 +144,15 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 
 ````{group-tab} Download by MIM
 
-MIM supports downloading from [OpenDataLab](https://opendatalab.com/) and preprocessing ImageNet dataset with one command line.
+MIM supports downloading from [OpenXlab](https://openxlab.org.cn/datasets) and preprocessing ImageNet dataset with one command line.
 
-_You need to register an account at [OpenDataLab official website](https://opendatalab.com/) and login by CLI._
+_You need to register an account at [OpenXlab official website](https://openxlab.org.cn/datasets) and login by CLI._
 
 ```Bash
-# install OpenDataLab CLI tools
-pip install -U opendatalab
-# log in OpenDataLab, register if you don't have an account.
-odl login
+# install OpenXlab CLI tools
+pip install -U openxlab
+# log in OpenXLab
+openxlab login
 # download and preprocess by MIM, better to execute in $MMPreTrain directory.
 mim download mmpretrain --dataset imagenet1k
 ```
@@ -278,7 +278,7 @@ test_dataloader = val_dataloader
 | [`SUN397`](mmpretrain.datasets.SUN397)(data_root[, split, pipeline, ...])          | ["train", "test"]                   | [SUN397](https://vision.princeton.edu/projects/2010/SUN/) Dataset.                  |
 | [`VOC`](mmpretrain.datasets.VOC)(data_root[, image_set_path, pipeline, ...])       | ["train", "val", "tranval", "test"] | [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/) Dataset.                      |
 
-Some dataset homepage links may be unavailable, and you can download datasets through [OpenDataLab](https://opendatalab.com/), such as [Stanford Cars](https://opendatalab.com/Stanford_Cars/download).
+Some dataset homepage links may be unavailable, and you can download datasets through [OpenXLab](https://openxlab.org.cn/datasets), such as [Stanford Cars](https://openxlab.org.cn/datasets/OpenDataLab/Stanford_Cars).
 
 ## Supported Multi-modality Datasets
 

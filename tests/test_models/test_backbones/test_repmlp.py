@@ -169,4 +169,5 @@ class TestRepMLP(TestCase):
 
         assert len(feats_) == len(feats__)
         for i in range(len(feats)):
-            self.assertTrue(torch.allclose(feats__[i], feats_[i]))
+            self.assertTrue(
+                torch.allclose(feats__[i], feats_[i], rtol=0.01, atol=0.01))

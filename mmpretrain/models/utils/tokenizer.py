@@ -12,6 +12,7 @@ from .huggingface import register_hf_tokenizer
 
 register_hf_tokenizer(AutoTokenizer)
 register_hf_tokenizer(LlamaTokenizer)
+register_hf_tokenizer(BertTokenizer)
 
 
 @register_hf_tokenizer()

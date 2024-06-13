@@ -86,13 +86,15 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## What's new
 
-🌟 v1.0.2 was released in 15/08/2023
+🌟 v1.2.0 was released in 04/01/2023
 
-Support [MFF](./configs/mff/) self-supervised algorithm and enhance the codebase. More details can be found in the [changelog](https://mmpretrain.readthedocs.io/en/latest/notes/changelog.html).
+- Support LLaVA 1.5.
+- Implement of RAM with a gradio interface.
 
-🌟 v1.0.1 was released in 28/07/2023
+🌟 v1.1.0 was released in 12/10/2023
 
-Fix some bugs and enhance the codebase. Please refer to [changelog](https://mmpretrain.readthedocs.io/en/latest/notes/changelog.html) for more details.
+- Support Mini-GPT4 training and provide a Chinese model (based on Baichuan-7B)
+- Support zero-shot classification based on CLIP.
 
 🌟 v1.0.0 was released in 04/07/2023
 

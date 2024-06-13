@@ -84,13 +84,15 @@ https://github.com/open-mmlab/mmpretrain/assets/26739999/e4dcd3a2-f895-4d1b-a351
 
 ## 更新日志
 
-🌟 2023/8/15 发布了 v1.0.2 版本
+🌟 2024/01/04 发布了 v1.2.0 版本
 
-支持了 [MFF](./configs/mff/) 自监督算法，增强算法库功能。细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
+- 支持了 LLaVA 1.5
+- 实现了一个 RAM 模型的 gradio 推理例程
 
-🌟 2023/7/28 发布了 v1.0.1 版本
+🌟 2023/10/12 发布了 v1.1.0 版本
 
-修复部分 bug 和增强算法库功能。细节请参考 [更新日志](https://mmpretrain.readthedocs.io/zh_CN/latest/notes/changelog.html)。
+- 支持 Mini-GPT4 训练并提供一个基于 Baichuan-7B 的中文模型
+- 支持基于 CLIP 的零样本分类。
 
 🌟 2023/7/4 发布了 v1.0.0 版本
 
@@ -333,10 +335,10 @@ MMPreTrain 是一款由不同学校和公司共同贡献的开源项目。我们
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3) 或联络 OpenMMLab 官方微信小助手
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，扫描下方微信二维码添加喵喵好友，进入 MMPretrain 微信交流社群。【加好友申请格式：研究方向+地区+学校/公司+姓名】
 
 <div align="center">
-<img src="./resources/zhihu_qrcode.jpg" height="400"/> <img src="./resources/xiaozhushou_weixin_qrcode.jpeg" height="400"/>
+<img src="./resources/zhihu_qrcode.jpg" height="400"/> <img src="./resources/miaomiao_qrcode.jpg" height="400"/>
 </div>
 
 我们会在 OpenMMLab 社区为大家

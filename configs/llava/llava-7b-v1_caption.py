@@ -1,16 +1,9 @@
 _base_ = '../_base_/default_runtime.py'
 
 meta_prompt = 'You are LLaVA, a large language and vision assistant trained by UW Madison WAIV Lab.You are able to understand the visual content that the user provides, and assist the user with a variety of tasks using natural language.Follow the instructions carefully and explain your answers in detail.'  # noqa: E501
-im_patch_token = '<im_patch>'
-patch_size = 14
 image_size = 224
-num_patches = (image_size // patch_size)**2
-caption_prompt = ' '.join([
-    meta_prompt,
-    'User: a photo of\n',
-    im_patch_token * num_patches,
-    'ASSISTANT:',
-])
+prompt_tmpl = f'''{meta_prompt} User: <im_start><image><im_end>
+Describe the image in detail. ASSISTANT:'''
 
 # model settings
 model = dict(
@@ -22,6 +15,7 @@ model = dict(
         type='VisionTransformer',
         arch='l',
         patch_size=14,
+        img_size=image_size,
         pre_norm=True,
         norm_cfg=dict(type='LN', eps=1e-5),
         layer_cfgs=dict(act_cfg=dict(type='mmpretrain.QuickGELU')),
@@ -32,15 +26,16 @@ model = dict(
             'vit-large-p14_clip-openai-pre_3rdparty_20230517-95e2af0b.pth'),
     ),
     mm_hidden_size=1024,
-    use_im_start_end=False,
-    use_mm_proj=True,
+    use_im_patch=False,
+    use_im_start_end=True,
+    mm_proj_depth=1,
     lang_encoder=dict(
         type='AutoModelForCausalLM',
         name_or_path='huggyllama/llama-7b',
     ),
     task='caption',
-    prompt_tmpl=caption_prompt,
-    generation_cfg=dict(num_beams=3, max_new_tokens=20, length_penalty=-2.0),
+    prompt_tmpl=prompt_tmpl,
+    generation_cfg=dict(max_new_tokens=50),
 )
 
 # data settings
