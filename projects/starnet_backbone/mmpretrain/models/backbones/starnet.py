@@ -110,8 +110,6 @@ class StarNet(BaseBackbone):
 
     Args:
         arch (str | dict): The model's architecture.
-            If string, it should be one of architecture 
-            in ``PoolFormer.arch_settings``. And if dict, 
             it should include the following two keys:
 
             - layers (list[int]): Number of blocks at each stage.
