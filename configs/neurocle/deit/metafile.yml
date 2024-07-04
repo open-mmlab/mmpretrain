@@ -1,0 +1,153 @@
+Collections:
+  - Name: DeiT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Layer Normalization
+        - Scaled Dot-Product Attention
+        - Attention Dropout
+        - Multi-Head Attention
+    Paper:
+      Title: Training data-efficient image transformers & distillation through attention
+      URL: https://arxiv.org/abs/2012.12877
+    README: configs/deit/README.md
+    Code:
+      URL: v0.19.0
+      Version: https://github.com/open-mmlab/mmpretrain/blob/v0.19.0/mmcls/models/backbones/deit.py
+
+Models:
+  - Name: deit-tiny_4xb256_in1k
+    Metadata:
+      FLOPs: 1258219200
+      Parameters: 5717416
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.5
+          Top 5 Accuracy: 92.24
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny_pt-4xb256_in1k_20220218-13b382a0.pth
+    Config: configs/deit/deit-tiny_4xb256_in1k.py
+  - Name: deit-tiny-distilled_3rdparty_in1k
+    Metadata:
+      FLOPs: 1265371776
+      Parameters: 5910800
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.51
+          Top 5 Accuracy: 91.9
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny-distilled_3rdparty_pt-4xb256_in1k_20211216-c429839a.pth
+    Config: configs/deit/deit-tiny-distilled_4xb256_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_tiny_distilled_patch16_224-b40b3cf7.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L108
+  - Name: deit-small_4xb256_in1k
+    Metadata:
+      FLOPs: 4607954304
+      Parameters: 22050664
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.69
+          Top 5 Accuracy: 95.06
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-small_pt-4xb256_in1k_20220218-9425b9bb.pth
+    Config: configs/deit/deit-small_4xb256_in1k.py
+  - Name: deit-small-distilled_3rdparty_in1k
+    Metadata:
+      FLOPs: 4632876288
+      Parameters: 22436432
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.17
+          Top 5 Accuracy: 95.4
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-small-distilled_3rdparty_pt-4xb256_in1k_20211216-4de1d725.pth
+    Config: configs/deit/deit-small-distilled_4xb256_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_small_distilled_patch16_224-649709d9.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L123
+  - Name: deit-base_16xb64_in1k
+    Metadata:
+      FLOPs: 17581972224
+      Parameters: 86567656
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.76
+          Top 5 Accuracy: 95.81
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-base_pt-16xb64_in1k_20220216-db63c16c.pth
+    Config: configs/deit/deit-base_16xb64_in1k.py
+  - Name: deit-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 17581972224
+      Parameters: 86567656
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.79
+          Top 5 Accuracy: 95.59
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_pt-16xb64_in1k_20211124-6f40c188.pth
+    Config: configs/deit/deit-base_16xb64_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_base_patch16_224-b5f2ef4d.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L93
+  - Name: deit-base-distilled_3rdparty_in1k
+    Metadata:
+      FLOPs: 17674283520
+      Parameters: 87338192
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.33
+          Top 5 Accuracy: 96.49
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_pt-16xb64_in1k_20211216-42891296.pth
+    Config: configs/deit/deit-base-distilled_16xb64_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_224-df68dfff.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L138
+  - Name: deit-base_224px-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 55538974464
+      Parameters: 86859496
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.04
+          Top 5 Accuracy: 96.31
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_ft-16xb32_in1k-384px_20211124-822d02f2.pth
+    Config: configs/deit/deit-base_16xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_base_patch16_384-8de9b5d1.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L153
+  - Name: deit-base-distilled_224px-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 55645294080
+      Parameters: 87630032
+    In Collection: DeiT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.55
+          Top 5 Accuracy: 97.35
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_ft-16xb32_in1k-384px_20211216-e48d6000.pth
+    Config: configs/deit/deit-base-distilled_16xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_384-d0272ac0.pth
+      Code: https://github.com/facebookresearch/deit/blob/f5123946205daf72a88783dae94cabff98c49c55/models.py#L168

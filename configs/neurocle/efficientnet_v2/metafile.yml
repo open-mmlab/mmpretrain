@@ -1,0 +1,255 @@
+Collections:
+  - Name: EfficientNetV2
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - 1x1 Convolution
+        - Average Pooling
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - Inverted Residual Block
+        - RMSProp
+        - Squeeze-and-Excitation Block
+        - Swish
+    Paper:
+      URL: https://arxiv.org/abs/2104.00298
+      Title: "EfficientNetV2: Smaller Models and Faster Training"
+    README: configs/efficientnet_v2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/beit.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: efficientnetv2-b0_3rdparty_in1k
+    Metadata:
+      FLOPs: 919843360
+      Parameters: 7139704
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.52
+          Top 5 Accuracy: 94.44
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b0_3rdparty_in1k_20221221-9ef6e736.pth
+    Config: configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b0-c7cc451f.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-b1_3rdparty_in1k
+    Metadata:
+      FLOPs: 1438287552
+      Parameters: 8141052
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.80
+          Top 5 Accuracy: 94.89
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b1_3rdparty_in1k_20221221-6955d9ce.pth
+    Config: configs/efficientnet_v2/efficientnetv2-b1_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b1-be6e41b0.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-b2_3rdparty_in1k
+    Metadata:
+      FLOPs: 1986433080
+      Parameters: 10096086
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.63
+          Top 5 Accuracy: 95.30
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b2_3rdparty_in1k_20221221-74f7d493.pth
+    Config: configs/efficientnet_v2/efficientnetv2-b2_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b2-847de54e.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-b3_3rdparty_in1k
+    Metadata:
+      FLOPs: 3498068400
+      Parameters: 14358406
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.03
+          Top 5 Accuracy: 95.88
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b3_3rdparty_in1k_20221221-b6f07a36.pth
+    Config: configs/efficientnet_v2/efficientnetv2-b3_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b3-57773f13.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-s_3rdparty_in1k
+    Metadata:
+      FLOPs: 9719420928
+      Parameters: 21458488
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.82
+          Top 5 Accuracy: 96.67
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_3rdparty_in1k_20221220-f0eaff9d.pth
+    Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in1k-384px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s-eb54923e.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-m_3rdparty_in1k
+    Metadata:
+      FLOPs: 26880363584
+      Parameters: 54139356
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.01
+          Top 5 Accuracy: 97.26
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_3rdparty_in1k_20221220-9dc0c729.pth
+    Config: configs/efficientnet_v2/efficientnetv2-m_8xb32_in1k-480px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m-cc09e0cd.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-l_3rdparty_in1k
+    Metadata:
+      FLOPs: 60142387008
+      Parameters: 118515272
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.43
+          Top 5 Accuracy: 97.31
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in1k_20221220-5c3bac0f.pth
+    Config: configs/efficientnet_v2/efficientnetv2-l_8xb32_in1k-480px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l-d664b728.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-s_in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 9719420928
+      Parameters: 21458488
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.29
+          Top 5 Accuracy: 97.26
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_in21k-pre-3rdparty_in1k_20221220-7a7c8475.pth
+    Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in1k-384px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21ft1k-d7dafa41.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-m_in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 26880363584
+      Parameters: 54139356
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.47
+          Top 5 Accuracy: 97.76
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_in21k-pre-3rdparty_in1k_20221220-a1013a04.pth
+    Config: configs/efficientnet_v2/efficientnetv2-m_8xb32_in1k-480px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m_21ft1k-bf41664a.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-l_in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 60142387008
+      Parameters: 118515272
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.31
+          Top 5 Accuracy: 97.99
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_in21k-pre-3rdparty_in1k_20221220-63df0efd.pth
+    Config: configs/efficientnet_v2/efficientnetv2-l_8xb32_in1k-480px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l_21ft1k-60127a9d.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-xl_in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 98341230592
+      Parameters: 208119808
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.39
+          Top 5 Accuracy: 97.83
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_in21k-pre-3rdparty_in1k_20221220-583ac18b.pth
+    Config: configs/efficientnet_v2/efficientnetv2-xl_8xb32_in1k-512px.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_xl_in21ft1k-06c35c48.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-s_3rdparty_in21k
+    Metadata:
+      FLOPs: 3309720768
+      Parameters: 48158371
+    In Collection: EfficientNetV2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_3rdparty_in21k_20221220-c0572b56.pth
+    Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in21k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21k-6337ad01.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-m_3rdparty_in21k
+    Metadata:
+      FLOPs: 5861638208
+      Parameters: 80839239
+    In Collection: EfficientNetV2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_3rdparty_in21k_20221220-073e944c.pth
+    Config: configs/efficientnet_v2/efficientnetv2-m_8xb32_in21k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m_21k-361418a2.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-l_3rdparty_in21k
+    Metadata:
+      FLOPs: 13114950464
+      Parameters: 145215155
+    In Collection: EfficientNetV2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in21k_20221220-f28f91e1.pth
+    Config: configs/efficientnet_v2/efficientnetv2-l_8xb32_in21k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l_21k-91a19ec9.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnetv2-xl_3rdparty_in21k
+    Metadata:
+      FLOPs: 18855244288
+      Parameters: 234819691
+    In Collection: EfficientNetV2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_3rdparty_in21k_20221220-b2c9329c.pth
+    Config: configs/efficientnet_v2/efficientnetv2-xl_8xb32_in21k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_xl_in21k-fd7e8abf.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py

@@ -1,0 +1,201 @@
+Collections:
+  - Name: Swin-Transformer
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Training Resources: 16x V100 GPUs
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Shift Window Multihead Self Attention
+    Paper:
+      URL: https://arxiv.org/abs/2103.14030
+      Title: "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows"
+    README: configs/swin_transformer/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmpretrain/blob/v0.15.0/mmcls/models/backbones/swin_transformer.py#L176
+      Version: v0.15.0
+
+Models:
+  - Name: swin-tiny_16xb64_in1k
+    Metadata:
+      FLOPs: 4360000000
+      Parameters: 28290000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.18
+          Top 5 Accuracy: 95.61
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
+    Config: configs/swin_transformer/swin-tiny_16xb64_in1k.py
+  - Name: swin-small_16xb64_in1k
+    Metadata:
+      FLOPs: 8520000000
+      Parameters: 49610000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.02
+          Top 5 Accuracy: 96.29
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth
+    Config: configs/swin_transformer/swin-small_16xb64_in1k.py
+  - Name: swin-base_16xb64_in1k
+    Metadata:
+      FLOPs: 15140000000
+      Parameters: 87770000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.36
+          Top 5 Accuracy: 96.44
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742-93230b0d.pth
+    Config: configs/swin_transformer/swin-base_16xb64_in1k.py
+  - Name: swin-tiny_3rdparty_in1k
+    Metadata:
+      FLOPs: 4360000000
+      Parameters: 28290000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.18
+          Top 5 Accuracy: 95.52
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-tiny_16xb64_in1k.py
+  - Name: swin-small_3rdparty_in1k
+    Metadata:
+      FLOPs: 8520000000
+      Parameters: 49610000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.21
+          Top 5 Accuracy: 96.25
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_small_patch4_window7_224-cc7a01c9.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_small_patch4_window7_224.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-small_16xb64_in1k.py
+  - Name: swin-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 15140000000
+      Parameters: 87770000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.42
+          Top 5 Accuracy: 96.44
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_base_patch4_window7_224-4670dd19.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-base_16xb64_in1k.py
+  - Name: swin-base_3rdparty_in1k-384
+    Metadata:
+      FLOPs: 44490000000
+      Parameters: 87900000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.49
+          Top 5 Accuracy: 96.95
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_base_patch4_window12_384-02c598a4.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-base_16xb64_in1k-384px.py
+  - Name: swin-base_in21k-pre-3rdparty_in1k
+    Metadata:
+      FLOPs: 15140000000
+      Parameters: 87770000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.16
+          Top 5 Accuracy: 97.50
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_base_patch4_window7_224_22kto1k-f967f799.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window7_224_22kto1k.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-base_16xb64_in1k.py
+  - Name: swin-base_in21k-pre-3rdparty_in1k-384
+    Metadata:
+      FLOPs: 44490000000
+      Parameters: 87900000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.44
+          Top 5 Accuracy: 98.05
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_base_patch4_window12_384_22kto1k-d59b0d1d.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_base_patch4_window12_384_22kto1k.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-base_16xb64_in1k-384px.py
+  - Name: swin-large_in21k-pre-3rdparty_in1k
+    Metadata:
+      FLOPs: 34040000000
+      Parameters: 196530000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.24
+          Top 5 Accuracy: 97.88
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_large_patch4_window7_224_22kto1k-5f0996db.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_large_patch4_window7_224_22kto1k.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-large_16xb64_in1k.py
+  - Name: swin-large_in21k-pre-3rdparty_in1k-384
+    Metadata:
+      FLOPs: 100040000000
+      Parameters: 196740000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.25
+          Top 5 Accuracy: 98.25
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_large_patch4_window12_384_22kto1k-0a40944b.pth
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_large_patch4_window12_384_22kto1k.pth
+      Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
+    Config: configs/swin_transformer/swin-large_16xb64_in1k-384px.py
+  - Name: swin-large_8xb8_cub-384px
+    Metadata:
+      FLOPs: 100040000000
+      Parameters: 195510000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: CUB-200-2011
+        Metrics:
+          Top 1 Accuracy: 91.87
+        Task: Image Classification
+    Pretrain: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k-384px.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.pth
+    Config: configs/swin_transformer/swin-large_8xb8_cub-384px.py
