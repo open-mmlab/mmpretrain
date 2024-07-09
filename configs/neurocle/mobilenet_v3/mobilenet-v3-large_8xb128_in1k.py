@@ -6,6 +6,10 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+model = dict(
+    pretrained=None
+)
+
 # schedule settings
 optim_wrapper = dict(
     optimizer=dict(

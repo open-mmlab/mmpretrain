@@ -1,6 +1,7 @@
 # Model settings
 model = dict(
     type='ImageClassifier',
+    pretrained='https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_32xb128_in1k_20221207-998cf3e9.pth',
     backbone=dict(type='ConvNeXt', arch='tiny', drop_path_rate=0.1),
     head=dict(
         type='LinearClsHead',

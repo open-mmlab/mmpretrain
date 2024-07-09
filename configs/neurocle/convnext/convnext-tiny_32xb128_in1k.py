@@ -5,6 +5,10 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+model = dict(
+    pretrained=None
+)
+
 # dataset setting
 train_dataloader = dict(batch_size=128)
 

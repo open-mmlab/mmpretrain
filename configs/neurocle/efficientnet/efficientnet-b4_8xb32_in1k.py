@@ -5,6 +5,10 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+model = dict(
+    pretrained=None
+)
+
 # dataset settings
 train_pipeline = [
     dict(type='LoadImageFromFile'),

@@ -1,0 +1,101 @@
+addict==2.4.0
+aliyun-python-sdk-core==2.15.1
+aliyun-python-sdk-kms==2.16.3
+backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
+beautifulsoup4 @ file:///opt/conda/conda-bld/beautifulsoup4_1650462163268/work
+brotlipy==0.7.0
+certifi @ file:///opt/conda/conda-bld/certifi_1655968806487/work/certifi
+cffi @ file:///opt/conda/conda-bld/cffi_1642701102775/work
+chardet @ file:///tmp/build/80754af9/chardet_1607706768982/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+click==8.1.7
+colorama @ file:///tmp/build/80754af9/colorama_1607707115595/work
+conda==4.13.0
+conda-build==3.21.9
+conda-content-trust @ file:///tmp/build/80754af9/conda-content-trust_1617045594566/work
+conda-package-handling @ file:///tmp/build/80754af9/conda-package-handling_1649105789509/work
+crcmod==1.7
+cryptography @ file:///tmp/build/80754af9/cryptography_1652083456434/work
+cycler==0.11.0
+decorator @ file:///opt/conda/conda-bld/decorator_1643638310831/work
+docker-pycreds==0.4.0
+einops==0.6.1
+filelock @ file:///opt/conda/conda-bld/filelock_1647002191454/work
+fonttools==4.38.0
+gitdb==4.0.11
+GitPython==3.1.43
+glob2 @ file:///home/linux1/recipes/ci/glob2_1610991677669/work
+idna @ file:///tmp/build/80754af9/idna_1637925883363/work
+importlib-metadata==6.7.0
+ipython @ file:///tmp/abs_94gruux8u8/croots/recipe/ipython_1659529858706/work
+jedi @ file:///tmp/build/80754af9/jedi_1644299024593/work
+Jinja2==2.10.1
+jmespath==0.10.0
+kiwisolver==1.4.5
+libarchive-c @ file:///tmp/build/80754af9/python-libarchive-c_1617780486945/work
+Markdown==3.4.4
+markdown-it-py==2.2.0
+MarkupSafe @ file:///tmp/build/80754af9/markupsafe_1621528142364/work
+mat4py==0.6.0
+matplotlib==3.5.3
+matplotlib-inline @ file:///tmp/build/80754af9/matplotlib-inline_1628242447089/work
+mdurl==0.1.2
+mkl-fft==1.3.1
+mkl-random @ file:///tmp/build/80754af9/mkl_random_1626179032232/work
+mkl-service==2.4.0
+mmcv==2.2.0
+mmengine==0.10.4
+-e git+https://github.com/crazyboy9103/mmpretrain@0654f0cd47d4c4eb057424296e9d5fa5b118bf51#egg=mmpretrain
+model-index==0.1.11
+modelindex==0.0.2
+numpy @ file:///opt/conda/conda-bld/numpy_and_numpy_base_1651563629415/work
+opencv-python==4.10.0.84
+opendatalab==0.0.10
+openmim==0.3.9
+openxlab==0.0.10
+ordered-set==4.1.0
+oss2==2.17.0
+packaging==24.0
+pandas==1.3.5
+parso @ file:///opt/conda/conda-bld/parso_1641458642106/work
+pexpect @ file:///tmp/build/80754af9/pexpect_1605563209008/work
+pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
+Pillow==9.0.1
+pkginfo @ file:///tmp/build/80754af9/pkginfo_1643162084911/work
+platformdirs==4.0.0
+prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1633440160888/work
+protobuf==4.24.4
+psutil @ file:///tmp/build/80754af9/psutil_1612298016854/work
+ptyprocess @ file:///tmp/build/80754af9/ptyprocess_1609355006118/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
+pycosat==0.6.3
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+pycryptodome==3.20.0
+Pygments==2.17.2
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing==3.1.2
+PySocks @ file:///tmp/build/80754af9/pysocks_1594394576006/work
+python-dateutil==2.9.0.post0
+pytz==2023.4
+PyYAML==6.0
+requests==2.28.2
+rich==13.7.1
+ruamel-yaml-conda @ file:///tmp/build/80754af9/ruamel_yaml_1616016701961/work
+sentry-sdk==2.8.0
+setproctitle==1.3.3
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+smmap==5.0.1
+soupsieve @ file:///tmp/build/80754af9/soupsieve_1636706018808/work
+tabulate==0.9.0
+termcolor==2.3.0
+tomli==2.0.1
+torch==1.12.1
+torchtext==0.13.1
+torchvision==0.13.1
+tqdm==4.65.2
+traitlets @ file:///tmp/build/80754af9/traitlets_1636710298902/work
+typing_extensions==4.7.1
+urllib3==1.26.19
+wandb==0.17.4
+wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
+yapf==0.40.2
+zipp==3.15.0

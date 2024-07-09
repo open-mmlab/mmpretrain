@@ -1,8 +1,8 @@
 # In small and tiny arch, remove drop path and EMA hook comparing with the
 # original config
 _base_ = [
-    '../_base_/datasets/imagenet_bs64_swin_224.py',
-    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
+    '../_base_/datasets/hanrim_bs8.py',
+    '../_base_/schedules/hanrim_swin.py',
     '../_base_/default_runtime.py'
 ]
 
@@ -18,7 +18,7 @@ model = dict(
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
-        num_classes=1000,
+        num_classes={{_base_.data_preprocessor.num_classes}},
         in_channels=384,
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
@@ -34,7 +34,7 @@ model = dict(
 )
 
 # data settings
-train_dataloader = dict(batch_size=256)
+train_dataloader = dict(batch_size=8)
 
 # schedule settings
 optim_wrapper = dict(

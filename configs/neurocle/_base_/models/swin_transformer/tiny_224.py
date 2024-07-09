@@ -1,6 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
+    pretrained='https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth', 
     backbone=dict(
         type='SwinTransformer', arch='tiny', img_size=224, drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),

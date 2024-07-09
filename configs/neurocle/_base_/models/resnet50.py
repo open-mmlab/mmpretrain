@@ -1,6 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
+    pretrained='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
     backbone=dict(
         type='ResNet',
         depth=50,
