@@ -126,7 +126,7 @@ Models:
   - Name: resnet34_8xb32_in1k
     Metadata:
       FLOPs: 3680000000
-      Parameters: 2180000
+      Parameters: 21800000
     In Collection: ResNet
     Results:
       - Dataset: ImageNet-1k
