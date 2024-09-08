@@ -7550,7 +7550,7 @@ msgid "Migrating the model trained at low resolution to a larger scale resolutio
 msgstr ""
 
 #: ../../papers/swin_transformer_v2.md:16
-msgid "Too mush GPU memory"
+msgid "Too much GPU memory"
 msgstr ""
 
 #: ../../papers/swin_transformer_v2.md:18

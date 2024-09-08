@@ -10,7 +10,7 @@
 
 - Training instability when increasing the vision model
 - Migrating the model trained at low resolution to a larger scale resolution task
-- Too mush GPU memory
+- Too much GPU memory
 
 To solve it, The following method improvements are proposed in the paper:
 
