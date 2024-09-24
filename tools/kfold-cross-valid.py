@@ -10,7 +10,7 @@ from pathlib import Path
 
 import mmcv
 import torch
-from mmcv import Config, DictAction
+from mmengine.config import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 
 from mmcls import __version__

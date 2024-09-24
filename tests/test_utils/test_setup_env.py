@@ -4,7 +4,7 @@ import os
 import platform
 
 import cv2
-from mmcv import Config
+from mmengine.config import Config
 
 from mmcls.utils import setup_multi_processes
 
