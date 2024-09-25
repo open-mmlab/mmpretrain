@@ -5,7 +5,7 @@ from copy import deepcopy
 
 import numpy as np
 import torch
-from mmcv import ConfigDict
+from mmengine.config import ConfigDict
 
 from mmcls.models import CLASSIFIERS
 from mmcls.models.classifiers import ImageClassifier

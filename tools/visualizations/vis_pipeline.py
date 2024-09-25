@@ -12,7 +12,7 @@ from typing import List
 import cv2
 import mmcv
 import numpy as np
-from mmcv import Config, DictAction, ProgressBar
+from mmengine.config import Config, DictAction, ProgressBar
 
 from mmcls.core import visualization as vis
 from mmcls.datasets.builder import PIPELINES, build_dataset, build_from_cfg

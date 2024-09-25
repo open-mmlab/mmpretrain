@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 
-from mmcv import Config
+from mmengine.config import Config
 from mmcv.cnn.utils import get_model_complexity_info
 
 from mmcls.models import build_classifier
