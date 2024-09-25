@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 from mmcv.cnn.bricks import ConvModule
-from mmcv.runner import BaseModule
+from mmengine.runner import BaseModule
 
 from ..backbones.resnet import Bottleneck, ResLayer
 from ..builder import NECKS

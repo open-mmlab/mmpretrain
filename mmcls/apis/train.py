@@ -6,9 +6,9 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
+from mmengine.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
                          build_optimizer, build_runner, get_dist_info)
-from mmcv.runner.hooks import DistEvalHook, EvalHook
+from mmengine.runner.hooks import DistEvalHook, EvalHook
 
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
@@ -89,7 +89,7 @@ def train_model(model,
         distributed (bool): Whether to train the model in a distributed
             environment. Defaults to False.
         validate (bool): Whether to do validation with
-            :obj:`mmcv.runner.EvalHook`. Defaults to False.
+            :obj:`mmengine.runner.EvalHook`. Defaults to False.
         timestamp (str, optional): The timestamp string to auto generate the
             name of log files. Defaults to None.
         device (str, optional): TODO

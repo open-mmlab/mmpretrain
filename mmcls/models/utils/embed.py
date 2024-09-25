@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmcv.runner.base_module import BaseModule
+from mmengine.runner.base_module import BaseModule
 
 from .helpers import to_2tuple
 

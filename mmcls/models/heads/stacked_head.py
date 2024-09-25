@@ -4,7 +4,7 @@ from typing import Dict, Sequence
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
-from mmcv.runner import BaseModule, ModuleList
+from mmengine.runner import BaseModule, ModuleList
 
 from ..builder import HEADS
 from .cls_head import ClsHead

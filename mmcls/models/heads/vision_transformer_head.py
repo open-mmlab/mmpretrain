@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import Sequential
+from mmengine.runner import Sequential
 
 from ..builder import HEADS
 from .cls_head import ClsHead

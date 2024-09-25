@@ -7,7 +7,7 @@ import torch.nn.functional as F
 from mmcv.cnn.bricks.registry import DROPOUT_LAYERS
 from mmcv.cnn.bricks.transformer import build_dropout
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner.base_module import BaseModule
+from mmengine.runner.base_module import BaseModule
 
 from ..builder import ATTENTION
 from .helpers import to_2tuple

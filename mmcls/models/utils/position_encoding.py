@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
-from mmcv.runner.base_module import BaseModule
+from mmengine.runner.base_module import BaseModule
 
 
 class ConditionalPositionEncoding(BaseModule):

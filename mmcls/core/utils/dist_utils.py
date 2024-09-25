@@ -4,7 +4,7 @@ from collections import OrderedDict
 import numpy as np
 import torch
 import torch.distributed as dist
-from mmcv.runner import OptimizerHook, get_dist_info
+from mmengine.runner import OptimizerHook, get_dist_info
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 

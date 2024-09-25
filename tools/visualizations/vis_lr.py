@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import mmcv
 import torch.nn as nn
 from mmengine.config import Config, DictAction, ProgressBar
-from mmcv.runner import (EpochBasedRunner, IterBasedRunner, IterLoader,
+from mmengine.runner import (EpochBasedRunner, IterBasedRunner, IterLoader,
                          build_optimizer)
 from torch.utils.data import DataLoader
 

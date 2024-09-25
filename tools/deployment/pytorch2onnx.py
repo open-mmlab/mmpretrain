@@ -8,7 +8,7 @@ import numpy as np
 import onnxruntime as rt
 import torch
 from mmcv.onnx import register_extra_symbolics
-from mmcv.runner import load_checkpoint
+from mmengine.runner import load_checkpoint
 
 from mmcls.models import build_classifier
 

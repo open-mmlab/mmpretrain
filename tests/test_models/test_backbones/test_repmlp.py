@@ -5,7 +5,7 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
+from mmengine.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import RepMLPNet
 

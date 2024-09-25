@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
-from mmcv.runner import BaseModule, Sequential
+from mmengine.runner import BaseModule, Sequential
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -208,7 +208,7 @@ class RepVGGBlock(BaseModule):
         """Fuse the parameters in a branch with a conv and bn.
 
         Args:
-            branch (mmcv.runner.Sequential): A branch with conv and bn.
+            branch (mmengine.runner.Sequential): A branch with conv and bn.
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: The parameters obtained after
@@ -237,7 +237,7 @@ class RepVGGBlock(BaseModule):
             branch (nn.BatchNorm2d): A branch only with bn in the block.
 
         Returns:
-            tmp_conv3x3 (mmcv.runner.Sequential): a sequential with conv3x3 and
+            tmp_conv3x3 (mmengine.runner.Sequential): a sequential with conv3x3 and
                 bn.
         """
         input_dim = self.in_channels // self.groups
