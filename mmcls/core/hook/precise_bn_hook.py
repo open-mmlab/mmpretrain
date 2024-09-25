@@ -9,8 +9,8 @@ from typing import List, Optional
 import mmcv
 import torch
 import torch.nn as nn
-from mmcv.runner import EpochBasedRunner, get_dist_info
-from mmcv.runner.hooks import HOOKS, Hook
+from mmengine.runner import EpochBasedRunner, get_dist_info
+from mmengine.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 from torch.functional import Tensor
 from torch.nn import GroupNorm

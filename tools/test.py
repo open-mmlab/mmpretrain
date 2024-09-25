@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
+from mmengine.runner import (get_dist_info, init_dist, load_checkpoint,
                          wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test

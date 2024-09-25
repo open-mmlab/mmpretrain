@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.image import tensor2imgs
-from mmcv.runner import get_dist_info
+from mmengine.runner import get_dist_info
 
 
 def single_gpu_test(model,

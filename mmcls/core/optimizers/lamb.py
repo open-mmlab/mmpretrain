@@ -59,7 +59,7 @@ Modifications Copyright 2021 Ross Wightman
 import math
 
 import torch
-from mmcv.runner import OPTIMIZERS
+from mmengine.runner import OPTIMIZERS
 from torch.optim import Optimizer
 
 

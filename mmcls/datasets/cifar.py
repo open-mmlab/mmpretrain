@@ -5,7 +5,7 @@ import pickle
 
 import numpy as np
 import torch.distributed as dist
-from mmcv.runner import get_dist_info
+from mmengine.runner import get_dist_info
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS

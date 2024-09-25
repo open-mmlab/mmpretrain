@@ -7,7 +7,7 @@ import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner.base_module import BaseModule, ModuleList
+from mmengine.runner.base_module import BaseModule, ModuleList
 
 from mmcls.utils import get_root_logger
 from ..builder import BACKBONES

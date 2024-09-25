@@ -6,7 +6,7 @@ import os.path as osp
 import numpy as np
 import torch
 import torch.distributed as dist
-from mmcv.runner import get_dist_info, master_only
+from mmengine.runner import get_dist_info, master_only
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS
