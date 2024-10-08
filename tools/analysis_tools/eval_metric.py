@@ -2,7 +2,7 @@
 import argparse
 
 import mmcv
-from mmengine.config import Config, DictAction
+from mmcv import Config, DictAction
 
 from mmcls.datasets import build_dataset
 

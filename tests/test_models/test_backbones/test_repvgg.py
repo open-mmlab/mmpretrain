@@ -4,7 +4,7 @@ import tempfile
 
 import pytest
 import torch
-from mmengine.runner import load_checkpoint, save_checkpoint
+from mmcv.runner import load_checkpoint, save_checkpoint
 from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm

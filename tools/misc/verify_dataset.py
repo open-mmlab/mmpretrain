@@ -4,7 +4,7 @@ import fcntl
 import os
 from pathlib import Path
 
-from mmengine.config import Config, DictAction, track_parallel_progress, track_progress
+from mmcv import Config, DictAction, track_parallel_progress, track_progress
 
 from mmcls.datasets import PIPELINES, build_dataset
 

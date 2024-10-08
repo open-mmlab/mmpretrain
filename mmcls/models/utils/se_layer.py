@@ -2,7 +2,7 @@
 import mmcv
 import torch.nn as nn
 from mmcv.cnn import ConvModule
-from mmengine.runner import BaseModule
+from mmcv.runner import BaseModule
 
 from .make_divisible import make_divisible
 

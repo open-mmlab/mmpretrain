@@ -6,7 +6,7 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmengine.runner import load_checkpoint, save_checkpoint
+from mmcv.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import T2T_ViT
 from .utils import timm_resize_pos_embed

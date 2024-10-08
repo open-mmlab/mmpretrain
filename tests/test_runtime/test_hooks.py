@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-from mmengine.runner import build_runner
-from mmengine.runner.hooks import Hook, IterTimerHook
+from mmcv.runner import build_runner
+from mmcv.runner.hooks import Hook, IterTimerHook
 from torch.utils.data import DataLoader
 
 import mmcls.core  # noqa: F401

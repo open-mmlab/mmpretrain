@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
-from mmengine.config import Config
+from mmcv import Config
 from mmdet.apis import inference_detector
 from mmdet.models import build_detector
 

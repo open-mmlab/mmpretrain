@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
 
-from mmengine.runner import BaseModule
+from mmcv.runner import BaseModule
 
 
 class BaseHead(BaseModule, metaclass=ABCMeta):

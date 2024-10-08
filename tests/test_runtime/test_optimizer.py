@@ -6,8 +6,8 @@ from typing import Iterable
 
 import torch
 import torch.nn as nn
-from mmengine.runner import build_optimizer
-from mmengine.runner.optimizer.builder import OPTIMIZERS
+from mmcv.runner import build_optimizer
+from mmcv.runner.optimizer.builder import OPTIMIZERS
 from mmcv.utils.registry import build_from_cfg
 from torch.autograd import Variable
 from torch.optim.optimizer import Optimizer

@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       build_norm_layer)
 from mmcv.cnn.bricks.transformer import PatchEmbed as _PatchEmbed
-from mmengine.runner import BaseModule, ModuleList, Sequential
+from mmcv.runner import BaseModule, ModuleList, Sequential
 
 from mmcls.models.builder import BACKBONES
 from mmcls.models.utils import SELayer, to_2tuple

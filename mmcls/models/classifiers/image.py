@@ -52,7 +52,7 @@ class ImageClassifier(BaseClassifier):
             1. Backbone output
 
             >>> import torch
-            >>> from mmengine.config import Config
+            >>> from mmcv import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/resnet/resnet18_8xb32_in1k.py').model
@@ -69,7 +69,7 @@ class ImageClassifier(BaseClassifier):
             2. Neck output
 
             >>> import torch
-            >>> from mmengine.config import Config
+            >>> from mmcv import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/resnet/resnet18_8xb32_in1k.py').model
@@ -87,7 +87,7 @@ class ImageClassifier(BaseClassifier):
             3. Pre-logits output (without the final linear classifier head)
 
             >>> import torch
-            >>> from mmengine.config import Config
+            >>> from mmcv import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/vision_transformer/vit-base-p16_pt-64xb64_in1k-224.py').model

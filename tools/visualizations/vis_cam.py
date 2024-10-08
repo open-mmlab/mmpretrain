@@ -8,7 +8,7 @@ from pathlib import Path
 
 import mmcv
 import numpy as np
-from mmengine.config import Config, DictAction
+from mmcv import Config, DictAction
 from mmcv.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 

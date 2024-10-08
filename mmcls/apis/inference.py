@@ -5,7 +5,7 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
-from mmengine.runner import load_checkpoint
+from mmcv.runner import load_checkpoint
 
 from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier

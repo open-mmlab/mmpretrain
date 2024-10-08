@@ -8,7 +8,7 @@ from functools import partial
 import mmcv
 import numpy as np
 import torch
-from mmengine.runner import load_checkpoint
+from mmcv.runner import load_checkpoint
 from torch import nn
 
 from mmcls.models import build_classifier

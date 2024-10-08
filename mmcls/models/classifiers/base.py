@@ -6,7 +6,7 @@ from typing import Sequence
 import mmcv
 import torch
 import torch.distributed as dist
-from mmengine.runner import BaseModule, auto_fp16
+from mmcv.runner import BaseModule, auto_fp16
 
 from mmcls.core.visualization import imshow_infos
 

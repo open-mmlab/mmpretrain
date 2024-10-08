@@ -3,12 +3,12 @@ import logging
 import tempfile
 from unittest.mock import MagicMock, patch
 
-import mmengine.runner
+import mmcv.runner
 import pytest
 import torch
 import torch.nn as nn
-from mmengine.runner import obj_from_dict
-from mmengine.runner.hooks import DistEvalHook, EvalHook
+from mmcv.runner import obj_from_dict
+from mmcv.runner.hooks import DistEvalHook, EvalHook
 from torch.utils.data import DataLoader, Dataset
 
 from mmcls.apis import single_gpu_test
@@ -65,7 +65,7 @@ def test_iter_eval_hook():
     # test EvalHook
     with tempfile.TemporaryDirectory() as tmpdir:
         eval_hook = EvalHook(data_loader, by_epoch=False)
-        runner = mmengine.runner.IterBasedRunner(
+        runner = mmcv.runner.IterBasedRunner(
             model=model,
             optimizer=optimizer,
             work_dir=tmpdir,
@@ -103,7 +103,7 @@ def test_epoch_eval_hook():
     # test EvalHook with interval
     with tempfile.TemporaryDirectory() as tmpdir:
         eval_hook = EvalHook(data_loader, by_epoch=True, interval=2)
-        runner = mmengine.runner.EpochBasedRunner(
+        runner = mmcv.runner.EpochBasedRunner(
             model=model,
             optimizer=optimizer,
             work_dir=tmpdir,
@@ -149,7 +149,7 @@ def test_dist_eval_hook():
         p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
         p.start()
         eval_hook = DistEvalHook(data_loader, by_epoch=False)
-        runner = mmengine.runner.IterBasedRunner(
+        runner = mmcv.runner.IterBasedRunner(
             model=model,
             optimizer=optimizer,
             work_dir=tmpdir,
@@ -191,7 +191,7 @@ def test_dist_eval_hook_epoch():
         p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
         p.start()
         eval_hook = DistEvalHook(data_loader, by_epoch=True, interval=2)
-        runner = mmengine.runner.EpochBasedRunner(
+        runner = mmcv.runner.EpochBasedRunner(
             model=model,
             optimizer=optimizer,
             work_dir=tmpdir,

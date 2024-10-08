@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 import mmcv
 import torch
-from mmengine.runner import CheckpointLoader
+from mmcv.runner import CheckpointLoader
 
 
 def convert_twins(args, ckpt):

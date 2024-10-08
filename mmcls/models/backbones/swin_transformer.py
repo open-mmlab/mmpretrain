@@ -9,7 +9,7 @@ import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, PatchMerging
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmengine.runner.base_module import BaseModule, ModuleList
+from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES

@@ -3,10 +3,10 @@ import logging
 import tempfile
 from unittest.mock import MagicMock
 
-import mmengine.runner as mmcv_runner
+import mmcv.runner as mmcv_runner
 import pytest
 import torch
-from mmengine.runner import obj_from_dict
+from mmcv.runner import obj_from_dict
 from torch.utils.data import DataLoader, Dataset
 
 from mmcls.core.hook import ClassNumCheckHook

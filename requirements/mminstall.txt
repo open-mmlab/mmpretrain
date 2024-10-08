@@ -1,2 +1,1 @@
-mmcv==2.2.0
-mmengine==0.10.5
+mmcv-full>=1.4.2,<1.6.0

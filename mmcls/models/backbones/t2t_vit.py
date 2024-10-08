@@ -8,7 +8,7 @@ import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmengine.runner.base_module import BaseModule, ModuleList
+from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple

@@ -7,7 +7,7 @@ from typing import OrderedDict
 
 import numpy as np
 import torch
-from mmengine.config import Config
+from mmcv import Config
 from mmcv.parallel import collate, scatter
 from modelindex.load_model_index import load
 from rich.console import Console

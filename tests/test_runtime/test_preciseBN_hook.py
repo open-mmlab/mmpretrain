@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmengine.runner import EpochBasedRunner, IterBasedRunner, build_optimizer
+from mmcv.runner import EpochBasedRunner, IterBasedRunner, build_optimizer
 from mmcv.utils import get_logger
 from mmcv.utils.logging import print_log
 from torch.utils.data import DataLoader, Dataset

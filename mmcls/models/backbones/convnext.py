@@ -8,8 +8,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.bricks import (NORM_LAYERS, DropPath, build_activation_layer,
                              build_norm_layer)
-from mmengine.runner import BaseModule
-from mmengine.runner.base_module import ModuleList, Sequential
+from mmcv.runner import BaseModule
+from mmcv.runner.base_module import ModuleList, Sequential
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone

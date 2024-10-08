@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 import torch
-from mmengine.runner import Sequential
+from mmcv.runner import Sequential
 from tensorflow.python.training import py_checkpoint_reader
 
 from mmcls.models.backbones.efficientnet import EfficientNet
