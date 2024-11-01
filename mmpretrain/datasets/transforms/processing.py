@@ -82,10 +82,8 @@ def register_vision_transforms() -> List[str]:
         _transform = getattr(torchvision.transforms, module_name)
         if inspect.isclass(_transform) and callable(
                 _transform) and not isinstance(_transform, (EnumMeta)):
-            from functools import partial
             TRANSFORMS.register_module(
-                module=partial(
-                    TorchVisonTransformWrapper, transform=_transform),
+                module=lambda name=module_name: TorchVisonTransformWrapper(transform=torchvision.transforms[name], name=name),
                 name=f'torchvision/{module_name}')
             vision_transforms.append(f'torchvision/{module_name}')
     return vision_transforms
