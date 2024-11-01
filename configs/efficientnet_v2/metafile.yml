@@ -17,7 +17,7 @@ Collections:
       Title: "EfficientNetV2: Smaller Models and Faster Training"
     README: configs/efficientnet_v2/README.md
     Code:
-      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/beit.py
+      URL: https://github.com/open-mmlab/mmpretrain/blob/main/mmpretrain/models/backbones/efficientnet_v2.py
       Version: v1.0.0rc4
 
 Models:
