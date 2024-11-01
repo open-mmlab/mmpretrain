@@ -83,7 +83,8 @@ def register_vision_transforms() -> List[str]:
         if inspect.isclass(_transform) and callable(
                 _transform) and not isinstance(_transform, (EnumMeta)):
             TRANSFORMS.register_module(
-                module=lambda name=module_name: TorchVisonTransformWrapper(transform=torchvision.transforms[name], name=name),
+                module=lambda name=module_name: TorchVisonTransformWrapper(
+                    transform=torchvision.transforms[name], name=name),
                 name=f'torchvision/{module_name}')
             vision_transforms.append(f'torchvision/{module_name}')
     return vision_transforms
