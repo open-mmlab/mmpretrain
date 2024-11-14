@@ -35,21 +35,21 @@ class MultiTaskDataset:
           "metainfo": {
             "tasks":
               [
-              'gender'
+              'gender',
               'wear'
               ]
           },
           "data_list": [
             {
               "img_path": "a.jpg",
-              gt_label:{
+              "gt_label":{
                   "gender": 0,
                   "wear": [1, 0, 1, 0]
                 }
             },
             {
               "img_path": "b.jpg",
-              gt_label:{
+              "gt_label":{
                   "gender": 1,
                   "wear": [1, 0, 1, 0]
                 }
@@ -260,7 +260,7 @@ class MultiTaskDataset:
         assert 'img_path' in raw_data, \
             "The item doesn't have `img_path` field."
         data = dict(
-            img_path=self._join_root(raw_data['img_path']),
+            img_path=self.file_backend.join_path(raw_data['img_path'], self.data_prefix),
             gt_label=raw_data['gt_label'],
         )
         return data
