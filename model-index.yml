@@ -33,6 +33,7 @@ Import:
   - configs/mvit/metafile.yml
   - configs/edgenext/metafile.yml
   - configs/mobileone/metafile.yml
+  - configs/moganet/metafile.yml
   - configs/efficientformer/metafile.yml
   - configs/swin_transformer_v2/metafile.yml
   - configs/deit3/metafile.yml
