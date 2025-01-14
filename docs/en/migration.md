@@ -358,7 +358,7 @@ model = dict(
 
 Changes in **`data`**:
 
-- The original `data` field is splited to `train_dataloader`, `val_dataloader` and
+- The original `data` field is splitted to `train_dataloader`, `val_dataloader` and
   `test_dataloader`. This allows us to configure them in fine-grained. For example,
   you can specify different sampler and batch size during training and test.
 - The `samples_per_gpu` is renamed to `batch_size`.
@@ -465,7 +465,7 @@ train_pipeline = [
 
 Changes in **`evaluation`**:
 
-- The **`evaluation`** field is splited to `val_evaluator` and `test_evaluator`. And it won't supports `interval` and `save_best` arguments.
+- The **`evaluation`** field is splitted to `val_evaluator` and `test_evaluator`. And it won't supports `interval` and `save_best` arguments.
   The `interval` is moved to `train_cfg.val_interval`, see [the schedule settings](./user_guides/config.md#schedule-settings) and the `save_best`
   is moved to `default_hooks.checkpoint.save_best`, see [the runtime settings](./user_guides/config.md#runtime-settings).
 - The 'accuracy' metric is renamed to [`Accuracy`](mmpretrain.evaluation.Accuracy).
