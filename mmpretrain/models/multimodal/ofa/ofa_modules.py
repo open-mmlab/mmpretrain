@@ -12,8 +12,8 @@ from mmengine.model import BaseModule
 from mmengine.utils import digit_version
 from transformers.modeling_outputs import (
     BaseModelOutputWithPastAndCrossAttentions, ModelOutput, Seq2SeqLMOutput)
-from transformers.modeling_utils import (GenerationConfig, GenerationMixin,
-                                         PretrainedConfig)
+from transformers.generation import GenerationConfig, GenerationMixin
+from transformers.modeling_utils import PretrainedConfig
 
 from mmpretrain.registry import MODELS
 from ...backbones.resnet import Bottleneck, ResNet

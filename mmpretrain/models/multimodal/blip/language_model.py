@@ -9,27 +9,18 @@ import torch
 import torch.nn as nn
 from torch import Tensor, device
 
-try:
-    from transformers.activations import ACT2FN
-    from transformers.modeling_outputs import (
-        BaseModelOutputWithPastAndCrossAttentions,
-        BaseModelOutputWithPoolingAndCrossAttentions,
-        CausalLMOutputWithCrossAttentions)
-    from transformers.modeling_utils import (PreTrainedModel,
-                                             apply_chunking_to_forward,
-                                             find_pruneable_heads_and_indices,
-                                             prune_linear_layer)
-    from transformers.models.bert.configuration_bert import BertConfig
-except:
-    ACT2FN = None
-    BaseModelOutputWithPastAndCrossAttentions = None
-    BaseModelOutputWithPoolingAndCrossAttentions = None
-    CausalLMOutputWithCrossAttentions = None
-    PreTrainedModel = None
-    apply_chunking_to_forward = None
-    find_pruneable_heads_and_indices = None
-    prune_linear_layer = None
-    BertConfig = None
+from transformers.activations import ACT2FN
+from transformers.modeling_outputs import (
+    BaseModelOutputWithPastAndCrossAttentions,
+    BaseModelOutputWithPoolingAndCrossAttentions,
+    CausalLMOutputWithCrossAttentions)
+from transformers.modeling_utils import PreTrainedModel
+from transformers.pytorch_utils import (
+    apply_chunking_to_forward,
+    find_pruneable_heads_and_indices,
+    prune_linear_layer,
+)
+from transformers.models.bert.configuration_bert import BertConfig
 
 from mmpretrain.registry import MODELS
 

@@ -1,0 +1,190 @@
+[project]
+name = "mmpretrain"
+version = "1.2.0"
+description = "OpenMMLab Model Pretraining Toolbox and Benchmark"
+readme = "README.md"
+license = "Apache-2.0"
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Topic :: Scientific/Engineering :: Artificial Intelligence',
+]
+authors = [
+  { name = "OpenMMLab", email = "openmmlab@gmail.com" },
+]
+requires-python = ">=3.10,<3.12"
+dependencies = [
+  "albumentations==1.4.4",
+  "elasticdeform",
+  "ftfy",
+  "einops",
+  "open-clip-torch",
+  "requests",
+  "scikit-learn",
+  "regex",
+  "rich",
+  "timm",
+  "mmengine>=0.10.7",
+  "numpy<2",
+  "matplotlib>=3.10.1",
+  "seaborn>=0.13.2",
+  "torchmetrics",
+  "ninja>=1.11.1.4",
+  "transformers>=4.28.0",
+  "pycocotools",
+  "importlib-metadata>=8.7.0",
+  "modelindex>=0.0.2",
+  "mat4py>=0.6.0",
+]
+
+[dependency-groups]  # optional (not shipped)
+dev = [
+  "coverage",
+  "interrogate",
+  "ipdb>=0.13.13",
+  "jupyterlab>=4.3.5",
+  "pytest>=8.3.4",
+  "ruff>=0.9.6",
+]
+
+[project.optional-dependencies]
+docs = [
+  "sphinx>=6.1.3",
+  "sphinx-rtd-theme>=2.0.0",
+  "sphinxcontrib-bibtex>=2.4.0",
+  "sphinxcontrib-mermaid>=0.9.0",
+  "sphinxcontrib-openapi>=0.8.1",
+  "sphinxcontrib-serializinghtml>=1.1.5",
+  "pytorch-sphinx-theme",
+  "nbsphinx>=0.8.9",
+  "jupyter-sphinx>=0.4.3",
+  "tabulate>=0.9.0",
+]
+cu118 = [
+  "torch==2.4.1",
+  "torchvision==0.19.1",
+  "torchaudio==2.4.1",
+  "mmcv==2.2.0",
+  "grad-cam<1.5.0",
+]
+cu121 = [
+  "torch==2.4.1",
+  "torchvision==0.19.1",
+  "torchaudio==2.4.1",
+  "mmcv==2.2.0",
+  "grad-cam<1.5.0",
+]
+
+[tool.uv]
+conflicts = [
+  [
+    { extra = "cu118" },
+    { extra = "cu121" },
+  ],
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu118", extra = "cu118" },
+  { index = "pytorch-cu121", extra = "cu121" },
+]
+torchvision = [
+  { index = "pytorch-cu118", extra = "cu118" },
+  { index = "pytorch-cu121", extra = "cu121" },
+]
+torchaudio = [
+  { index = "pytorch-cu118", extra = "cu118" },
+  { index = "pytorch-cu121", extra = "cu121" },
+]
+mmcv = [
+  { index = "mmcv-cu118", extra = "cu118" },
+  { index = "mmcv-cu121", extra = "cu121" },
+]
+clip = { git = "https://github.com/openai/CLIP.git" }
+pyedgeeval = { git = "https://github.com/haruishi43/py-edge-eval.git" }
+pytorch-sphinx-theme = { git = "https://github.com/mzr1996/pytorch_sphinx_theme.git" }
+
+[[tool.uv.index]]
+name = "pytorch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[[tool.uv.index]]
+name = "mmcv-cu118"
+url = "https://download.openmmlab.com/mmcv/dist/cu118/torch2.4/index.html"
+format = "flat"
+explicit = true
+
+[[tool.uv.index]]
+name = "mmcv-cu121"
+url = "https://download.openmmlab.com/mmcv/dist/cu121/torch2.4/index.html"
+format = "flat"
+explicit = true
+
+[tool.setuptools.packages.find]        # custom discovery
+include = ["mmpretrain*"]                # pick the library
+exclude = [
+  "data*", "configs*", "projects*", "notebooks*", "work_dirs*", "pretrained*", "third_party*",
+]
+
+[build-system]
+requires = [
+  "setuptools>=65.5.1",
+  "wheel>=0.40.0",
+  "torch==2.4.1",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "data", "splits", "tests/data", "work_dirs", "pretrained"]
+line-length = 80
+target-version = "py310"
+
+[tool.ruff.lint]
+# https://docs.astral.sh/ruff/rules/
+fixable = ["ALL"]
+unfixable = []
+select = [
+  "A",  # flake8-builtin
+  "B",  # flake8-bugbear
+  "E",  # pycodestyle error
+  "F",  # Pyflakes
+  "I",  # isort
+  "N",  # pep8-naming
+  "W",  # pycodestyle warning
+  "PL",  # Pylint
+  "UP",  # pyupgrade
+]
+ignore = [
+  "B006",  # Do not use mutable data structures for arugment defaults
+  "B905",  # Zip-without-explicit-strict
+  "E501",  # Line too long
+  "E741",  # Ambiguous variable name
+  "F403",  # Unable to detect undefined names
+  "F722",  # Checks for forward annotations
+  "F821",  # Checks for uses of undefined names
+  "N801",  # Class name should use CapWords convention
+  "N802",  # Function name should be lowercase
+  "N803",  # Function name should be lowercase
+  "N806",  # Variable in function should be lowercase
+  "N812",  # Lowercase imported as non-lowercase
+  "N814",  # Camelcase imported as constant
+  "N999",  # Invalid module name
+  "PLR0402",  # import alias
+  "PLR0912",  # Too many branches
+  "PLR0913",  # Too many arguments in function definition
+  "PLR0915",  # Too many statements (>50)
+  "PLR2004",  # Magic value used in comparison
+  "PLW2901",  # for loop variable overwritten by assignment target
+]
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "auto"

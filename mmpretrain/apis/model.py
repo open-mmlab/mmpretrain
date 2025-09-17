@@ -172,7 +172,7 @@ def get_model(model: Union[str, Config],
             pretrained = metainfo.weights
     else:
         raise TypeError('model must be a name, a path or a Config object, '
-                        f'but got {type(config)}')
+                        f'but got {type(model)}')
 
     if pretrained is True:
         warnings.warn('Unable to find pre-defined checkpoint of the model.')
