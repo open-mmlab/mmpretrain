@@ -1,0 +1,71 @@
+{
+  "os":  "Linux-5.19.0-32-generic-x86_64-with-glibc2.17",
+  "python":  "CPython 3.8.20",
+  "startedAt":  "2026-01-08T07:49:08.188462Z",
+  "args":  [
+    "/home/ml_maro/Works/mmpretrain/configs/cspnext/cpsnext-tiny-600e_in100.py"
+  ],
+  "program":  "tools/train.py",
+  "codePath":  "tools/train.py",
+  "codePathLocal":  "tools/train.py",
+  "git":  {
+    "remote":  "https://github.com/maro-bearrobotics/mmpretrain.git",
+    "commit":  "3f89f6b9f0d90b1d2a1399328a93b6566a42a5fd"
+  },
+  "email":  "maro.jeon@bearrobotics.ai",
+  "root":  "/home/ml_maro/Works/mmpretrain/work_dir/cspnext-tiny-600e_in100/20260108_164904/vis_data",
+  "host":  "bearml-DSS8440",
+  "executable":  "/home/ml_maro/miniconda3/envs/mmpretrain/bin/python",
+  "cpu_count":  32,
+  "cpu_count_logical":  64,
+  "gpu":  "Tesla V100-PCIE-16GB",
+  "gpu_count":  5,
+  "disk":  {
+    "/":  {
+      "total":  "470351462400",
+      "used":  "428928110592"
+    }
+  },
+  "memory":  {
+    "total":  "201196843008"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "Tesla V100-PCIE-16GB",
+      "memoryTotal":  "17179869184",
+      "cudaCores":  5120,
+      "architecture":  "Volta",
+      "uuid":  "GPU-6fa8d566-659d-8f0a-4e25-298e8062887c"
+    },
+    {
+      "name":  "Tesla V100-PCIE-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta",
+      "uuid":  "GPU-0268efa3-3f99-482a-bd23-e95b1702c8b3"
+    },
+    {
+      "name":  "Tesla V100-PCIE-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta",
+      "uuid":  "GPU-af409081-ddb2-9351-ab45-bb1a1a6b6c52"
+    },
+    {
+      "name":  "Tesla V100-PCIE-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta",
+      "uuid":  "GPU-5e77f3a1-e037-0f47-2128-3dc56a956771"
+    },
+    {
+      "name":  "Tesla V100-PCIE-32GB",
+      "memoryTotal":  "34359738368",
+      "cudaCores":  5120,
+      "architecture":  "Volta",
+      "uuid":  "GPU-66968ba4-ed8b-9dd0-9ac2-791f1ece6b39"
+    }
+  ],
+  "cudaVersion":  "12.4",
+  "writerId":  "fbzhlezhj1enwcbomkvh5meq376hu8ty"
+}

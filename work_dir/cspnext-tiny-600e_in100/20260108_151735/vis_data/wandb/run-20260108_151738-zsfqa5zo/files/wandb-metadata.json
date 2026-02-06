@@ -1,0 +1,20 @@
+{
+  "os":  "Linux-5.19.0-32-generic-x86_64-with-glibc2.17",
+  "python":  "CPython 3.8.20",
+  "startedAt":  "2026-01-08T06:17:38.879043Z",
+  "args":  [
+    "/home/ml_maro/Works/mmpretrain/configs/cspnext/cpsnext-tiny-600e_in100.py"
+  ],
+  "program":  "tools/train.py",
+  "codePath":  "tools/train.py",
+  "codePathLocal":  "tools/train.py",
+  "git":  {
+    "remote":  "https://github.com/maro-bearrobotics/mmpretrain.git",
+    "commit":  "3f89f6b9f0d90b1d2a1399328a93b6566a42a5fd"
+  },
+  "email":  "maro.jeon@bearrobotics.ai",
+  "root":  "/home/ml_maro/Works/mmpretrain/work_dir/cspnext-tiny-600e_in100/20260108_151735/vis_data",
+  "host":  "bearml-DSS8440",
+  "executable":  "/home/ml_maro/miniconda3/envs/mmpretrain/bin/python",
+  "writerId":  "pz04f0k9jmr0kffcj6yx07xm7gdail1p"
+}

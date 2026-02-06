@@ -1,0 +1,40 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        e:
+            pz04f0k9jmr0kffcj6yx07xm7gdail1p:
+                args:
+                    - /home/ml_maro/Works/mmpretrain/configs/cspnext/cpsnext-tiny-600e_in100.py
+                codePath: tools/train.py
+                codePathLocal: tools/train.py
+                email: maro.jeon@bearrobotics.ai
+                executable: /home/ml_maro/miniconda3/envs/mmpretrain/bin/python
+                git:
+                    commit: 3f89f6b9f0d90b1d2a1399328a93b6566a42a5fd
+                    remote: https://github.com/maro-bearrobotics/mmpretrain.git
+                host: bearml-DSS8440
+                os: Linux-5.19.0-32-generic-x86_64-with-glibc2.17
+                program: tools/train.py
+                python: CPython 3.8.20
+                root: /home/ml_maro/Works/mmpretrain/work_dir/cspnext-tiny-600e_in100/20260108_151735/vis_data
+                startedAt: "2026-01-08T06:17:38.879043Z"
+                writerId: pz04f0k9jmr0kffcj6yx07xm7gdail1p
+        m: []
+        python_version: 3.8.20
+        t:
+            "1":
+                - 1
+                - 37
+                - 41
+                - 82
+            "2":
+                - 1
+                - 37
+                - 41
+                - 82
+            "3":
+                - 13
+            "4": 3.8.20
+            "5": 0.23.1
+            "12": 0.23.1
+            "13": linux-x86_64

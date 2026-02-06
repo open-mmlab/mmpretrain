@@ -1,0 +1,611 @@
+_wandb:
+    value:
+        cli_version: 0.23.1
+        code_path: source-csp-tools_train.py
+        e:
+            9pdigz4k0cnwes9mbq9vd7w8epjmjtn1:
+                args:
+                    - /home/ml_maro/Works/mmpretrain/configs/cspnext/cpsnext-tiny-600e_in100.py
+                codePath: tools/train.py
+                codePathLocal: tools/train.py
+                cpu_count: 32
+                cpu_count_logical: 64
+                cudaVersion: "12.4"
+                disk:
+                    /:
+                        total: "470351462400"
+                        used: "429491232768"
+                email: maro.jeon@bearrobotics.ai
+                executable: /home/ml_maro/miniconda3/envs/mmpretrain/bin/python
+                git:
+                    commit: 3f89f6b9f0d90b1d2a1399328a93b6566a42a5fd
+                    remote: https://github.com/maro-bearrobotics/mmpretrain.git
+                gpu: Tesla V100-PCIE-16GB
+                gpu_count: 5
+                gpu_nvidia:
+                    - architecture: Volta
+                      cudaCores: 5120
+                      memoryTotal: "17179869184"
+                      name: Tesla V100-PCIE-16GB
+                      uuid: GPU-6fa8d566-659d-8f0a-4e25-298e8062887c
+                    - architecture: Volta
+                      cudaCores: 5120
+                      memoryTotal: "34359738368"
+                      name: Tesla V100-PCIE-32GB
+                      uuid: GPU-0268efa3-3f99-482a-bd23-e95b1702c8b3
+                    - architecture: Volta
+                      cudaCores: 5120
+                      memoryTotal: "34359738368"
+                      name: Tesla V100-PCIE-32GB
+                      uuid: GPU-af409081-ddb2-9351-ab45-bb1a1a6b6c52
+                    - architecture: Volta
+                      cudaCores: 5120
+                      memoryTotal: "34359738368"
+                      name: Tesla V100-PCIE-32GB
+                      uuid: GPU-5e77f3a1-e037-0f47-2128-3dc56a956771
+                    - architecture: Volta
+                      cudaCores: 5120
+                      memoryTotal: "34359738368"
+                      name: Tesla V100-PCIE-32GB
+                      uuid: GPU-66968ba4-ed8b-9dd0-9ac2-791f1ece6b39
+                host: bearml-DSS8440
+                memory:
+                    total: "201196843008"
+                os: Linux-5.19.0-32-generic-x86_64-with-glibc2.17
+                program: tools/train.py
+                python: CPython 3.8.20
+                root: /home/ml_maro/Works/mmpretrain/work_dir/cspnext-tiny-600e_in100/20260109_085713/vis_data
+                startedAt: "2026-01-08T23:57:16.919893Z"
+                writerId: 9pdigz4k0cnwes9mbq9vd7w8epjmjtn1
+        m: []
+        python_version: 3.8.20
+        t:
+            "1":
+                - 1
+                - 37
+                - 41
+                - 82
+            "2":
+                - 1
+                - 37
+                - 41
+                - 82
+            "3":
+                - 13
+            "4": 3.8.20
+            "5": 0.23.1
+            "12": 0.23.1
+            "13": linux-x86_64
+checkpoint_config:
+    value:
+        interval: 1
+data:
+    value:
+        samples_per_gpu: 256
+        test:
+            _scope_: mmcls
+            ann_file: data/imagenet/meta/val.txt
+            data_prefix: data/imagenet/val
+            pipeline:
+                - type: LoadImageFromFile
+                - size:
+                    - 236
+                    - -1
+                  type: Resize
+                - crop_size: 224
+                  type: CenterCrop
+                - mean:
+                    - 123.675
+                    - 116.28
+                    - 103.53
+                  std:
+                    - 58.395
+                    - 57.12
+                    - 57.375
+                  to_rgb: true
+                  type: Normalize
+                - keys:
+                    - img
+                  type: ImageToTensor
+                - keys:
+                    - img
+                  type: Collect
+            type: ImageNet
+        train:
+            _scope_: mmcls
+            data_prefix: data/imagenet/train
+            pipeline:
+                - type: LoadImageFromFile
+                - size: 224
+                  type: RandomResizedCrop
+                - direction: horizontal
+                  flip_prob: 0.5
+                  type: RandomFlip
+                - hparams:
+                    interpolation: bicubic
+                    pad_val:
+                        - 104
+                        - 116
+                        - 124
+                  magnitude_level: 7
+                  magnitude_std: 0.5
+                  num_policies: 2
+                  policies:
+                    - _scope_: mmcls
+                      type: AutoContrast
+                    - _scope_: mmcls
+                      type: Equalize
+                    - _scope_: mmcls
+                      type: Invert
+                    - _scope_: mmcls
+                      magnitude_key: angle
+                      magnitude_range:
+                        - 0
+                        - 30
+                      type: Rotate
+                    - _scope_: mmcls
+                      magnitude_key: bits
+                      magnitude_range:
+                        - 4
+                        - 0
+                      type: Posterize
+                    - _scope_: mmcls
+                      magnitude_key: thr
+                      magnitude_range:
+                        - 256
+                        - 0
+                      type: Solarize
+                    - _scope_: mmcls
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 110
+                      type: SolarizeAdd
+                    - _scope_: mmcls
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.9
+                      type: ColorTransform
+                    - _scope_: mmcls
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.9
+                      type: Contrast
+                    - _scope_: mmcls
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.9
+                      type: Brightness
+                    - _scope_: mmcls
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.9
+                      type: Sharpness
+                    - _scope_: mmcls
+                      direction: horizontal
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.3
+                      type: Shear
+                    - _scope_: mmcls
+                      direction: vertical
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.3
+                      type: Shear
+                    - _scope_: mmcls
+                      direction: horizontal
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.45
+                      type: Translate
+                    - _scope_: mmcls
+                      direction: vertical
+                      magnitude_key: magnitude
+                      magnitude_range:
+                        - 0
+                        - 0.45
+                      type: Translate
+                  total_level: 10
+                  type: RandAugment
+                - mean:
+                    - 123.675
+                    - 116.28
+                    - 103.53
+                  std:
+                    - 58.395
+                    - 57.12
+                    - 57.375
+                  to_rgb: true
+                  type: Normalize
+                - keys:
+                    - img
+                  type: ImageToTensor
+                - keys:
+                    - gt_label
+                  type: ToTensor
+                - keys:
+                    - img
+                    - gt_label
+                  type: Collect
+            type: ImageNet
+        val:
+            _scope_: mmcls
+            ann_file: data/imagenet/meta/val.txt
+            data_prefix: data/imagenet/val
+            pipeline:
+                - type: LoadImageFromFile
+                - size:
+                    - 236
+                    - -1
+                  type: Resize
+                - crop_size: 224
+                  type: CenterCrop
+                - mean:
+                    - 123.675
+                    - 116.28
+                    - 103.53
+                  std:
+                    - 58.395
+                    - 57.12
+                    - 57.375
+                  to_rgb: true
+                  type: Normalize
+                - keys:
+                    - img
+                  type: ImageToTensor
+                - keys:
+                    - img
+                  type: Collect
+            type: ImageNet
+        workers_per_gpu: 4
+data_preprocessor:
+    value:
+        mean:
+            - 123.675
+            - 116.28
+            - 103.53
+        std:
+            - 58.395
+            - 57.12
+            - 57.375
+        to_rgb: true
+        type: ClsDataPreprocessor
+dataset_type:
+    value: ImageNet
+default_hooks:
+    value:
+        checkpoint:
+            interval: 1
+            max_keep_ckpts: 3
+            rule: greater
+            save_best: accuracy/top1
+            save_last: true
+            type: CheckpointHook
+        logger:
+            interval: 50
+            type: LoggerHook
+        param_scheduler:
+            type: ParamSchedulerHook
+        sampler_seed:
+            type: DistSamplerSeedHook
+        timer:
+            type: IterTimerHook
+        visualization:
+            enable: true
+            type: VisualizationHook
+default_scope:
+    value: mmpretrain
+dist_params:
+    value:
+        backend: nccl
+evaluation:
+    value:
+        interval: 1
+        metric: accuracy
+img_norm_cfg:
+    value:
+        mean:
+            - 123.675
+            - 116.28
+            - 103.53
+        std:
+            - 58.395
+            - 57.12
+            - 57.375
+        to_rgb: true
+launcher:
+    value: none
+load_from:
+    value: null
+log_config:
+    value:
+        hooks:
+            - _scope_: mmcls
+              type: TextLoggerHook
+        interval: 100
+log_level:
+    value: INFO
+lr_config:
+    value:
+        min_lr: 1e-06
+        policy: CosineAnnealing
+        warmup: linear
+        warmup_iters: 3130
+        warmup_ratio: 0.0001
+model:
+    value:
+        backbone:
+            act_cfg:
+                type: SiLU
+            arch: P5
+            channel_attention: true
+            deepen_factor: 0.167
+            expand_ratio: 0.5
+            norm_cfg:
+                type: BN
+            out_indices:
+                - 4
+            type: CSPNeXt
+            widen_factor: 0.375
+        data_preprocessor:
+            mean:
+                - 123.675
+                - 116.28
+                - 103.53
+            std:
+                - 58.395
+                - 57.12
+                - 57.375
+            to_rgb: true
+            type: ClsDataPreprocessor
+        head:
+            in_channels: 384
+            loss:
+                label_smooth_val: 0.1
+                loss_weight: 1
+                mode: original
+                type: LabelSmoothLoss
+            num_classes: 100
+            topk:
+                - 1
+                - 5
+            type: LinearClsHead
+        neck:
+            type: GlobalAveragePooling
+        train_cfg:
+            augments:
+                - alpha: 0.2
+                  type: Mixup
+                - alpha: 1
+                  type: CutMix
+        type: ImageClassifier
+optim_wrapper:
+    value:
+        optimizer:
+            lr: 0.005
+            type: Lamb
+            weight_decay: 0.02
+        paramwise_cfg:
+            bias_decay_mult: 0
+            norm_decay_mult: 0
+        type: OptimWrapper
+optimizer:
+    value:
+        _scope_: mmcls
+        lr: 0.005
+        type: Lamb
+        weight_decay: 0.02
+optimizer_config:
+    value:
+        grad_clip: null
+param_scheduler:
+    value:
+        - begin: 0
+          by_epoch: true
+          convert_to_iter_based: true
+          end: 5
+          start_factor: 0.0001
+          type: LinearLR
+        - T_max: 595
+          begin: 5
+          by_epoch: true
+          end: 600
+          eta_min: 1e-06
+          type: CosineAnnealingLR
+rand_increasing_policies:
+    value:
+        - _scope_: mmcls
+          type: AutoContrast
+        - _scope_: mmcls
+          type: Equalize
+        - _scope_: mmcls
+          type: Invert
+        - _scope_: mmcls
+          magnitude_key: angle
+          magnitude_range:
+            - 0
+            - 30
+          type: Rotate
+        - _scope_: mmcls
+          magnitude_key: bits
+          magnitude_range:
+            - 4
+            - 0
+          type: Posterize
+        - _scope_: mmcls
+          magnitude_key: thr
+          magnitude_range:
+            - 256
+            - 0
+          type: Solarize
+        - _scope_: mmcls
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 110
+          type: SolarizeAdd
+        - _scope_: mmcls
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.9
+          type: ColorTransform
+        - _scope_: mmcls
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.9
+          type: Contrast
+        - _scope_: mmcls
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.9
+          type: Brightness
+        - _scope_: mmcls
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.9
+          type: Sharpness
+        - _scope_: mmcls
+          direction: horizontal
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.3
+          type: Shear
+        - _scope_: mmcls
+          direction: vertical
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.3
+          type: Shear
+        - _scope_: mmcls
+          direction: horizontal
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.45
+          type: Translate
+        - _scope_: mmcls
+          direction: vertical
+          magnitude_key: magnitude
+          magnitude_range:
+            - 0
+            - 0.45
+          type: Translate
+resume_from:
+    value: null
+runner:
+    value:
+        _scope_: mmcls
+        max_epochs: 100
+        type: EpochBasedRunner
+test_pipeline:
+    value:
+        - type: LoadImageFromFile
+        - edge: short
+          scale: 256
+          type: ResizeEdge
+        - crop_size: 224
+          type: CenterCrop
+        - type: PackInputs
+train_cfg:
+    value:
+        by_epoch: true
+        max_epochs: 600
+train_dataloader:
+    value:
+        batch_size: 384
+        collate_fn:
+            type: default_collate
+        dataset:
+            ann_file: meta/train.txt
+            data_prefix: train/
+            data_root: /mnt/hdd/OpenDataLab___ImageNet-100/raw/MyImagenet
+            pipeline:
+                - type: LoadImageFromFile
+                - scale: 224
+                  type: RandomResizedCrop
+                - direction: horizontal
+                  prob: 0.5
+                  type: RandomFlip
+                - type: PackInputs
+            type: ImageNet
+        num_workers: 12
+        persistent_workers: true
+        pin_memory: true
+        sampler:
+            shuffle: true
+            type: RepeatAugSampler
+train_pipeline:
+    value:
+        - type: LoadImageFromFile
+        - scale: 224
+          type: RandomResizedCrop
+        - direction: horizontal
+          prob: 0.5
+          type: RandomFlip
+        - type: PackInputs
+val_dataloader:
+    value:
+        batch_size: 384
+        collate_fn:
+            type: default_collate
+        dataset:
+            ann_file: meta/val.txt
+            data_prefix: val/
+            data_root: /mnt/hdd/OpenDataLab___ImageNet-100/raw/MyImagenet
+            pipeline:
+                - type: LoadImageFromFile
+                - edge: short
+                  scale: 256
+                  type: ResizeEdge
+                - crop_size: 224
+                  type: CenterCrop
+                - type: PackInputs
+            type: ImageNet
+        num_workers: 36
+        persistent_workers: true
+        pin_memory: true
+        sampler:
+            shuffle: false
+            type: DefaultSampler
+val_evaluator:
+    value:
+        topk:
+            - 1
+            - 5
+        type: Accuracy
+vis_backends:
+    value:
+        - type: LocalVisBackend
+        - init_kwargs:
+            name: CSPNeXt-tiny-default
+            project: csp
+          type: WandbVisBackend
+visualizer:
+    value:
+        type: UniversalVisualizer
+        vis_backends:
+            - type: LocalVisBackend
+            - init_kwargs:
+                name: CSPNeXt-tiny-default
+                project: csp
+              type: WandbVisBackend
+work_dir:
+    value: ./work_dir/cspnext-tiny-600e_in100
+workflow:
+    value:
+        - - train
+          - 1

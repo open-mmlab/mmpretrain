@@ -58,6 +58,7 @@ from .vision_transformer import VisionTransformer
 from .vit_eva02 import ViTEVA02
 from .vit_sam import ViTSAM
 from .xcit import XCiT
+from .cspnext import CSPNeXt
 
 __all__ = [
     'LeNet5',
@@ -126,4 +127,5 @@ __all__ = [
     'HiViT',
     'SparseResNet',
     'SparseConvNeXt',
+    'CSPNeXt',
 ]
