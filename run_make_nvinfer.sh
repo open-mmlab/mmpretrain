@@ -51,7 +51,7 @@ onnx-file=$ONNX_FILENAME
 infer-dims=3;$RES
 
 [custom]
-operate-on-class-names=forklift
+operate-on-class-names=person
 model-type=softmax-classifier
 use-case=$USE_CASE
 labels=$CLASSES
