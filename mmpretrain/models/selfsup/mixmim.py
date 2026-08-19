@@ -188,7 +188,7 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
                 B x L x C.
               - mask_s4 (torch.Tensor): the mask tensor for the last layer.
         """
-        if mask is None or False:
+        if mask is None or mask is False:
             return super().forward(x)
 
         else:

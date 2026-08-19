@@ -21,9 +21,13 @@ def test_mixmmim_backbone():
     assert fake_mask_s4.shape == torch.Size([1, 49, 1])
 
     # test without mask
-    fake_outputs = mixmmim_backbone(fake_inputs, None)
-    assert len(fake_outputs) == 1
-    assert fake_outputs[0].shape == torch.Size([1, 1024])
+    outputs_without_mask = mixmmim_backbone(fake_inputs, None)
+    outputs_with_mask_disabled = mixmmim_backbone(fake_inputs, False)
+    assert len(outputs_without_mask) == 1
+    assert outputs_without_mask[0].shape == torch.Size([1, 1024])
+    assert len(outputs_with_mask_disabled) == len(outputs_without_mask)
+    assert torch.allclose(outputs_with_mask_disabled[0],
+                          outputs_without_mask[0])
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')

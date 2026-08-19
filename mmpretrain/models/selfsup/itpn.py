@@ -178,7 +178,7 @@ class iTPNHiViT(HiViT):
             - ``mask`` (torch.Tensor): mask used to mask image.
             - ``ids_restore`` (torch.Tensor): ids to restore original image.
         """
-        if mask is None or False:
+        if mask is None or mask is False:
             return super().forward(x)
 
         else:
@@ -246,7 +246,7 @@ class iTPNHiViT(HiViT):
             - ``mask`` (torch.Tensor): mask used to mask image.
             - ``ids_restore`` (torch.Tensor): ids to restore original image.
         """
-        if mask is None or False:
+        if mask is None or mask is False:
             return super().forward(x)
 
         else:

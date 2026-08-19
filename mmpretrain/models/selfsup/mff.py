@@ -124,8 +124,8 @@ class MFFViT(MAEViT):
             - ``mask`` (torch.Tensor): mask used to mask image.
             - ``ids_restore`` (torch.Tensor): ids to restore original image.
         """
-        if mask is None or False:
-            return super().forward(x)
+        if mask is None or mask is False:
+            return super().forward(x, mask=mask)
 
         else:
             B = x.shape[0]
