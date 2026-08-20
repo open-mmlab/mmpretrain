@@ -3,5 +3,5 @@ importlib-metadata
 mat4py
 matplotlib
 modelindex
-numpy
+numpy<2
 rich
