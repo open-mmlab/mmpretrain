@@ -69,7 +69,7 @@ jobs:
             pip install -U openmim
             mim install 'mmcv >= 2.0.0rc4'
             pip install timm
-            pip install transformers
+            pip install 'transformers>=4.28.0,<4.29.0'
             pip install -r requirements.txt
             python -c 'import mmcv; print(mmcv.__version__)'
       - run:
