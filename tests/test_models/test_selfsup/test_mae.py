@@ -4,7 +4,7 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import MAE, MAEViT
+from mmpretrain.models import MAE, MAEHiViT, MAEViT
 from mmpretrain.structures import DataSample
 
 
@@ -20,8 +20,29 @@ def test_mae_vit():
     assert list(fake_outputs.shape) == [2, 50, 768]
 
     # test without mask
-    fake_outputs = mae_backbone(fake_inputs, None)
-    assert fake_outputs[0].shape == torch.Size([2, 197, 768])
+    outputs_without_mask = mae_backbone(fake_inputs, None)
+    outputs_with_mask_disabled = mae_backbone(fake_inputs, False)
+    assert outputs_without_mask[0].shape == torch.Size([2, 197, 768])
+    assert len(outputs_with_mask_disabled) == 1
+    assert torch.allclose(outputs_with_mask_disabled[0],
+                          outputs_without_mask[0])
+
+
+def test_mae_hivit_without_mask():
+    backbone = MAEHiViT(
+        arch=dict(embed_dims=32, depths=[1, 1, 1], num_heads=4),
+        img_size=32,
+        patch_size=8,
+        inner_patches=2,
+        out_indices=[0])
+    fake_inputs = torch.randn((1, 3, 32, 32))
+
+    outputs_without_mask = backbone(fake_inputs, None)
+    outputs_with_mask_disabled = backbone(fake_inputs, False)
+    assert len(outputs_with_mask_disabled) == len(outputs_without_mask)
+    for actual, expected in zip(outputs_with_mask_disabled,
+                                outputs_without_mask):
+        assert torch.allclose(actual, expected)
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')

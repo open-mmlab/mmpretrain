@@ -65,17 +65,18 @@ jobs:
       - run:
           name: Install mmpretrain dependencies
           command: |
-            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install 'mmengine >= 0.8.3, < 1.0.0'
             pip install -U openmim
             mim install 'mmcv >= 2.0.0rc4'
             pip install timm
-            pip install transformers
+            pip install 'transformers>=4.28.0,<4.29.0'
             pip install -r requirements.txt
             python -c 'import mmcv; print(mmcv.__version__)'
       - run:
           name: Build and install
           command: |
             pip install -e .
+            echo 'export PYTHONPATH="$PWD:$PYTHONPATH"' >> "$BASH_ENV"
       - run:
           name: Run unittests
           command: |
@@ -116,7 +117,7 @@ jobs:
       - run:
           name: Install mmpretrain dependencies
           command: |
-            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install 'mmengine >= 0.8.3, < 1.0.0'
             pip install -U openmim
             mim install 'mmcv >= 2.0.0rc4'
             pip install -r requirements.txt
@@ -125,6 +126,7 @@ jobs:
           name: Build and install
           command: |
             pip install -e .
+            echo 'export PYTHONPATH="$PWD:$PYTHONPATH"' >> "$BASH_ENV"
       - run:
           name: Run unittests
           command: |
@@ -158,7 +160,7 @@ jobs:
           name: Build Docker image
           command: |
             docker build .circleci/docker -t mmpretrain:gpu --build-arg PYTORCH=<< parameters.torch >> --build-arg CUDA=<< parameters.cuda >> --build-arg CUDNN=<< parameters.cudnn >>
-            docker run --gpus all -t -d -v /home/circleci/project:/mmpretrain -v /home/circleci/mmengine:/mmengine -w /mmpretrain --name mmpretrain mmpretrain:gpu
+            docker run --gpus all -t -d -e PYTHONPATH=/mmpretrain -v /home/circleci/project:/mmpretrain -v /home/circleci/mmengine:/mmengine -w /mmpretrain --name mmpretrain mmpretrain:gpu
       - run:
           name: Install mmpretrain dependencies
           command: |

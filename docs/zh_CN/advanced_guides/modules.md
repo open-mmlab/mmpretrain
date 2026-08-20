@@ -220,7 +220,7 @@ class MAEViT(VisionTransformer):
         call ``super().forward()``, which extract features from images without
         mask.
         """
-        if mask is None or False:
+        if mask is None or mask is False:
             return super().forward(x)
 
         else:

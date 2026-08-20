@@ -20,6 +20,14 @@ def test_mae_vit():
     fake_outputs = mae_backbone(fake_inputs)[0]
     assert list(fake_outputs.shape) == [2, 50, 768]
 
+    # test without mask
+    outputs_without_mask = mae_backbone(fake_inputs, None)
+    outputs_with_mask_disabled = mae_backbone(fake_inputs, False)
+    assert len(outputs_with_mask_disabled) == len(outputs_without_mask)
+    for actual, expected in zip(outputs_with_mask_disabled,
+                                outputs_without_mask):
+        assert torch.allclose(actual, expected)
+
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
 def test_mae():

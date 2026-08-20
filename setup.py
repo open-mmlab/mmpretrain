@@ -107,7 +107,7 @@ def add_mim_extension():
     """
 
     # parse installment mode
-    if 'develop' in sys.argv:
+    if 'develop' in sys.argv or 'editable_wheel' in sys.argv:
         # installed by `pip install -e .`
         mode = 'symlink'
     elif 'sdist' in sys.argv or 'bdist_wheel' in sys.argv:

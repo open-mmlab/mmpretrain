@@ -4,8 +4,27 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import iTPN
+from mmpretrain.models import iTPN, iTPNHiViT
 from mmpretrain.structures import DataSample
+
+
+@pytest.mark.parametrize('reconstruction_type', ['pixel', 'clip'])
+def test_itpn_backbone_without_mask(reconstruction_type):
+    backbone = iTPNHiViT(
+        arch=dict(embed_dims=32, depths=[1, 1, 1], num_heads=4),
+        img_size=32,
+        patch_size=8,
+        inner_patches=2,
+        out_indices=[0],
+        reconstruction_type=reconstruction_type)
+    fake_inputs = torch.randn((1, 3, 32, 32))
+
+    outputs_without_mask = backbone(fake_inputs, None)
+    outputs_with_mask_disabled = backbone(fake_inputs, False)
+    assert len(outputs_with_mask_disabled) == len(outputs_without_mask)
+    for actual, expected in zip(outputs_with_mask_disabled,
+                                outputs_without_mask):
+        assert torch.allclose(actual, expected)
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
