@@ -1,4 +1,4 @@
-albumentations>=0.3.2,<2.0 --no-binary qudida    # For Albumentations data transform
+albumentations>=0.3.2,<1.4 --no-binary qudida    # For Albumentations data transform
 grad-cam >= 1.3.7,<1.5.0   # For CAM visualization
 requests            # For torchserve
 scikit-learn<1.5    # For t-SNE visualization and unit tests.
