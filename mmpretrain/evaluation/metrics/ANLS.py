@@ -71,8 +71,10 @@ class ANLS(BaseMetric):
             for gt in result['gt_answer']:
                 gt = ' '.join(gt.strip().lower().split())
                 dist = levenshtein_distance(gt, pred)
-                length = max(
-                    len(gt.upper()), len(result['pred_answer'].upper()))
+                # The distance is between the normalized strings. Using the
+                # raw prediction here counted its padding, so a different
+                # answer with trailing spaces scored as a partial match.
+                length = max(len(gt), len(pred))
                 sample_score_list.append(0.0 if length == 0 else float(dist) /
                                          float(length))
 
